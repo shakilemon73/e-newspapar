@@ -5,7 +5,8 @@ import {
   articles,
   epapers,
   weather,
-  breakingNews
+  breakingNews,
+  users
 } from '@shared/schema';
 
 export const storage = {
@@ -103,6 +104,13 @@ export const storage = {
     
     return article;
   },
+  
+  async getArticleById(id: number) {
+    return await db.query.articles.findFirst({
+      where: eq(articles.id, id),
+      with: { category: true }
+    });
+  },
 
   async searchArticles(query: string, limit = 10, offset = 0) {
     return await db.query.articles.findMany({
@@ -117,6 +125,19 @@ export const storage = {
   async createArticle(data: typeof articles.$inferInsert) {
     const [article] = await db.insert(articles).values(data).returning();
     return article;
+  },
+  
+  async updateArticle(id: number, data: Partial<typeof articles.$inferInsert>) {
+    const [article] = await db.update(articles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(articles.id, id))
+      .returning();
+    return article;
+  },
+  
+  async deleteArticle(id: number) {
+    await db.delete(articles).where(eq(articles.id, id));
+    return true;
   },
 
   // EPaper operations
@@ -189,5 +210,26 @@ export const storage = {
   async createBreakingNews(data: typeof breakingNews.$inferInsert) {
     const [news] = await db.insert(breakingNews).values(data).returning();
     return news;
+  },
+
+  // User operations
+  async getUserByEmail(email: string) {
+    return await db.query.users.findFirst({
+      where: eq(users.username, email)
+    });
+  },
+
+  async getUserById(id: number) {
+    return await db.query.users.findFirst({
+      where: eq(users.id, id)
+    });
+  },
+
+  async updateUserRole(id: number, role: string) {
+    const [user] = await db.update(users)
+      .set({ role })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
   }
 };

@@ -26,11 +26,39 @@ const requireAuth = async (req: Request, res: Response, next: Function) => {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
     
-    // Add user to request object
-    (req as any).user = data.user;
+    // Get user from database to check role
+    const dbUser = await storage.getUserByEmail(data.user.email || '');
+    
+    if (!dbUser) {
+      return res.status(401).json({ error: 'User not found in database' });
+    }
+    
+    // Add user with role information to request object
+    (req as any).user = {
+      ...data.user,
+      role: dbUser.role, // Include role from database
+      dbUserId: dbUser.id // Include database user ID
+    };
+    
     next();
   } catch (error) {
     console.error('Error verifying auth token:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Middleware to verify admin permissions
+const requireAdmin = async (req: Request, res: Response, next: Function) => {
+  try {
+    await requireAuth(req, res, () => {
+      // Check if user has admin role
+      if ((req as any).user?.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin permission required' });
+      }
+      next();
+    });
+  } catch (error) {
+    console.error('Admin middleware error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -510,7 +538,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/articles`, async (req, res) => {
+  // Protected admin routes for article management
+  app.post(`${apiPrefix}/articles`, requireAdmin, async (req, res) => {
     try {
       const validatedData = articlesInsertSchema.parse(req.body);
       const article = await storage.createArticle(validatedData);
@@ -521,6 +550,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error('Error creating article:', error);
       return res.status(500).json({ error: 'Failed to create article' });
+    }
+  });
+  
+  // Update article
+  app.put(`${apiPrefix}/articles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleId = parseInt(id);
+      const validatedData = articlesInsertSchema.partial().parse(req.body);
+      
+      // Check if article exists
+      const existingArticle = await storage.getArticleById(articleId);
+      if (!existingArticle) {
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      const article = await storage.updateArticle(articleId, validatedData);
+      return res.json(article);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error updating article:', error);
+      return res.status(500).json({ error: 'Failed to update article' });
+    }
+  });
+  
+  // Delete article
+  app.delete(`${apiPrefix}/articles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleId = parseInt(id);
+      
+      // Check if article exists
+      const existingArticle = await storage.getArticleById(articleId);
+      if (!existingArticle) {
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      await storage.deleteArticle(articleId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      return res.status(500).json({ error: 'Failed to delete article' });
     }
   });
 
