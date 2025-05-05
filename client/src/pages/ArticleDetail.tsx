@@ -3,6 +3,7 @@ import { useRoute, Link } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
+import { ArticleSummary } from '@/components/ArticleSummary';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
@@ -209,6 +210,8 @@ const ArticleDetail = () => {
               className="w-full rounded"
             />
           </div>
+          
+          <ArticleSummary content={article.content} />
           
           <div 
             className="article-content text-lg mb-8 leading-relaxed"
