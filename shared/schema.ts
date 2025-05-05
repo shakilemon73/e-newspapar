@@ -63,6 +63,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  role: text("role").default("user").notNull(), // Added role field with default "user"
   totalArticlesRead: integer("total_articles_read").default(0),
   readingStreak: integer("reading_streak").default(0),
   lastReadAt: timestamp("last_read_at"),
@@ -158,6 +159,7 @@ export type BreakingNews = z.infer<typeof breakingNewsSelectSchema>;
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  role: true,
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
