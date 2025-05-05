@@ -179,6 +179,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: error.message || 'Internal server error' });
     }
   });
+  
+  // Reading history routes
+  app.post(`${apiPrefix}/track-reading`, requireAuth, async (req, res) => {
+    try {
+      const { articleId } = req.body;
+      const user = (req as any).user;
+      
+      // Check if this article is already in reading history
+      const { data: existingEntry, error: checkError } = await supabase
+        .from('reading_history')
+        .select()
+        .eq('user_id', user.id)
+        .eq('article_id', articleId)
+        .maybeSingle();
+      
+      if (checkError) {
+        throw checkError;
+      }
+      
+      if (existingEntry) {
+        // Update last read timestamp
+        const { error: updateError } = await supabase
+          .from('reading_history')
+          .update({
+            last_read_at: new Date().toISOString()
+          })
+          .eq('id', existingEntry.id);
+        
+        if (updateError) {
+          throw updateError;
+        }
+      } else {
+        // Create new reading history entry
+        const { error: insertError } = await supabase
+          .from('reading_history')
+          .insert({
+            user_id: user.id,
+            article_id: articleId,
+            last_read_at: new Date().toISOString(),
+            read_count: 1
+          });
+        
+        if (insertError) {
+          throw insertError;
+        }
+      }
+      
+      return res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error tracking reading history:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+  });
+  
+  app.get(`${apiPrefix}/reading-history`, requireAuth, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { limit = '20', offset = '0' } = req.query;
+      
+      const { data, error } = await supabase
+        .from('reading_history')
+        .select(`
+          id,
+          last_read_at,
+          read_count,
+          articles:article_id(*)
+        `)
+        .eq('user_id', user.id)
+        .order('last_read_at', { ascending: false })
+        .range(
+          parseInt(offset as string), 
+          parseInt(offset as string) + parseInt(limit as string) - 1
+        );
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Extract the articles and add read information
+      const history = data.map(item => ({
+        ...item.articles,
+        last_read_at: item.last_read_at,
+        read_count: item.read_count
+      }));
+      
+      return res.json(history);
+    } catch (error: any) {
+      console.error('Error fetching reading history:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+  });
 
   // Categories routes
   app.get(`${apiPrefix}/categories`, async (_req, res) => {

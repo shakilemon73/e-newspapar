@@ -9,6 +9,7 @@ import Search from "@/pages/Search";
 import AuthPage from "@/pages/auth-page";
 import Profile from "@/pages/Profile";
 import SavedArticles from "@/pages/SavedArticles";
+import ReadingHistory from "@/pages/ReadingHistory";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/auth" component={AuthPage} />
       <Route path="/profile" component={Profile} />
       <Route path="/saved-articles" component={SavedArticles} />
+      <Route path="/reading-history" component={ReadingHistory} />
       <Route component={NotFound} />
     </Switch>
   );

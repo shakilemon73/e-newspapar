@@ -70,6 +70,37 @@ const ArticleDetail = () => {
     checkIfSaved();
   }, [user, article]);
 
+  // Track reading history when an article is viewed by a logged-in user
+  useEffect(() => {
+    const trackReading = async () => {
+      if (!user || !article) return;
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        
+        const token = session.access_token;
+        
+        // Send reading history to server
+        await fetch('/api/track-reading', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ articleId: article.id })
+        });
+        
+        // Don't need to do anything with the response
+      } catch (err) {
+        console.error('Error tracking reading history:', err);
+        // Don't show error to user as this is a background operation
+      }
+    };
+    
+    trackReading();
+  }, [user, article]);
+  
   useEffect(() => {
     const fetchArticle = async () => {
       try {
