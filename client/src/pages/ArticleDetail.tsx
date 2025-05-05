@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRoute, Link } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
 
 interface Category {
   id: number;
@@ -127,6 +128,8 @@ const ArticleDetail = () => {
             <span>{formatBengaliDate(article.publishedAt)}</span>
             <span className="mx-2">•</span>
             <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+            <span className="mx-2">•</span>
+            <ReadingTimeIndicator content={article.content} />
           </div>
           
           <div className="mb-6">

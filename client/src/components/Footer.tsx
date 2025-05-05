@@ -38,7 +38,7 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-primary text-white pt-10 pb-4">
+    <footer className="bg-primary dark:bg-primary text-white pt-10 pb-4">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
@@ -75,8 +75,8 @@ export const Footer = () => {
             <ul className="space-y-2">
               {categories.map(category => (
                 <li key={category.id}>
-                  <Link href={`/category/${category.slug}`}>
-                    <a className="text-gray-300 hover:text-accent transition">{category.name}</a>
+                  <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-accent transition">
+                    {category.name}
                   </Link>
                 </li>
               ))}
@@ -87,39 +87,25 @@ export const Footer = () => {
             <h4 className="text-lg font-bold mb-4 font-hind">আমাদের সম্পর্কে</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about">
-                  <a className="text-gray-300 hover:text-accent transition">পরিচিতি</a>
-                </Link>
+                <Link href="/about" className="text-gray-300 hover:text-accent transition">পরিচিতি</Link>
               </li>
               <li>
-                <Link href="/editorial-policy">
-                  <a className="text-gray-300 hover:text-accent transition">সম্পাদকীয় নীতিমালা</a>
-                </Link>
+                <Link href="/editorial-policy" className="text-gray-300 hover:text-accent transition">সম্পাদকীয় নীতিমালা</Link>
               </li>
               <li>
-                <Link href="/contact">
-                  <a className="text-gray-300 hover:text-accent transition">যোগাযোগ</a>
-                </Link>
+                <Link href="/contact" className="text-gray-300 hover:text-accent transition">যোগাযোগ</Link>
               </li>
               <li>
-                <Link href="/advertise">
-                  <a className="text-gray-300 hover:text-accent transition">বিজ্ঞাপন</a>
-                </Link>
+                <Link href="/advertise" className="text-gray-300 hover:text-accent transition">বিজ্ঞাপন</Link>
               </li>
               <li>
-                <Link href="/archive">
-                  <a className="text-gray-300 hover:text-accent transition">আর্কাইভ</a>
-                </Link>
+                <Link href="/archive" className="text-gray-300 hover:text-accent transition">আর্কাইভ</Link>
               </li>
               <li>
-                <Link href="/privacy-policy">
-                  <a className="text-gray-300 hover:text-accent transition">গোপনীয়তা নীতি</a>
-                </Link>
+                <Link href="/privacy-policy" className="text-gray-300 hover:text-accent transition">গোপনীয়তা নীতি</Link>
               </li>
               <li>
-                <Link href="/terms">
-                  <a className="text-gray-300 hover:text-accent transition">ব্যবহারের শর্তাবলী</a>
-                </Link>
+                <Link href="/terms" className="text-gray-300 hover:text-accent transition">ব্যবহারের শর্তাবলী</Link>
               </li>
             </ul>
           </div>

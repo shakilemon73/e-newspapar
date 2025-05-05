@@ -85,23 +85,21 @@ export const LatestNews = () => {
         {latestNews.map((news) => (
           <div className="flex gap-3" key={news.id}>
             <div className="flex-shrink-0">
-              <Link href={`/article/${news.slug}`}>
-                <a>
-                  <img 
-                    src={news.imageUrl} 
-                    alt={news.title} 
-                    className="w-20 h-20 object-cover rounded"
-                  />
-                </a>
+              <Link href={`/article/${news.slug}`} className="block">
+                <img 
+                  src={news.imageUrl} 
+                  alt={news.title} 
+                  className="w-20 h-20 object-cover rounded"
+                />
               </Link>
             </div>
             <div>
-              <Link href={`/category/${news.category.slug}`}>
-                <a className="text-xs font-medium text-accent">{news.category.name}</a>
+              <Link href={`/category/${news.category.slug}`} className="text-xs font-medium text-accent">
+                {news.category.name}
               </Link>
               <h4 className="font-bold mb-1 font-hind">
-                <Link href={`/article/${news.slug}`}>
-                  <a className="hover:text-accent transition">{news.title}</a>
+                <Link href={`/article/${news.slug}`} className="hover:text-accent transition">
+                  {news.title}
                 </Link>
               </h4>
               <p className="text-sm text-gray-600 line-clamp-2">{news.excerpt}</p>
