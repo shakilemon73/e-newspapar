@@ -90,12 +90,12 @@ export const WeatherWidget = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded shadow-sm p-4 h-full">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">আবহাওয়া</h3>
+      <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
+        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আবহাওয়া</h3>
         <div className="animate-pulse flex flex-col space-y-4">
-          <div className="h-8 bg-gray-200 rounded"></div>
-          <div className="h-20 bg-gray-200 rounded"></div>
-          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
       </div>
     );
@@ -103,27 +103,27 @@ export const WeatherWidget = () => {
 
   if (error || !weather) {
     return (
-      <div className="bg-white rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">আবহাওয়া</h3>
+      <div className="bg-card dark:bg-card rounded shadow-sm p-4">
+        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আবহাওয়া</h3>
         <p className="text-center py-8">{error || 'আবহাওয়া তথ্য পাওয়া যায়নি'}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded shadow-sm p-4 h-full">
-      <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">আবহাওয়া</h3>
+    <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
+      <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আবহাওয়া</h3>
       <div className="flex items-center justify-between">
         <div className="location-info">
           <h4 className="font-bold text-xl mb-1">{weather.city}</h4>
-          <p className="text-sm text-gray-600">{currentDate}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{currentDate}</p>
         </div>
         <div className="weather-info text-right">
           <div className="flex items-center justify-end">
             <span className="text-3xl font-bold mr-2">{toBengaliNumber(weather.temperature)}°</span>
             <i className={`${weather.icon} text-yellow-500 text-3xl`}></i>
           </div>
-          <p className="text-sm text-gray-600">{weather.condition}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{weather.condition}</p>
         </div>
       </div>
       
@@ -131,13 +131,13 @@ export const WeatherWidget = () => {
         {weather.forecast.map((day, index) => (
           <div className="forecast-day" key={index}>
             <div className="text-xs">{day.day}</div>
-            <i className={`${day.icon} ${day.icon.includes('sun') ? 'text-yellow-500' : 'text-gray-500'} my-1`}></i>
+            <i className={`${day.icon} ${day.icon.includes('sun') ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'} my-1`}></i>
             <div className="text-xs font-bold">{toBengaliNumber(day.temperature)}°</div>
           </div>
         ))}
       </div>
       
-      <div className="mt-4 border-t border-mid-gray pt-3">
+      <div className="mt-4 border-t border-border pt-3">
         <h5 className="font-bold mb-2">অন্যান্য শহর</h5>
         <div className="grid grid-cols-2 gap-2 text-sm">
           {otherCities.map((city) => (

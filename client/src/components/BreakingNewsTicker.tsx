@@ -36,7 +36,7 @@ export const BreakingNewsTicker = () => {
 
   if (isLoading) {
     return (
-      <div className="breaking-news mb-6 bg-white p-3 rounded shadow-sm flex items-center">
+      <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex items-center">
         <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
           <span>ব্রেকিং</span>
         </div>
@@ -47,7 +47,7 @@ export const BreakingNewsTicker = () => {
 
   if (error || breakingNews.length === 0) {
     return (
-      <div className="breaking-news mb-6 bg-white p-3 rounded shadow-sm flex items-center">
+      <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex items-center">
         <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
           <span>ব্রেকিং</span>
         </div>
@@ -57,7 +57,7 @@ export const BreakingNewsTicker = () => {
   }
 
   return (
-    <div className="breaking-news mb-6 bg-white p-3 rounded shadow-sm flex">
+    <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex">
       <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
         <span>ব্রেকিং</span>
       </div>
