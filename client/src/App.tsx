@@ -20,6 +20,7 @@ function Router() {
       <Route path="/article/:slug" component={ArticleDetail} />
       <Route path="/epaper" component={EPaper} />
       <Route path="/search" component={Search} />
+      <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -28,15 +29,17 @@ function Router() {
 function App() {
   return (
     <ThemeProvider>
-      <div className="flex flex-col min-h-screen bg-background">
-        <Header />
-        <main className="flex-grow">
-          <Router />
-        </main>
-        <Footer />
-        <Toaster />
-        <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
-      </div>
+      <AuthProvider>
+        <div className="flex flex-col min-h-screen bg-background">
+          <Header />
+          <main className="flex-grow">
+            <Router />
+          </main>
+          <Footer />
+          <Toaster />
+          <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
+        </div>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

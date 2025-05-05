@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Search, Menu } from 'lucide-react';
+import { Search, Menu, User, LogOut } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Input } from '@/components/ui/input';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Category {
   id: number;
@@ -15,7 +25,8 @@ export const Header = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+  const { user, signOut, loading } = useSupabaseAuth();
 
   useEffect(() => {
     // Get current date in Bengali
@@ -56,6 +67,15 @@ export const Header = () => {
       setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
+  
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setLocation('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <header className="bg-card dark:bg-card shadow-sm sticky top-0 z-50">
@@ -68,8 +88,54 @@ export const Header = () => {
             <span>ঢাকা, বাংলাদেশ</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/login" className="hover:text-accent transition">লগইন</Link>
-            <Link href="/register" className="hover:text-accent transition">রেজিস্টার</Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full text-white hover:bg-accent/20">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.name || user.email} />
+                      <AvatarFallback className="bg-accent text-white">
+                        {(user.user_metadata?.name?.[0] || user.email?.[0] || '?').toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex flex-col space-y-1 p-2">
+                    <p className="text-sm font-medium leading-none">{user.user_metadata?.name || 'ব্যবহারকারী'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>প্রোফাইল</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/saved-articles" className="cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                      <span>সংরক্ষিত আর্টিকেল</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>লগআউট</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link href="/auth" className="hover:text-accent transition">লগইন</Link>
+                <span className="text-gray-400">|</span>
+                <Link href="/auth?tab=register" className="hover:text-accent transition">রেজিস্টার</Link>
+              </>
+            )}
             <div className="flex items-center space-x-2">
               <a href="https://facebook.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-facebook-f"></i>
