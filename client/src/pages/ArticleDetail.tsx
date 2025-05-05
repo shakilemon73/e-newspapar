@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
 import { ArticleSummary } from '@/components/ArticleSummary';
+import { TextToSpeech } from '@/components/TextToSpeech';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
@@ -212,6 +213,8 @@ const ArticleDetail = () => {
           </div>
           
           <ArticleSummary content={article.content} />
+          
+          <TextToSpeech text={article.content} title={article.title} />
           
           <div 
             className="article-content text-lg mb-8 leading-relaxed"
