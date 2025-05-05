@@ -7,6 +7,9 @@ import CategoryNewsSection from '@/components/CategoryNewsSection';
 import EPaperSection from '@/components/EPaperSection';
 import PopularNewsSection from '@/components/PopularNewsSection';
 import PersonalizedRecommendations from '@/components/PersonalizedRecommendations';
+import SocialMediaFeed from '@/components/SocialMediaFeed';
+import VideoContent from '@/components/VideoContent';
+import AudioArticles from '@/components/AudioArticles';
 
 const Home = () => {
   // Each category is handled by the CategoryNewsSection component
@@ -63,6 +66,11 @@ const Home = () => {
 
         {/* Popular News Section */}
         <PopularNewsSection />
+        
+        {/* Video Content Section */}
+        <div className="mb-8">
+          <VideoContent />
+        </div>
 
         {/* Lifestyle and Entertainment */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -73,6 +81,16 @@ const Home = () => {
               limit={4}
             />
           ))}
+        </div>
+        
+        {/* Audio Articles Section */}
+        <div className="mb-8">
+          <AudioArticles />
+        </div>
+        
+        {/* Social Media Feed Section */}
+        <div className="mb-8">
+          <SocialMediaFeed />
         </div>
       </div>
     </>
