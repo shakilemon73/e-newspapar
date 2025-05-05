@@ -34,12 +34,9 @@ export const PersonalizedRecommendations = () => {
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
-
-        // Always check if we have an authenticated user first
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session || !user) {
-          // If no authenticated session or user, fetch popular articles instead
+        
+        if (!user) {
+          // If no user, fetch popular articles instead
           const response = await fetch('/api/articles/popular?limit=6');
           if (!response.ok) {
             throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
@@ -48,40 +45,53 @@ export const PersonalizedRecommendations = () => {
           setArticles(data);
           return;
         }
-
+        
+        // Get the session token from Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // If no session, fetch popular articles instead
+          const response = await fetch('/api/articles/popular?limit=6');
+          if (!response.ok) {
+            throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
+          }
+          const data = await response.json();
+          setArticles(data);
+          return;
+        }
+        
         const token = session.access_token;
-
+        
         // Fetch personalized recommendations
         const response = await fetch('/api/personalized-recommendations?limit=6', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-
+        
         if (!response.ok) {
           throw new Error('সুপারিশকৃত আর্টিকেল লোড করতে সমস্যা হয়েছে');
         }
-
+        
         const data = await response.json();
         setArticles(data);
-
+        
         // Also fetch reading history to check which articles have been read
         const historyResponse = await fetch('/api/reading-history', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         });
-
+        
         if (historyResponse.ok) {
           const historyData = await historyResponse.json();
           setReadArticles(historyData.map((article: any) => article.slug));
         }
-
+        
         setError(null);
       } catch (err: any) {
         console.error('Error fetching personalized recommendations:', err);
         setError(err.message || 'সুপারিশকৃত আর্টিকেল লোড করতে সমস্যা হয়েছে');
-
+        
         // Try to fetch popular articles as fallback
         try {
           const response = await fetch('/api/articles/popular?limit=6');
@@ -96,7 +106,7 @@ export const PersonalizedRecommendations = () => {
         setLoading(false);
       }
     };
-
+    
     fetchRecommendations();
   }, [user]);
 
@@ -111,13 +121,13 @@ export const PersonalizedRecommendations = () => {
 
   const handleArticleClick = (article: Article) => {
     if (!user) return;
-
+    
     // Get the session token from Supabase
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return;
-
+      
       const token = session.access_token;
-
+      
       // Add to reading history
       fetch(`/api/reading-history/${article.slug}`, {
         method: 'POST',
@@ -166,7 +176,7 @@ export const PersonalizedRecommendations = () => {
             {user ? 'আপনার জন্য সুপারিশকৃত' : 'জনপ্রিয় নিবন্ধ'}
           </h2>
         </div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredArticles.map((article) => (
             <Card key={article.id} className="overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow">
@@ -182,7 +192,7 @@ export const PersonalizedRecommendations = () => {
                   />
                 </div>
               </Link>
-
+              
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between mb-2">
                   <Link 
@@ -205,13 +215,13 @@ export const PersonalizedRecommendations = () => {
                   </Link>
                 </CardTitle>
               </CardHeader>
-
+              
               <CardContent className="flex-grow pb-2">
                 <p className="text-muted-foreground text-sm line-clamp-3">
                   {article.excerpt}
                 </p>
               </CardContent>
-
+              
               <CardFooter className="pt-0">
                 <Link 
                   href={`/article/${article.slug}`}
