@@ -74,15 +74,15 @@ const ArticleDetail = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8"></div>
-            <div className="h-64 bg-gray-200 rounded mb-8"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-8"></div>
+            <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
             <div className="space-y-4">
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-4 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
             </div>
           </div>
         </div>
@@ -94,12 +94,12 @@ const ArticleDetail = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded shadow-sm p-8 text-center">
+          <div className="bg-card dark:bg-card rounded shadow-sm p-8 text-center">
             <h2 className="text-xl font-bold mb-4 font-hind">
               {error || 'নিবন্ধ খুঁজে পাওয়া যায়নি'}
             </h2>
-            <Link href="/">
-              <a className="text-accent hover:underline">হোমপেজে ফিরে যান</a>
+            <Link href="/" className="text-accent hover:underline">
+              হোমপেজে ফিরে যান
             </Link>
           </div>
         </div>
@@ -117,14 +117,14 @@ const ArticleDetail = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-3xl mx-auto">
           <div className="mb-4">
-            <Link href={`/category/${article.category.slug}`}>
-              <a className="text-accent hover:underline font-medium">{article.category.name}</a>
+            <Link href={`/category/${article.category.slug}`} className="text-accent hover:underline font-medium">
+              {article.category.name}
             </Link>
           </div>
           
           <h1 className="text-3xl md:text-4xl font-bold mb-3 font-hind">{article.title}</h1>
           
-          <div className="flex items-center text-sm text-gray-600 mb-6">
+          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-6">
             <span>{formatBengaliDate(article.publishedAt)}</span>
             <span className="mx-2">•</span>
             <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
@@ -145,40 +145,40 @@ const ArticleDetail = () => {
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
           
-          <div className="flex justify-between items-center border-t border-b border-mid-gray py-4 mb-8">
+          <div className="flex justify-between items-center border-t border-b border-border py-4 mb-8">
             <div className="text-sm">
               <div className="font-medium">শেয়ার করুন:</div>
               <div className="flex space-x-3 mt-1">
                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} 
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-blue-600 hover:opacity-80"
+                   className="text-blue-600 dark:text-blue-400 hover:opacity-80"
                 >
                   <i className="fab fa-facebook-f"></i>
                 </a>
                 <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`}
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-blue-400 hover:opacity-80"
+                   className="text-blue-400 dark:text-blue-300 hover:opacity-80"
                 >
                   <i className="fab fa-twitter"></i>
                 </a>
                 <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`}
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-green-500 hover:opacity-80"
+                   className="text-green-500 dark:text-green-400 hover:opacity-80"
                 >
                   <i className="fab fa-whatsapp"></i>
                 </a>
                 <a href={`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(window.location.href)}`}
-                   className="text-gray-600 hover:opacity-80"
+                   className="text-gray-600 dark:text-gray-400 hover:opacity-80"
                 >
                   <i className="fas fa-envelope"></i>
                 </a>
               </div>
             </div>
             
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               <span>পাঠকসংখ্যা: {article.viewCount.toLocaleString('bn-BD')}</span>
             </div>
           </div>
@@ -188,20 +188,18 @@ const ArticleDetail = () => {
               <h2 className="text-xl font-bold mb-4 font-hind border-b border-mid-gray pb-2">সম্পর্কিত আরও খবর</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {relatedArticles.map((related) => (
-                  <Link key={related.id} href={`/article/${related.slug}`}>
-                    <a className="block bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition">
-                      <div className="relative">
-                        <img 
-                          src={related.imageUrl} 
-                          alt={related.title}
-                          className="w-full h-32 object-cover" 
-                        />
-                      </div>
-                      <div className="p-3">
-                        <h3 className="font-bold text-sm mb-1 font-hind line-clamp-2">{related.title}</h3>
-                        <div className="text-xs text-gray-500">{getRelativeTimeInBengali(related.publishedAt)}</div>
-                      </div>
-                    </a>
+                  <Link key={related.id} href={`/article/${related.slug}`} className="block bg-white dark:bg-card rounded shadow-sm overflow-hidden hover:shadow-md transition">
+                    <div className="relative">
+                      <img 
+                        src={related.imageUrl} 
+                        alt={related.title}
+                        className="w-full h-32 object-cover" 
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-bold text-sm mb-1 font-hind line-clamp-2">{related.title}</h3>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{getRelativeTimeInBengali(related.publishedAt)}</div>
+                    </div>
                   </Link>
                 ))}
               </div>

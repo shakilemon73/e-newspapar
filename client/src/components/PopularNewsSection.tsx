@@ -146,8 +146,8 @@ export const PopularNewsSection = () => {
             </div>
             <div>
               <h4 className="font-bold mb-1 font-hind">
-                <Link href={`/article/${article.slug}`}>
-                  <a className="hover:text-accent transition">{article.title}</a>
+                <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
+                  {article.title}
                 </Link>
               </h4>
               <p className="text-sm text-gray-600 line-clamp-2">{article.excerpt}</p>

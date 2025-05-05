@@ -110,10 +110,8 @@ export const LatestNews = () => {
       </div>
       
       <div className="mt-4 text-center">
-        <Link href="/latest">
-          <a className="text-accent hover:underline font-medium">
-            আরও সংবাদ <i className="fas fa-angle-right ml-1"></i>
-          </a>
+        <Link href="/latest" className="text-accent hover:underline font-medium">
+          আরও সংবাদ <i className="fas fa-angle-right ml-1"></i>
         </Link>
       </div>
     </div>
