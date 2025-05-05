@@ -49,17 +49,17 @@ export const LatestNews = () => {
 
   if (isLoading) {
     return (
-      <div className="lg:col-span-2 bg-white rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">সর্বশেষ খবর</h3>
+      <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
+        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-3 animate-pulse">
-              <div className="flex-shrink-0 w-20 h-20 bg-gray-200 rounded"></div>
+              <div className="flex-shrink-0 w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-6 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/5"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/5"></div>
               </div>
             </div>
           ))}
@@ -70,16 +70,16 @@ export const LatestNews = () => {
 
   if (error || latestNews.length === 0) {
     return (
-      <div className="lg:col-span-2 bg-white rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">সর্বশেষ খবর</h3>
+      <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
+        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
         <p className="text-center py-8">{error || 'কোন সর্বশেষ খবর পাওয়া যায়নি'}</p>
       </div>
     );
   }
 
   return (
-    <div className="lg:col-span-2 bg-white rounded shadow-sm p-4 h-full">
-      <h3 className="text-lg font-bold mb-4 font-hind border-b border-mid-gray pb-2">সর্বশেষ খবর</h3>
+    <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4 h-full">
+      <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
       
       <div className="space-y-4">
         {latestNews.map((news) => (
@@ -102,8 +102,8 @@ export const LatestNews = () => {
                   {news.title}
                 </Link>
               </h4>
-              <p className="text-sm text-gray-600 line-clamp-2">{news.excerpt}</p>
-              <div className="text-xs text-gray-500 mt-1">{getRelativeTimeInBengali(news.publishedAt)}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{news.excerpt}</p>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getRelativeTimeInBengali(news.publishedAt)}</div>
             </div>
           </div>
         ))}
