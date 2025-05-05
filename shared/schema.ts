@@ -63,6 +63,30 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  totalArticlesRead: integer("total_articles_read").default(0),
+  readingStreak: integer("reading_streak").default(0),
+  lastReadAt: timestamp("last_read_at"),
+  experience: integer("experience").default(0),
+  level: integer("level").default(1),
+});
+
+// Achievements table
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  requirementType: text("requirement_type").notNull(), // articles_read, category_mastery, streak
+  requirementValue: integer("requirement_value").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+// User Achievements table
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  achievementId: integer("achievement_id").references(() => achievements.id).notNull(),
+  unlockedAt: timestamp("unlocked_at").defaultNow().notNull()
 });
 
 // Relations
@@ -74,6 +98,25 @@ export const articlesRelations = relations(articles, ({ one }) => ({
   category: one(categories, {
     fields: [articles.categoryId],
     references: [categories.id]
+  })
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  achievements: many(userAchievements)
+}));
+
+export const achievementsRelations = relations(achievements, ({ many }) => ({
+  users: many(userAchievements)
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, {
+    fields: [userAchievements.userId],
+    references: [users.id]
+  }),
+  achievement: one(achievements, {
+    fields: [userAchievements.achievementId],
+    references: [achievements.id]
   })
 }));
 
@@ -118,3 +161,21 @@ export const insertUserSchema = createInsertSchema(users).pick({
 });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export const achievementsInsertSchema = createInsertSchema(achievements, {
+  name: (schema) => schema.min(3, "Name must be at least 3 characters"),
+  description: (schema) => schema.min(10, "Description must be at least 10 characters"),
+  icon: (schema) => schema.min(1, "Icon is required"),
+  requirementType: (schema) => schema.refine(
+    (val) => ['articles_read', 'category_mastery', 'streak', 'experience'].includes(val),
+    "Requirement type must be one of: articles_read, category_mastery, streak, experience"
+  )
+});
+export type AchievementInsert = z.infer<typeof achievementsInsertSchema>;
+export const achievementsSelectSchema = createSelectSchema(achievements);
+export type Achievement = z.infer<typeof achievementsSelectSchema>;
+
+export const userAchievementsInsertSchema = createInsertSchema(userAchievements);
+export type UserAchievementInsert = z.infer<typeof userAchievementsInsertSchema>;
+export const userAchievementsSelectSchema = createSelectSchema(userAchievements);
+export type UserAchievement = z.infer<typeof userAchievementsSelectSchema>;

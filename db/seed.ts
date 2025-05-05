@@ -2,7 +2,146 @@ import { db } from "./index";
 import * as schema from "@shared/schema";
 import { eq } from "drizzle-orm";
 
+const { achievements, userAchievements } = schema;
+
+async function seedAchievements() {
+  console.log("Seeding achievements...");
+
+  // Check if we already have achievements in the database
+  const existingAchievements = await db.query.achievements.findMany();
+  if (existingAchievements.length > 0) {
+    console.log(`Found ${existingAchievements.length} existing achievements. Skipping achievement seeding.`);
+    return;
+  }
+
+  // Article reading achievements
+  const readingAchievements = [
+    {
+      name: "প্রথম পাঠক",
+      description: "আপনার প্রথম নিবন্ধ পড়ার জন্য অভিনন্দন!",
+      icon: "📚",
+      requirementType: "articles_read",
+      requirementValue: 1
+    },
+    {
+      name: "নিয়মিত পাঠক",
+      description: "১০টি নিবন্ধ পড়া সম্পন্ন করেছেন",
+      icon: "📖",
+      requirementType: "articles_read",
+      requirementValue: 10
+    },
+    {
+      name: "অভিজ্ঞ পাঠক",
+      description: "৫০টি নিবন্ধ পড়া সম্পন্ন করেছেন",
+      icon: "🏆",
+      requirementType: "articles_read",
+      requirementValue: 50
+    },
+    {
+      name: "পাঠক মাস্টার",
+      description: "১০০টি নিবন্ধ পড়া সম্পন্ন করেছেন",
+      icon: "🎓",
+      requirementType: "articles_read",
+      requirementValue: 100
+    }
+  ];
+
+  // Streak achievements
+  const streakAchievements = [
+    {
+      name: "৩ দিনের স্ট্রিক",
+      description: "টানা ৩ দিন নিবন্ধ পড়েছেন",
+      icon: "🔥",
+      requirementType: "streak",
+      requirementValue: 3
+    },
+    {
+      name: "৭ দিনের স্ট্রিক",
+      description: "টানা ৭ দিন নিবন্ধ পড়েছেন",
+      icon: "🔥🔥",
+      requirementType: "streak",
+      requirementValue: 7
+    },
+    {
+      name: "১ মাসের স্ট্রিক",
+      description: "টানা ৩০ দিন নিবন্ধ পড়েছেন",
+      icon: "🔥🔥🔥",
+      requirementType: "streak",
+      requirementValue: 30
+    }
+  ];
+
+  // Experience level achievements
+  const experienceAchievements = [
+    {
+      name: "লেভেল ৫",
+      description: "অভিনন্দন! আপনি লেভেল ৫-এ পৌঁছেছেন",
+      icon: "⭐",
+      requirementType: "experience",
+      requirementValue: 500
+    },
+    {
+      name: "লেভেল ১০",
+      description: "অভিনন্দন! আপনি লেভেল ১০-এ পৌঁছেছেন",
+      icon: "⭐⭐",
+      requirementType: "experience",
+      requirementValue: 1000
+    },
+    {
+      name: "লেভেল ২০",
+      description: "অভিনন্দন! আপনি লেভেল ২০-এ পৌঁছেছেন",
+      icon: "⭐⭐⭐",
+      requirementType: "experience",
+      requirementValue: 2000
+    }
+  ];
+
+  // Category mastery achievements
+  const categoryAchievements = [
+    {
+      name: "রাজনীতি বিশেষজ্ঞ",
+      description: "রাজনীতি বিভাগে ১০টি নিবন্ধ পড়েছেন",
+      icon: "🏛️",
+      requirementType: "category_mastery",
+      requirementValue: 10
+    },
+    {
+      name: "খেলাধুলা বিশেষজ্ঞ",
+      description: "খেলা বিভাগে ১০টি নিবন্ধ পড়েছেন",
+      icon: "⚽",
+      requirementType: "category_mastery",
+      requirementValue: 10
+    },
+    {
+      name: "আন্তর্জাতিক বিশেষজ্ঞ",
+      description: "আন্তর্জাতিক বিভাগে ১০টি নিবন্ধ পড়েছেন",
+      icon: "🌍",
+      requirementType: "category_mastery",
+      requirementValue: 10
+    }
+  ];
+
+  // Combine all achievements
+  const allAchievements = [
+    ...readingAchievements,
+    ...streakAchievements,
+    ...experienceAchievements,
+    ...categoryAchievements
+  ];
+
+  // Insert achievements
+  try {
+    for (const achievement of allAchievements) {
+      await db.insert(achievements).values(achievement);
+    }
+    console.log(`Successfully inserted ${allAchievements.length} achievements.`);
+  } catch (error) {
+    console.error("Error seeding achievements:", error);
+  }
+}
+
 async function seed() {
+  await seedAchievements();
   try {
     console.log("Starting database seeding...");
 
