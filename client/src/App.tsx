@@ -6,9 +6,11 @@ import Category from "@/pages/Category";
 import ArticleDetail from "@/pages/ArticleDetail";
 import EPaper from "@/pages/EPaper";
 import Search from "@/pages/Search";
+import AuthPage from "@/pages/auth-page";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AuthProvider } from "@/hooks/use-supabase-auth";
 
 function Router() {
   return (
