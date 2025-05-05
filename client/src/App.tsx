@@ -7,6 +7,8 @@ import ArticleDetail from "@/pages/ArticleDetail";
 import EPaper from "@/pages/EPaper";
 import Search from "@/pages/Search";
 import AuthPage from "@/pages/auth-page";
+import Profile from "@/pages/Profile";
+import SavedArticles from "@/pages/SavedArticles";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -21,6 +23,7 @@ function Router() {
       <Route path="/epaper" component={EPaper} />
       <Route path="/search" component={Search} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );
