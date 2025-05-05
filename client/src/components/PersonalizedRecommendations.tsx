@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import supabase from '@/lib/supabase';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Loader2 } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Category {
   id: number;
@@ -19,161 +24,216 @@ interface Article {
 }
 
 export const PersonalizedRecommendations = () => {
-  const [recommendations, setRecommendations] = useState<Article[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useSupabaseAuth();
+  const [readArticles, setReadArticles] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         
-        // Check browser history or localStorage for previously read articles
-        const readArticles = JSON.parse(localStorage.getItem('readArticles') || '[]');
-        const readCategories = readArticles.reduce((acc: { [key: string]: number }, articleSlug: string) => {
-          const categoryName = localStorage.getItem(`article_${articleSlug}_category`);
-          if (categoryName) {
-            acc[categoryName] = (acc[categoryName] || 0) + 1;
+        if (!user) {
+          // If no user, fetch popular articles instead
+          const response = await fetch('/api/articles/popular?limit=6');
+          if (!response.ok) {
+            throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
           }
-          return acc;
-        }, {});
-        
-        // Find the most frequently read category
-        let topCategory = '';
-        let maxCount = 0;
-        
-        for (const [category, count] of Object.entries(readCategories)) {
-          if (typeof count === 'number' && count > maxCount) {
-            maxCount = count;
-            topCategory = category;
-          }
+          const data = await response.json();
+          setArticles(data);
+          return;
         }
         
-        // If user has no history, fetch trending articles instead
-        const endpoint = topCategory 
-          ? `/api/articles?category=${topCategory}&limit=4` 
-          : '/api/articles/popular?limit=4';
-          
-        const response = await fetch(endpoint);
+        // Get the session token from Supabase
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // If no session, fetch popular articles instead
+          const response = await fetch('/api/articles/popular?limit=6');
+          if (!response.ok) {
+            throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
+          }
+          const data = await response.json();
+          setArticles(data);
+          return;
+        }
+        
+        const token = session.access_token;
+        
+        // Fetch personalized recommendations
+        const response = await fetch('/api/personalized-recommendations?limit=6', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         
         if (!response.ok) {
-          throw new Error('Failed to fetch recommended articles');
+          throw new Error('সুপারিশকৃত আর্টিকেল লোড করতে সমস্যা হয়েছে');
         }
         
         const data = await response.json();
+        setArticles(data);
         
-        // Filter out articles that are already in the read history
-        const filteredRecommendations = data.filter(
-          (article: Article) => !readArticles.includes(article.slug)
-        );
+        // Also fetch reading history to check which articles have been read
+        const historyResponse = await fetch('/api/reading-history', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         
-        setRecommendations(filteredRecommendations);
-        setError(null);
-      } catch (err) {
-        setError('সুপারিশকৃত নিবন্ধ লোড করতে সমস্যা হয়েছে');
-        console.error('Error fetching recommended articles:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchRecommendations();
-  }, []);
-
-  // Save the article to read history when a user clicks on it
-  const handleArticleClick = (article: Article) => {
-    try {
-      // Get existing read articles array
-      const readArticles = JSON.parse(localStorage.getItem('readArticles') || '[]');
-      
-      // Only add if it's not already in the list
-      if (!readArticles.includes(article.slug)) {
-        // Limit the history to 20 most recent articles
-        if (readArticles.length >= 20) {
-          readArticles.pop();
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setReadArticles(historyData.map((article: any) => article.slug));
         }
         
-        // Add the new article at the beginning (most recent)
-        readArticles.unshift(article.slug);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching personalized recommendations:', err);
+        setError(err.message || 'সুপারিশকৃত আর্টিকেল লোড করতে সমস্যা হয়েছে');
         
-        // Save updated list
-        localStorage.setItem('readArticles', JSON.stringify(readArticles));
-        
-        // Save the category for this article
-        localStorage.setItem(`article_${article.slug}_category`, article.category.slug);
+        // Try to fetch popular articles as fallback
+        try {
+          const response = await fetch('/api/articles/popular?limit=6');
+          if (response.ok) {
+            const data = await response.json();
+            setArticles(data);
+          }
+        } catch (fallbackErr) {
+          console.error('Error fetching fallback articles:', fallbackErr);
+        }
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error saving read history:', error);
+    };
+    
+    fetchRecommendations();
+  }, [user]);
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (e) {
+      return 'Unknown date';
     }
   };
 
-  if (isLoading) {
+  const handleArticleClick = (article: Article) => {
+    if (!user) return;
+    
+    // Get the session token from Supabase
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return;
+      
+      const token = session.access_token;
+      
+      // Add to reading history
+      fetch(`/api/reading-history/${article.slug}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }).catch(err => {
+        console.error('Error adding to reading history:', err);
+      });
+    });
+  };
+
+  // Filter recommendations to not show articles already read
+  const filteredArticles = user ? 
+    articles.filter(
+      (article: Article) => !readArticles.includes(article.slug)
+    ) : 
+    articles;
+
+  if (loading) {
     return (
-      <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আপনার জন্য সুপারিশ</h3>
-        <div className="animate-pulse space-y-4">
-          {[...Array(4)].map((_, index) => (
-            <div key={index} className="flex gap-3">
-              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              <div className="flex-1">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (error || recommendations.length === 0) {
+  if (error && articles.length === 0) {
     return (
-      <div className="bg-card dark:bg-card rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আপনার জন্য সুপারিশ</h3>
-        <p className="text-center py-8">{error || 'কোন সুপারিশকৃত নিবন্ধ পাওয়া যায়নি'}</p>
+      <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-md mb-6">
+        {error}
       </div>
     );
+  }
+
+  if (filteredArticles.length === 0) {
+    return null;
   }
 
   return (
-    <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
-      <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">আপনার জন্য সুপারিশ</h3>
-      
-      <div className="space-y-4">
-        {recommendations.map((article) => (
-          <div className="flex gap-3" key={article.id}>
-            <div className="flex-shrink-0">
+    <div className="py-8">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold font-hind">
+            {user ? 'আপনার জন্য সুপারিশকৃত' : 'জনপ্রিয় নিবন্ধ'}
+          </h2>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredArticles.map((article) => (
+            <Card key={article.id} className="overflow-hidden flex flex-col h-full hover:shadow-lg transition-shadow">
               <Link 
-                href={`/article/${article.slug}`} 
+                href={`/article/${article.slug}`}
                 onClick={() => handleArticleClick(article)}
-                className="block"
               >
-                <img 
-                  src={article.imageUrl} 
-                  alt={article.title} 
-                  className="w-16 h-16 object-cover rounded"
-                />
+                <div className="h-48 overflow-hidden">
+                  <img 
+                    src={article.imageUrl} 
+                    alt={article.title} 
+                    className="w-full h-full object-cover transition-transform hover:scale-105"
+                  />
+                </div>
               </Link>
-            </div>
-            <div>
-              <h5 className="font-medium mb-1 text-sm font-hind">
+              
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <Link 
+                    href={`/category/${article.category.slug}`}
+                    className="text-sm font-medium text-accent hover:underline"
+                  >
+                    {article.category.name}
+                  </Link>
+                  <time className="text-xs text-muted-foreground">
+                    {formatDate(article.publishedAt)}
+                  </time>
+                </div>
+                <CardTitle className="text-lg leading-tight line-clamp-2">
+                  <Link 
+                    href={`/article/${article.slug}`}
+                    onClick={() => handleArticleClick(article)}
+                    className="hover:text-accent transition-colors"
+                  >
+                    {article.title}
+                  </Link>
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="flex-grow pb-2">
+                <p className="text-muted-foreground text-sm line-clamp-3">
+                  {article.excerpt}
+                </p>
+              </CardContent>
+              
+              <CardFooter className="pt-0">
                 <Link 
                   href={`/article/${article.slug}`}
                   onClick={() => handleArticleClick(article)}
-                  className="hover:text-accent transition"
+                  className="text-sm text-accent hover:underline"
                 >
-                  {article.title}
+                  আরও পড়ুন
                 </Link>
-              </h5>
-              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                <span className="bg-muted rounded px-2 py-0.5 text-xs mr-2">
-                  {article.category.name}
-                </span>
-                <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

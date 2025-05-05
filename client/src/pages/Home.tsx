@@ -38,17 +38,17 @@ const Home = () => {
         {/* Featured Section with Slideshow */}
         <FeaturedSlideshow />
 
-        {/* Weather, Latest News and Personalized Recommendations Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Weather and Latest News Widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Weather Widget */}
           <WeatherWidget />
           
           {/* Latest News */}
           <LatestNews />
-          
-          {/* Personalized Recommendations */}
-          <PersonalizedRecommendations />
         </div>
+        
+        {/* Personalized Recommendations */}
+        <PersonalizedRecommendations />
 
         {/* Category News Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

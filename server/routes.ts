@@ -270,6 +270,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: error.message || 'Internal server error' });
     }
   });
+  
+  app.get(`${apiPrefix}/personalized-recommendations`, requireAuth, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      const { limit = '6' } = req.query;
+      
+      // First get the user's reading history to determine category preferences
+      const { data: historyData, error: historyError } = await supabase
+        .from('reading_history')
+        .select(`
+          article_id,
+          articles:article_id(category_id, category:category_id(id, name))
+        `)
+        .eq('user_id', user.id)
+        .order('last_read_at', { ascending: false })
+        .limit(10);
+      
+      if (historyError) {
+        throw historyError;
+      }
+      
+      // If no reading history, return some popular articles
+      if (!historyData || historyData.length === 0) {
+        const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
+        return res.json(popularArticles);
+      }
+      
+      // Extract category IDs from reading history and count occurrences
+      const categoryCount: { [key: number]: number } = {};
+      historyData.forEach(item => {
+        try {
+          // Using type assertion to access properties safely
+          const articleData = item.articles as any;
+          if (articleData) {
+            let categoryId = null;
+            
+            // Try different ways to get the category ID
+            if (articleData.category_id) {
+              categoryId = articleData.category_id;
+            } else if (articleData.category && typeof articleData.category === 'object') {
+              categoryId = articleData.category.id;
+            }
+            
+            if (categoryId) {
+              categoryCount[categoryId] = (categoryCount[categoryId] || 0) + 1;
+            }
+          }
+        } catch (error) {
+          console.error('Error accessing category from article:', error);
+        }
+      });
+      
+      // Sort categories by frequency
+      const sortedCategories = Object.entries(categoryCount)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => parseInt(entry[0]));
+      
+      // Get articles from the top 3 categories (or fewer if less than 3 categories)
+      const topCategories = sortedCategories.slice(0, 3);
+      
+      let recommendedArticles: any[] = [];
+      
+      // Get articles from each top category
+      for (const categoryId of topCategories) {
+        const articlesPerCategory = Math.ceil(parseInt(limit as string) / topCategories.length);
+        
+        // Get already read article IDs to exclude them
+        const { data: readData, error: readError } = await supabase
+          .from('reading_history')
+          .select('article_id')
+          .eq('user_id', user.id);
+        
+        if (readError) {
+          throw readError;
+        }
+        
+        const readArticleIds = readData.map(item => item.article_id);
+        
+        // Get articles from this category, excluding already read ones
+        const categoryArticles = await storage.getArticlesByCategory(
+          categoryId, 
+          articlesPerCategory,
+          0
+        );
+        
+        // Filter out articles the user has already read
+        const filteredArticles = categoryArticles.filter(
+          article => !readArticleIds.includes(article.id)
+        );
+        
+        recommendedArticles = [...recommendedArticles, ...filteredArticles];
+      }
+      
+      // If we don't have enough articles, add some popular ones
+      if (recommendedArticles.length < parseInt(limit as string)) {
+        const popularArticles = await storage.getPopularArticles(
+          parseInt(limit as string) - recommendedArticles.length
+        );
+        
+        // Avoid duplicates
+        const existingIds = recommendedArticles.map(a => a.id);
+        const filteredPopular = popularArticles.filter(a => !existingIds.includes(a.id));
+        
+        recommendedArticles = [...recommendedArticles, ...filteredPopular];
+      }
+      
+      // Limit to the requested number
+      recommendedArticles = recommendedArticles.slice(0, parseInt(limit as string));
+      
+      return res.json(recommendedArticles);
+    } catch (error: any) {
+      console.error('Error fetching personalized recommendations:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
+    }
+  });
 
   // Categories routes
   app.get(`${apiPrefix}/categories`, async (_req, res) => {
