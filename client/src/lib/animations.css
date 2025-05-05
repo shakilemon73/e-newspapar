@@ -198,3 +198,13 @@
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+/* Audio playback progress animation */
+@keyframes pulse-linear {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-pulse-linear {
+  animation: pulse-linear 30s linear infinite;
+}
