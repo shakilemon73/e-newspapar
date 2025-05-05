@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Search, Menu } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 import { Input } from '@/components/ui/input';
 
 interface Category {
@@ -57,7 +58,7 @@ export const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-card dark:bg-card shadow-sm sticky top-0 z-50">
       {/* Top Bar */}
       <div className="bg-primary text-white text-sm py-1">
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -82,6 +83,9 @@ export const Header = () => {
               <a href="https://instagram.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-instagram"></i>
               </a>
+            </div>
+            <div className="border-l border-white/20 pl-3">
+              <ThemeToggle />
             </div>
           </div>
         </div>
@@ -113,11 +117,11 @@ export const Header = () => {
       </div>
       
       {/* Navigation */}
-      <nav className="border-t border-b border-mid-gray bg-white">
+      <nav className="border-t border-b border-border bg-card dark:bg-card text-foreground">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap items-center">
             <button 
-              className="lg:hidden mr-4 py-3 text-primary" 
+              className="lg:hidden mr-4 py-3 text-primary dark:text-primary" 
               onClick={toggleMobileMenu}
             >
               <Menu size={24} />
@@ -142,17 +146,17 @@ export const Header = () => {
             <div className={`mobile-menu ${mobileMenuOpen ? '' : 'hidden'} w-full mt-2 lg:hidden`}>
               <ul className="pb-2">
                 <li>
-                  <Link href="/" className="px-4 py-2 block hover:bg-light-gray">সর্বশেষ</Link>
+                  <Link href="/" className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">সর্বশেষ</Link>
                 </li>
                 
                 {categories.map(category => (
                   <li key={category.id}>
-                    <Link href={`/category/${category.slug}`} className="px-4 py-2 block hover:bg-light-gray">{category.name}</Link>
+                    <Link href={`/category/${category.slug}`} className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">{category.name}</Link>
                   </li>
                 ))}
                 
                 <li>
-                  <Link href="/epaper" className="px-4 py-2 block hover:bg-light-gray">ই-পেপার</Link>
+                  <Link href="/epaper" className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">ই-পেপার</Link>
                 </li>
               </ul>
             </div>

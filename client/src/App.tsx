@@ -8,6 +8,7 @@ import EPaper from "@/pages/EPaper";
 import Search from "@/pages/Search";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 function Router() {
   return (
@@ -24,15 +25,17 @@ function Router() {
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen bg-light">
-      <Header />
-      <main className="flex-grow">
-        <Router />
-      </main>
-      <Footer />
-      <Toaster />
-      <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
-    </div>
+    <ThemeProvider>
+      <div className="flex flex-col min-h-screen bg-background">
+        <Header />
+        <main className="flex-grow">
+          <Router />
+        </main>
+        <Footer />
+        <Toaster />
+        <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
+      </div>
+    </ThemeProvider>
   );
 }
 
