@@ -56,23 +56,23 @@ export const PopularNewsSection = () => {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded shadow-sm p-4 mb-8">
-        <div className="flex justify-between items-center mb-4 border-b border-mid-gray pb-2">
+      <div className="bg-card dark:bg-card rounded shadow-sm p-4 mb-8">
+        <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
           <h3 className="text-lg font-bold font-hind">সর্বাধিক পঠিত</h3>
           <div className="flex gap-2">
-            <div className="w-12 h-8 bg-gray-200 rounded animate-pulse"></div>
-            <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
-            <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
+            <div className="w-12 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div className="w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            <div className="w-16 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
           </div>
         </div>
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="flex gap-4 animate-pulse">
-              <div className="flex-shrink-0 w-6 h-8 bg-gray-200 rounded"></div>
+              <div className="flex-shrink-0 w-6 h-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-6 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
               </div>
             </div>
           ))}
@@ -83,24 +83,24 @@ export const PopularNewsSection = () => {
 
   if (error || popularArticles.length === 0) {
     return (
-      <div className="bg-white rounded shadow-sm p-4 mb-8">
-        <div className="flex justify-between items-center mb-4 border-b border-mid-gray pb-2">
+      <div className="bg-card dark:bg-card rounded shadow-sm p-4 mb-8">
+        <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
           <h3 className="text-lg font-bold font-hind">সর্বাধিক পঠিত</h3>
           <div className="flex gap-2">
             <button 
-              className={`${timeRange === 'daily' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+              className={`${timeRange === 'daily' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
               onClick={() => handleTimeRangeChange('daily')}
             >
               আজ
             </button>
             <button 
-              className={`${timeRange === 'weekly' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+              className={`${timeRange === 'weekly' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
               onClick={() => handleTimeRangeChange('weekly')}
             >
               সাপ্তাহিক
             </button>
             <button 
-              className={`${timeRange === 'monthly' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+              className={`${timeRange === 'monthly' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
               onClick={() => handleTimeRangeChange('monthly')}
             >
               মাসিক
@@ -113,24 +113,24 @@ export const PopularNewsSection = () => {
   }
 
   return (
-    <div className="bg-white rounded shadow-sm p-4 mb-8">
-      <div className="flex justify-between items-center mb-4 border-b border-mid-gray pb-2">
+    <div className="bg-card dark:bg-card rounded shadow-sm p-4 mb-8">
+      <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
         <h3 className="text-lg font-bold font-hind">সর্বাধিক পঠিত</h3>
         <div className="flex gap-2">
           <button 
-            className={`${timeRange === 'daily' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+            className={`${timeRange === 'daily' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
             onClick={() => handleTimeRangeChange('daily')}
           >
             আজ
           </button>
           <button 
-            className={`${timeRange === 'weekly' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+            className={`${timeRange === 'weekly' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
             onClick={() => handleTimeRangeChange('weekly')}
           >
             সাপ্তাহিক
           </button>
           <button 
-            className={`${timeRange === 'monthly' ? 'bg-accent text-white' : 'hover:bg-light-gray'} px-3 py-1 rounded text-sm font-medium transition`}
+            className={`${timeRange === 'monthly' ? 'bg-accent text-white' : 'hover:bg-muted dark:hover:bg-muted'} px-3 py-1 rounded text-sm font-medium transition`}
             onClick={() => handleTimeRangeChange('monthly')}
           >
             মাসিক
@@ -150,8 +150,8 @@ export const PopularNewsSection = () => {
                   {article.title}
                 </Link>
               </h4>
-              <p className="text-sm text-gray-600 line-clamp-2">{article.excerpt}</p>
-              <div className="text-xs text-gray-500 mt-1">{getRelativeTimeInBengali(article.publishedAt)}</div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{article.excerpt}</p>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getRelativeTimeInBengali(article.publishedAt)}</div>
             </div>
           </div>
         ))}

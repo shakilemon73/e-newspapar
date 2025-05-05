@@ -81,10 +81,10 @@ export const FeaturedSlideshow = () => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 h-96 bg-white rounded shadow-sm animate-pulse"></div>
+        <div className="lg:col-span-2 h-96 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
         <div className="space-y-4">
-          <div className="h-48 bg-white rounded shadow-sm animate-pulse"></div>
-          <div className="h-48 bg-white rounded shadow-sm animate-pulse"></div>
+          <div className="h-48 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
+          <div className="h-48 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
         </div>
       </div>
     );
@@ -119,20 +119,20 @@ export const FeaturedSlideshow = () => {
                 className="w-full aspect-[16/9] object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
-                <Link href={`/category/${article.category.slug}`}>
-                  <a className="bg-accent text-white text-xs px-2 py-1 rounded">{article.category.name}</a>
+                <Link href={`/category/${article.category.slug}`} className="bg-accent text-white text-xs px-2 py-1 rounded inline-block">
+                  {article.category.name}
                 </Link>
                 <h2 className="text-xl md:text-2xl font-bold mt-2 mb-2 font-hind">
-                  <Link href={`/article/${article.slug}`}>
-                    <a>{article.title}</a>
+                  <Link href={`/article/${article.slug}`} className="text-white hover:text-gray-200 transition">
+                    {article.title}
                   </Link>
                 </h2>
                 <p className="text-sm md:text-base opacity-90 line-clamp-2">{article.excerpt}</p>
                 <div className="flex items-center mt-2 text-sm">
                   <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
                   <span className="mx-2">•</span>
-                  <Link href={`/article/${article.slug}`}>
-                    <a className="text-accent hover:underline">বিস্তারিত পড়ুন</a>
+                  <Link href={`/article/${article.slug}`} className="text-accent hover:underline">
+                    বিস্তারিত পড়ুন
                   </Link>
                 </div>
               </div>
@@ -155,27 +155,27 @@ export const FeaturedSlideshow = () => {
       {/* Side Featured Articles */}
       <div className="space-y-4">
         {sideArticles.map((article) => (
-          <Link key={article.id} href={`/article/${article.slug}`}>
-            <a className="block bg-white rounded shadow-sm overflow-hidden hover:shadow-md transition">
-              <div className="relative">
-                <img 
-                  src={article.imageUrl} 
-                  alt={article.title} 
-                  className="w-full h-44 object-cover"
-                />
-                <Link href={`/category/${article.category.slug}`}>
-                  <a className="absolute top-2 left-2 bg-accent text-white text-xs px-2 py-1 rounded">
-                    {article.category.name}
-                  </a>
+          <div key={article.id} className="bg-card dark:bg-card rounded shadow-sm overflow-hidden hover:shadow-md transition">
+            <div className="relative">
+              <img 
+                src={article.imageUrl} 
+                alt={article.title} 
+                className="w-full h-44 object-cover"
+              />
+              <Link href={`/category/${article.category.slug}`} className="absolute top-2 left-2 bg-accent text-white text-xs px-2 py-1 rounded">
+                {article.category.name}
+              </Link>
+            </div>
+            <div className="p-3">
+              <h3 className="font-bold mb-1 line-clamp-2 font-hind">
+                <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
+                  {article.title}
                 </Link>
-              </div>
-              <div className="p-3">
-                <h3 className="font-bold mb-1 line-clamp-2 font-hind">{article.title}</h3>
-                <p className="text-sm text-gray-600 line-clamp-2">{article.excerpt}</p>
-                <div className="text-xs text-gray-500 mt-2">{getRelativeTimeInBengali(article.publishedAt)}</div>
-              </div>
-            </a>
-          </Link>
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{article.excerpt}</p>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">{getRelativeTimeInBengali(article.publishedAt)}</div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
