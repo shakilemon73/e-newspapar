@@ -67,12 +67,8 @@ export const Header = () => {
             <span>ঢাকা, বাংলাদেশ</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/login">
-              <a className="hover:text-accent transition">লগইন</a>
-            </Link>
-            <Link href="/register">
-              <a className="hover:text-accent transition">রেজিস্টার</a>
-            </Link>
+            <Link href="/login" className="hover:text-accent transition">লগইন</Link>
+            <Link href="/register" className="hover:text-accent transition">রেজিস্টার</Link>
             <div className="flex items-center space-x-2">
               <a href="https://facebook.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-facebook-f"></i>
@@ -94,9 +90,7 @@ export const Header = () => {
       {/* Logo and Search */}
       <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
         <div className="flex items-center mb-4 md:mb-0">
-          <Link href="/">
-            <a className="text-3xl font-bold text-accent font-hind">প্রথম আলো</a>
-          </Link>
+          <Link href="/" className="text-3xl font-bold text-accent font-hind">প্রথম আলো</Link>
         </div>
         
         <div className="w-full md:w-auto">
@@ -131,46 +125,34 @@ export const Header = () => {
             
             <ul className="hidden lg:flex overflow-x-auto whitespace-nowrap">
               <li>
-                <Link href="/">
-                  <a className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">সর্বশেষ</a>
-                </Link>
+                <Link href="/" className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">সর্বশেষ</Link>
               </li>
               
               {categories.map(category => (
                 <li key={category.id}>
-                  <Link href={`/category/${category.slug}`}>
-                    <a className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">{category.name}</a>
-                  </Link>
+                  <Link href={`/category/${category.slug}`} className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">{category.name}</Link>
                 </li>
               ))}
               
               <li>
-                <Link href="/epaper">
-                  <a className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">ই-পেপার</a>
-                </Link>
+                <Link href="/epaper" className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">ই-পেপার</Link>
               </li>
             </ul>
             
             <div className={`mobile-menu ${mobileMenuOpen ? '' : 'hidden'} w-full mt-2 lg:hidden`}>
               <ul className="pb-2">
                 <li>
-                  <Link href="/">
-                    <a className="px-4 py-2 block hover:bg-light-gray">সর্বশেষ</a>
-                  </Link>
+                  <Link href="/" className="px-4 py-2 block hover:bg-light-gray">সর্বশেষ</Link>
                 </li>
                 
                 {categories.map(category => (
                   <li key={category.id}>
-                    <Link href={`/category/${category.slug}`}>
-                      <a className="px-4 py-2 block hover:bg-light-gray">{category.name}</a>
-                    </Link>
+                    <Link href={`/category/${category.slug}`} className="px-4 py-2 block hover:bg-light-gray">{category.name}</Link>
                   </li>
                 ))}
                 
                 <li>
-                  <Link href="/epaper">
-                    <a className="px-4 py-2 block hover:bg-light-gray">ই-পেপার</a>
-                  </Link>
+                  <Link href="/epaper" className="px-4 py-2 block hover:bg-light-gray">ই-পেপার</Link>
                 </li>
               </ul>
             </div>
