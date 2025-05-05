@@ -9,7 +9,7 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "dist" // Ensure this matches Vite’s output folder
       }
     }
   ],
@@ -17,14 +17,4 @@
     {
       "src": "/api/(.*)",
       "dest": "server/index.ts"
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|svg|ico|json))",
-      "dest": "/dist/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/dist/index.html"
-    }
-  ]
-}
+(post truncated)
