@@ -145,41 +145,66 @@ const ArticleDetail = () => {
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
           
-          <div className="flex justify-between items-center border-t border-b border-border py-4 mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between items-start md:items-center border-t border-b border-border py-4 mb-8 gap-4">
             <div className="text-sm">
-              <div className="font-medium">শেয়ার করুন:</div>
-              <div className="flex space-x-3 mt-1">
+              <div className="font-medium mb-2">শেয়ার করুন:</div>
+              <div className="flex flex-wrap gap-3">
                 <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`} 
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-blue-600 dark:text-blue-400 hover:opacity-80"
+                   className="flex items-center gap-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-200 px-3 py-2 rounded-full hover:opacity-80 transition"
                 >
                   <i className="fab fa-facebook-f"></i>
+                  <span className="text-xs">ফেসবুক</span>
                 </a>
                 <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(window.location.href)}`}
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-blue-400 dark:text-blue-300 hover:opacity-80"
+                   className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950 text-blue-400 dark:text-blue-300 px-3 py-2 rounded-full hover:opacity-80 transition"
                 >
                   <i className="fab fa-twitter"></i>
+                  <span className="text-xs">টুইটার</span>
                 </a>
                 <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title + ' ' + window.location.href)}`}
                    target="_blank" 
                    rel="noopener noreferrer"
-                   className="text-green-500 dark:text-green-400 hover:opacity-80"
+                   className="flex items-center gap-2 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300 px-3 py-2 rounded-full hover:opacity-80 transition"
                 >
                   <i className="fab fa-whatsapp"></i>
+                  <span className="text-xs">হোয়াটসঅ্যাপ</span>
                 </a>
-                <a href={`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(window.location.href)}`}
-                   className="text-gray-600 dark:text-gray-400 hover:opacity-80"
+                <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="flex items-center gap-2 bg-blue-200 dark:bg-blue-950 text-blue-700 dark:text-blue-300 px-3 py-2 rounded-full hover:opacity-80 transition"
+                >
+                  <i className="fab fa-linkedin-in"></i>
+                  <span className="text-xs">লিংকডইন</span>
+                </a>
+                <a href={`mailto:?subject=${encodeURIComponent(article.title)}&body=${encodeURIComponent(article.excerpt + '\n\n' + window.location.href)}`}
+                   className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-3 py-2 rounded-full hover:opacity-80 transition"
                 >
                   <i className="fas fa-envelope"></i>
+                  <span className="text-xs">ইমেইল</span>
                 </a>
               </div>
             </div>
             
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              <span>পাঠকসংখ্যা: {article.viewCount.toLocaleString('bn-BD')}</span>
+            <div className="flex flex-col md:items-end gap-1">
+              <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                <i className="fas fa-eye"></i>
+                <span>পাঠকসংখ্যা: {article.viewCount.toLocaleString('bn-BD')}</span>
+              </div>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  alert('লিংক কপি করা হয়েছে!');
+                }}
+                className="text-sm bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-1 rounded-full flex items-center gap-1 transition"
+              >
+                <i className="fas fa-link text-xs"></i>
+                <span>লিংক কপি করুন</span>
+              </button>
             </div>
           </div>
           

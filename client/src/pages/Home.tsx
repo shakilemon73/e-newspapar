@@ -6,6 +6,7 @@ import LatestNews from '@/components/LatestNews';
 import CategoryNewsSection from '@/components/CategoryNewsSection';
 import EPaperSection from '@/components/EPaperSection';
 import PopularNewsSection from '@/components/PopularNewsSection';
+import PersonalizedRecommendations from '@/components/PersonalizedRecommendations';
 
 const Home = () => {
   // Each category is handled by the CategoryNewsSection component
@@ -34,13 +35,16 @@ const Home = () => {
         {/* Featured Section with Slideshow */}
         <FeaturedSlideshow />
 
-        {/* Weather and Latest News Widgets */}
+        {/* Weather, Latest News and Personalized Recommendations Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Weather Widget */}
           <WeatherWidget />
           
           {/* Latest News */}
           <LatestNews />
+          
+          {/* Personalized Recommendations */}
+          <PersonalizedRecommendations />
         </div>
 
         {/* Category News Sections */}
