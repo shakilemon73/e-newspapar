@@ -10,6 +10,7 @@ import AuthPage from "@/pages/auth-page";
 import Profile from "@/pages/Profile";
 import SavedArticles from "@/pages/SavedArticles";
 import ReadingHistory from "@/pages/ReadingHistory";
+import AdminPage from "@/pages/AdminPage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/saved-articles" component={SavedArticles} />
       <Route path="/reading-history" component={ReadingHistory} />
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -59,7 +59,7 @@ const articleFormSchema = z.object({
   content: z.string().min(20, 'Content must be at least 20 characters'),
   excerpt: z.string().optional(),
   imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  categoryId: z.string().transform((val) => parseInt(val)),
+  categoryId: z.coerce.number(),
   isFeatured: z.boolean().default(false),
 });
 
@@ -106,7 +106,7 @@ export default function AdminPage() {
       content: '',
       excerpt: '',
       imageUrl: '',
-      categoryId: '',
+      categoryId: 0,
       isFeatured: false,
     },
   });
@@ -231,7 +231,7 @@ export default function AdminPage() {
       content: '',
       excerpt: '',
       imageUrl: '',
-      categoryId: '',
+      categoryId: 0,
       isFeatured: false,
     });
     setOpenFormDialog(true);
@@ -307,7 +307,7 @@ export default function AdminPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {articles && articles.map((article: any) => (
+              {articles && Array.isArray(articles) && articles.map((article: any) => (
                 <TableRow key={article.id}>
                   <TableCell>{article.id}</TableCell>
                   <TableCell className="font-medium">{article.title}</TableCell>
@@ -403,7 +403,7 @@ export default function AdminPage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories && categories.map((category: any) => (
+                        {categories && Array.isArray(categories) && categories.map((category: any) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
                           </SelectItem>
