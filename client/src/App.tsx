@@ -24,6 +24,7 @@ function Router() {
       <Route path="/search" component={Search} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/profile" component={Profile} />
+      <Route path="/saved-articles" component={SavedArticles} />
       <Route component={NotFound} />
     </Switch>
   );

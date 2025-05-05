@@ -3,6 +3,11 @@ import { useRoute, Link } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { useToast } from '@/hooks/use-toast';
+import supabase from '@/lib/supabase';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface Category {
   id: number;
@@ -25,11 +30,45 @@ interface Article {
 const ArticleDetail = () => {
   const [, params] = useRoute('/article/:slug');
   const articleSlug = params?.slug || '';
+  const { user } = useSupabaseAuth();
+  const { toast } = useToast();
   
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  
+  // Check if article is saved
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      if (!user || !article) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data, error } = await supabase
+          .from('saved_articles')
+          .select()
+          .eq('user_id', user.id)
+          .eq('article_id', article.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error checking if article is saved:', error);
+          return;
+        }
+        
+        setIsSaved(!!data);
+      } catch (err) {
+        console.error('Error checking if article is saved:', err);
+      }
+    };
+    
+    checkIfSaved();
+  }, [user, article]);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -195,16 +234,124 @@ const ArticleDetail = () => {
                 <i className="fas fa-eye"></i>
                 <span>পাঠকসংখ্যা: {article.viewCount.toLocaleString('bn-BD')}</span>
               </div>
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href);
-                  alert('লিংক কপি করা হয়েছে!');
-                }}
-                className="text-sm bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-1 rounded-full flex items-center gap-1 transition"
-              >
-                <i className="fas fa-link text-xs"></i>
-                <span>লিংক কপি করুন</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast({
+                      title: "লিংক কপি করা হয়েছে!",
+                      duration: 2000,
+                    });
+                  }}
+                  className="text-sm bg-muted hover:bg-muted/80 text-muted-foreground px-3 py-1 rounded-full flex items-center gap-1 transition"
+                >
+                  <i className="fas fa-link text-xs"></i>
+                  <span>লিংক কপি করুন</span>
+                </button>
+                
+                {user && (
+                  <Button
+                    variant={isSaved ? "secondary" : "outline"}
+                    size="sm"
+                    className="flex items-center gap-1"
+                    onClick={async () => {
+                      if (!user) {
+                        toast({
+                          title: "অনুগ্রহ করে লগইন করুন",
+                          description: "আর্টিকেল সংরক্ষণ করতে লগইন করুন",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      try {
+                        setIsSaving(true);
+                        const { data: { session } } = await supabase.auth.getSession();
+                        if (!session) {
+                          toast({
+                            title: "সেশন শেষ হয়ে গেছে",
+                            description: "অনুগ্রহ করে আবার লগইন করুন",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        
+                        const token = session.access_token;
+                        
+                        if (isSaved) {
+                          // Unsave article
+                          const response = await fetch(`/api/unsave-article/${article.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                              'Authorization': `Bearer ${token}`
+                            }
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error("আর্টিকেল থেকে বাদ দিতে সমস্যা হয়েছে");
+                          }
+                          
+                          setIsSaved(false);
+                          toast({
+                            title: "আর্টিকেল সংরক্ষিত তালিকা থেকে সরানো হয়েছে",
+                          });
+                        } else {
+                          // Save article
+                          const response = await fetch('/api/save-article', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ articleId: article.id })
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error("আর্টিকেল সংরক্ষণ করতে সমস্যা হয়েছে");
+                          }
+                          
+                          setIsSaved(true);
+                          toast({
+                            title: "আর্টিকেল সংরক্ষিত হয়েছে",
+                            description: "আপনি আপনার প্রোফাইলে এটি দেখতে পাবেন",
+                          });
+                        }
+                      } catch (err: any) {
+                        toast({
+                          title: "সমস্যা হয়েছে",
+                          description: err.message || "একটি ত্রুটি ঘটেছে",
+                          variant: "destructive",
+                        });
+                        console.error('Error saving/unsaving article:', err);
+                      } finally {
+                        setIsSaving(false);
+                      }
+                    }}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full mr-2"></div>
+                        <span>অপেক্ষা করুন...</span>
+                      </div>
+                    ) : (
+                      <>
+                        {isSaved ? (
+                          <>
+                            <BookmarkCheck className="h-4 w-4 mr-1" />
+                            <span>সংরক্ষিত</span>
+                          </>
+                        ) : (
+                          <>
+                            <Bookmark className="h-4 w-4 mr-1" />
+                            <span>সংরক্ষণ করুন</span>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
           
