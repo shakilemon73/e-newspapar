@@ -4,7 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
-import { formatDistanceToNow } from 'date-fns';
+import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { Loader2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -218,7 +218,7 @@ const HistoryCard = ({ item }: { item: ReadingHistoryItem }) => {
               </Link>
               <div className="flex items-center text-sm text-muted-foreground">
                 <Clock className="h-3 w-3 mr-1" />
-                <span>{getRelativeTimeInBengali(item.last_read_at)}</span>
+                <span>{getRelativeTimeInBengali(item.lastReadAt)}</span>
               </div>
             </div>
             <CardTitle className="text-xl">

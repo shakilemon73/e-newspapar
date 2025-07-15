@@ -5,7 +5,7 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
-import { formatDistanceToNow } from 'date-fns';
+import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -122,23 +122,7 @@ const SavedArticles = () => {
     }
   };
 
-  const getRelativeTimeInBengali = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      const distance = formatDistanceToNow(date, { addSuffix: true });
-      
-      // Convert English numbers to Bengali
-      return distance.replace(/\d+/g, (match) => {
-        const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-        return match.split('').map(digit => {
-          const num = parseInt(digit);
-          return isNaN(num) ? digit : bengaliNumerals[num];
-        }).join('');
-      });
-    } catch (e) {
-      return 'অজানা সময়';
-    }
-  };
+  // Using the centralized getRelativeTimeInBengali from utils
 
   if (loading) {
     return (

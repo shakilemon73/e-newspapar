@@ -5,7 +5,7 @@ import supabase from '@/lib/supabase';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Loader2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 
 interface Category {
   id: number;
@@ -111,12 +111,7 @@ export const PersonalizedRecommendations = () => {
   }, [user]);
 
   const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch (e) {
-      return 'Unknown date';
-    }
+    return getRelativeTimeInBengali(dateString);
   };
 
   const handleArticleClick = (article: Article) => {
