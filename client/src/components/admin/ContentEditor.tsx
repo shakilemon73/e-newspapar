@@ -48,12 +48,12 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
 const articleFormSchema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters'),
-  slug: z.string().min(5, 'Slug must be at least 5 characters'),
+  title: z.string().min(5, 'Title must be at least 5 characters').max(200, 'Title cannot exceed 200 characters'),
+  slug: z.string().min(5, 'Slug must be at least 5 characters').max(100, 'Slug cannot exceed 100 characters'),
   content: z.string().min(20, 'Content must be at least 20 characters'),
-  excerpt: z.string().optional(),
+  excerpt: z.string().max(500, 'Excerpt cannot exceed 500 characters').optional(),
   imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  categoryId: z.coerce.number(),
+  categoryId: z.coerce.number().min(1, 'Please select a category'),
   isFeatured: z.boolean().default(false),
   publishedAt: z.string().optional(),
   tags: z.array(z.string()).optional(),
@@ -83,9 +83,9 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       content: article?.content || '',
       excerpt: article?.excerpt || '',
       imageUrl: article?.imageUrl || '',
-      categoryId: article?.categoryId || 0,
+      categoryId: article?.categoryId || 1,
       isFeatured: article?.isFeatured || false,
-      publishedAt: article?.publishedAt || new Date().toISOString().split('T')[0],
+      publishedAt: article?.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       tags: article?.tags || [],
     },
   });
@@ -108,26 +108,40 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         : `/api/articles/${article.id}`;
       const method = mode === 'create' ? 'POST' : 'PUT';
       
-      const res = await apiRequest(method, endpoint, { ...data, tags });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${mode} article`);
+      // Prepare the data with tags
+      const payload = {
+        ...data,
+        tags: tags,
+        publishedAt: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString()
+      };
+      
+      console.log('Submitting article data:', payload);
+      
+      try {
+        const res = await apiRequest(method, endpoint, payload);
+        const result = await res.json();
+        return result;
+      } catch (error) {
+        console.error('Article submission error:', error);
+        throw error;
       }
-      return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: `Article ${mode === 'create' ? 'created' : 'updated'}`,
-        description: `The article has been ${mode === 'create' ? 'created' : 'updated'} successfully.`,
+        description: `The article "${data.title}" has been ${mode === 'create' ? 'created' : 'updated'} successfully.`,
       });
       onClose();
       form.reset();
+      setTags([]);
+      setImagePreview('');
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
     },
     onError: (error: Error) => {
+      console.error('Save mutation error:', error);
       toast({
         title: 'Error',
-        description: error.message,
+        description: error.message || `Failed to ${mode} article`,
         variant: 'destructive',
       });
     },

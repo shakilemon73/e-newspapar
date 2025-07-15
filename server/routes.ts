@@ -14,9 +14,11 @@ const articlesInsertSchema = z.object({
   slug: z.string().min(1),
   content: z.string().min(1),
   excerpt: z.string().optional(),
-  image_url: z.string().optional(),
-  category_id: z.number(),
-  is_featured: z.boolean().default(false)
+  imageUrl: z.string().optional(),
+  categoryId: z.number(),
+  isFeatured: z.boolean().default(false),
+  publishedAt: z.string().optional(),
+  tags: z.array(z.string()).optional()
 });
 
 const epapersInsertSchema = z.object({
@@ -652,8 +654,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(`${apiPrefix}/articles`, requireAdmin, async (req, res) => {
     try {
       const validatedData = articlesInsertSchema.parse(req.body);
-      const article = await storage.createArticle(validatedData);
-      return res.status(201).json(article);
+      
+      // Transform camelCase to snake_case for database
+      const dbData = {
+        title: validatedData.title,
+        slug: validatedData.slug,
+        content: validatedData.content,
+        excerpt: validatedData.excerpt,
+        image_url: validatedData.imageUrl,
+        category_id: validatedData.categoryId,
+        is_featured: validatedData.isFeatured,
+        published_at: validatedData.publishedAt || new Date().toISOString(),
+        tags: validatedData.tags || []
+      };
+      
+      const article = await storage.createArticle(dbData);
+      return res.status(201).json(transformArticle(article));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: error.errors });
@@ -676,8 +692,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Article not found' });
       }
       
-      const article = await storage.updateArticle(articleId, validatedData);
-      return res.json(article);
+      // Transform camelCase to snake_case for database
+      const dbData: any = {};
+      if (validatedData.title) dbData.title = validatedData.title;
+      if (validatedData.slug) dbData.slug = validatedData.slug;
+      if (validatedData.content) dbData.content = validatedData.content;
+      if (validatedData.excerpt !== undefined) dbData.excerpt = validatedData.excerpt;
+      if (validatedData.imageUrl !== undefined) dbData.image_url = validatedData.imageUrl;
+      if (validatedData.categoryId) dbData.category_id = validatedData.categoryId;
+      if (validatedData.isFeatured !== undefined) dbData.is_featured = validatedData.isFeatured;
+      if (validatedData.publishedAt) dbData.published_at = validatedData.publishedAt;
+      if (validatedData.tags) dbData.tags = validatedData.tags;
+      
+      const article = await storage.updateArticle(articleId, dbData);
+      return res.json(transformArticle(article));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ errors: error.errors });
