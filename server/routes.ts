@@ -2,6 +2,15 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { 
+  initializeAdvancedAlgorithms,
+  getPersonalizedRecommendations,
+  getPopularArticles,
+  getTrendingArticles,
+  trackUserInteraction,
+  advancedBengaliSearch,
+  getUserAnalytics
+} from './advanced-algorithms.js';
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -1640,6 +1649,331 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating article:', error);
       return res.status(500).json({ error: 'Failed to update article' });
+    }
+  });
+
+  // =============================================
+  // ADVANCED ALGORITHMS ENDPOINTS
+  // =============================================
+
+  // Initialize advanced algorithms
+  app.post(`${apiPrefix}/admin/init-algorithms`, requireAdmin, async (req, res) => {
+    try {
+      const result = await initializeAdvancedAlgorithms();
+      return res.json(result);
+    } catch (error) {
+      console.error('Error initializing advanced algorithms:', error);
+      return res.status(500).json({ error: 'Failed to initialize advanced algorithms' });
+    }
+  });
+
+  // Personalized recommendations
+  app.get(`${apiPrefix}/recommendations`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const recommendations = await getPersonalizedRecommendations(userId, limit);
+      return res.json(recommendations);
+    } catch (error) {
+      console.error('Error getting personalized recommendations:', error);
+      return res.status(500).json({ error: 'Failed to get recommendations' });
+    }
+  });
+
+  // Popular articles with advanced analytics
+  app.get(`${apiPrefix}/articles/popular-advanced`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const articles = await getPopularArticles(limit);
+      return res.json(articles);
+    } catch (error) {
+      console.error('Error getting popular articles:', error);
+      return res.status(500).json({ error: 'Failed to get popular articles' });
+    }
+  });
+
+  // Trending articles with advanced analytics
+  app.get(`${apiPrefix}/articles/trending-advanced`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const articles = await getTrendingArticles(limit);
+      return res.json(articles);
+    } catch (error) {
+      console.error('Error getting trending articles:', error);
+      return res.status(500).json({ error: 'Failed to get trending articles' });
+    }
+  });
+
+  // Track user interaction
+  app.post(`${apiPrefix}/interactions`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { articleId, interactionType, duration, metadata } = req.body;
+      
+      const result = await trackUserInteraction(userId, articleId, interactionType, duration, metadata);
+      return res.json(result);
+    } catch (error) {
+      console.error('Error tracking user interaction:', error);
+      return res.status(500).json({ error: 'Failed to track interaction' });
+    }
+  });
+
+  // Advanced Bengali search
+  app.get(`${apiPrefix}/search/advanced`, async (req, res) => {
+    try {
+      const { q: query, category, limit } = req.query;
+      
+      if (!query) {
+        return res.status(400).json({ error: 'Search query is required' });
+      }
+      
+      const results = await advancedBengaliSearch(
+        query as string,
+        category ? parseInt(category as string) : null,
+        limit ? parseInt(limit as string) : 20
+      );
+      
+      return res.json(results);
+    } catch (error) {
+      console.error('Error performing advanced search:', error);
+      return res.status(500).json({ error: 'Failed to perform search' });
+    }
+  });
+
+  // User analytics
+  app.get(`${apiPrefix}/user/analytics`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const analytics = await getUserAnalytics(userId);
+      return res.json(analytics);
+    } catch (error) {
+      console.error('Error getting user analytics:', error);
+      return res.status(500).json({ error: 'Failed to get user analytics' });
+    }
+  });
+
+  // User preferences endpoints
+  app.get(`${apiPrefix}/user/preferences`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      const { data: preferences } = await supabase
+        .from('user_preferences')
+        .select(`
+          category_id,
+          interest_score,
+          categories!inner(name, slug)
+        `)
+        .eq('user_id', userId)
+        .order('interest_score', { ascending: false });
+      
+      return res.json(preferences || []);
+    } catch (error) {
+      console.error('Error getting user preferences:', error);
+      return res.status(500).json({ error: 'Failed to get user preferences' });
+    }
+  });
+
+  app.post(`${apiPrefix}/user/preferences`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { categoryId, interestScore } = req.body;
+      
+      const { data, error } = await supabase
+        .from('user_preferences')
+        .upsert({
+          user_id: userId,
+          category_id: categoryId,
+          interest_score: interestScore,
+          updated_at: new Date().toISOString()
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error updating user preferences:', error);
+        return res.status(500).json({ error: 'Failed to update preferences' });
+      }
+      
+      return res.json(data);
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      return res.status(500).json({ error: 'Failed to update preferences' });
+    }
+  });
+
+  // User interaction history
+  app.get(`${apiPrefix}/user/interactions`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      const { data: interactions } = await supabase
+        .from('user_interactions')
+        .select(`
+          id,
+          article_id,
+          interaction_type,
+          interaction_duration,
+          created_at,
+          articles!inner(title, slug, image_url, categories!inner(name))
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      
+      return res.json(interactions || []);
+    } catch (error) {
+      console.error('Error getting user interactions:', error);
+      return res.status(500).json({ error: 'Failed to get user interactions' });
+    }
+  });
+
+  // User search history
+  app.get(`${apiPrefix}/user/search-history`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      const { data: searches } = await supabase
+        .from('user_search_history')
+        .select('*')
+        .eq('user_id', userId)
+        .order('search_timestamp', { ascending: false })
+        .limit(limit);
+      
+      return res.json(searches || []);
+    } catch (error) {
+      console.error('Error getting user search history:', error);
+      return res.status(500).json({ error: 'Failed to get search history' });
+    }
+  });
+
+  // Article analytics endpoints
+  app.get(`${apiPrefix}/articles/:id/analytics`, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleId = parseInt(id);
+      
+      const { data: analytics } = await supabase
+        .from('article_analytics')
+        .select('*')
+        .eq('article_id', articleId)
+        .single();
+      
+      return res.json(analytics || {
+        view_count: 0,
+        engagement_score: 0,
+        trending_score: 0,
+        share_count: 0,
+        like_count: 0,
+        comment_count: 0
+      });
+    } catch (error) {
+      console.error('Error getting article analytics:', error);
+      return res.status(500).json({ error: 'Failed to get article analytics' });
+    }
+  });
+
+  // Trending topics endpoint
+  app.get(`${apiPrefix}/trending-topics`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      const { data: topics } = await supabase
+        .from('trending_topics')
+        .select(`
+          id,
+          topic_name,
+          mention_count,
+          trending_score,
+          created_at,
+          categories(name, slug)
+        `)
+        .order('trending_score', { ascending: false })
+        .limit(limit);
+      
+      return res.json(topics || []);
+    } catch (error) {
+      console.error('Error getting trending topics:', error);
+      return res.status(500).json({ error: 'Failed to get trending topics' });
+    }
+  });
+
+  // Breaking news alerts (enhanced)
+  app.get(`${apiPrefix}/breaking-news-alerts`, async (req, res) => {
+    try {
+      const { data: alerts } = await supabase
+        .from('breaking_news_alerts')
+        .select(`
+          id,
+          title,
+          content,
+          priority,
+          is_active,
+          expires_at,
+          created_at,
+          categories(name, slug)
+        `)
+        .eq('is_active', true)
+        .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`)
+        .order('priority', { ascending: true })
+        .order('created_at', { ascending: false });
+      
+      return res.json(alerts || []);
+    } catch (error) {
+      console.error('Error getting breaking news alerts:', error);
+      return res.status(500).json({ error: 'Failed to get breaking news alerts' });
+    }
+  });
+
+  // User notification preferences
+  app.get(`${apiPrefix}/user/notifications`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      const { data: preferences } = await supabase
+        .from('user_notification_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      return res.json(preferences || {
+        breaking_news: true,
+        category_updates: true,
+        personalized_recommendations: true,
+        email_notifications: false,
+        push_notifications: true
+      });
+    } catch (error) {
+      console.error('Error getting notification preferences:', error);
+      return res.status(500).json({ error: 'Failed to get notification preferences' });
+    }
+  });
+
+  app.post(`${apiPrefix}/user/notifications`, requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const preferences = req.body;
+      
+      const { data, error } = await supabase
+        .from('user_notification_preferences')
+        .upsert({
+          user_id: userId,
+          ...preferences,
+          updated_at: new Date().toISOString()
+        })
+        .select();
+      
+      if (error) {
+        console.error('Error updating notification preferences:', error);
+        return res.status(500).json({ error: 'Failed to update preferences' });
+      }
+      
+      return res.json(data);
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+      return res.status(500).json({ error: 'Failed to update preferences' });
     }
   });
 

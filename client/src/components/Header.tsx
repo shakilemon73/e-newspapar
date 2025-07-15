@@ -140,6 +140,34 @@ export const Header = () => {
                       <span>পড়ার ইতিহাস</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/advanced-search" className="cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                        <path d="M11 6a5 5 0 1 1 5 5"></path>
+                      </svg>
+                      <span>উন্নত অনুসন্ধান</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/recommendations" className="cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                        <path d="m15 5 4 4"></path>
+                      </svg>
+                      <span>ব্যক্তিগত সুপারিশ</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/user-analytics" className="cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 3v18h18"></path>
+                        <path d="m19 9-5 5-4-4-3 3"></path>
+                      </svg>
+                      <span>আমার পরিসংখ্যান</span>
+                    </Link>
+                  </DropdownMenuItem>
                   {user.user_metadata?.role === 'admin' && (
                     <>
                       <DropdownMenuSeparator />
@@ -241,6 +269,12 @@ export const Header = () => {
               <li>
                 <Link href="/epaper" className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">ই-পেপার</Link>
               </li>
+              <li>
+                <Link href="/advanced-search" className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">উন্নত অনুসন্ধান</Link>
+              </li>
+              <li>
+                <Link href="/recommendations" className="px-3 py-3 block hover:text-accent font-medium transition border-b-2 border-transparent hover:border-accent">সুপারিশ</Link>
+              </li>
             </ul>
             
             <div className={`mobile-menu ${mobileMenuOpen ? '' : 'hidden'} w-full mt-2 lg:hidden`}>
@@ -257,6 +291,12 @@ export const Header = () => {
                 
                 <li>
                   <Link href="/epaper" className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">ই-পেপার</Link>
+                </li>
+                <li>
+                  <Link href="/advanced-search" className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">উন্নত অনুসন্ধান</Link>
+                </li>
+                <li>
+                  <Link href="/recommendations" className="px-4 py-2 block hover:bg-muted dark:hover:bg-muted">সুপারিশ</Link>
                 </li>
               </ul>
             </div>

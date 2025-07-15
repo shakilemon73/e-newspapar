@@ -32,6 +32,8 @@ import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
 import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
 import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
 import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
+import AdvancedAlgorithmsPage from "@/pages/admin/AdvancedAlgorithmsPage";
+import TrendingAnalyticsPage from "@/pages/admin/TrendingAnalyticsPage";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import EditorialPolicy from "@/pages/EditorialPolicy";
@@ -39,6 +41,9 @@ import Advertisement from "@/pages/Advertisement";
 import Archive from "@/pages/Archive";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import AdvancedSearch from "@/pages/AdvancedSearch";
+import PersonalizedRecommendations from "@/pages/PersonalizedRecommendations";
+import UserAnalytics from "@/pages/UserAnalytics";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -56,6 +61,9 @@ function Router() {
       <Route path="/audio-articles" component={AudioArticles} />
       <Route path="/epaper" component={EPaper} />
       <Route path="/search" component={Search} />
+      <Route path="/advanced-search" component={AdvancedSearch} />
+      <Route path="/recommendations" component={PersonalizedRecommendations} />
+      <Route path="/user-analytics" component={UserAnalytics} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/admin-login" component={AdminLogin} />
@@ -78,6 +86,8 @@ function Router() {
       <Route path="/admin/social-media" component={SocialMediaAdminPage} />
       <Route path="/admin/weather" component={WeatherAdminPage} />
       <Route path="/admin/settings" component={SettingsAdminPage} />
+      <Route path="/admin/advanced-algorithms" component={AdvancedAlgorithmsPage} />
+      <Route path="/admin/trending-analytics" component={TrendingAnalyticsPage} />
       
       {/* Footer Pages */}
       <Route path="/about" component={About} />

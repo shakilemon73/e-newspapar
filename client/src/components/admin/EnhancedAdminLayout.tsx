@@ -30,7 +30,9 @@ import {
   ChevronDown,
   ChevronRight,
   HelpCircle,
-  Zap
+  Zap,
+  Brain,
+  TrendingUp
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useTheme } from '@/components/ThemeProvider';
@@ -144,6 +146,29 @@ const navigation = [
     description: 'Detailed analytics and insights',
     color: 'text-indigo-600 dark:text-indigo-400',
     bgColor: 'bg-indigo-50 dark:bg-indigo-900/20'
+  },
+  {
+    name: 'Advanced Algorithms',
+    icon: Brain,
+    description: 'Machine learning and AI-powered features',
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+    children: [
+      { 
+        name: 'Algorithm Management', 
+        href: '/admin/advanced-algorithms', 
+        icon: Brain,
+        description: 'Configure and monitor AI algorithms',
+        shortcut: 'G'
+      },
+      { 
+        name: 'Trending Analytics', 
+        href: '/admin/trending-analytics', 
+        icon: TrendingUp,
+        description: 'Real-time trending content analysis',
+        shortcut: 'T'
+      },
+    ],
   },
   {
     name: 'Settings',

@@ -206,6 +206,22 @@ function ModernAdminDashboard() {
       href: '/admin/audio',
       color: 'bg-gradient-to-r from-pink-500 to-pink-600',
       hoverColor: 'hover:from-pink-600 hover:to-pink-700'
+    },
+    {
+      title: language === 'bn' ? 'উন্নত অ্যালগরিদম' : 'Advanced Algorithms',
+      description: language === 'bn' ? 'এআই এবং মেশিন লার্নিং সেটআপ' : 'AI and Machine Learning setup',
+      icon: Activity,
+      href: '/admin/advanced-algorithms',
+      color: 'bg-gradient-to-r from-cyan-500 to-cyan-600',
+      hoverColor: 'hover:from-cyan-600 hover:to-cyan-700'
+    },
+    {
+      title: language === 'bn' ? 'ট্রেন্ডিং এনালিটিক্স' : 'Trending Analytics',
+      description: language === 'bn' ? 'রিয়েল-টাইম ট্রেন্ডিং ড্যাশবোর্ড' : 'Real-time trending dashboard',
+      icon: TrendingUp,
+      href: '/admin/trending-analytics',
+      color: 'bg-gradient-to-r from-amber-500 to-amber-600',
+      hoverColor: 'hover:from-amber-600 hover:to-amber-700'
     }
   ];
 
