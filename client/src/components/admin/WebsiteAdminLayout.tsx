@@ -19,7 +19,9 @@ import {
   Video,
   Radio,
   Share2,
-  Cloud
+  Cloud,
+  FileImage,
+  HardDrive
 } from 'lucide-react';
 import { Link } from 'wouter';
 
@@ -45,6 +47,16 @@ const navigation = [
       { name: 'E-Papers', href: '/admin/epapers', icon: Newspaper },
       { name: 'Videos', href: '/admin/videos', icon: Video },
       { name: 'Audio Articles', href: '/admin/audio', icon: Radio },
+    ],
+  },
+  {
+    name: 'Storage',
+    icon: HardDrive,
+    children: [
+      { name: 'File Manager', href: '/admin/media', icon: FileImage },
+      { name: 'Images', href: '/admin/media?tab=images', icon: FileImage },
+      { name: 'Videos', href: '/admin/media?tab=videos', icon: Video },
+      { name: 'Audio', href: '/admin/media?tab=audio', icon: Radio },
     ],
   },
   {

@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
 }
 
-const supabase = createClient(
+export const supabase = createClient(
   supabaseUrl || '',
   supabaseAnonKey || ''
 );
