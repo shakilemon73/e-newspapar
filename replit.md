@@ -19,15 +19,15 @@ The frontend is built using React with TypeScript and follows a component-based 
 - **Build Tool**: Vite for fast development and optimized builds
 
 ### Backend Architecture
-The backend uses a Node.js/Express server with PostgreSQL database:
+The backend uses a Node.js/Express server with Supabase database:
 - **Runtime**: Node.js with Express.js framework
-- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
+- **Database**: Supabase PostgreSQL with Supabase client for database operations
 - **Authentication**: Supabase Auth for user management
 - **API Design**: RESTful API with proper error handling and middleware
 
 ### Database Design
-Uses PostgreSQL with the following main entities:
-- **Users**: Authentication and profile management via Supabase
+Uses Supabase PostgreSQL with the following main entities:
+- **Users**: Authentication and profile management via Supabase Auth
 - **Categories**: News categorization (politics, sports, international, etc.)
 - **Articles**: Main content with relationships to categories
 - **E-papers**: Digital newspaper editions
@@ -70,21 +70,21 @@ Uses PostgreSQL with the following main entities:
 ### Server-Side Flow
 1. Express server handles API requests
 2. Authentication middleware validates user sessions
-3. Drizzle ORM manages database operations
+3. Supabase client manages database operations
 4. Response data formatted and sent to client
 
 ### Database Operations
 1. User actions trigger API calls
 2. Server validates requests and permissions
-3. Database operations executed via Drizzle ORM
+3. Database operations executed via Supabase client
 4. Real-time updates for reading history and achievements
 
 ## External Dependencies
 
 ### Core Technologies
-- **Supabase**: Authentication and real-time features
-- **PostgreSQL**: Primary database (can be provided by various services)
-- **Drizzle ORM**: Type-safe database operations
+- **Supabase**: Database, authentication, and real-time features
+- **PostgreSQL**: Primary database via Supabase
+- **Supabase Client**: Type-safe database operations
 - **Tailwind CSS**: Utility-first styling framework
 - **shadcn/ui**: Pre-built component library
 
@@ -112,13 +112,25 @@ Uses PostgreSQL with the following main entities:
 - **Environment Variables**: Database connection and Supabase credentials
 
 ### Database Setup
-- Uses Drizzle migrations for schema management
-- Seed script for initial data (categories, achievements)
-- Connection pooling via Neon serverless for production
+- Uses Supabase database with direct table creation
+- Seed script for initial data (categories, articles, weather, etc.)
+- Connection managed via Supabase client
 
 ### Configuration Requirements
 - `VITE_SUPABASE_URL`: Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key  
-- `DATABASE_URL`: PostgreSQL connection string
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service role key for backend operations
+
+## Recent Changes (January 15, 2025)
+
+### Complete Migration to Supabase
+✓ Removed Neon database dependencies (@neondatabase/serverless)
+✓ Removed Drizzle ORM dependencies (drizzle-orm, drizzle-kit, drizzle-seed, drizzle-zod)
+✓ Updated database connection to use Supabase client directly
+✓ Migrated all storage functions to use Supabase PostgREST API
+✓ Updated validation schemas to use Zod instead of Drizzle schemas
+✓ Created new Supabase-compatible seed script
+✓ Updated environment configuration to use Supabase service role key
+✓ All API endpoints working correctly with Supabase database
 
 The application is designed to be scalable, maintainable, and provides a complete digital newspaper experience with modern web technologies and Bengali language support.

@@ -1,235 +1,346 @@
-import { db } from '@db';
-import { eq, desc, and, like, sql, asc, inArray } from 'drizzle-orm';
-import {
-  categories,
-  articles,
-  epapers,
-  weather,
-  breakingNews,
-  users
-} from '@shared/schema';
+import { supabase } from '@db';
 
 export const storage = {
   // Category operations
   async getAllCategories() {
-    return await db.query.categories.findMany({
-      orderBy: asc(categories.name)
-    });
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name');
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getCategoryBySlug(slug: string) {
-    return await db.query.categories.findFirst({
-      where: eq(categories.slug, slug)
-    });
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
-  async createCategory(data: typeof categories.$inferInsert) {
-    const [category] = await db.insert(categories).values(data).returning();
+  async createCategory(data: any) {
+    const { data: category, error } = await supabase
+      .from('categories')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
     return category;
   },
 
   // Article operations
   async getAllArticles(limit = 10, offset = 0) {
-    return await db.query.articles.findMany({
-      orderBy: desc(articles.publishedAt),
-      limit,
-      offset,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getFeaturedArticles(limit = 5) {
-    return await db.query.articles.findMany({
-      where: eq(articles.isFeatured, true),
-      orderBy: desc(articles.publishedAt),
-      limit,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('is_featured', true)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getLatestArticles(limit = 10) {
-    return await db.query.articles.findMany({
-      orderBy: desc(articles.publishedAt),
-      limit,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getPopularArticles(limit = 5) {
-    return await db.query.articles.findMany({
-      orderBy: desc(articles.viewCount),
-      limit,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .order('view_count', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getArticlesByCategory(categoryId: number, limit = 10, offset = 0) {
-    return await db.query.articles.findMany({
-      where: eq(articles.categoryId, categoryId),
-      orderBy: desc(articles.publishedAt),
-      limit,
-      offset,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('category_id', categoryId)
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getArticlesByCategorySlug(categorySlug: string, limit = 10, offset = 0) {
-    const category = await db.query.categories.findFirst({
-      where: eq(categories.slug, categorySlug)
-    });
+    // First get the category ID
+    const { data: category, error: categoryError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', categorySlug)
+      .single();
     
+    if (categoryError) throw categoryError;
     if (!category) return [];
     
-    return await db.query.articles.findMany({
-      where: eq(articles.categoryId, category.id),
-      orderBy: desc(articles.publishedAt),
-      limit,
-      offset,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('category_id', category.id)
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getArticleBySlug(slug: string) {
-    const article = await db.query.articles.findFirst({
-      where: eq(articles.slug, slug),
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('slug', slug)
+      .single();
     
-    if (article) {
+    if (error && error.code !== 'PGRST116') throw error;
+    
+    if (data) {
       // Increment view count
-      await db.update(articles)
-        .set({ viewCount: sql`${articles.viewCount} + 1` })
-        .where(eq(articles.id, article.id));
+      await supabase
+        .from('articles')
+        .update({ view_count: data.view_count + 1 })
+        .eq('id', data.id);
     }
     
-    return article;
+    return data;
   },
   
   async getArticleById(id: number) {
-    return await db.query.articles.findFirst({
-      where: eq(articles.id, id),
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
   async searchArticles(query: string, limit = 10, offset = 0) {
-    return await db.query.articles.findMany({
-      where: like(articles.title, `%${query}%`),
-      orderBy: desc(articles.publishedAt),
-      limit,
-      offset,
-      with: { category: true }
-    });
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        *,
+        category:categories(*)
+      `)
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
   },
 
-  async createArticle(data: typeof articles.$inferInsert) {
-    const [article] = await db.insert(articles).values(data).returning();
+  async createArticle(data: any) {
+    const { data: article, error } = await supabase
+      .from('articles')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
     return article;
   },
   
-  async updateArticle(id: number, data: Partial<typeof articles.$inferInsert>) {
-    const [article] = await db.update(articles)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(articles.id, id))
-      .returning();
+  async updateArticle(id: number, data: any) {
+    const { data: article, error } = await supabase
+      .from('articles')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
     return article;
   },
-  
+
   async deleteArticle(id: number) {
-    await db.delete(articles).where(eq(articles.id, id));
+    const { error } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
     return true;
   },
 
-  // EPaper operations
+  // E-paper operations
   async getAllEPapers(limit = 10, offset = 0) {
-    return await db.query.epapers.findMany({
-      orderBy: desc(epapers.publishDate),
-      limit,
-      offset
-    });
+    const { data, error } = await supabase
+      .from('epapers')
+      .select('*')
+      .order('publish_date', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getLatestEPaper() {
-    return await db.query.epapers.findFirst({
-      where: eq(epapers.isLatest, true)
-    });
+    const { data, error } = await supabase
+      .from('epapers')
+      .select('*')
+      .order('publish_date', { ascending: false })
+      .limit(1)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
-  async createEPaper(data: typeof epapers.$inferInsert) {
-    // If this is set as latest, unset any previous latest
-    if (data.isLatest) {
-      await db.update(epapers)
-        .set({ isLatest: false })
-        .where(eq(epapers.isLatest, true));
-    }
+  async createEPaper(data: any) {
+    const { data: epaper, error } = await supabase
+      .from('epapers')
+      .insert(data)
+      .select()
+      .single();
     
-    const [epaper] = await db.insert(epapers).values(data).returning();
+    if (error) throw error;
     return epaper;
   },
 
   // Weather operations
   async getAllWeather() {
-    return await db.query.weather.findMany({
-      orderBy: asc(weather.city)
-    });
+    const { data, error } = await supabase
+      .from('weather')
+      .select('*')
+      .order('city');
+    
+    if (error) throw error;
+    return data || [];
   },
 
   async getWeatherByCity(city: string) {
-    return await db.query.weather.findFirst({
-      where: eq(weather.city, city)
-    });
-  },
-
-  async updateWeather(city: string, data: Partial<typeof weather.$inferInsert>) {
-    const existingWeather = await db.query.weather.findFirst({
-      where: eq(weather.city, city)
-    });
+    const { data, error } = await supabase
+      .from('weather')
+      .select('*')
+      .eq('city', city)
+      .single();
     
-    if (existingWeather) {
-      const [updated] = await db.update(weather)
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(weather.id, existingWeather.id))
-        .returning();
-      return updated;
-    } else {
-      const [newWeather] = await db.insert(weather)
-        .values({ city, ...data as any, updatedAt: new Date() })
-        .returning();
-      return newWeather;
-    }
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
-  // Breaking News operations
+  async updateWeather(city: string, data: any) {
+    const { data: weather, error } = await supabase
+      .from('weather')
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq('city', city)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return weather;
+  },
+
+  // Breaking news operations
   async getActiveBreakingNews() {
-    return await db.query.breakingNews.findMany({
-      where: eq(breakingNews.isActive, true),
-      orderBy: desc(breakingNews.createdAt)
-    });
+    const { data, error } = await supabase
+      .from('breaking_news')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
   },
 
-  async createBreakingNews(data: typeof breakingNews.$inferInsert) {
-    const [news] = await db.insert(breakingNews).values(data).returning();
-    return news;
+  async createBreakingNews(data: any) {
+    const { data: breakingNews, error } = await supabase
+      .from('breaking_news')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return breakingNews;
   },
 
   // User operations
   async getUserByEmail(email: string) {
-    return await db.query.users.findFirst({
-      where: eq(users.username, email)
-    });
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
   async getUserById(id: number) {
-    return await db.query.users.findFirst({
-      where: eq(users.id, id)
-    });
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
   },
 
   async updateUserRole(id: number, role: string) {
-    const [user] = await db.update(users)
-      .set({ role })
-      .where(eq(users.id, id))
-      .returning();
-    return user;
+    const { data, error } = await supabase
+      .from('users')
+      .update({ role })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
   }
 };

@@ -1,16 +1,19 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import { createClient } from '@supabase/supabase-js';
 
-// This is the correct way neon config - DO NOT change this
-neonConfig.webSocketConstructor = ws;
-
-if (!process.env.DATABASE_URL) {
+if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+    "VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY must be set. Please check your environment variables.",
   );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+// Use service role key for backend operations if available, otherwise use anon key
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+// Create Supabase client for database operations
+export const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  supabaseKey
+);
+
+// Export for compatibility with existing code
+export const db = supabase;

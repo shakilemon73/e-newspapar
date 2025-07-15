@@ -1,8 +1,44 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { articlesInsertSchema, breakingNewsInsertSchema, categoriesInsertSchema, epapersInsertSchema, weatherInsertSchema } from "@shared/schema";
 import { z } from "zod";
+
+// Validation schemas for Supabase
+const categoriesInsertSchema = z.object({
+  name: z.string().min(1),
+  slug: z.string().min(1)
+});
+
+const articlesInsertSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  content: z.string().min(1),
+  excerpt: z.string().optional(),
+  image_url: z.string().optional(),
+  category_id: z.number(),
+  is_featured: z.boolean().default(false)
+});
+
+const epapersInsertSchema = z.object({
+  title: z.string().min(1),
+  publish_date: z.string(),
+  image_url: z.string().min(1),
+  pdf_url: z.string().min(1),
+  is_latest: z.boolean().default(false)
+});
+
+const weatherInsertSchema = z.object({
+  city: z.string().min(1),
+  temperature: z.number(),
+  condition: z.string().min(1),
+  icon: z.string().min(1),
+  forecast: z.any().optional()
+});
+
+const breakingNewsInsertSchema = z.object({
+  content: z.string().min(1),
+  is_active: z.boolean().default(true)
+});
 import supabase from './supabase';
 
 // Middleware to verify authentication
