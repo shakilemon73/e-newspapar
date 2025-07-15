@@ -57,6 +57,7 @@ export default function AdminPage() {
     );
   }
 
+  // Not authenticated - handled by useEffect redirect
   if (!user) {
     return null;
   }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
@@ -27,10 +27,11 @@ const AdminLogin = () => {
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // Redirect if already logged in as admin
-  if (user && isAdmin) {
-    setLocation('/admin-dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (user && isAdmin) {
+      setLocation('/admin-dashboard');
+    }
+  }, [user, isAdmin, setLocation]);
 
   const form = useForm<AdminLoginFormValues>({
     resolver: zodResolver(adminLoginSchema),

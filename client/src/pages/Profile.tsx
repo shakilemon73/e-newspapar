@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useLocation } from 'wouter';
@@ -39,10 +39,11 @@ const ProfilePage = () => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Redirect if not logged in
-  if (!loading && !user) {
-    setLocation('/auth');
-    return null;
-  }
+  useEffect(() => {
+    if (!loading && !user) {
+      setLocation('/auth');
+    }
+  }, [loading, user, setLocation]);
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),

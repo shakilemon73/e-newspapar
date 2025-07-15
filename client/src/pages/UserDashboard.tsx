@@ -62,7 +62,7 @@ export default function UserDashboard() {
     );
   }
 
-  // Not authenticated
+  // Not authenticated - handled by useEffect redirect
   if (!user) {
     return null;
   }
