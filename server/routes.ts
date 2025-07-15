@@ -68,6 +68,59 @@ const transformArticles = (articles: any[]) => {
   return articles.map(transformArticle);
 };
 
+// Transform EPaper data
+const transformEPaper = (epaper: any) => {
+  if (!epaper) return epaper;
+  
+  return {
+    id: epaper.id,
+    title: epaper.title,
+    publishDate: epaper.publish_date || new Date().toISOString().split('T')[0],
+    imageUrl: epaper.image_url || '',
+    pdfUrl: epaper.pdf_url || '',
+    isLatest: epaper.is_latest || false,
+    createdAt: epaper.created_at,
+    updatedAt: epaper.updated_at
+  };
+};
+
+// Transform Video data
+const transformVideo = (video: any) => {
+  if (!video) return video;
+  
+  return {
+    id: video.id,
+    title: video.title,
+    slug: video.slug,
+    description: video.description || '',
+    thumbnailUrl: video.thumbnail_url || '',
+    videoUrl: video.video_url || '',
+    duration: video.duration || '',
+    publishedAt: video.published_at || new Date().toISOString(),
+    viewCount: video.view_count || 0,
+    createdAt: video.created_at,
+    updatedAt: video.updated_at
+  };
+};
+
+// Transform Audio Article data
+const transformAudioArticle = (audio: any) => {
+  if (!audio) return audio;
+  
+  return {
+    id: audio.id,
+    title: audio.title,
+    slug: audio.slug,
+    excerpt: audio.excerpt || '',
+    imageUrl: audio.image_url || '',
+    audioUrl: audio.audio_url || '',
+    duration: audio.duration || '',
+    publishedAt: audio.published_at || new Date().toISOString(),
+    createdAt: audio.created_at,
+    updatedAt: audio.updated_at
+  };
+};
+
 // Middleware to verify authentication
 const requireAuth = async (req: Request, res: Response, next: Function) => {
   const authHeader = req.headers.authorization;
@@ -668,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parseInt(limit as string), 
         parseInt(offset as string)
       );
-      return res.json(epapers);
+      return res.json(epapers.map(transformEPaper));
     } catch (error) {
       console.error('Error fetching epapers:', error);
       return res.status(500).json({ error: 'Failed to fetch epapers' });
@@ -681,7 +734,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!epaper) {
         return res.status(404).json({ error: 'No e-paper found' });
       }
-      return res.json(epaper);
+      return res.json(transformEPaper(epaper));
     } catch (error) {
       console.error('Error fetching latest epaper:', error);
       return res.status(500).json({ error: 'Failed to fetch latest epaper' });
@@ -774,7 +827,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const offset = parseInt(req.query.offset as string) || 0;
       
       const videos = await storage.getVideoContent(limit, offset);
-      res.json(videos);
+      res.json(videos.map(transformVideo));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -789,7 +842,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Video not found' });
       }
       
-      res.json(video);
+      res.json(transformVideo(video));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -802,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const offset = parseInt(req.query.offset as string) || 0;
       
       const audioArticles = await storage.getAudioArticles(limit, offset);
-      res.json(audioArticles);
+      res.json(audioArticles.map(transformAudioArticle));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -817,7 +870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Audio article not found' });
       }
       
-      res.json(audioArticle);
+      res.json(transformAudioArticle(audioArticle));
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

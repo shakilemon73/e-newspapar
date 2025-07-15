@@ -43,10 +43,17 @@ export const bengaliDays = [
 
 export const formatBengaliDate = (date: Date | string | number): string => {
   try {
+    // Handle null, undefined, or empty string
+    if (!date || date === '' || date === 'null' || date === 'undefined') {
+      console.warn('Empty or null date received for formatting:', date);
+      return 'অজানা তারিখ';
+    }
+
     const dateObj = new Date(date);
     
     // Check if date is valid
     if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date received for formatting:', date);
       return 'অজানা তারিখ';
     }
     
@@ -104,6 +111,12 @@ export const getBengaliWeekday = (date: Date | string | number): string => {
 
 export const getRelativeTimeInBengali = (date: Date | string | number): string => {
   try {
+    // Handle null, undefined, or empty string
+    if (!date || date === '' || date === 'null' || date === 'undefined') {
+      console.warn('Empty or null date received:', date);
+      return 'অজানা সময়';
+    }
+
     const now = new Date();
     const dateObj = new Date(date);
     
