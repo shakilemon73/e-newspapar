@@ -17,11 +17,7 @@ import {
   Menu,
   X,
   LogOut,
-  User,
-  FolderOpen,
-  FileImage,
-  FileVideo,
-  FileAudio
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -65,16 +61,7 @@ const navigation = [
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     ],
   },
-  {
-    name: 'Media Management',
-    icon: FolderOpen,
-    children: [
-      { name: 'File Manager', href: '/admin/media', icon: FolderOpen },
-      { name: 'Images', href: '/admin/media?tab=images', icon: FileImage },
-      { name: 'Videos', href: '/admin/media?tab=videos', icon: FileVideo },
-      { name: 'Audio', href: '/admin/media?tab=audio', icon: FileAudio },
-    ],
-  },
+
   {
     name: 'Social & Weather',
     icon: Share2,
