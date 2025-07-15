@@ -63,34 +63,51 @@ export const getBengaliWeekday = (date: Date | string | number): string => {
 };
 
 export const getRelativeTimeInBengali = (date: Date | string | number): string => {
-  const now = new Date();
-  const dateObj = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) {
-    return `${toBengaliNumber(diffInSeconds)} সেকেন্ড আগে`;
+  try {
+    const now = new Date();
+    const dateObj = new Date(date);
+    
+    // Check if the date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.warn('Invalid date received:', date);
+      return 'অজানা সময়';
+    }
+    
+    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+    
+    // Handle future dates
+    if (diffInSeconds < 0) {
+      return 'ভবিষ্যতে';
+    }
+    
+    if (diffInSeconds < 60) {
+      return `${toBengaliNumber(diffInSeconds)} সেকেন্ড আগে`;
+    }
+    
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${toBengaliNumber(diffInMinutes)} মিনিট আগে`;
+    }
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${toBengaliNumber(diffInHours)} ঘন্টা আগে`;
+    }
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) {
+      return `${toBengaliNumber(diffInDays)} দিন আগে`;
+    }
+    
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `${toBengaliNumber(diffInMonths)} মাস আগে`;
+    }
+    
+    const diffInYears = Math.floor(diffInMonths / 12);
+    return `${toBengaliNumber(diffInYears)} বছর আগে`;
+  } catch (error) {
+    console.error('Error in getRelativeTimeInBengali:', error, 'Date:', date);
+    return 'অজানা সময়';
   }
-  
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) {
-    return `${toBengaliNumber(diffInMinutes)} মিনিট আগে`;
-  }
-  
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) {
-    return `${toBengaliNumber(diffInHours)} ঘন্টা আগে`;
-  }
-  
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) {
-    return `${toBengaliNumber(diffInDays)} দিন আগে`;
-  }
-  
-  const diffInMonths = Math.floor(diffInDays / 30);
-  if (diffInMonths < 12) {
-    return `${toBengaliNumber(diffInMonths)} মাস আগে`;
-  }
-  
-  const diffInYears = Math.floor(diffInMonths / 12);
-  return `${toBengaliNumber(diffInYears)} বছর আগে`;
 };

@@ -39,7 +39,34 @@ const breakingNewsInsertSchema = z.object({
   content: z.string().min(1),
   is_active: z.boolean().default(true)
 });
+
 import supabase from './supabase';
+
+// Data transformation functions
+const transformArticle = (article: any) => {
+  if (!article) return article;
+  
+  return {
+    id: article.id,
+    title: article.title,
+    slug: article.slug,
+    excerpt: article.excerpt || '',
+    content: article.content,
+    imageUrl: article.image_url || '',
+    publishedAt: article.published_at || new Date().toISOString(),
+    category: article.category,
+    categoryId: article.category_id,
+    isFeatured: article.is_featured || false,
+    viewCount: article.view_count || 0,
+    createdAt: article.created_at,
+    updatedAt: article.updated_at
+  };
+};
+
+const transformArticles = (articles: any[]) => {
+  if (!Array.isArray(articles)) return articles;
+  return articles.map(transformArticle);
+};
 
 // Middleware to verify authentication
 const requireAuth = async (req: Request, res: Response, next: Function) => {
@@ -174,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract the articles from the joined data
       const articles = data.map(item => item.articles);
       
-      return res.json(articles);
+      return res.json(transformArticles(articles));
     } catch (error: any) {
       console.error('Error fetching saved articles:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -323,9 +350,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Extract the articles and add read information
       const history = data.map(item => ({
-        ...item.articles,
-        last_read_at: item.last_read_at,
-        read_count: item.read_count
+        ...transformArticle(item.articles),
+        lastReadAt: item.last_read_at,
+        readCount: item.read_count
       }));
       
       return res.json(history);
@@ -358,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If no reading history, return some popular articles
       if (!historyData || historyData.length === 0) {
         const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
-        return res.json(popularArticles);
+        return res.json(transformArticles(popularArticles));
       }
       
       // Extract category IDs from reading history and count occurrences
@@ -443,7 +470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Limit to the requested number
       recommendedArticles = recommendedArticles.slice(0, parseInt(limit as string));
       
-      return res.json(recommendedArticles);
+      return res.json(transformArticles(recommendedArticles));
     } catch (error: any) {
       console.error('Error fetching personalized recommendations:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -496,7 +523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (featured === 'true') {
         const articles = await storage.getFeaturedArticles(parseInt(limit as string));
-        return res.json(articles);
+        return res.json(transformArticles(articles));
       }
       
       if (category) {
@@ -505,14 +532,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parseInt(limit as string), 
           parseInt(offset as string)
         );
-        return res.json(articles);
+        return res.json(transformArticles(articles));
       }
       
       const articles = await storage.getAllArticles(
         parseInt(limit as string), 
         parseInt(offset as string)
       );
-      return res.json(articles);
+      return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error fetching articles:', error);
       return res.status(500).json({ error: 'Failed to fetch articles' });
@@ -523,7 +550,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { limit = '10' } = req.query;
       const articles = await storage.getLatestArticles(parseInt(limit as string));
-      return res.json(articles);
+      return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error fetching latest articles:', error);
       return res.status(500).json({ error: 'Failed to fetch latest articles' });
@@ -534,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { limit = '5' } = req.query;
       const articles = await storage.getPopularArticles(parseInt(limit as string));
-      return res.json(articles);
+      return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error fetching popular articles:', error);
       return res.status(500).json({ error: 'Failed to fetch popular articles' });
@@ -553,7 +580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parseInt(limit as string), 
         parseInt(offset as string)
       );
-      return res.json(articles);
+      return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error searching articles:', error);
       return res.status(500).json({ error: 'Failed to search articles' });
@@ -567,7 +594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!article) {
         return res.status(404).json({ error: 'Article not found' });
       }
-      return res.json(article);
+      return res.json(transformArticle(article));
     } catch (error) {
       console.error('Error fetching article:', error);
       return res.status(500).json({ error: 'Failed to fetch article' });
