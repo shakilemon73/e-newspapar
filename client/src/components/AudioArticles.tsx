@@ -8,10 +8,10 @@ interface AudioArticle {
   title: string;
   slug: string;
   excerpt: string;
-  imageUrl: string;
-  audioUrl: string;
+  image_url: string;
+  audio_url: string;
   duration: string;
-  publishedAt: string;
+  published_at: string;
 }
 
 export const AudioArticles = () => {
@@ -31,53 +31,19 @@ export const AudioArticles = () => {
       try {
         setIsLoading(true);
         
-        // In a real implementation, this would be an API call
-        // For demonstration, we'll create some sample data
-        const sampleArticles: AudioArticle[] = [
-          {
-            id: 1,
-            title: 'বাংলাদেশের জনপ্রিয় কিছু লোকগল্প',
-            slug: 'popular-bangladeshi-folk-tales',
-            excerpt: 'বাংলাদেশের বিভিন্ন অঞ্চলের জনপ্রিয় লোকগল্প সম্পর্কে জানুন।',
-            imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=300&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY0MzM5MDY4OQ&ixlib=rb-1.2.1&q=80&w=300',
-            audioUrl: '/assets/audio/sample1.mp3',
-            duration: '12:45',
-            publishedAt: new Date().toISOString()
-          },
-          {
-            id: 2,
-            title: 'বাংলাদেশের অজানা ইতিহাস: স্বাধীনতা যুদ্ধের অজানা গল্প',
-            slug: 'unknown-stories-liberation-war',
-            excerpt: 'এই অডিও আর্টিকেলে স্বাধীনতা যুদ্ধের কিছু অজানা গল্প নিয়ে আলোচনা করা হয়েছে।',
-            imageUrl: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=300&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY0MzM5MDcwMA&ixlib=rb-1.2.1&q=80&w=300',
-            audioUrl: '/assets/audio/sample2.mp3',
-            duration: '15:20',
-            publishedAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-          },
-          {
-            id: 3,
-            title: 'বাংলা সাহিত্যের সেরা উপন্যাসঃ একটি পর্যালোচনা',
-            slug: 'best-bengali-literature-review',
-            excerpt: 'বাংলা সাহিত্যের সেরা কিছু উপন্যাস এবং তাদের লেখকদের সম্পর্কে আলোচনা।',
-            imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=300&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY0MzM5MDcxMA&ixlib=rb-1.2.1&q=80&w=300',
-            audioUrl: '/assets/audio/sample3.mp3',
-            duration: '18:10',
-            publishedAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
-          },
-          {
-            id: 4,
-            title: 'জলবায়ু পরিবর্তন এবং বাংলাদেশের ভবিষ্যৎ',
-            slug: 'climate-change-and-bangladesh-future',
-            excerpt: 'জলবায়ু পরিবর্তনের ফলে বাংলাদেশের ওপর যে প্রভাব পড়বে তা নিয়ে বিস্তারিত আলোচনা।',
-            imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=300&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY0MzM5MDcyMA&ixlib=rb-1.2.1&q=80&w=300',
-            audioUrl: '/assets/audio/sample4.mp3',
-            duration: '21:05',
-            publishedAt: new Date(Date.now() - 259200000).toISOString() // 3 days ago
-          }
-        ];
+        // Fetch audio articles from Supabase API
+        const response = await fetch('/api/audio-articles?limit=4');
+        if (!response.ok) {
+          throw new Error('Failed to fetch audio articles');
+        }
         
-        setArticles(sampleArticles);
-        setCurrentArticle(sampleArticles[0]);
+        const data: AudioArticle[] = await response.json();
+        
+        if (data && data.length > 0) {
+          setArticles(data);
+          setCurrentArticle(data[0]);
+        }
+        
         setError(null);
       } catch (err) {
         setError('অডিও আর্টিকেল লোড করতে সমস্যা হয়েছে');
@@ -94,7 +60,7 @@ export const AudioArticles = () => {
     // Update the audio element when the current article changes
     if (audioRef.current && currentArticle) {
       audioRef.current.pause();
-      audioRef.current.src = currentArticle.audioUrl;
+      audioRef.current.src = currentArticle.audio_url;
       audioRef.current.load();
       if (isPlaying) {
         audioRef.current.play()
@@ -217,7 +183,7 @@ export const AudioArticles = () => {
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="w-full md:w-1/3">
             <img 
-              src={currentArticle.imageUrl} 
+              src={currentArticle.image_url} 
               alt={currentArticle.title} 
               className="w-full h-auto rounded"
             />
@@ -232,7 +198,7 @@ export const AudioArticles = () => {
               {currentArticle.excerpt}
             </p>
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              {getRelativeTimeInBengali(currentArticle.publishedAt)}
+              {getRelativeTimeInBengali(currentArticle.published_at)}
             </div>
           </div>
         </div>
@@ -315,7 +281,7 @@ export const AudioArticles = () => {
           <div key={article.id} className="flex gap-3 hover:bg-muted/30 p-2 rounded transition cursor-pointer" onClick={() => playArticle(article)}>
             <div className="flex-shrink-0">
               <img 
-                src={article.imageUrl} 
+                src={article.image_url} 
                 alt={article.title} 
                 className="w-16 h-16 object-cover rounded"
               />
@@ -324,7 +290,7 @@ export const AudioArticles = () => {
               <h5 className="font-medium mb-1 text-sm font-hind">{article.title}</h5>
               <div className="flex text-xs text-gray-500 dark:text-gray-400">
                 <span className="mr-2">{article.duration}</span>
-                <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+                <span>{getRelativeTimeInBengali(article.published_at)}</span>
               </div>
             </div>
           </div>

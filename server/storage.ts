@@ -342,5 +342,138 @@ export const storage = {
     
     if (error) throw error;
     return data;
+  },
+
+  // Video Content operations
+  async getVideoContent(limit = 10, offset = 0) {
+    const { data, error } = await supabase
+      .from('video_content')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getVideoBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('video_content')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  async createVideoContent(data: any) {
+    const { data: video, error } = await supabase
+      .from('video_content')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return video;
+  },
+
+  async updateVideoContent(id: number, data: any) {
+    const { data: video, error } = await supabase
+      .from('video_content')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return video;
+  },
+
+  // Audio Articles operations
+  async getAudioArticles(limit = 10, offset = 0) {
+    const { data, error } = await supabase
+      .from('audio_articles')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .range(offset, offset + limit - 1);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async getAudioArticleBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('audio_articles')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  },
+
+  async createAudioArticle(data: any) {
+    const { data: audio, error } = await supabase
+      .from('audio_articles')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return audio;
+  },
+
+  async updateAudioArticle(id: number, data: any) {
+    const { data: audio, error } = await supabase
+      .from('audio_articles')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return audio;
+  },
+
+  // Social Media Posts operations
+  async getSocialMediaPosts(limit = 10, platforms?: string[]) {
+    let query = supabase
+      .from('social_media_posts')
+      .select('*');
+    
+    if (platforms && platforms.length > 0) {
+      query = query.in('platform', platforms);
+    }
+    
+    const { data, error } = await query
+      .order('published_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createSocialMediaPost(data: any) {
+    const { data: post, error } = await supabase
+      .from('social_media_posts')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return post;
+  },
+
+  async updateSocialMediaPost(id: number, data: any) {
+    const { data: post, error } = await supabase
+      .from('social_media_posts')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return post;
   }
 };

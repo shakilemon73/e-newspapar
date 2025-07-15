@@ -740,6 +740,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Video Content routes
+  app.get(`${apiPrefix}/videos`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      const videos = await storage.getVideoContent(limit, offset);
+      res.json(videos);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get(`${apiPrefix}/videos/:slug`, async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const video = await storage.getVideoBySlug(slug);
+      
+      if (!video) {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+      
+      res.json(video);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Audio Articles routes
+  app.get(`${apiPrefix}/audio-articles`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      const audioArticles = await storage.getAudioArticles(limit, offset);
+      res.json(audioArticles);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get(`${apiPrefix}/audio-articles/:slug`, async (req, res) => {
+    try {
+      const { slug } = req.params;
+      const audioArticle = await storage.getAudioArticleBySlug(slug);
+      
+      if (!audioArticle) {
+        return res.status(404).json({ message: 'Audio article not found' });
+      }
+      
+      res.json(audioArticle);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Social Media Posts routes
+  app.get(`${apiPrefix}/social-media`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const platforms = req.query.platforms ? (req.query.platforms as string).split(',') : undefined;
+      
+      const posts = await storage.getSocialMediaPosts(limit, platforms);
+      res.json(posts);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

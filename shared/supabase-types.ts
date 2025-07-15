@@ -74,6 +74,44 @@ export interface Achievement {
   created_at?: string;
 }
 
+export interface VideoContent {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  thumbnail_url: string;
+  video_url: string;
+  duration: string;
+  view_count: number;
+  published_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface AudioArticle {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  image_url: string;
+  audio_url: string;
+  duration: string;
+  published_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SocialMediaPost {
+  id: number;
+  platform: string;
+  content: string;
+  embed_code: string;
+  post_url?: string;
+  published_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface UserAchievement {
   id: number;
   user_id: number;
@@ -92,6 +130,9 @@ export type BreakingNewsInsert = Omit<BreakingNews, 'id' | 'created_at' | 'updat
 export type UserInsert = Omit<User, 'id' | 'created_at' | 'updated_at'>;
 export type AchievementInsert = Omit<Achievement, 'id' | 'created_at'>;
 export type UserAchievementInsert = Omit<UserAchievement, 'id' | 'user' | 'achievement'>;
+export type VideoContentInsert = Omit<VideoContent, 'id' | 'created_at' | 'updated_at'>;
+export type AudioArticleInsert = Omit<AudioArticle, 'id' | 'created_at' | 'updated_at'>;
+export type SocialMediaPostInsert = Omit<SocialMediaPost, 'id' | 'created_at' | 'updated_at'>;
 
 // Update types (for updating existing records)
 export type CategoryUpdate = Partial<CategoryInsert>;
@@ -101,3 +142,6 @@ export type WeatherUpdate = Partial<WeatherInsert>;
 export type BreakingNewsUpdate = Partial<BreakingNewsInsert>;
 export type UserUpdate = Partial<UserInsert>;
 export type AchievementUpdate = Partial<AchievementInsert>;
+export type VideoContentUpdate = Partial<VideoContentInsert>;
+export type AudioArticleUpdate = Partial<AudioArticleInsert>;
+export type SocialMediaPostUpdate = Partial<SocialMediaPostInsert>;

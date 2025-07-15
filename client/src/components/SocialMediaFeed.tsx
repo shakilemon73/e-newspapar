@@ -3,11 +3,11 @@ import { useState, useEffect } from 'react';
 type SocialMediaPlatform = 'facebook' | 'twitter' | 'instagram';
 
 interface SocialMediaPost {
-  id: string;
-  platform: SocialMediaPlatform;
+  id: number;
+  platform: string;
   content: string;
-  embedCode: string;
-  publishedAt: string;
+  embed_code: string;
+  published_at: string;
 }
 
 export const SocialMediaFeed = () => {
@@ -21,55 +21,17 @@ export const SocialMediaFeed = () => {
       try {
         setIsLoading(true);
         
-        // In a real implementation, this would be an API call to fetch social media posts
-        // For demonstration, we'll create some sample data
-        const samplePosts: SocialMediaPost[] = [
-          {
-            id: 'fb1',
-            platform: 'facebook',
-            content: 'আজকের সর্বশেষ খবর জানতে আমাদের ফেসবুক পেজ ফলো করুন!',
-            embedCode: `<iframe src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fprothomalo%2Fposts%2F10160323778941192&width=500" width="100%" height="300" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`,
-            publishedAt: new Date().toISOString()
-          },
-          {
-            id: 'fb2',
-            platform: 'facebook',
-            content: 'এই সপ্তাহের সেরা ছবিগুলি দেখুন',
-            embedCode: `<iframe src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fprothomalo%2Fposts%2F10160323778941192&width=500" width="100%" height="300" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`,
-            publishedAt: new Date(Date.now() - 86400000).toISOString() // 1 day ago
-          },
-          {
-            id: 'tw1',
-            platform: 'twitter',
-            content: 'সর্বশেষ আপডেটের জন্য ফলো করুন আমাদের টুইটার',
-            embedCode: `<blockquote class="twitter-tweet"><p lang="bn" dir="ltr">আমাদের গল্প • এমন এক মধ্যবিত্ত পরিবারের গল্প, যে পরিবারের সব সদস্যরা দেশের অর্থনীতির জন্য প্রতিদিন জীবন দিচ্ছেন কিন্তু অর্থনীতির চাকা সচল রাখতে ক্ষমতাধরদের কাছে তাঁদের কোনো মূল্যই নেই। <a href="https://twitter.com/hashtag/%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%A5%E0%A6%AE_%E0%A6%86%E0%A6%B2%E0%A7%8B?src=hash&amp;ref_src=twsrc%5Etfw">#প্রথম_আলো</a><a href="https://t.co/lZhrbCrLJn">https://t.co/lZhrbCrLJn</a></p>&mdash; Prothom Alo (@ProthomAlo) <a href="https://twitter.com/ProthomAlo/status/1650022057500028928?ref_src=twsrc%5Etfw">April 23, 2023</a></blockquote>`,
-            publishedAt: new Date(Date.now() - 172800000).toISOString() // 2 days ago
-          },
-          {
-            id: 'tw2',
-            platform: 'twitter',
-            content: 'আজকের মূল সংবাদ',
-            embedCode: `<blockquote class="twitter-tweet"><p lang="bn" dir="ltr">আমাদের গল্প • এমন এক মধ্যবিত্ত পরিবারের গল্প, যে পরিবারের সব সদস্যরা দেশের অর্থনীতির জন্য প্রতিদিন জীবন দিচ্ছেন কিন্তু অর্থনীতির চাকা সচল রাখতে ক্ষমতাধরদের কাছে তাঁদের কোনো মূল্যই নেই। <a href="https://twitter.com/hashtag/%E0%A6%AA%E0%A7%8D%E0%A6%B0%E0%A6%A5%E0%A6%AE_%E0%A6%86%E0%A6%B2%E0%A7%8B?src=hash&amp;ref_src=twsrc%5Etfw">#প্রথম_আলো</a><a href="https://t.co/lZhrbCrLJn">https://t.co/lZhrbCrLJn</a></p>&mdash; Prothom Alo (@ProthomAlo) <a href="https://twitter.com/ProthomAlo/status/1650022057500028928?ref_src=twsrc%5Etfw">April 23, 2023</a></blockquote>`,
-            publishedAt: new Date(Date.now() - 259200000).toISOString() // 3 days ago
-          },
-          {
-            id: 'in1',
-            platform: 'instagram',
-            content: 'আমাদের ইনস্টাগ্রামে আরও সুন্দর ছবি দেখুন',
-            embedCode: `<blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/Cy0BxBWr39Q/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>`,
-            publishedAt: new Date(Date.now() - 345600000).toISOString() // 4 days ago
-          },
-          {
-            id: 'in2',
-            platform: 'instagram',
-            content: 'সুন্দর বাংলাদেশ ক্যাম্পেইন',
-            embedCode: `<blockquote class="instagram-media" data-instgrm-permalink="https://www.instagram.com/p/Cy0BxBWr39Q/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14"></blockquote>`,
-            publishedAt: new Date(Date.now() - 432000000).toISOString() // 5 days ago
-          }
-        ];
+        // Fetch social media posts from Supabase API
+        const platformParam = selectedPlatform ? `?platforms=${selectedPlatform}` : '';
+        const response = await fetch(`/api/social-media${platformParam}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch social media posts');
+        }
         
-        // Filter by selected platform
-        const filteredPosts = samplePosts.filter(post => post.platform === selectedPlatform);
+        const data: SocialMediaPost[] = await response.json();
+        
+        // Filter by selected platform (additional client-side filtering)
+        const filteredPosts = data.filter(post => post.platform === selectedPlatform);
         
         setPosts(filteredPosts);
         setError(null);
@@ -130,7 +92,7 @@ export const SocialMediaFeed = () => {
           <div key={post.id} className="border border-border rounded overflow-hidden">
             <div 
               className="embedded-social-post" 
-              dangerouslySetInnerHTML={{ __html: post.embedCode }}
+              dangerouslySetInnerHTML={{ __html: post.embed_code }}
             />
           </div>
         ))}

@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { VideoContent as VideoContentType } from '@/../../shared/supabase-types';
 
 interface VideoItem {
   id: number;
   title: string;
   slug: string;
   description: string;
-  thumbnailUrl: string;
-  videoUrl: string; // YouTube or other embedded video URL
+  thumbnail_url: string;
+  video_url: string;
   duration: string;
-  publishedAt: string;
-  views: number;
+  published_at: string;
+  view_count: number;
 }
 
 export const VideoContent = () => {
@@ -25,71 +26,35 @@ export const VideoContent = () => {
       try {
         setIsLoading(true);
         
-        // In a real implementation, this would be an API call to fetch videos
-        // For demonstration, we'll create some sample data
-        const sampleVideos: VideoItem[] = [
-          {
-            id: 1,
-            title: 'কীভাবে বর্ষা মৌসুমে স্বাস্থ্য ভালো রাখবেন?',
-            slug: 'health-tips-for-monsoon',
-            description: 'বর্ষা মৌসুমে আমাদের শরীর বিভিন্ন রোগে আক্রান্ত হতে পারে। এই ভিডিওতে জানুন কীভাবে এই সময়ে আপনার স্বাস্থ্যের যত্ন নিবেন।',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            duration: '8:25',
-            publishedAt: new Date().toISOString(),
-            views: 1245
-          },
-          {
-            id: 2,
-            title: 'বাংলাদেশের অর্থনীতি: সমস্যা ও সমাধান',
-            slug: 'bangladesh-economy-problems-solutions',
-            description: 'এই ভিডিওতে বাংলাদেশের অর্থনৈতিক চ্যালেঞ্জ এবং সম্ভাব্য সমাধান নিয়ে আলোচনা করা হয়েছে।',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            duration: '12:10',
-            publishedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-            views: 3456
-          },
-          {
-            id: 3,
-            title: 'ঢাকা শহরের যানজট সমস্যা: একটি বিশ্লেষণ',
-            slug: 'dhaka-traffic-analysis',
-            description: 'ঢাকা বিশ্বের সবচেয়ে যানজটপূর্ণ শহরগুলোর মধ্যে একটি। এই ভিডিওতে এর কারণ ও সমাধান নিয়ে আলোচনা করা হয়েছে।',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            duration: '15:30',
-            publishedAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-            views: 5432
-          },
-          {
-            id: 4,
-            title: 'বাংলাদেশের পর্যটন: অনাবিষ্কৃত স্থানসমূহ',
-            slug: 'bangladesh-tourism-unexplored-places',
-            description: 'বাংলাদেশের এমন কিছু অনাবিষ্কৃত পর্যটন স্পট যা আপনি হয়তো জানেন না।',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            duration: '9:45',
-            publishedAt: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-            views: 2890
-          },
-          {
-            id: 5,
-            title: 'বাংলাদেশের সাম্প্রতিক ক্রিকেট: একটি পর্যালোচনা',
-            slug: 'bangladesh-cricket-review',
-            description: 'বাংলাদেশ ক্রিকেট দলের সাম্প্রতিক পারফরম্যান্স এবং ভবিষ্যৎ সম্ভাবনা নিয়ে আলোচনা।',
-            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
-            videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-            duration: '11:20',
-            publishedAt: new Date(Date.now() - 345600000).toISOString(), // 4 days ago
-            views: 7890
-          }
-        ];
+        // Fetch videos from Supabase API
+        const response = await fetch('/api/videos?limit=5');
+        if (!response.ok) {
+          throw new Error('Failed to fetch videos');
+        }
         
-        // Set the first video as featured
-        setFeaturedVideo(sampleVideos[0]);
+        const data: any[] = await response.json();
         
-        // Rest of the videos
-        setVideos(sampleVideos.slice(1));
+        if (data && data.length > 0) {
+          // Convert to VideoItem format for component compatibility
+          const videoItems: VideoItem[] = data.map(video => ({
+            id: video.id,
+            title: video.title,
+            slug: video.slug,
+            description: video.description || '',
+            thumbnail_url: video.thumbnail_url || 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+            video_url: video.video_url,
+            duration: video.duration || '0:00',
+            published_at: video.published_at,
+            view_count: video.view_count || 0
+          }));
+          
+          // Set the first video as featured
+          setFeaturedVideo(videoItems[0]);
+          
+          // Rest of the videos
+          setVideos(videoItems.slice(1));
+        }
+        
         setError(null);
       } catch (err) {
         setError('ভিডিও লোড করতে সমস্যা হয়েছে');
@@ -152,7 +117,7 @@ export const VideoContent = () => {
         <div className="relative pb-16:9 h-0 overflow-hidden rounded mb-3">
           <iframe 
             className="absolute top-0 left-0 w-full h-full"
-            src={featuredVideo.videoUrl}
+            src={featuredVideo.video_url}
             title={featuredVideo.title}
             frameBorder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -172,9 +137,9 @@ export const VideoContent = () => {
             <i className="far fa-clock mr-1"></i> {featuredVideo.duration}
           </span>
           <span className="flex items-center mr-3">
-            <i className="far fa-eye mr-1"></i> {formatViewCount(featuredVideo.views)} দেখা হয়েছে
+            <i className="far fa-eye mr-1"></i> {formatViewCount(featuredVideo.view_count)} দেখা হয়েছে
           </span>
-          <span>{getRelativeTimeInBengali(featuredVideo.publishedAt)}</span>
+          <span>{getRelativeTimeInBengali(featuredVideo.published_at)}</span>
         </div>
       </div>
       
@@ -186,7 +151,7 @@ export const VideoContent = () => {
             <Link href={`/video/${video.slug}`} className="block">
               <div className="relative">
                 <img 
-                  src={video.thumbnailUrl} 
+                  src={video.thumbnail_url} 
                   alt={video.title} 
                   className="w-full h-32 object-cover"
                 />
@@ -203,9 +168,9 @@ export const VideoContent = () => {
               </h5>
               <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <span className="flex items-center mr-2">
-                  <i className="far fa-eye mr-1"></i> {formatViewCount(video.views)}
+                  <i className="far fa-eye mr-1"></i> {formatViewCount(video.view_count)}
                 </span>
-                <span>{getRelativeTimeInBengali(video.publishedAt)}</span>
+                <span>{getRelativeTimeInBengali(video.published_at)}</span>
               </div>
             </div>
           </div>
