@@ -1110,6 +1110,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin role setting endpoint (for initial setup)
+  app.post(`${apiPrefix}/admin/set-role`, async (req, res) => {
+    try {
+      const { email, role } = req.body;
+      
+      if (!email || !role) {
+        return res.status(400).json({ error: 'Email and role are required' });
+      }
+
+      // Get user by email from Supabase Auth
+      const { data: userData, error: userError } = await supabase.auth.admin.listUsers();
+      
+      if (userError) {
+        console.error('Error listing users:', userError);
+        return res.status(500).json({ error: 'Failed to get user data' });
+      }
+
+      const targetUser = userData.users.find(user => user.email === email);
+      
+      if (!targetUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Update user metadata to include admin role
+      const { data, error } = await supabase.auth.admin.updateUserById(targetUser.id, {
+        user_metadata: {
+          ...targetUser.user_metadata,
+          role: role
+        }
+      });
+
+      if (error) {
+        console.error('Error updating user role:', error);
+        return res.status(500).json({ error: 'Failed to update user role' });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Successfully set ${email} as ${role}`,
+        user: data.user 
+      });
+    } catch (error: any) {
+      console.error('Error setting admin role:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Admin Dashboard Stats
   app.get(`${apiPrefix}/admin/stats`, requireAdmin, async (req, res) => {
     try {

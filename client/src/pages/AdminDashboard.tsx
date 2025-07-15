@@ -56,9 +56,11 @@ export default function AdminDashboard() {
   // Check authentication and admin role
   useEffect(() => {
     if (!authLoading && !user) {
-      setLocation('/auth');
+      setLocation('/admin-login');
     } else if (!authLoading && user && user.user_metadata?.role !== 'admin') {
-      setLocation('/');
+      console.log('User metadata:', user.user_metadata);
+      // For now, let's allow access and show instructions to set admin role
+      // setLocation('/');
     }
   }, [authLoading, user, setLocation]);
 
@@ -80,13 +82,21 @@ export default function AdminDashboard() {
   if (user.user_metadata?.role !== 'admin') {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
+        <div className="text-center max-w-md mx-auto p-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Access Denied
+            অ্যাডমিন অ্যাক্সেস প্রয়োজন
           </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            You don't have permission to access the admin dashboard.
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            আপনার অ্যাকাউন্টে অ্যাডমিন পারমিশন নেই। অ্যাডমিন অ্যাক্সেসের জন্য যোগাযোগ করুন।
           </p>
+          <div className="text-sm text-gray-500 mb-4">
+            <p>User ID: {user.id}</p>
+            <p>Email: {user.email}</p>
+            <p>Current Role: {user.user_metadata?.role || 'user'}</p>
+          </div>
+          <Button onClick={() => setLocation('/')}>
+            হোম পেজে ফিরুন
+          </Button>
         </div>
       </div>
     );

@@ -16,6 +16,7 @@ import ReadingHistory from "@/pages/ReadingHistory";
 import AdminPage from "@/pages/AdminPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import UserDashboard from "@/pages/UserDashboard";
+import SetAdminRole from "@/pages/SetAdminRole";
 import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
@@ -44,6 +45,7 @@ function Router() {
       <Route path="/reading-history" component={ReadingHistory} />
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin-dashboard" component={AdminDashboard} />
+      <Route path="/set-admin-role" component={SetAdminRole} />
       <Route path="/admin/articles" component={ArticlesAdminPage} />
       <Route path="/admin/categories" component={CategoriesAdminPage} />
       <Route path="/admin/epapers" component={EPapersAdminPage} />
