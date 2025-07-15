@@ -22,6 +22,11 @@ import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
 import BreakingNewsAdminPage from "@/pages/admin/BreakingNewsAdminPage";
 import UsersAdminPage from "@/pages/admin/UsersAdminPage";
+import VideosAdminPage from "@/pages/admin/VideosAdminPage";
+import AudioArticlesAdminPage from "@/pages/admin/AudioArticlesAdminPage";
+import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
+import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
+import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -51,6 +56,11 @@ function Router() {
       <Route path="/admin/epapers" component={EPapersAdminPage} />
       <Route path="/admin/breaking-news" component={BreakingNewsAdminPage} />
       <Route path="/admin/users" component={UsersAdminPage} />
+      <Route path="/admin/videos" component={VideosAdminPage} />
+      <Route path="/admin/audio" component={AudioArticlesAdminPage} />
+      <Route path="/admin/analytics" component={AnalyticsAdminPage} />
+      <Route path="/admin/social-media" component={SocialMediaAdminPage} />
+      <Route path="/admin/settings" component={SettingsAdminPage} />
       <Route component={NotFound} />
     </Switch>
   );
