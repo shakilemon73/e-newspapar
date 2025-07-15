@@ -311,38 +311,30 @@ export const storage = {
 
   // User operations
   async getUserByEmail(email: string) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single();
+    // For Supabase auth, we get user from auth.users, not a custom users table
+    const { data, error } = await supabase.auth.admin.getUserByEmail(email);
     
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    if (error) {
+      console.error('Error getting user by email:', error);
+      return null;
+    }
+    
+    return data.user;
   },
 
-  async getUserById(id: number) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single();
+  async getUserById(id: string) {
+    // For Supabase auth, get user by ID from auth.users
+    const { data, error } = await supabase.auth.admin.getUserById(id);
     
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    if (error) {
+      console.error('Error getting user by ID:', error);
+      return null;
+    }
+    
+    return data.user;
   },
 
-  async updateUserRole(id: number, role: string) {
-    const { data, error } = await supabase
-      .from('users')
-      .update({ role })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data;
-  },
+
 
   // Video Content operations
   async getVideoContent(limit = 10, offset = 0) {

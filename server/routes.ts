@@ -142,18 +142,12 @@ const requireAuth = async (req: Request, res: Response, next: Function) => {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
     
-    // Get user from database to check role
-    const dbUser = await storage.getUserByEmail(data.user.email || '');
-    
-    if (!dbUser) {
-      return res.status(401).json({ error: 'User not found in database' });
-    }
-    
-    // Add user with role information to request object
+    // Add user information to request object
+    // For Supabase, we can get role from user metadata
     (req as any).user = {
       ...data.user,
-      role: dbUser.role, // Include role from database
-      dbUserId: dbUser.id // Include database user ID
+      role: data.user.user_metadata?.role || 'user', // Default to 'user' role
+      email: data.user.email
     };
     
     next();

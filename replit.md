@@ -123,6 +123,19 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
+### Migration to Replit Environment Complete (January 15, 2025)
+✓ Successfully migrated from Replit Agent to standard Replit environment
+✓ Created separate login/register routing for users (/login, /register)
+✓ Added dedicated admin login route (/admin-login) for admin dashboard access
+✓ Fixed Supabase authentication middleware to work with auth.users table
+✓ Resolved "column users.email does not exist" error by updating auth functions
+✓ Fixed date formatting issues with null values in DateFormatter component
+✓ Updated Header component to use new routing structure with admin access
+✓ All authentication flows now working properly with Supabase backend
+✓ Website fully functional with improved security and user management
+
+## Previous Changes (January 15, 2025)
+
 ### Migration from Replit Agent to Replit Environment (January 15, 2025)
 ✓ Successfully migrated project from Replit Agent to standard Replit environment
 ✓ Created .env file with Supabase database credentials  
