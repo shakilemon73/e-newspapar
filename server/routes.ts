@@ -842,6 +842,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Video Management
+  app.post(`${apiPrefix}/videos`, requireAdmin, async (req, res) => {
+    try {
+      const videoData = req.body;
+      const video = await storage.createVideoContent(videoData);
+      res.status(201).json(transformVideo(video));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put(`${apiPrefix}/videos/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const videoId = parseInt(id);
+      const updateData = req.body;
+      
+      const video = await storage.updateVideoContent(videoId, updateData);
+      res.json(transformVideo(video));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete(`${apiPrefix}/videos/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const videoId = parseInt(id);
+      
+      // Delete video from storage
+      await storage.deleteVideoContent(videoId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Audio Articles routes
   app.get(`${apiPrefix}/audio-articles`, async (req, res) => {
     try {
@@ -870,6 +907,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Audio Articles Management
+  app.post(`${apiPrefix}/audio-articles`, requireAdmin, async (req, res) => {
+    try {
+      const audioData = req.body;
+      const audioArticle = await storage.createAudioArticle(audioData);
+      res.status(201).json(transformAudioArticle(audioArticle));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put(`${apiPrefix}/audio-articles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const audioId = parseInt(id);
+      const updateData = req.body;
+      
+      const audioArticle = await storage.updateAudioArticle(audioId, updateData);
+      res.json(transformAudioArticle(audioArticle));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete(`${apiPrefix}/audio-articles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const audioId = parseInt(id);
+      
+      await storage.deleteAudioArticle(audioId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Social Media Posts routes
   app.get(`${apiPrefix}/social-media`, async (req, res) => {
     try {
@@ -880,6 +953,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(posts);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin Social Media Posts Management
+  app.post(`${apiPrefix}/social-media`, requireAdmin, async (req, res) => {
+    try {
+      const postData = req.body;
+      const socialPost = await storage.createSocialMediaPost(postData);
+      res.status(201).json(socialPost);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.put(`${apiPrefix}/social-media/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const postId = parseInt(id);
+      const updateData = req.body;
+      
+      const socialPost = await storage.updateSocialMediaPost(postId, updateData);
+      res.json(socialPost);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.delete(`${apiPrefix}/social-media/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const postId = parseInt(id);
+      
+      await storage.deleteSocialMediaPost(postId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Personalized Recommendations route
+  app.get(`${apiPrefix}/personalized-recommendations`, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // Get articles with good view counts as recommendations
+      const articles = await storage.getPopularArticles(limit);
+      
+      // Transform to match expected format
+      const recommendations = articles.map(article => ({
+        ...transformArticle(article),
+        reason: 'জনপ্রিয় নিবন্ধ' // Popular article in Bengali
+      }));
+      
+      res.json(recommendations);
+    } catch (error: any) {
+      console.error('Error fetching personalized recommendations:', error);
+      res.status(500).json({ error: 'Could not fetch personalized recommendations' });
     }
   });
 
@@ -1185,6 +1315,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching recent activity:', error);
       return res.status(500).json({ error: 'Failed to fetch recent activity' });
+    }
+  });
+
+  // Admin Analytics endpoint
+  app.get(`${apiPrefix}/admin/analytics`, requireAdmin, async (req, res) => {
+    try {
+      const { timeRange = 'today' } = req.query;
+      
+      // Get comprehensive analytics data from Supabase
+      const [articles, users, weather, breakingNews, videos, audioArticles, socialPosts, epapers] = await Promise.all([
+        storage.getAllArticles(),
+        storage.getAllUsers(),
+        storage.getAllWeather(),
+        storage.getActiveBreakingNews(),
+        storage.getVideoContent(),
+        storage.getAudioArticles(),
+        storage.getSocialMediaPosts(),
+        storage.getAllEPapers()
+      ]);
+
+      // Calculate time-based metrics
+      const now = new Date();
+      const timeRangeDate = new Date();
+      
+      if (timeRange === 'today') {
+        timeRangeDate.setHours(0, 0, 0, 0);
+      } else if (timeRange === 'week') {
+        timeRangeDate.setDate(timeRangeDate.getDate() - 7);
+      } else if (timeRange === 'month') {
+        timeRangeDate.setMonth(timeRangeDate.getMonth() - 1);
+      }
+
+      // Calculate analytics metrics
+      const recentArticles = articles.filter(a => new Date(a.published_at) >= timeRangeDate);
+      const recentUsers = users.filter(u => new Date(u.created_at) >= timeRangeDate);
+      const recentVideos = videos.filter(v => new Date(v.published_at) >= timeRangeDate);
+      const recentAudio = audioArticles.filter(a => new Date(a.published_at) >= timeRangeDate);
+      const recentSocialPosts = socialPosts.filter(p => new Date(p.published_at) >= timeRangeDate);
+      const recentEpapers = epapers.filter(e => new Date(e.publish_date) >= timeRangeDate);
+
+      const analytics = {
+        totalArticles: articles.length,
+        totalUsers: users.length,
+        totalViews: articles.reduce((sum, a) => sum + (a.view_count || 0), 0),
+        totalVideos: videos.length,
+        totalAudioArticles: audioArticles.length,
+        totalSocialPosts: socialPosts.length,
+        totalEpapers: epapers.length,
+        totalBreakingNews: breakingNews.length,
+        totalWeatherCities: weather.length,
+        
+        // Time-based metrics
+        recentArticles: recentArticles.length,
+        recentUsers: recentUsers.length,
+        recentVideos: recentVideos.length,
+        recentAudio: recentAudio.length,
+        recentSocialPosts: recentSocialPosts.length,
+        recentEpapers: recentEpapers.length,
+        
+        // Growth metrics
+        articlesGrowth: recentArticles.length > 0 ? '+' + recentArticles.length : '0',
+        usersGrowth: recentUsers.length > 0 ? '+' + recentUsers.length : '0',
+        videosGrowth: recentVideos.length > 0 ? '+' + recentVideos.length : '0',
+        
+        // Popular content
+        popularArticles: articles
+          .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 5)
+          .map(a => ({ title: a.title, views: a.view_count || 0 })),
+        
+        popularVideos: videos
+          .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 5)
+          .map(v => ({ title: v.title, views: v.view_count || 0 })),
+        
+        // Categories distribution
+        categoriesDistribution: articles.reduce((acc, article) => {
+          if (article.category) {
+            const catName = article.category.name;
+            acc[catName] = (acc[catName] || 0) + 1;
+          }
+          return acc;
+        }, {} as Record<string, number>),
+        
+        // Platform distribution for social media
+        platformDistribution: socialPosts.reduce((acc, post) => {
+          acc[post.platform] = (acc[post.platform] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+        
+        timeRange
+      };
+
+      return res.json(analytics);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      return res.status(500).json({ error: 'Failed to fetch analytics' });
     }
   });
 

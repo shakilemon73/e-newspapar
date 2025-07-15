@@ -382,6 +382,15 @@ export const storage = {
     return video;
   },
 
+  async deleteVideoContent(id: number) {
+    const { error } = await supabase
+      .from('video_content')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
   // Audio Articles operations
   async getAudioArticles(limit = 10, offset = 0) {
     const { data, error } = await supabase
@@ -428,6 +437,15 @@ export const storage = {
     return audio;
   },
 
+  async deleteAudioArticle(id: number) {
+    const { error } = await supabase
+      .from('audio_articles')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
   // Social Media Posts operations
   async getSocialMediaPosts(limit = 10, platforms?: string[]) {
     let query = supabase
@@ -467,6 +485,15 @@ export const storage = {
     
     if (error) throw error;
     return post;
+  },
+
+  async deleteSocialMediaPost(id: number) {
+    const { error } = await supabase
+      .from('social_media_posts')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
   },
 
   // Admin-specific operations
