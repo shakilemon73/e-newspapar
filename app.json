@@ -1,0 +1,39 @@
+{
+  "name": "Bengali News Website",
+  "description": "A comprehensive Bengali news website with modern web technologies",
+  "repository": "https://github.com/your-username/bengali-news-website",
+  "logo": "https://cdn.jsdelivr.net/npm/country-flag-emoji-json@2.0.0/dist/images/BD.svg",
+  "keywords": ["node", "express", "react", "typescript", "supabase", "bengali", "news"],
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "VITE_SUPABASE_URL": {
+      "description": "Supabase project URL",
+      "required": true
+    },
+    "VITE_SUPABASE_ANON_KEY": {
+      "description": "Supabase anonymous key",
+      "required": true
+    },
+    "SUPABASE_SERVICE_ROLE_KEY": {
+      "description": "Supabase service role key",
+      "required": true
+    }
+  },
+  "scripts": {
+    "postdeploy": "npm run db:seed"
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  }
+}
