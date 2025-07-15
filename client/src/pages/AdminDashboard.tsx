@@ -212,25 +212,36 @@ function ModernAdminDashboard() {
   return (
     <AdminOnlyLayout>
       <div className="space-y-8 p-6">
-        {/* Modern Header with Language Toggle */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+        {/* Enhanced Header with UX Improvements */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold mb-3">
+              <h1 className="text-4xl font-bold mb-3 tracking-tight">
                 {t('dashboard.welcome')}, {user?.email?.split('@')[0]}!
               </h1>
-              <p className="text-blue-100 text-lg">
+              <p className="text-blue-100 text-lg leading-relaxed">
                 {language === 'bn' 
                   ? 'প্রথম আলো ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ ও ব্যবস্থাপনা'
                   : 'Complete control and management of Prothom Alo website'
                 }
               </p>
+              <div className="flex items-center mt-4 space-x-4">
+                <Badge className="bg-white/20 text-white border-white/30">
+                  <Activity className="h-3 w-3 mr-1" />
+                  Live Dashboard
+                </Badge>
+                <Badge className="bg-white/20 text-white border-white/30">
+                  <Globe className="h-3 w-3 mr-1" />
+                  Admin Panel
+                </Badge>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button
                 onClick={toggleLanguage}
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 min-h-[44px] px-4"
+                aria-label={language === 'bn' ? 'Switch to English' : 'বাংলায় পরিবর্তন করুন'}
               >
                 <Languages className="h-4 w-4 mr-2" />
                 {language === 'bn' ? 'English' : 'বাংলা'}

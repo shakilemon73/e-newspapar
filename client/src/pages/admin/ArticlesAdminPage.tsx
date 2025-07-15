@@ -1,24 +1,60 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
+import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
 import { DataTable } from '@/components/admin/DataTable';
 import { ContentEditor } from '@/components/admin/ContentEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Plus, 
   Loader2, 
+  Search,
+  Filter,
   TrendingUp, 
   Eye, 
   Clock,
   AlertCircle,
   CheckCircle,
-  XCircle
+  XCircle,
+  Edit,
+  Trash2,
+  Star,
+  Calendar,
+  BarChart3,
+  Users,
+  Globe,
+  ArrowUpRight,
+  ArrowDownRight,
+  RefreshCw,
+  Download,
+  Upload,
+  MoreHorizontal,
+  SortAsc,
+  SortDesc
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
+import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -95,6 +131,11 @@ export default function ArticlesAdminPage() {
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [sortBy, setSortBy] = useState('publishedAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Fetch articles
   const { data: articles, isLoading, error } = useQuery({
@@ -211,7 +252,7 @@ export default function ArticlesAdminPage() {
 
   if (error) {
     return (
-      <WebsiteAdminLayout>
+      <AdminOnlyLayout>
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -223,28 +264,113 @@ export default function ArticlesAdminPage() {
             </p>
           </div>
         </div>
-      </WebsiteAdminLayout>
+      </AdminOnlyLayout>
     );
   }
 
   return (
-    <WebsiteAdminLayout>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Articles Management
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Create, edit, and manage your news articles
-            </p>
+    <AdminOnlyLayout>
+      <div className="space-y-6 p-6">
+        {/* Enhanced Header Section */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold mb-3 tracking-tight">Article Management</h1>
+              <p className="text-blue-100 text-lg leading-relaxed">
+                Create, manage, and optimize your Bengali news articles with enhanced UX design
+              </p>
+              <div className="flex items-center mt-4 space-x-4">
+                <Badge className="bg-white/20 text-white border-white/30">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {stats?.totalArticles || 0} Articles
+                </Badge>
+                <Badge className="bg-white/20 text-white border-white/30">
+                  <Eye className="h-3 w-3 mr-1" />
+                  {stats?.totalViews?.toLocaleString() || 0} Views
+                </Badge>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                variant="outline"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 min-h-[44px]"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+              <Button
+                onClick={handleCreateArticle}
+                className="bg-white text-blue-600 hover:bg-gray-100 min-h-[44px]"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Article
+              </Button>
+            </div>
           </div>
-          <Button onClick={handleCreateArticle} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Create Article
-          </Button>
         </div>
+
+        {/* Enhanced Filters Section */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Filter className="h-5 w-5 mr-2" />
+              Filter & Search Articles
+            </CardTitle>
+            <CardDescription>
+              Use advanced filters to find and manage your articles efficiently
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search articles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 min-h-[44px]"
+                />
+              </div>
+              
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="min-h-[44px]">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="politics">রাজনীতি</SelectItem>
+                  <SelectItem value="sports">খেলা</SelectItem>
+                  <SelectItem value="economy">অর্থনীতি</SelectItem>
+                  <SelectItem value="international">আন্তর্জাতিক</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                <SelectTrigger className="min-h-[44px]">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="scheduled">Scheduled</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" className="min-h-[44px]">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+                <Button variant="outline" size="sm" className="min-h-[44px]">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -358,6 +484,6 @@ export default function ArticlesAdminPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </WebsiteAdminLayout>
+    </AdminOnlyLayout>
   );
 }
