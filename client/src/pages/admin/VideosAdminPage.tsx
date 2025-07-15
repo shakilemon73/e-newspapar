@@ -64,11 +64,7 @@ export default function VideosAdminPage() {
   // Create video mutation
   const createVideoMutation = useMutation({
     mutationFn: async (videoData: any) => {
-      return await apiRequest('/api/videos', {
-        method: 'POST',
-        body: JSON.stringify(videoData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('POST', '/api/videos', videoData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
@@ -91,11 +87,7 @@ export default function VideosAdminPage() {
   // Update video mutation
   const updateVideoMutation = useMutation({
     mutationFn: async ({ id, ...videoData }: any) => {
-      return await apiRequest(`/api/videos/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(videoData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('PUT', `/api/videos/${id}`, videoData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
@@ -118,9 +110,7 @@ export default function VideosAdminPage() {
   // Delete video mutation
   const deleteVideoMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/videos/${id}`, {
-        method: 'DELETE',
-      });
+      return await apiRequest('DELETE', `/api/videos/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/videos'] });

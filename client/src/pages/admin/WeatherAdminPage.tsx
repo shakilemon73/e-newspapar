@@ -79,11 +79,7 @@ export default function WeatherAdminPage() {
   // Create weather mutation
   const createWeatherMutation = useMutation({
     mutationFn: async (weatherData: any) => {
-      return await apiRequest('/api/weather', {
-        method: 'POST',
-        body: JSON.stringify(weatherData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('POST', '/api/weather', weatherData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/weather'] });
@@ -106,11 +102,7 @@ export default function WeatherAdminPage() {
   // Update weather mutation
   const updateWeatherMutation = useMutation({
     mutationFn: async ({ city, ...weatherData }: any) => {
-      return await apiRequest(`/api/weather/${city}`, {
-        method: 'PUT',
-        body: JSON.stringify(weatherData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('PUT', `/api/weather/${city}`, weatherData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/weather'] });

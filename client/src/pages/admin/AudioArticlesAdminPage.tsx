@@ -65,11 +65,7 @@ export default function AudioArticlesAdminPage() {
   // Create audio article mutation
   const createAudioMutation = useMutation({
     mutationFn: async (audioData: any) => {
-      return await apiRequest('/api/audio-articles', {
-        method: 'POST',
-        body: JSON.stringify(audioData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('POST', '/api/audio-articles', audioData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
@@ -92,11 +88,7 @@ export default function AudioArticlesAdminPage() {
   // Update audio article mutation
   const updateAudioMutation = useMutation({
     mutationFn: async ({ id, ...audioData }: any) => {
-      return await apiRequest(`/api/audio-articles/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(audioData),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return await apiRequest('PUT', `/api/audio-articles/${id}`, audioData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
@@ -119,9 +111,7 @@ export default function AudioArticlesAdminPage() {
   // Delete audio article mutation
   const deleteAudioMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/audio-articles/${id}`, {
-        method: 'DELETE',
-      });
+      return await apiRequest('DELETE', `/api/audio-articles/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });

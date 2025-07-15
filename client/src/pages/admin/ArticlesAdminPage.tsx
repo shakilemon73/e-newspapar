@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
 import { DataTable } from '@/components/admin/DataTable';
 import { ContentEditor } from '@/components/admin/ContentEditor';
@@ -125,7 +127,10 @@ const articleColumns = [
 ];
 
 export default function ArticlesAdminPage() {
+  const { user, loading: authLoading } = useSupabaseAuth();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
@@ -137,40 +142,42 @@ export default function ArticlesAdminPage() {
   const [sortBy, setSortBy] = useState('publishedAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Fetch articles
+  // Check authentication and admin role
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setLocation('/admin-login');
+    } else if (!authLoading && user && user.user_metadata?.role !== 'admin') {
+      setLocation('/admin-login');
+    }
+  }, [authLoading, user, setLocation]);
+
+  // Fetch articles with authentication
   const { data: articles, isLoading, error } = useQuery({
     queryKey: ['/api/articles'],
-    queryFn: async () => {
-      const response = await fetch('/api/articles');
-      if (!response.ok) throw new Error('Failed to fetch articles');
-      return response.json();
-    },
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Get article statistics
   const { data: stats } = useQuery({
     queryKey: ['/api/admin/articles/stats'],
+    enabled: !!user && user.user_metadata?.role === 'admin' && !!articles,
     queryFn: async () => {
-      const response = await fetch('/api/admin/articles/stats');
-      if (!response.ok) {
-        // Return calculated stats if API endpoint doesn't exist
-        const totalArticles = Array.isArray(articles) ? articles.length : 0;
-        const featuredArticles = Array.isArray(articles) ? articles.filter(a => a.isFeatured).length : 0;
-        const totalViews = Array.isArray(articles) ? articles.reduce((sum, a) => sum + (a.viewCount || 0), 0) : 0;
-        const publishedToday = Array.isArray(articles) ? articles.filter(a => {
-          const publishDate = new Date(a.publishedAt);
-          const today = new Date();
-          return publishDate.toDateString() === today.toDateString();
-        }).length : 0;
-        
-        return {
-          totalArticles,
-          featuredArticles,
-          totalViews,
-          publishedToday
-        };
-      }
-      return response.json();
+      // Calculate stats from existing articles since we don't have a specific endpoint
+      const totalArticles = Array.isArray(articles) ? articles.length : 0;
+      const featuredArticles = Array.isArray(articles) ? articles.filter(a => a.isFeatured).length : 0;
+      const totalViews = Array.isArray(articles) ? articles.reduce((sum, a) => sum + (a.viewCount || 0), 0) : 0;
+      const publishedToday = Array.isArray(articles) ? articles.filter(a => {
+        const publishDate = new Date(a.publishedAt);
+        const today = new Date();
+        return publishDate.toDateString() === today.toDateString();
+      }).length : 0;
+      
+      return {
+        totalArticles,
+        featuredArticles,
+        totalViews,
+        publishedToday
+      };
     },
   });
 
