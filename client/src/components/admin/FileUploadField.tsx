@@ -10,33 +10,40 @@ import { useToast } from '@/hooks/use-toast';
 
 interface FileUploadFieldProps {
   label: string;
-  type: MediaType;
+  type?: MediaType;
+  mediaType?: MediaType;
   value?: string;
   onChange?: (url: string) => void;
   placeholder?: string;
   accept?: string;
   maxSize?: string;
+  description?: string;
 }
 
 export function FileUploadField({ 
   label, 
   type, 
+  mediaType, 
   value, 
   onChange, 
   placeholder = "Select file to upload or enter URL",
   accept,
-  maxSize = "500MB"
+  maxSize = "500MB",
+  description
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [showStorageSetup, setShowStorageSetup] = useState(false);
   const [inputMode, setInputMode] = useState<'url' | 'upload'>('url');
   const { toast } = useToast();
 
+  // Use either type or mediaType prop
+  const fileType = type || mediaType;
+
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     
     try {
-      const result = await SupabaseStorage.uploadFile(file, type);
+      const result = await SupabaseStorage.uploadFile(file, fileType!);
       
       if (result.success && result.url) {
         onChange?.(result.url);
@@ -107,7 +114,12 @@ export function FileUploadField({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label>{label}</Label>
+        <div>
+          <Label>{label}</Label>
+          {description && (
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
         <div className="flex rounded-md border">
           <Button
             type="button"
@@ -145,7 +157,7 @@ export function FileUploadField({
             type="url"
             value={value || ''}
             onChange={(e) => onChange?.(e.target.value)}
-            placeholder={`Enter ${type.slice(0, -1)} URL...`}
+            placeholder={`Enter ${fileType ? fileType.slice(0, -1) : 'media'} URL...`}
             className="w-full"
           />
         ) : (
