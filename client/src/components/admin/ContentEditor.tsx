@@ -155,7 +155,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       }
     });
     return () => subscription.unsubscribe();
-  }, [form, mode]);
+  }, [mode]);
 
   // Step validation
   const validateStep = (stepIndex: number) => {
@@ -178,8 +178,8 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
     }
   };
 
-  // Update completed steps
-  useEffect(() => {
+  // Update completed steps when form is submitted or validated
+  const updateCompletedSteps = () => {
     const newCompleted = new Set<number>();
     for (let i = 0; i < steps.length; i++) {
       if (validateStep(i)) {
@@ -187,7 +187,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       }
     }
     setCompletedSteps(newCompleted);
-  }, [form.formState, form.watch()]);
+  };
 
   const canProceedToNext = () => {
     return validateStep(currentStep);
@@ -196,17 +196,20 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   const nextStep = () => {
     if (currentStep < steps.length - 1 && canProceedToNext()) {
       setCurrentStep(currentStep + 1);
+      updateCompletedSteps();
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      updateCompletedSteps();
     }
   };
 
   const goToStep = (stepIndex: number) => {
     setCurrentStep(stepIndex);
+    updateCompletedSteps();
   };
 
   // Fetch categories
@@ -295,8 +298,8 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden">
-        <DialogHeader className="border-b pb-4">
+      <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
+        <DialogHeader className="border-b pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="flex items-center gap-2 text-xl">
@@ -324,7 +327,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         </DialogHeader>
 
         {/* Progress Bar */}
-        <div className="px-6 py-4 border-b">
+        <div className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium">Progress</span>
             <span className="text-sm text-muted-foreground">
@@ -335,7 +338,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         </div>
 
         {/* Step Navigation */}
-        <div className="px-6 py-4 border-b">
+        <div className="px-6 py-4 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
@@ -383,8 +386,8 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 overflow-y-auto">
-            <div className="p-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto p-6">
               {/* Step 0: Basics */}
               {currentStep === 0 && (
                 <div className="space-y-6">
@@ -847,7 +850,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         </Form>
 
         {/* Navigation Footer */}
-        <DialogFooter className="p-6 border-t">
+        <DialogFooter className="p-6 border-t flex-shrink-0">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {isAutoSaving ? (
