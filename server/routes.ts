@@ -320,9 +320,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Reading history routes
+  // Reading history routes (temporarily disabled - table doesn't exist)
   app.post(`${apiPrefix}/track-reading`, requireAuth, async (req, res) => {
     try {
+      // Temporarily disable reading history tracking until table is created
+      console.log('Reading history tracking disabled - table does not exist');
+      return res.json({ success: true, message: 'Reading history tracking temporarily disabled' });
+      
+      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
       const { articleId } = req.body;
       const user = (req as any).user;
       
@@ -367,6 +372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       return res.json({ success: true });
+      */
     } catch (error: any) {
       console.error('Error tracking reading history:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -375,6 +381,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get(`${apiPrefix}/reading-history`, requireAuth, async (req, res) => {
     try {
+      // Temporarily return empty history until table is created
+      console.log('Reading history endpoint disabled - table does not exist');
+      return res.json([]);
+      
+      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
       const user = (req as any).user;
       const { limit = '20', offset = '0' } = req.query;
       
@@ -405,6 +416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       
       return res.json(history);
+      */
     } catch (error: any) {
       console.error('Error fetching reading history:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -413,8 +425,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get(`${apiPrefix}/personalized-recommendations`, requireAuth, async (req, res) => {
     try {
-      const user = (req as any).user;
       const { limit = '6' } = req.query;
+      
+      // Temporarily return popular articles until reading_history table is created
+      console.log('Personalized recommendations disabled - using popular articles instead');
+      const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
+      return res.json(popularArticles.map(transformArticle));
+      
+      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
+      const user = (req as any).user;
       
       // First get the user's reading history to determine category preferences
       const { data: historyData, error: historyError } = await supabase
@@ -436,7 +455,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
         return res.json(transformArticles(popularArticles));
       }
-      
+      */ 
+      // Comment out the rest of the reading history logic
+      /*
       // Extract category IDs from reading history and count occurrences
       const categoryCount: { [key: number]: number } = {};
       historyData.forEach(item => {
@@ -520,6 +541,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       recommendedArticles = recommendedArticles.slice(0, parseInt(limit as string));
       
       return res.json(transformArticles(recommendedArticles));
+      */
     } catch (error: any) {
       console.error('Error fetching personalized recommendations:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
