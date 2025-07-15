@@ -163,9 +163,11 @@ export const Header = () => {
               </DropdownMenu>
             ) : (
               <>
-                <Link href="/auth" className="hover:text-accent transition">লগইন</Link>
+                <Link href="/login" className="hover:text-accent transition">লগইন</Link>
                 <span className="text-gray-400">|</span>
-                <Link href="/auth?tab=register" className="hover:text-accent transition">রেজিস্টার</Link>
+                <Link href="/register" className="hover:text-accent transition">রেজিস্টার</Link>
+                <span className="text-gray-400">|</span>
+                <Link href="/admin-login" className="hover:text-accent transition text-xs">অ্যাডমিন</Link>
               </>
             )}
             <div className="flex items-center space-x-2">

@@ -6,6 +6,9 @@ import Category from "@/pages/Category";
 import ArticleDetail from "@/pages/ArticleDetail";
 import EPaper from "@/pages/EPaper";
 import Search from "@/pages/Search";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import AdminLogin from "@/pages/AdminLogin";
 import AuthPage from "@/pages/auth-page";
 import Profile from "@/pages/Profile";
 import SavedArticles from "@/pages/SavedArticles";
@@ -31,6 +34,9 @@ function Router() {
       <Route path="/article/:slug" component={ArticleDetail} />
       <Route path="/epaper" component={EPaper} />
       <Route path="/search" component={Search} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/admin-login" component={AdminLogin} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/profile" component={Profile} />
       <Route path="/dashboard" component={UserDashboard} />

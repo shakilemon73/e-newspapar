@@ -15,7 +15,9 @@ export const DateFormatter = ({
   fallback = 'অজানা সময়' 
 }: DateFormatterProps) => {
   try {
-    if (!date) return fallback;
+    if (!date || date === null || date === undefined || date === 'null' || date === '') {
+      return fallback;
+    }
     
     if (type === 'relative') {
       return getRelativeTimeInBengali(date);
