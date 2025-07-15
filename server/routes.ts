@@ -17,8 +17,8 @@ const articlesInsertSchema = z.object({
   imageUrl: z.string().optional(),
   categoryId: z.number(),
   isFeatured: z.boolean().default(false),
-  publishedAt: z.string().optional(),
-  tags: z.array(z.string()).optional()
+  publishedAt: z.string().optional()
+  // tags: z.array(z.string()).optional() // Removed - column doesn't exist in database
 });
 
 const epapersInsertSchema = z.object({
@@ -664,8 +664,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         image_url: validatedData.imageUrl,
         category_id: validatedData.categoryId,
         is_featured: validatedData.isFeatured,
-        published_at: validatedData.publishedAt || new Date().toISOString(),
-        tags: validatedData.tags || []
+        published_at: validatedData.publishedAt || new Date().toISOString()
+        // Note: tags column doesn't exist in database, removed for now
       };
       
       const article = await storage.createArticle(dbData);
@@ -702,7 +702,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.categoryId) dbData.category_id = validatedData.categoryId;
       if (validatedData.isFeatured !== undefined) dbData.is_featured = validatedData.isFeatured;
       if (validatedData.publishedAt) dbData.published_at = validatedData.publishedAt;
-      if (validatedData.tags) dbData.tags = validatedData.tags;
+      // Note: tags column doesn't exist in database, skipping tags for now
+      // if (validatedData.tags) dbData.tags = validatedData.tags;
       
       const article = await storage.updateArticle(articleId, dbData);
       return res.json(transformArticle(article));

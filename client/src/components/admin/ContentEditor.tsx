@@ -66,8 +66,8 @@ const articleFormSchema = z.object({
   imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   categoryId: z.coerce.number().min(1, 'Please select a category'),
   isFeatured: z.boolean().default(false),
-  publishedAt: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  publishedAt: z.string().optional()
+  // tags: z.array(z.string()).optional(), // Removed - column doesn't exist in database
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -230,22 +230,26 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         : `/api/articles/${article.id}`;
       const method = mode === 'create' ? 'POST' : 'PUT';
       
-      // Prepare the data with tags
+      // Prepare the data (tags removed for now as column doesn't exist in database)
       const payload = {
         ...data,
-        tags: tags,
+        // tags: tags, // Removed temporarily - column doesn't exist in database
         publishedAt: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString()
       };
       
       console.log('Submitting article data:', payload);
+      console.log('API endpoint:', method, endpoint);
       
       try {
         const res = await apiRequest(method, endpoint, payload);
+        console.log('API response status:', res.status);
         const result = await res.json();
+        console.log('API response data:', result);
         return result;
       } catch (error) {
         console.error('Article submission error:', error);
-        throw error;
+        console.error('Error details:', error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to save article');
       }
     },
     onSuccess: (data) => {
@@ -255,7 +259,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       });
       onClose();
       form.reset();
-      setTags([]);
+      // setTags([]); // Removed tags functionality temporarily
       setImagePreview('');
       queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
     },
@@ -270,7 +274,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   });
 
   const onSubmit = (data: ArticleFormValues) => {
-    saveMutation.mutate({ ...data, tags });
+    saveMutation.mutate(data); // Removed tags parameter
   };
 
   const generateSlug = (title: string) => {
