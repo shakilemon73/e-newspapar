@@ -144,7 +144,7 @@ export default function Videos() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="h-4 w-4" />
-                      <span>{formatViewCount(video.view_count)} দেখা হয়েছে</span>
+                      <span>{formatViewCount(video.view_count || 0)} দেখা হয়েছে</span>
                     </div>
                   </div>
                 </CardContent>

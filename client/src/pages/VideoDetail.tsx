@@ -125,7 +125,7 @@ export default function VideoDetail() {
                 </div>
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  <span>{video.view_count.toLocaleString()} বার দেখা হয়েছে</span>
+                  <span>{(video.view_count || 0).toLocaleString()} বার দেখা হয়েছে</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4" />
