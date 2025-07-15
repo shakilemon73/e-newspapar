@@ -74,43 +74,28 @@
   }
   
   body {
-    @apply bg-background text-foreground font-noto;
+    @apply bg-background text-foreground font-solaiman;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
   }
 
-  @font-face {
-    font-family: 'Hind Siliguri';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/hindsiliguri/v13/ijwTs5juQtsyLLR5jN4cxBEoTJzayc_.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  }
+  /* Import SolaimanLipi - The most popular Bengali font for news websites */
+  @import url('https://fonts.cdnfonts.com/css/solaimanlipi');
+  
+  /* Import Kalpurush - Modern Bengali font for digital media */
+  @import url('https://fonts.maateen.me/kalpurush/font.css');
+  
+  /* Import AponaLohit - Clean Bengali font for body text */
+  @import url('https://fonts.maateen.me/apona-lohit/font.css');
 
-  @font-face {
-    font-family: 'Hind Siliguri';
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/hindsiliguri/v13/ijwOs5juQtsyLLR5jN4cxBEoRG_50vgVKxGC.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  }
-
-  @font-face {
-    font-family: 'Hind Siliguri';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/hindsiliguri/v13/ijwOs5juQtsyLLR5jN4cxBEoRCf_50vgVKxGC.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-  }
-
+  /* Noto Sans Bengali - Fallback font for better compatibility */
   @font-face {
     font-family: 'Noto Sans Bengali';
     font-style: normal;
     font-weight: 400;
     font-display: swap;
     src: url(https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6Lc.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    unicode-range: U+0980-09FF, U+200C-200D, U+20B9, U+25CC;
   }
 
   @font-face {
@@ -119,7 +104,7 @@
     font-weight: 500;
     font-display: swap;
     src: url(https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6Lc.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    unicode-range: U+0980-09FF, U+200C-200D, U+20B9, U+25CC;
   }
 
   @font-face {
@@ -128,16 +113,76 @@
     font-weight: 700;
     font-display: swap;
     src: url(https://fonts.gstatic.com/s/notosansbengali/v20/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6Lc.woff2) format('woff2');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    unicode-range: U+0980-09FF, U+200C-200D, U+20B9, U+25CC;
   }
 }
 
-.font-hind {
-  font-family: 'Hind Siliguri', sans-serif;
+/* Enhanced Typography for Bengali Content */
+h1, h2, h3, h4, h5, h6 {
+  @apply font-solaiman;
+  line-height: 1.4;
+  font-weight: 600;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-.font-noto {
-  font-family: 'Noto Sans Bengali', sans-serif;
+.headline, .article-title {
+  @apply font-solaiman;
+  font-weight: 700;
+  line-height: 1.25;
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.news-title {
+  @apply font-solaiman;
+  font-weight: 600;
+  line-height: 1.3;
+  text-rendering: optimizeLegibility;
+}
+
+.article-content, .news-content {
+  @apply font-solaiman;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  font-size: 1.1rem;
+  text-rendering: optimizeLegibility;
+}
+
+.article-excerpt {
+  @apply font-apona;
+  line-height: 1.6;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.dark .article-excerpt {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.breaking-news-text {
+  @apply font-solaiman;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.category-title {
+  @apply font-kalpurush;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.date-text, .meta-text {
+  @apply font-noto;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* Improve text rendering for all Bengali content */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .breaking-news .ticker {

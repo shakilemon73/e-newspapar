@@ -5,6 +5,13 @@ export default {
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        'solaiman': ['SolaimanLipi', 'Kalpurush', 'AponaLohit', 'Noto Sans Bengali', 'system-ui', 'sans-serif'],
+        'kalpurush': ['Kalpurush', 'SolaimanLipi', 'AponaLohit', 'Noto Sans Bengali', 'system-ui', 'sans-serif'],
+        'noto': ['Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', 'system-ui', 'sans-serif'],
+        'apona': ['AponaLohit', 'SolaimanLipi', 'Kalpurush', 'Noto Sans Bengali', 'system-ui', 'sans-serif'],
+        'hind': ['SolaimanLipi', 'Kalpurush', 'Noto Sans Bengali', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

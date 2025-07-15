@@ -122,12 +122,12 @@ export const FeaturedSlideshow = () => {
                 <Link href={`/category/${article.category.slug}`} className="bg-accent text-white text-xs px-2 py-1 rounded inline-block">
                   {article.category.name}
                 </Link>
-                <h2 className="text-xl md:text-2xl font-bold mt-2 mb-2 font-hind">
+                <h2 className="headline text-white mt-2 mb-2">
                   <Link href={`/article/${article.slug}`} className="text-white hover:text-gray-200 transition">
                     {article.title}
                   </Link>
                 </h2>
-                <p className="text-sm md:text-base opacity-90 line-clamp-2">{article.excerpt}</p>
+                <p className="article-excerpt text-sm md:text-base opacity-90 line-clamp-2 text-white">{article.excerpt}</p>
                 <div className="flex items-center mt-2 text-sm">
                   <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
                   <span className="mx-2">•</span>
@@ -167,12 +167,12 @@ export const FeaturedSlideshow = () => {
               </Link>
             </div>
             <div className="p-3">
-              <h3 className="font-bold mb-1 line-clamp-2 font-hind">
+              <h3 className="news-title mb-1 line-clamp-2">
                 <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
                   {article.title}
                 </Link>
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{article.excerpt}</p>
+              <p className="article-excerpt text-sm line-clamp-2">{article.excerpt}</p>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">{getRelativeTimeInBengali(article.publishedAt)}</div>
             </div>
           </div>

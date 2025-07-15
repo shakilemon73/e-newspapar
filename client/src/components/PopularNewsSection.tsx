@@ -145,7 +145,7 @@ export const PopularNewsSection = () => {
               {index + 1}
             </div>
             <div>
-              <h4 className="font-bold mb-1 font-hind">
+              <h4 className="news-title mb-1">
                 <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
                   {article.title}
                 </Link>

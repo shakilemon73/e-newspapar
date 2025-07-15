@@ -50,7 +50,7 @@ export const LatestNews = () => {
   if (isLoading) {
     return (
       <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
+        <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-3 animate-pulse">
@@ -71,7 +71,7 @@ export const LatestNews = () => {
   if (error || latestNews.length === 0) {
     return (
       <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
-        <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
+        <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
         <p className="text-center py-8">{error || 'কোন সর্বশেষ খবর পাওয়া যায়নি'}</p>
       </div>
     );
@@ -79,7 +79,7 @@ export const LatestNews = () => {
 
   return (
     <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4 h-full">
-      <h3 className="text-lg font-bold mb-4 font-hind border-b border-border pb-2">সর্বশেষ খবর</h3>
+      <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
       
       <div className="space-y-4">
         {latestNews.map((news) => (
@@ -97,12 +97,12 @@ export const LatestNews = () => {
               <Link href={`/category/${news.category.slug}`} className="text-xs font-medium text-accent">
                 {news.category.name}
               </Link>
-              <h4 className="font-bold mb-1 font-hind">
+              <h4 className="news-title mb-1">
                 <Link href={`/article/${news.slug}`} className="hover:text-accent transition">
                   {news.title}
                 </Link>
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{news.excerpt}</p>
+              <p className="article-excerpt text-sm line-clamp-2">{news.excerpt}</p>
               <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getRelativeTimeInBengali(news.publishedAt)}</div>
             </div>
           </div>
