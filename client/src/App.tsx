@@ -27,6 +27,7 @@ import AudioArticlesAdminPage from "@/pages/admin/AudioArticlesAdminPage";
 import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
 import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
 import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
+import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -60,6 +61,7 @@ function Router() {
       <Route path="/admin/audio" component={AudioArticlesAdminPage} />
       <Route path="/admin/analytics" component={AnalyticsAdminPage} />
       <Route path="/admin/social-media" component={SocialMediaAdminPage} />
+      <Route path="/admin/weather" component={WeatherAdminPage} />
       <Route path="/admin/settings" component={SettingsAdminPage} />
       <Route component={NotFound} />
     </Switch>
