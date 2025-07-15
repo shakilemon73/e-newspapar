@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -60,17 +60,38 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen bg-background">
-          <Header />
-          <main className="flex-grow">
-            <Router />
-          </main>
-          <Footer />
-          <Toaster />
-          <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
-        </div>
+        <AdminRouteHandler />
+        <Toaster />
+        <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
       </AuthProvider>
     </ThemeProvider>
+  );
+}
+
+function AdminRouteHandler() {
+  const [location] = useLocation();
+  
+  // Check if current route is admin-related
+  const isAdminRoute = location.startsWith('/admin') && location !== '/admin-login';
+  
+  if (isAdminRoute) {
+    // Admin routes - no website header/footer
+    return (
+      <div className="min-h-screen bg-background">
+        <Router />
+      </div>
+    );
+  }
+  
+  // Regular website routes - with header/footer
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <Header />
+      <main className="flex-grow">
+        <Router />
+      </main>
+      <Footer />
+    </div>
   );
 }
 

@@ -1,124 +1,105 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, Users, Newspaper, Eye, TrendingUp, AlertCircle } from 'lucide-react';
-
-interface StatsData {
-  totalArticles: number;
-  totalUsers: number;
-  totalEpapers: number;
-  activeBreakingNews: number;
-  totalViews: number;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  FileText, 
+  Users, 
+  Eye,
+  TrendingUp,
+  Calendar,
+  Activity
+} from 'lucide-react';
 
 interface DashboardStatsProps {
-  stats?: StatsData;
+  stats?: {
+    totalArticles?: number;
+    totalUsers?: number;
+    totalViews?: number;
+    todayViews?: number;
+    publishedToday?: number;
+    activeUsers?: number;
+  };
 }
 
 export function DashboardStats({ stats }: DashboardStatsProps) {
   const defaultStats = {
     totalArticles: 0,
     totalUsers: 0,
-    totalEpapers: 0,
-    activeBreakingNews: 0,
     totalViews: 0,
+    todayViews: 0,
+    publishedToday: 0,
+    activeUsers: 0,
+    ...stats
   };
-
-  const data = stats || defaultStats;
 
   const statCards = [
     {
       title: 'Total Articles',
-      value: data.totalArticles,
+      value: defaultStats.totalArticles,
+      description: 'Published articles',
       icon: FileText,
-      change: '+12%',
-      changeType: 'increase' as const,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-950',
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-100 dark:bg-blue-900',
     },
     {
       title: 'Total Users',
-      value: data.totalUsers,
+      value: defaultStats.totalUsers,
+      description: 'Registered users',
       icon: Users,
-      change: '+8%',
-      changeType: 'increase' as const,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50 dark:bg-green-950',
-    },
-    {
-      title: 'E-Papers',
-      value: data.totalEpapers,
-      icon: Newspaper,
-      change: '+2%',
-      changeType: 'increase' as const,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-950',
-    },
-    {
-      title: 'Breaking News',
-      value: data.activeBreakingNews,
-      icon: AlertCircle,
-      change: '0%',
-      changeType: 'neutral' as const,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50 dark:bg-red-950',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-100 dark:bg-green-900',
     },
     {
       title: 'Total Views',
-      value: data.totalViews,
+      value: defaultStats.totalViews.toLocaleString(),
+      description: 'All time views',
       icon: Eye,
-      change: '+15%',
-      changeType: 'increase' as const,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50 dark:bg-orange-950',
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-100 dark:bg-purple-900',
+    },
+    {
+      title: 'Today\'s Views',
+      value: defaultStats.todayViews.toLocaleString(),
+      description: 'Views today',
+      icon: TrendingUp,
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-900',
+    },
+    {
+      title: 'Published Today',
+      value: defaultStats.publishedToday,
+      description: 'Articles today',
+      icon: Calendar,
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-100 dark:bg-red-900',
+    },
+    {
+      title: 'Active Users',
+      value: defaultStats.activeUsers,
+      description: 'Online now',
+      icon: Activity,
+      color: 'text-indigo-600 dark:text-indigo-400',
+      bgColor: 'bg-indigo-100 dark:bg-indigo-900',
     },
   ];
 
-  const formatNumber = (num: number) => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + 'M';
-    } else if (num >= 1000) {
-      return (num / 1000).toFixed(1) + 'K';
-    }
-    return num.toString();
-  };
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {statCards.map((stat) => (
-        <Card key={stat.title}>
+        <Card key={stat.title} className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               {stat.title}
             </CardTitle>
-            <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+            <div className={`w-8 h-8 ${stat.bgColor} rounded-lg flex items-center justify-center`}>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
             </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900 dark:text-white">
-              {formatNumber(stat.value)}
+              {stat.value}
             </div>
-            <div className="flex items-center mt-1">
-              <TrendingUp 
-                className={`h-3 w-3 mr-1 ${
-                  stat.changeType === 'increase' 
-                    ? 'text-green-500' 
-                    : stat.changeType === 'decrease' 
-                    ? 'text-red-500' 
-                    : 'text-gray-500'
-                }`} 
-              />
-              <span 
-                className={`text-xs ${
-                  stat.changeType === 'increase' 
-                    ? 'text-green-500' 
-                    : stat.changeType === 'decrease' 
-                    ? 'text-red-500' 
-                    : 'text-gray-500'
-                }`}
-              >
-                {stat.change} from last month
-              </span>
-            </div>
+            <CardDescription className="text-xs text-gray-500 dark:text-gray-400">
+              {stat.description}
+            </CardDescription>
           </CardContent>
         </Card>
       ))}

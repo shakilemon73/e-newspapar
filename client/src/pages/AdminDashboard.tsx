@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
-import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
+import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
 import { DashboardStats } from '@/components/admin/DashboardStats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,31 +25,16 @@ export default function AdminDashboard() {
   // Always call hooks first - no conditional hook calls
   const { data: dashboardStats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/admin/stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/stats');
-      if (!response.ok) throw new Error('Failed to fetch dashboard stats');
-      return response.json();
-    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
     queryKey: ['/api/admin/recent-activity'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/recent-activity');
-      if (!response.ok) throw new Error('Failed to fetch recent activity');
-      return response.json();
-    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: articleStats, isLoading: articleStatsLoading } = useQuery({
     queryKey: ['/api/admin/articles/stats'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/articles/stats');
-      if (!response.ok) throw new Error('Failed to fetch article stats');
-      return response.json();
-    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
@@ -134,7 +119,7 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <WebsiteAdminLayout>
+    <AdminOnlyLayout>
       <div className="space-y-6">
         {/* Welcome Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
@@ -318,6 +303,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-    </WebsiteAdminLayout>
+    </AdminOnlyLayout>
   );
 }
