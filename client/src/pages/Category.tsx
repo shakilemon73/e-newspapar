@@ -43,6 +43,10 @@ const Category = () => {
         const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
         
         if (!categoryResponse.ok) {
+          if (categoryResponse.status === 404) {
+            setError('এই বিভাগটি খুঁজে পাওয়া যায়নি');
+            return;
+          }
           throw new Error('Failed to fetch category');
         }
         
@@ -53,6 +57,10 @@ const Category = () => {
         const articlesResponse = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}&offset=0`);
         
         if (!articlesResponse.ok) {
+          if (articlesResponse.status === 404) {
+            setError('এই বিভাগের কোন সংবাদ পাওয়া যায়নি');
+            return;
+          }
           throw new Error('Failed to fetch category articles');
         }
         

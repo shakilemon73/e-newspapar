@@ -4,6 +4,10 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Category from "@/pages/Category";
 import ArticleDetail from "@/pages/ArticleDetail";
+import VideoDetail from "@/pages/VideoDetail";
+import AudioDetail from "@/pages/AudioDetail";
+import Videos from "@/pages/Videos";
+import AudioArticles from "@/pages/AudioArticles";
 import EPaper from "@/pages/EPaper";
 import Search from "@/pages/Search";
 import Login from "@/pages/Login";
@@ -39,6 +43,10 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/category/:slug" component={Category} />
       <Route path="/article/:slug" component={ArticleDetail} />
+      <Route path="/video/:slug" component={VideoDetail} />
+      <Route path="/audio/:slug" component={AudioDetail} />
+      <Route path="/videos" component={Videos} />
+      <Route path="/audio-articles" component={AudioArticles} />
       <Route path="/epaper" component={EPaper} />
       <Route path="/search" component={Search} />
       <Route path="/login" component={Login} />

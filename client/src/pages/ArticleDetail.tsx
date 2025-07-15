@@ -114,6 +114,10 @@ const ArticleDetail = () => {
         const response = await fetch(`/api/articles/${articleSlug}`);
         
         if (!response.ok) {
+          if (response.status === 404) {
+            setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
+            return;
+          }
           throw new Error('Failed to fetch article');
         }
         
