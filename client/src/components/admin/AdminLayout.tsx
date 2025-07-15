@@ -32,7 +32,7 @@ interface AdminLayoutProps {
 const navigation = [
   {
     name: 'Dashboard',
-    href: '/admin',
+    href: '/admin-dashboard',
     icon: LayoutDashboard,
     badge: null,
   },
@@ -87,8 +87,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const { user, signOut } = useSupabaseAuth();
 
   const isActivePath = (href: string) => {
-    if (href === '/admin') {
-      return location === '/admin';
+    if (href === '/admin-dashboard') {
+      return location === '/admin-dashboard';
     }
     return location.startsWith(href);
   };
