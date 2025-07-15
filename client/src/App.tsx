@@ -32,6 +32,13 @@ import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
 import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
 import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
 import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import EditorialPolicy from "@/pages/EditorialPolicy";
+import Advertisement from "@/pages/Advertisement";
+import Archive from "@/pages/Archive";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -70,8 +77,17 @@ function Router() {
       <Route path="/admin/analytics" component={AnalyticsAdminPage} />
       <Route path="/admin/social-media" component={SocialMediaAdminPage} />
       <Route path="/admin/weather" component={WeatherAdminPage} />
-
       <Route path="/admin/settings" component={SettingsAdminPage} />
+      
+      {/* Footer Pages */}
+      <Route path="/about" component={About} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/editorial-policy" component={EditorialPolicy} />
+      <Route path="/advertisement" component={Advertisement} />
+      <Route path="/archive" component={Archive} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
+      
       <Route component={NotFound} />
     </Switch>
   );

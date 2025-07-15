@@ -96,7 +96,7 @@ export const Footer = () => {
                 <Link href="/contact" className="text-gray-300 hover:text-accent transition">যোগাযোগ</Link>
               </li>
               <li>
-                <Link href="/advertise" className="text-gray-300 hover:text-accent transition">বিজ্ঞাপন</Link>
+                <Link href="/advertisement" className="text-gray-300 hover:text-accent transition">বিজ্ঞাপন</Link>
               </li>
               <li>
                 <Link href="/archive" className="text-gray-300 hover:text-accent transition">আর্কাইভ</Link>
@@ -105,7 +105,7 @@ export const Footer = () => {
                 <Link href="/privacy-policy" className="text-gray-300 hover:text-accent transition">গোপনীয়তা নীতি</Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-300 hover:text-accent transition">ব্যবহারের শর্তাবলী</Link>
+                <Link href="/terms-of-service" className="text-gray-300 hover:text-accent transition">ব্যবহারের শর্তাবলী</Link>
               </li>
             </ul>
           </div>
