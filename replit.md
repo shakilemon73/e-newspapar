@@ -123,6 +123,17 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
+### Fixed Supabase Storage Bucket Issue for File Uploads (January 15, 2025)
+✓ Created automatic bucket setup functionality with createMediaBucket() function
+✓ Added server-side API endpoint `/api/admin/setup-storage` for bucket creation
+✓ Built StorageSetup component with one-click bucket configuration
+✓ Enhanced SupabaseStorage.uploadFile() with automatic bucket creation retry
+✓ Created FileUploadField component with integrated storage setup detection
+✓ Added proper error handling for missing bucket scenarios
+✓ Fixed file upload functionality in Create Article, Add Video, and Add Audio Article forms
+✓ Bucket automatically created with proper permissions and file type restrictions
+✓ All media uploads now work seamlessly with automatic fallback to setup flow
+
 ### Removed Media Management Page and Storage Tabs (January 15, 2025)
 ✓ Removed MediaAdminPage component completely
 ✓ Removed Media Management section from admin sidebar

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { SupabaseStorage, MediaType, getFileValidator } from '@/lib/supabase-storage';
 import { useToast } from '@/hooks/use-toast';
+import { StorageSetup } from './StorageSetup';
 
 interface MediaUploaderProps {
   type: MediaType;

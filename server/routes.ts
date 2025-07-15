@@ -1045,6 +1045,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Supabase Storage Setup endpoint
+  app.post(`${apiPrefix}/admin/setup-storage`, requireAdmin, async (req, res) => {
+    try {
+      // Check if bucket exists
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      
+      if (listError) {
+        return res.status(500).json({ error: listError.message });
+      }
+
+      const mediaExists = buckets?.some(bucket => bucket.name === 'media');
+      
+      if (mediaExists) {
+        return res.json({ success: true, message: 'Media bucket already exists' });
+      }
+
+      // Create the bucket
+      const { data, error } = await supabase.storage.createBucket('media', {
+        public: true,
+        allowedMimeTypes: [
+          'image/jpeg',
+          'image/jpg', 
+          'image/png',
+          'image/webp',
+          'video/mp4',
+          'video/webm',
+          'video/ogg',
+          'audio/mp3',
+          'audio/wav',
+          'audio/ogg',
+          'audio/mpeg'
+        ],
+        fileSizeLimit: 104857600 // 100MB
+      });
+
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      res.json({ success: true, message: 'Media bucket created successfully', data });
+    } catch (error: any) {
+      console.error('Error setting up storage:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Personalized Recommendations route
   app.get(`${apiPrefix}/personalized-recommendations`, async (req, res) => {
     try {

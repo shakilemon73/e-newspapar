@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { createMediaBucket } from './supabase-bucket-setup';
 
 export type MediaType = 'images' | 'videos' | 'audio';
 
@@ -19,6 +20,12 @@ export class SupabaseStorage {
     fileName?: string
   ): Promise<UploadResult> {
     try {
+      // First, ensure the media bucket exists
+      const bucketResult = await createMediaBucket();
+      if (!bucketResult.success && !bucketResult.message?.includes('already exists')) {
+        return { success: false, error: `Bucket setup failed: ${bucketResult.error}` };
+      }
+
       // Generate unique filename if not provided
       const fileExtension = file.name.split('.').pop();
       const uniqueFileName = fileName || `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
@@ -36,6 +43,35 @@ export class SupabaseStorage {
 
       if (error) {
         console.error('Upload error:', error);
+        // If bucket doesn't exist, try to create it and retry
+        if (error.message.includes('Bucket not found')) {
+          console.log('Bucket not found, creating media bucket...');
+          const createResult = await createMediaBucket();
+          if (createResult.success) {
+            // Retry upload after creating bucket
+            const { data: retryData, error: retryError } = await supabase.storage
+              .from('media')
+              .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+              });
+            
+            if (retryError) {
+              return { success: false, error: retryError.message };
+            }
+            
+            // Get public URL for successful retry
+            const { data: urlData } = supabase.storage
+              .from('media')
+              .getPublicUrl(filePath);
+
+            return {
+              success: true,
+              url: urlData.publicUrl,
+              path: filePath
+            };
+          }
+        }
         return { success: false, error: error.message };
       }
 
