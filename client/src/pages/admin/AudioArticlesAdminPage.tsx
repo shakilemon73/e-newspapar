@@ -24,6 +24,7 @@ import {
 import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { FileUploadField } from '@/components/admin/FileUploadField';
 
 interface AudioArticle {
   id: number;
@@ -44,6 +45,8 @@ export default function AudioArticlesAdminPage() {
   const [editingAudio, setEditingAudio] = useState<AudioArticle | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -137,8 +140,8 @@ export default function AudioArticlesAdminPage() {
       title: formData.get('title') as string,
       slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-'),
       excerpt: formData.get('excerpt') as string,
-      image_url: formData.get('imageUrl') as string,
-      audio_url: formData.get('audioUrl') as string,
+      image_url: imageUrl,
+      audio_url: audioUrl,
       duration: formData.get('duration') as string,
       published_at: new Date().toISOString(),
     };
@@ -148,6 +151,27 @@ export default function AudioArticlesAdminPage() {
     } else {
       createAudioMutation.mutate(audioData);
     }
+  };
+
+  // Form management functions
+  const openForm = (audio?: AudioArticle) => {
+    if (audio) {
+      setEditingAudio(audio);
+      setAudioUrl(audio.audioUrl);
+      setImageUrl(audio.imageUrl);
+    } else {
+      setEditingAudio(null);
+      setAudioUrl('');
+      setImageUrl('');
+    }
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingAudio(null);
+    setAudioUrl('');
+    setImageUrl('');
   };
 
   const toggleAudio = (audioUrl: string) => {
@@ -175,7 +199,7 @@ export default function AudioArticlesAdminPage() {
               Manage audio content for your Bengali news website
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} className="flex items-center gap-2">
+          <Button onClick={() => openForm()} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Add New Audio Article
           </Button>
@@ -314,10 +338,7 @@ export default function AudioArticlesAdminPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            setEditingAudio(audio);
-                            setIsFormOpen(true);
-                          }}
+                          onClick={() => openForm(audio)}
                         >
                           <Edit className="h-3 w-3" />
                         </Button>
@@ -366,25 +387,23 @@ export default function AudioArticlesAdminPage() {
                       defaultValue={editingAudio?.excerpt || ''}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="audioUrl">Audio URL</Label>
-                    <Input 
-                      id="audioUrl" 
-                      name="audioUrl" 
-                      type="url"
-                      required
-                      defaultValue={editingAudio?.audioUrl || ''}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="imageUrl">Image URL</Label>
-                    <Input 
-                      id="imageUrl" 
-                      name="imageUrl" 
-                      type="url"
-                      defaultValue={editingAudio?.imageUrl || ''}
-                    />
-                  </div>
+                  <FileUploadField
+                    label="Audio File"
+                    description="Upload audio file or provide URL"
+                    mediaType="audio"
+                    value={audioUrl}
+                    onChange={setAudioUrl}
+                    placeholder="https://example.com/audio.mp3"
+                    required
+                  />
+                  <FileUploadField
+                    label="Cover Image"
+                    description="Upload cover image or provide URL"
+                    mediaType="images"
+                    value={imageUrl}
+                    onChange={setImageUrl}
+                    placeholder="https://example.com/image.jpg"
+                  />
                   <div>
                     <Label htmlFor="duration">Duration (MM:SS)</Label>
                     <Input 
@@ -409,10 +428,7 @@ export default function AudioArticlesAdminPage() {
                     <Button 
                       type="button" 
                       variant="outline"
-                      onClick={() => {
-                        setIsFormOpen(false);
-                        setEditingAudio(null);
-                      }}
+                      onClick={closeForm}
                     >
                       Cancel
                     </Button>

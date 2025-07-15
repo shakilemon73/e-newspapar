@@ -57,6 +57,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters').max(200, 'Title cannot exceed 200 characters'),
@@ -537,18 +538,17 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                         name="imageUrl"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base font-semibold">Featured Image URL</FormLabel>
-                            <FormDescription>
-                              Add a compelling image that represents your article content
-                            </FormDescription>
                             <FormControl>
-                              <Input
-                                placeholder="https://example.com/image.jpg"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  handleImageUrlChange(e.target.value);
+                              <FileUploadField
+                                label="Featured Image"
+                                description="Add a compelling image that represents your article content"
+                                mediaType="images"
+                                value={field.value || ''}
+                                onChange={(url) => {
+                                  field.onChange(url);
+                                  handleImageUrlChange(url);
                                 }}
+                                placeholder="https://example.com/image.jpg"
                               />
                             </FormControl>
                             <FormMessage />

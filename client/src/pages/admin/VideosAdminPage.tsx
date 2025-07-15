@@ -23,6 +23,7 @@ import {
 import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { FileUploadField } from '@/components/admin/FileUploadField';
 
 interface VideoContent {
   id: number;
@@ -43,6 +44,8 @@ export default function VideosAdminPage() {
   const [, setLocation] = useLocation();
   const [editingVideo, setEditingVideo] = useState<VideoContent | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -136,8 +139,8 @@ export default function VideosAdminPage() {
       title: formData.get('title') as string,
       slug: (formData.get('title') as string).toLowerCase().replace(/\s+/g, '-'),
       description: formData.get('description') as string,
-      thumbnail_url: formData.get('thumbnailUrl') as string,
-      video_url: formData.get('videoUrl') as string,
+      thumbnail_url: thumbnailUrl,
+      video_url: videoUrl,
       duration: formData.get('duration') as string,
       published_at: new Date().toISOString(),
       view_count: 0,
@@ -148,6 +151,27 @@ export default function VideosAdminPage() {
     } else {
       createVideoMutation.mutate(videoData);
     }
+  };
+
+  // Reset form when opening/closing
+  const openForm = (video?: VideoContent) => {
+    if (video) {
+      setEditingVideo(video);
+      setVideoUrl(video.videoUrl);
+      setThumbnailUrl(video.thumbnailUrl);
+    } else {
+      setEditingVideo(null);
+      setVideoUrl('');
+      setThumbnailUrl('');
+    }
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setEditingVideo(null);
+    setVideoUrl('');
+    setThumbnailUrl('');
   };
 
   if (authLoading) {
@@ -171,7 +195,7 @@ export default function VideosAdminPage() {
               Manage video content for your Bengali news website
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} className="flex items-center gap-2">
+          <Button onClick={() => openForm()} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             Add New Video
           </Button>
@@ -292,10 +316,7 @@ export default function VideosAdminPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            setEditingVideo(video);
-                            setIsFormOpen(true);
-                          }}
+                          onClick={() => openForm(video)}
                         >
                           <Edit className="h-3 w-3" />
                         </Button>
@@ -344,25 +365,23 @@ export default function VideosAdminPage() {
                       defaultValue={editingVideo?.description || ''}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="videoUrl">Video URL</Label>
-                    <Input 
-                      id="videoUrl" 
-                      name="videoUrl" 
-                      type="url"
-                      required
-                      defaultValue={editingVideo?.videoUrl || ''}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="thumbnailUrl">Thumbnail URL</Label>
-                    <Input 
-                      id="thumbnailUrl" 
-                      name="thumbnailUrl" 
-                      type="url"
-                      defaultValue={editingVideo?.thumbnailUrl || ''}
-                    />
-                  </div>
+                  <FileUploadField
+                    label="Video File"
+                    description="Upload video file or provide URL"
+                    mediaType="videos"
+                    value={videoUrl}
+                    onChange={setVideoUrl}
+                    placeholder="https://example.com/video.mp4"
+                    required
+                  />
+                  <FileUploadField
+                    label="Thumbnail Image"
+                    description="Upload thumbnail image or provide URL"
+                    mediaType="images"
+                    value={thumbnailUrl}
+                    onChange={setThumbnailUrl}
+                    placeholder="https://example.com/thumbnail.jpg"
+                  />
                   <div>
                     <Label htmlFor="duration">Duration (MM:SS)</Label>
                     <Input 
@@ -387,10 +406,7 @@ export default function VideosAdminPage() {
                     <Button 
                       type="button" 
                       variant="outline"
-                      onClick={() => {
-                        setIsFormOpen(false);
-                        setEditingVideo(null);
-                      }}
+                      onClick={closeForm}
                     >
                       Cancel
                     </Button>
