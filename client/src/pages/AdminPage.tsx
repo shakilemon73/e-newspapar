@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useLocation } from 'wouter';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
 import { DashboardStats } from '@/components/admin/DashboardStats';
 import { DataTable } from '@/components/admin/DataTable';
 import { ContentEditor } from '@/components/admin/ContentEditor';
@@ -107,7 +107,7 @@ export default function AdminPage() {
   };
 
   return (
-    <AdminLayout>
+    <WebsiteAdminLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -163,6 +163,6 @@ export default function AdminPage() {
           mode={editorMode}
         />
       </div>
-    </AdminLayout>
+    </WebsiteAdminLayout>
   );
 }

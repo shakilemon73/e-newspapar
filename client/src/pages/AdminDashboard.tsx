@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
 import { DashboardStats } from '@/components/admin/DashboardStats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -124,15 +124,15 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <AdminLayout>
+    <WebsiteAdminLayout>
       <div className="space-y-6">
         {/* Welcome Header */}
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome to Admin Dashboard
+            Website Administration
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your news website content, users, and settings from here.
+            Complete control over প্রথম আলো website content, posts, and user management.
           </p>
         </div>
 
@@ -308,6 +308,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
+    </WebsiteAdminLayout>
   );
 }

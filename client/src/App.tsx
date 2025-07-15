@@ -12,6 +12,7 @@ import SavedArticles from "@/pages/SavedArticles";
 import ReadingHistory from "@/pages/ReadingHistory";
 import AdminPage from "@/pages/AdminPage";
 import AdminDashboard from "@/pages/AdminDashboard";
+import UserDashboard from "@/pages/UserDashboard";
 import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/search" component={Search} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/profile" component={Profile} />
+      <Route path="/dashboard" component={UserDashboard} />
       <Route path="/saved-articles" component={SavedArticles} />
       <Route path="/reading-history" component={ReadingHistory} />
       <Route path="/admin" component={AdminPage} />

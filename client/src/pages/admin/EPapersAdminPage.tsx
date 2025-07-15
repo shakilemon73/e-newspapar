@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
 import { DataTable } from '@/components/admin/DataTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -255,7 +255,7 @@ export default function EPapersAdminPage() {
 
   if (error) {
     return (
-      <AdminLayout>
+      <WebsiteAdminLayout>
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -267,12 +267,12 @@ export default function EPapersAdminPage() {
             </p>
           </div>
         </div>
-      </AdminLayout>
+      </WebsiteAdminLayout>
     );
   }
 
   return (
-    <AdminLayout>
+    <WebsiteAdminLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -510,6 +510,6 @@ export default function EPapersAdminPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminLayout>
+    </WebsiteAdminLayout>
   );
 }

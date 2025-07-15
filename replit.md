@@ -123,17 +123,18 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
-### Comprehensive Admin Dashboard System (January 15, 2025)
-✓ Created dedicated admin dashboard at `/admin-dashboard` route (separate from user profile admin)
+### Separated Admin System Architecture (January 15, 2025)
+✓ Created two completely separate dashboard systems:
+  • **Website Admin Dashboard** (`/admin-dashboard`) - For website owner to manage entire site
+  • **User Dashboard** (`/dashboard`) - For regular users to manage their profiles and activities
+✓ Built WebsiteAdminLayout component specifically for website content management
+✓ Created comprehensive UserDashboard with personal stats, saved articles, and reading history
+✓ Separated routing structure to distinguish between admin and user functionality
+✓ Updated Header component to show appropriate dashboard links based on user role
 ✓ Fixed React hooks error by restructuring conditional hook calls in components
-✓ Built complete admin API endpoints with proper authentication middleware
-✓ Added comprehensive CRUD operations for all content types (articles, categories, e-papers, breaking news, users)
 ✓ Enhanced admin authentication system with role-based access control
-✓ Created specialized admin pages for content management
-✓ Added admin navigation with proper sidebar layout and user interface
-✓ Implemented dashboard statistics and recent activity tracking
-✓ Fixed admin route structure with proper path handling and authentication
-✓ Admin system now fully functional with complete content management capabilities
+✓ Admin system focuses exclusively on posts/content management as requested
+✓ User dashboard provides personal profile management and activity tracking
 
 ### Completed Migration to Replit Environment (January 15, 2025)
 ✓ Successfully migrated from Replit Agent to main Replit environment
