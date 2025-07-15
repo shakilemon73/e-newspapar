@@ -314,7 +314,7 @@ export default function AdminPage() {
                   <TableCell>{article.category?.name}</TableCell>
                   <TableCell>{article.isFeatured ? 'Yes' : 'No'}</TableCell>
                   <TableCell>{new Date(article.publishedAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{article.viewCount}</TableCell>
+                  <TableCell>{article.view_count}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button

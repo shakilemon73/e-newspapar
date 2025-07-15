@@ -15,7 +15,7 @@ interface Article {
   excerpt: string;
   publishedAt: string;
   category: Category;
-  viewCount: number;
+  view_count: number;
 }
 
 type TimeRange = 'daily' | 'weekly' | 'monthly';
