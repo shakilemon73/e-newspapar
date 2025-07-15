@@ -1041,46 +1041,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Supabase Storage Setup endpoint
+  // Supabase Storage Setup endpoint - Uses service role key for bucket creation
   app.post(`${apiPrefix}/admin/setup-storage`, requireAdmin, async (req, res) => {
     try {
-      // Check if bucket exists
-      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      const { createMediaBucketWithServiceKey } = require('./create-bucket');
       
-      if (listError) {
-        return res.status(500).json({ error: listError.message });
-      }
-
-      const mediaExists = buckets?.some(bucket => bucket.name === 'media');
+      console.log('Creating Supabase Storage bucket with service role key...');
+      const result = await createMediaBucketWithServiceKey();
       
-      if (mediaExists) {
-        return res.json({ success: true, message: 'Media bucket already exists' });
+      if (result.success) {
+        return res.json({ 
+          success: true, 
+          message: result.message,
+          data: result.data 
+        });
+      } else {
+        return res.status(500).json({ 
+          success: false, 
+          error: result.error 
+        });
       }
-
-      // Create the bucket
-      const { data, error } = await supabase.storage.createBucket('media', {
-        public: true,
-        allowedMimeTypes: [
-          'image/jpeg',
-          'image/jpg', 
-          'image/png',
-          'image/webp',
-          'video/mp4',
-          'video/webm',
-          'video/ogg',
-          'audio/mp3',
-          'audio/wav',
-          'audio/ogg',
-          'audio/mpeg'
-        ],
-        fileSizeLimit: 524288000 // 500MB
-      });
-
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
-
-      res.json({ success: true, message: 'Media bucket created successfully', data });
     } catch (error: any) {
       console.error('Error setting up storage:', error);
       res.status(500).json({ error: error.message });
