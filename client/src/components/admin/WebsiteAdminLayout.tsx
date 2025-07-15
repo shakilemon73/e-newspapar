@@ -208,7 +208,7 @@ export function WebsiteAdminLayout({ children }: WebsiteAdminLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-64">
+      <div className="lg:ml-64 flex flex-col min-h-screen">
         {/* Top Navigation */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between px-4 py-3">
@@ -244,8 +244,10 @@ export function WebsiteAdminLayout({ children }: WebsiteAdminLayoutProps) {
         </div>
 
         {/* Page Content */}
-        <main className="p-6">
-          {children}
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6 max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

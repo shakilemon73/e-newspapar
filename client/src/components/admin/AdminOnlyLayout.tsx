@@ -240,7 +240,7 @@ export function AdminOnlyLayout({ children }: AdminOnlyLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="lg:ml-64">
+      <div className="lg:ml-72 flex flex-col min-h-screen">
         {/* Enhanced Top Header */}
         <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
           <div className="flex items-center justify-between px-6 py-4">
@@ -286,7 +286,7 @@ export function AdminOnlyLayout({ children }: AdminOnlyLayoutProps) {
         </div>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="flex-1 overflow-y-auto">
           {children}
         </main>
       </div>

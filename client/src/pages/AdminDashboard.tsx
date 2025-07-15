@@ -211,7 +211,7 @@ function ModernAdminDashboard() {
 
   return (
     <AdminOnlyLayout>
-      <div className="space-y-8 p-6">
+      <div className="space-y-8 p-6 max-w-7xl mx-auto">
         {/* Enhanced Header with UX Improvements */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
           <div className="flex justify-between items-start">
