@@ -475,5 +475,258 @@ export const storage = {
     
     if (error) throw error;
     return post;
+  },
+
+  // Admin-specific operations
+  
+  // Category management
+  async updateCategory(id: number, data: any) {
+    const { data: category, error } = await supabase
+      .from('categories')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return category;
+  },
+
+  async deleteCategory(id: number) {
+    const { error } = await supabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // E-Paper management
+  async updateEPaper(id: number, data: any) {
+    const { data: epaper, error } = await supabase
+      .from('epapers')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return epaper;
+  },
+
+  async deleteEPaper(id: number) {
+    const { error } = await supabase
+      .from('epapers')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  async setLatestEPaper(id: number) {
+    // First, set all epapers to not latest
+    await supabase
+      .from('epapers')
+      .update({ is_latest: false });
+    
+    // Then set the specified one as latest
+    const { error } = await supabase
+      .from('epapers')
+      .update({ is_latest: true })
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Breaking News management
+  async updateBreakingNews(id: number, data: any) {
+    const { data: news, error } = await supabase
+      .from('breaking_news')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return news;
+  },
+
+  async deleteBreakingNews(id: number) {
+    const { error } = await supabase
+      .from('breaking_news')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+  },
+
+  // Weather management
+  async createWeather(data: any) {
+    const { data: weather, error } = await supabase
+      .from('weather')
+      .insert(data)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return weather;
+  },
+
+  // User management
+  async getAllUsers() {
+    const { data, error } = await supabase.auth.admin.listUsers();
+    
+    if (error) throw error;
+    return data.users;
+  },
+
+  async updateUserRole(id: string, role: string) {
+    const { data, error } = await supabase.auth.admin.updateUserById(id, {
+      user_metadata: { role }
+    });
+    
+    if (error) throw error;
+    return data.user;
+  },
+
+  async deleteUser(id: string) {
+    const { error } = await supabase.auth.admin.deleteUser(id);
+    
+    if (error) throw error;
+  },
+
+  async getUserStats() {
+    const { data: users, error } = await supabase.auth.admin.listUsers();
+    
+    if (error) throw error;
+    
+    const totalUsers = users.length;
+    const adminUsers = users.filter(u => u.user_metadata?.role === 'admin').length;
+    const activeUsers = users.filter(u => {
+      const lastSignIn = new Date(u.last_sign_in_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return lastSignIn > thirtyDaysAgo;
+    }).length;
+    const newUsers = users.filter(u => {
+      const createdAt = new Date(u.created_at);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      return createdAt > sevenDaysAgo;
+    }).length;
+    
+    return { totalUsers, adminUsers, activeUsers, newUsers };
+  },
+
+  // Dashboard stats
+  async getDashboardStats() {
+    const [articles, users, epapers, breakingNews] = await Promise.all([
+      this.getAllArticles(),
+      this.getAllUsers(),
+      this.getAllEPapers(),
+      this.getActiveBreakingNews()
+    ]);
+    
+    return {
+      totalArticles: articles.length,
+      totalUsers: users.length,
+      totalEpapers: epapers.length,
+      activeBreakingNews: breakingNews.length,
+      totalViews: articles.reduce((sum, a) => sum + (a.view_count || 0), 0)
+    };
+  },
+
+  async getArticleStats() {
+    const articles = await this.getAllArticles();
+    
+    const totalArticles = articles.length;
+    const featuredArticles = articles.filter(a => a.is_featured).length;
+    const totalViews = articles.reduce((sum, a) => sum + (a.view_count || 0), 0);
+    const publishedToday = articles.filter(a => {
+      const publishDate = new Date(a.published_at);
+      const today = new Date();
+      return publishDate.toDateString() === today.toDateString();
+    }).length;
+    
+    return { totalArticles, featuredArticles, totalViews, publishedToday };
+  },
+
+  async getRecentActivity() {
+    // Get recent articles, breaking news, and epapers
+    const [articles, breakingNews, epapers] = await Promise.all([
+      supabase
+        .from('articles')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supabase
+        .from('breaking_news')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5),
+      supabase
+        .from('epapers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
+    ]);
+    
+    const activities = [];
+    
+    // Add articles
+    articles.data?.forEach(article => {
+      activities.push({
+        id: `article-${article.id}`,
+        action: 'Article published',
+        title: article.title,
+        time: this.formatRelativeTime(article.created_at),
+        created_at: article.created_at
+      });
+    });
+    
+    // Add breaking news
+    breakingNews.data?.forEach(news => {
+      activities.push({
+        id: `breaking-${news.id}`,
+        action: 'Breaking news added',
+        title: news.content.substring(0, 50) + '...',
+        time: this.formatRelativeTime(news.created_at),
+        created_at: news.created_at
+      });
+    });
+    
+    // Add epapers
+    epapers.data?.forEach(epaper => {
+      activities.push({
+        id: `epaper-${epaper.id}`,
+        action: 'E-paper uploaded',
+        title: epaper.title,
+        time: this.formatRelativeTime(epaper.created_at),
+        created_at: epaper.created_at
+      });
+    });
+    
+    // Sort by creation time and return top 10
+    return activities
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 10);
+  },
+
+  // Helper method for time formatting
+  formatRelativeTime(dateString: string): string {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMilliseconds = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMilliseconds / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
+      return `${diffInMinutes} মিনিট আগে`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours} ঘন্টা আগে`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays} দিন আগে`;
+    }
   }
 };

@@ -42,6 +42,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       setLocation('/auth');
+    } else if (!authLoading && user && user.user_metadata?.role !== 'admin') {
+      setLocation('/'); // Redirect non-admin users to home
     }
   }, [authLoading, user, setLocation]);
 
@@ -55,6 +57,22 @@ export default function AdminPage() {
 
   if (!user) {
     return null;
+  }
+
+  // Check if user is admin
+  if (user.user_metadata?.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Access Denied
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            You don't have permission to access the admin panel.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Fetch articles

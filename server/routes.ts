@@ -889,6 +889,279 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only API endpoints
+  
+  // Admin Categories Management
+  app.post(`${apiPrefix}/categories`, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = categoriesInsertSchema.parse(req.body);
+      const category = await storage.createCategory(validatedData);
+      return res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error creating category:', error);
+      return res.status(500).json({ error: 'Failed to create category' });
+    }
+  });
+
+  app.put(`${apiPrefix}/categories/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const categoryId = parseInt(id);
+      const validatedData = categoriesInsertSchema.partial().parse(req.body);
+      
+      const category = await storage.updateCategory(categoryId, validatedData);
+      return res.json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error updating category:', error);
+      return res.status(500).json({ error: 'Failed to update category' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/categories/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const categoryId = parseInt(id);
+      
+      await storage.deleteCategory(categoryId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      return res.status(500).json({ error: 'Failed to delete category' });
+    }
+  });
+
+  // Admin E-Papers Management
+  app.put(`${apiPrefix}/epapers/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const epaperId = parseInt(id);
+      const validatedData = epapersInsertSchema.partial().parse(req.body);
+      
+      const epaper = await storage.updateEPaper(epaperId, validatedData);
+      return res.json(epaper);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error updating epaper:', error);
+      return res.status(500).json({ error: 'Failed to update epaper' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/epapers/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const epaperId = parseInt(id);
+      
+      await storage.deleteEPaper(epaperId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting epaper:', error);
+      return res.status(500).json({ error: 'Failed to delete epaper' });
+    }
+  });
+
+  app.patch(`${apiPrefix}/epapers/:id/set-latest`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const epaperId = parseInt(id);
+      
+      await storage.setLatestEPaper(epaperId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error setting latest epaper:', error);
+      return res.status(500).json({ error: 'Failed to set latest epaper' });
+    }
+  });
+
+  // Admin Breaking News Management
+  app.post(`${apiPrefix}/breaking-news`, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = breakingNewsInsertSchema.parse(req.body);
+      const breakingNews = await storage.createBreakingNews(validatedData);
+      return res.status(201).json(breakingNews);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error creating breaking news:', error);
+      return res.status(500).json({ error: 'Failed to create breaking news' });
+    }
+  });
+
+  app.put(`${apiPrefix}/breaking-news/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const newsId = parseInt(id);
+      const validatedData = breakingNewsInsertSchema.partial().parse(req.body);
+      
+      const breakingNews = await storage.updateBreakingNews(newsId, validatedData);
+      return res.json(breakingNews);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error updating breaking news:', error);
+      return res.status(500).json({ error: 'Failed to update breaking news' });
+    }
+  });
+
+  app.patch(`${apiPrefix}/breaking-news/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const newsId = parseInt(id);
+      const { is_active } = req.body;
+      
+      const breakingNews = await storage.updateBreakingNews(newsId, { is_active });
+      return res.json(breakingNews);
+    } catch (error) {
+      console.error('Error updating breaking news status:', error);
+      return res.status(500).json({ error: 'Failed to update breaking news status' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/breaking-news/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const newsId = parseInt(id);
+      
+      await storage.deleteBreakingNews(newsId);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting breaking news:', error);
+      return res.status(500).json({ error: 'Failed to delete breaking news' });
+    }
+  });
+
+  // Admin Weather Management  
+  app.post(`${apiPrefix}/weather`, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = weatherInsertSchema.parse(req.body);
+      const weather = await storage.createWeather(validatedData);
+      return res.status(201).json(weather);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error creating weather:', error);
+      return res.status(500).json({ error: 'Failed to create weather' });
+    }
+  });
+
+  app.put(`${apiPrefix}/weather/:city`, requireAdmin, async (req, res) => {
+    try {
+      const { city } = req.params;
+      const validatedData = weatherInsertSchema.partial().parse(req.body);
+      
+      const weather = await storage.updateWeather(city, validatedData);
+      return res.json(weather);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error('Error updating weather:', error);
+      return res.status(500).json({ error: 'Failed to update weather' });
+    }
+  });
+
+  // Admin Users Management
+  app.get(`${apiPrefix}/admin/users`, requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      return res.json(users);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/users/stats`, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getUserStats();
+      return res.json(stats);
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      return res.status(500).json({ error: 'Failed to fetch user stats' });
+    }
+  });
+
+  app.put(`${apiPrefix}/admin/users/:id/role`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+      
+      const user = await storage.updateUserRole(id, role);
+      return res.json(user);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      return res.status(500).json({ error: 'Failed to update user role' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/admin/users/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await storage.deleteUser(id);
+      return res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
+  // Admin Dashboard Stats
+  app.get(`${apiPrefix}/admin/stats`, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      return res.json(stats);
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      return res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/articles/stats`, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getArticleStats();
+      return res.json(stats);
+    } catch (error) {
+      console.error('Error fetching article stats:', error);
+      return res.status(500).json({ error: 'Failed to fetch article stats' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/recent-activity`, requireAdmin, async (req, res) => {
+    try {
+      const activities = await storage.getRecentActivity();
+      return res.json(activities);
+    } catch (error) {
+      console.error('Error fetching recent activity:', error);
+      return res.status(500).json({ error: 'Failed to fetch recent activity' });
+    }
+  });
+
+  // Admin Article Management (additional endpoints)
+  app.patch(`${apiPrefix}/articles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleId = parseInt(id);
+      const updateData = req.body;
+      
+      const article = await storage.updateArticle(articleId, updateData);
+      return res.json(article);
+    } catch (error) {
+      console.error('Error updating article:', error);
+      return res.status(500).json({ error: 'Failed to update article' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

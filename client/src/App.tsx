@@ -11,6 +11,11 @@ import Profile from "@/pages/Profile";
 import SavedArticles from "@/pages/SavedArticles";
 import ReadingHistory from "@/pages/ReadingHistory";
 import AdminPage from "@/pages/AdminPage";
+import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
+import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
+import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
+import BreakingNewsAdminPage from "@/pages/admin/BreakingNewsAdminPage";
+import UsersAdminPage from "@/pages/admin/UsersAdminPage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -29,6 +34,11 @@ function Router() {
       <Route path="/saved-articles" component={SavedArticles} />
       <Route path="/reading-history" component={ReadingHistory} />
       <Route path="/admin" component={AdminPage} />
+      <Route path="/admin/articles" component={ArticlesAdminPage} />
+      <Route path="/admin/categories" component={CategoriesAdminPage} />
+      <Route path="/admin/epapers" component={EPapersAdminPage} />
+      <Route path="/admin/breaking-news" component={BreakingNewsAdminPage} />
+      <Route path="/admin/users" component={UsersAdminPage} />
       <Route component={NotFound} />
     </Switch>
   );
