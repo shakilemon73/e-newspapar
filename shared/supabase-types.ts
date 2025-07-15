@@ -121,6 +121,26 @@ export interface UserAchievement {
   achievement?: Achievement;
 }
 
+export interface ReadingHistory {
+  id: number;
+  user_id: string;
+  article_id: number;
+  last_read_at: string;
+  read_count: number;
+  created_at?: string;
+  updated_at?: string;
+  article?: Article;
+}
+
+export interface SavedArticle {
+  id: number;
+  user_id: string;
+  article_id: number;
+  saved_at: string;
+  created_at?: string;
+  article?: Article;
+}
+
 // Insert types (for creating new records)
 export type CategoryInsert = Omit<Category, 'id' | 'created_at' | 'updated_at'>;
 export type ArticleInsert = Omit<Article, 'id' | 'created_at' | 'updated_at' | 'category'>;

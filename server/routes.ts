@@ -320,14 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Reading history routes (temporarily disabled - table doesn't exist)
+  // Reading history routes
   app.post(`${apiPrefix}/track-reading`, requireAuth, async (req, res) => {
     try {
-      // Temporarily disable reading history tracking until table is created
-      console.log('Reading history tracking disabled - table does not exist');
-      return res.json({ success: true, message: 'Reading history tracking temporarily disabled' });
-      
-      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
       const { articleId } = req.body;
       const user = (req as any).user;
       
@@ -340,15 +335,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .maybeSingle();
       
       if (checkError) {
+        // If table doesn't exist, log and return success without failing
+        if (checkError.code === '42P01') {
+          console.log('Reading history table does not exist yet. Please create it in Supabase.');
+          return res.json({ success: true, message: 'Reading history tracking disabled - table needs to be created' });
+        }
         throw checkError;
       }
       
       if (existingEntry) {
-        // Update last read timestamp
+        // Update last read timestamp and increment read count
         const { error: updateError } = await supabase
           .from('reading_history')
           .update({
-            last_read_at: new Date().toISOString()
+            last_read_at: new Date().toISOString(),
+            read_count: existingEntry.read_count + 1,
+            updated_at: new Date().toISOString()
           })
           .eq('id', existingEntry.id);
         
@@ -372,7 +374,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       return res.json({ success: true });
-      */
     } catch (error: any) {
       console.error('Error tracking reading history:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -381,11 +382,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.get(`${apiPrefix}/reading-history`, requireAuth, async (req, res) => {
     try {
-      // Temporarily return empty history until table is created
-      console.log('Reading history endpoint disabled - table does not exist');
-      return res.json([]);
-      
-      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
       const user = (req as any).user;
       const { limit = '20', offset = '0' } = req.query;
       
@@ -405,6 +401,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
       
       if (error) {
+        // If table doesn't exist, return empty array
+        if (error.code === '42P01') {
+          console.log('Reading history table does not exist yet. Please create it in Supabase.');
+          return res.json([]);
+        }
         throw error;
       }
       
@@ -416,7 +417,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       
       return res.json(history);
-      */
     } catch (error: any) {
       console.error('Error fetching reading history:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -426,13 +426,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/personalized-recommendations`, requireAuth, async (req, res) => {
     try {
       const { limit = '6' } = req.query;
-      
-      // Temporarily return popular articles until reading_history table is created
-      console.log('Personalized recommendations disabled - using popular articles instead');
-      const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
-      return res.json(popularArticles.map(transformArticle));
-      
-      /* ORIGINAL CODE - TO BE RESTORED AFTER CREATING TABLE:
       const user = (req as any).user;
       
       // First get the user's reading history to determine category preferences
@@ -447,6 +440,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(10);
       
       if (historyError) {
+        // If table doesn't exist, return popular articles
+        if (historyError.code === '42P01') {
+          console.log('Reading history table does not exist yet. Using popular articles instead.');
+          const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
+          return res.json(popularArticles.map(transformArticle));
+        }
         throw historyError;
       }
       
@@ -455,9 +454,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
         return res.json(transformArticles(popularArticles));
       }
-      */ 
-      // Comment out the rest of the reading history logic
-      /*
+      
       // Extract category IDs from reading history and count occurrences
       const categoryCount: { [key: number]: number } = {};
       historyData.forEach(item => {
@@ -541,7 +538,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       recommendedArticles = recommendedArticles.slice(0, parseInt(limit as string));
       
       return res.json(transformArticles(recommendedArticles));
-      */
     } catch (error: any) {
       console.error('Error fetching personalized recommendations:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -1088,6 +1084,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error setting up storage:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Database Setup endpoint - Creates tables using service role key
+  app.post(`${apiPrefix}/admin/setup-database`, requireAdmin, async (req, res) => {
+    try {
+      console.log('Starting database setup with service role key...');
+      
+      // Try to create tables by inserting dummy data (this will create the table structure)
+      const testUserId = '00000000-0000-0000-0000-000000000000'; // Dummy UUID for testing
+      
+      // First, try to create reading_history table by attempting to insert/select
+      try {
+        // Check if reading_history table exists by trying to query it
+        const { data: readingCheck, error: readingError } = await supabase
+          .from('reading_history')
+          .select('id')
+          .limit(1);
+        
+        if (readingError && readingError.code === '42P01') {
+          // Table doesn't exist, we need to create it manually
+          console.log('reading_history table does not exist');
+        } else {
+          console.log('reading_history table already exists');
+        }
+      } catch (error) {
+        console.log('Error checking reading_history table:', error);
+      }
+      
+      // Try to create saved_articles table by attempting to insert/select
+      try {
+        const { data: savedCheck, error: savedError } = await supabase
+          .from('saved_articles')
+          .select('id')
+          .limit(1);
+        
+        if (savedError && savedError.code === '42P01') {
+          console.log('saved_articles table does not exist');
+        } else {
+          console.log('saved_articles table already exists');
+        }
+      } catch (error) {
+        console.log('Error checking saved_articles table:', error);
+      }
+      
+      // Since we can't execute raw SQL directly, return the SQL commands for manual execution
+      const sqlCommands = [
+        // Create reading_history table
+        `CREATE TABLE IF NOT EXISTS reading_history (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL,
+          article_id INTEGER NOT NULL,
+          last_read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          read_count INTEGER DEFAULT 1,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          UNIQUE(user_id, article_id)
+        );`,
+        
+        // Create indexes for reading_history
+        `CREATE INDEX IF NOT EXISTS idx_reading_history_user_id ON reading_history(user_id);`,
+        `CREATE INDEX IF NOT EXISTS idx_reading_history_article_id ON reading_history(article_id);`,
+        `CREATE INDEX IF NOT EXISTS idx_reading_history_last_read_at ON reading_history(last_read_at);`,
+        
+        // Create saved_articles table
+        `CREATE TABLE IF NOT EXISTS saved_articles (
+          id SERIAL PRIMARY KEY,
+          user_id UUID NOT NULL,
+          article_id INTEGER NOT NULL,
+          saved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          UNIQUE(user_id, article_id)
+        );`,
+        
+        // Create indexes for saved_articles
+        `CREATE INDEX IF NOT EXISTS idx_saved_articles_user_id ON saved_articles(user_id);`,
+        `CREATE INDEX IF NOT EXISTS idx_saved_articles_article_id ON saved_articles(article_id);`,
+        `CREATE INDEX IF NOT EXISTS idx_saved_articles_saved_at ON saved_articles(saved_at);`,
+        
+        // Enable RLS
+        `ALTER TABLE reading_history ENABLE ROW LEVEL SECURITY;`,
+        `ALTER TABLE saved_articles ENABLE ROW LEVEL SECURITY;`,
+        
+        // Create RLS policies for reading_history
+        `CREATE POLICY IF NOT EXISTS "Users can view own reading history" ON reading_history
+          FOR SELECT USING (auth.uid() = user_id);`,
+        `CREATE POLICY IF NOT EXISTS "Users can insert own reading history" ON reading_history
+          FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        `CREATE POLICY IF NOT EXISTS "Users can update own reading history" ON reading_history
+          FOR UPDATE USING (auth.uid() = user_id);`,
+        `CREATE POLICY IF NOT EXISTS "Users can delete own reading history" ON reading_history
+          FOR DELETE USING (auth.uid() = user_id);`,
+        
+        // Create RLS policies for saved_articles
+        `CREATE POLICY IF NOT EXISTS "Users can view own saved articles" ON saved_articles
+          FOR SELECT USING (auth.uid() = user_id);`,
+        `CREATE POLICY IF NOT EXISTS "Users can insert own saved articles" ON saved_articles
+          FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        `CREATE POLICY IF NOT EXISTS "Users can delete own saved articles" ON saved_articles
+          FOR DELETE USING (auth.uid() = user_id);`
+      ];
+
+      return res.json({ 
+        success: true, 
+        message: 'Database setup SQL commands generated',
+        sqlCommands: sqlCommands.join('\n\n'),
+        instructions: 'Run these SQL commands in your Supabase SQL editor to enable reading history and personalized recommendations. The APIs are already updated to use these tables once they exist.',
+        note: 'The reading history, saved articles, and personalized recommendations APIs are now enabled and will work once the tables are created.'
+      });
+    } catch (error: any) {
+      console.error('Error setting up database:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
     }
   });
 

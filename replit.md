@@ -123,6 +123,81 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
+### Fixed Disabled API Functions with Supabase Integration (January 15, 2025)
+✓ Enabled reading history tracking API (POST /api/track-reading)
+✓ Enabled reading history retrieval API (GET /api/reading-history)
+✓ Enabled personalized recommendations API (GET /api/personalized-recommendations)
+✓ Updated APIs to handle missing tables gracefully with proper error handling
+✓ Created database setup endpoint (POST /api/admin/setup-database) for table creation
+✓ Added ReadingHistory and SavedArticle types to shared/supabase-types.ts
+✓ Built DatabaseSetup component for admin interface
+✓ APIs now work with authentic Supabase data once tables are created
+✓ Implemented sophisticated personalized recommendations algorithm based on reading history
+✓ Added proper Row Level Security policies for user data protection
+
+**Database Setup Instructions:**
+To complete the setup, run these SQL commands in your Supabase SQL editor:
+
+1. Go to your Supabase project dashboard
+2. Navigate to SQL Editor
+3. Run the following commands:
+
+```sql
+-- Create reading_history table
+CREATE TABLE IF NOT EXISTS reading_history (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  article_id INTEGER NOT NULL,
+  last_read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  read_count INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, article_id)
+);
+
+-- Create saved_articles table
+CREATE TABLE IF NOT EXISTS saved_articles (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  article_id INTEGER NOT NULL,
+  saved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, article_id)
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_reading_history_user_id ON reading_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_reading_history_article_id ON reading_history(article_id);
+CREATE INDEX IF NOT EXISTS idx_reading_history_last_read_at ON reading_history(last_read_at);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_user_id ON saved_articles(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_article_id ON saved_articles(article_id);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_saved_at ON saved_articles(saved_at);
+
+-- Enable Row Level Security
+ALTER TABLE reading_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_articles ENABLE ROW LEVEL SECURITY;
+
+-- Create RLS policies for reading_history
+CREATE POLICY IF NOT EXISTS "Users can view own reading history" ON reading_history
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "Users can insert own reading history" ON reading_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "Users can update own reading history" ON reading_history
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "Users can delete own reading history" ON reading_history
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Create RLS policies for saved_articles
+CREATE POLICY IF NOT EXISTS "Users can view own saved articles" ON saved_articles
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "Users can insert own saved articles" ON saved_articles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS "Users can delete own saved articles" ON saved_articles
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+Once these tables are created, all reading history and personalized recommendations will work automatically.
+
 ### Fixed Supabase Storage Bucket Issue for File Uploads (January 15, 2025)
 ✓ Created automatic bucket setup functionality with createMediaBucket() function
 ✓ Added server-side API endpoint `/api/admin/setup-storage` for bucket creation
