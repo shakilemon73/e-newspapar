@@ -23,12 +23,13 @@ export function FileUploadField({
   type, 
   value, 
   onChange, 
-  placeholder = "Select file to upload",
+  placeholder = "Select file to upload or enter URL",
   accept,
-  maxSize = "5MB"
+  maxSize = "500MB"
 }: FileUploadFieldProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [showStorageSetup, setShowStorageSetup] = useState(false);
+  const [inputMode, setInputMode] = useState<'url' | 'upload'>('url');
   const { toast } = useToast();
 
   const handleFileUpload = async (file: File) => {
@@ -105,37 +106,69 @@ export function FileUploadField({
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <div className="flex items-center justify-between">
+        <Label>{label}</Label>
+        <div className="flex rounded-md border">
+          <Button
+            type="button"
+            variant={inputMode === 'url' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setInputMode('url')}
+            className="rounded-r-none"
+          >
+            URL
+          </Button>
+          <Button
+            type="button"
+            variant={inputMode === 'upload' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setInputMode('upload')}
+            className="rounded-l-none"
+          >
+            Upload
+          </Button>
+        </div>
+      </div>
       
       <div className="space-y-2">
         {value && (
           <div className="flex items-center space-x-2 p-2 bg-green-50 dark:bg-green-900/20 rounded">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <span className="text-sm text-green-800 dark:text-green-200">
-              File uploaded successfully
+              {inputMode === 'upload' ? 'File uploaded successfully' : 'URL set successfully'}
             </span>
           </div>
         )}
         
-        <div className="flex items-center space-x-2">
+        {inputMode === 'url' ? (
           <Input
-            type="file"
-            accept={accept}
-            onChange={handleFileChange}
-            disabled={isUploading}
-            className="flex-1"
+            type="url"
+            value={value || ''}
+            onChange={(e) => onChange?.(e.target.value)}
+            placeholder={`Enter ${type.slice(0, -1)} URL...`}
+            className="w-full"
           />
-          
-          {isUploading && (
-            <div className="flex items-center space-x-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm text-gray-600">Uploading...</span>
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <Input
+              type="file"
+              accept={accept}
+              onChange={handleFileChange}
+              disabled={isUploading}
+              className="flex-1"
+            />
+            
+            {isUploading && (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm text-gray-600">Uploading...</span>
+              </div>
+            )}
+          </div>
+        )}
         
         <p className="text-sm text-gray-500">
-          Max size: {maxSize}. {accept ? `Accepted formats: ${accept}` : ''}
+          {inputMode === 'upload' ? `Max size: ${maxSize}. ${accept ? `Accepted formats: ${accept}` : ''}` : 'Enter a direct URL to the media file'}
         </p>
       </div>
     </div>

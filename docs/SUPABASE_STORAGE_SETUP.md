@@ -59,9 +59,9 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 ## 5. File Size Limits
 
 The application enforces these limits:
-- **Images**: 5MB maximum
-- **Videos**: 100MB maximum  
-- **Audio**: 50MB maximum
+- **Images**: 500MB maximum
+- **Videos**: 500MB maximum  
+- **Audio**: 500MB maximum
 
 ## 6. Supported File Types
 

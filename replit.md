@@ -133,6 +133,8 @@ Uses Supabase PostgreSQL with the following main entities:
 ✓ Fixed file upload functionality in Create Article, Add Video, and Add Audio Article forms
 ✓ Bucket automatically created with proper permissions and file type restrictions
 ✓ All media uploads now work seamlessly with automatic fallback to setup flow
+✓ Added URL input option alongside file upload for flexible media management
+✓ Increased file size limits to 500MB for all media types (images, videos, audio)
 
 ### Removed Media Management Page and Storage Tabs (January 15, 2025)
 ✓ Removed MediaAdminPage component completely

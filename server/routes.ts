@@ -1077,7 +1077,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'audio/ogg',
           'audio/mpeg'
         ],
-        fileSizeLimit: 104857600 // 100MB
+        fileSizeLimit: 524288000 // 500MB
       });
 
       if (error) {
