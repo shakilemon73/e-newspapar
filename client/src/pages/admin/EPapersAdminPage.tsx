@@ -346,7 +346,9 @@ export default function EPapersAdminPage() {
               <Download className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,547</div>
+              <div className="text-2xl font-bold">
+                {epapers?.reduce((total: number, epaper: any) => total + (epaper.download_count || 0), 0) || 0}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Total downloads
               </p>

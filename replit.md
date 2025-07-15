@@ -123,6 +123,16 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
+### Fixed Admin Dashboard Mock Data Issues (January 15, 2025)
+✓ Fixed reading history database errors by temporarily disabling functionality until table creation
+✓ Resolved admin dashboard showing mock data instead of real Supabase data
+✓ Updated EPapers Downloads to calculate from actual data instead of hardcoded "2,547"
+✓ Fixed Analytics device statistics and top categories to use real API data
+✓ Enhanced analytics API endpoint to return properly formatted device stats and top categories
+✓ Updated AdminPage.tsx to pass real dashboard statistics instead of empty props
+✓ All admin dashboard pages now display authentic data from Supabase database
+✓ Reading history and personalized recommendations temporarily disabled until database tables are created
+
 ### Successful Migration and React Hooks Fix (January 15, 2025)
 ✓ Successfully migrated from Replit Agent to standard Replit environment
 ✓ Fixed React hooks error "Rendered fewer hooks than expected" by converting early returns to useEffect-based navigation

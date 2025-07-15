@@ -152,17 +152,13 @@ export function EnhancedAnalyticsPage() {
   ];
 
   const deviceData = [
-    { name: 'Mobile', percentage: 68, color: 'bg-blue-500' },
-    { name: 'Desktop', percentage: 24, color: 'bg-green-500' },
-    { name: 'Tablet', percentage: 8, color: 'bg-purple-500' }
+    { name: 'Mobile', percentage: analyticsData?.deviceStats?.mobile || 0, color: 'bg-blue-500' },
+    { name: 'Desktop', percentage: analyticsData?.deviceStats?.desktop || 0, color: 'bg-green-500' },
+    { name: 'Tablet', percentage: analyticsData?.deviceStats?.tablet || 0, color: 'bg-purple-500' }
   ];
 
-  const topCategories = [
-    { name: 'রাজনীতি', articles: 25, views: 15420, growth: '+12%' },
-    { name: 'খেলা', articles: 18, views: 12350, growth: '+8%' },
-    { name: 'আন্তর্জাতিক', articles: 22, views: 11280, growth: '+15%' },
-    { name: 'অর্থনীতি', articles: 15, views: 9650, growth: '+6%' },
-    { name: 'বিনোদন', articles: 12, views: 8430, growth: '+18%' }
+  const topCategories = analyticsData?.topCategories || [
+    { name: 'কোন ডেটা নেই', articles: 0, views: 0, growth: '0%' }
   ];
 
   return (

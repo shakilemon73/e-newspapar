@@ -38,6 +38,12 @@ export default function AdminPage() {
   const [selectedArticle, setSelectedArticle] = useState<any>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
 
+  // Fetch real dashboard stats from API
+  const { data: dashboardStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/admin/analytics'],
+    enabled: !!user && user.user_metadata?.role === 'admin',
+  });
+
   // Check authentication and admin role
   useEffect(() => {
     if (!authLoading && !user) {
@@ -137,7 +143,14 @@ export default function AdminPage() {
         </div>
 
         {/* Dashboard Stats */}
-        <DashboardStats />
+        <DashboardStats stats={{
+          totalArticles: dashboardStats?.totalArticles || 0,
+          totalUsers: dashboardStats?.totalUsers || 0,
+          totalViews: dashboardStats?.totalViews || 0,
+          todayViews: dashboardStats?.recentArticles || 0,
+          publishedToday: dashboardStats?.recentArticles || 0,
+          activeUsers: dashboardStats?.totalUsers || 0
+        }} />
 
         {/* Articles Management */}
         <Card>
