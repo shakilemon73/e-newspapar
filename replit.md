@@ -123,6 +123,17 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 15, 2025)
 
+### Added Media Management Storage Tabs to Admin Sidebar (January 15, 2025)
+✓ Enhanced admin sidebar with dedicated Media Management section
+✓ Added storage tabs for organized media file management:
+  • File Manager - Main media management dashboard
+  • Images - Direct access to image files with tab parameter
+  • Videos - Direct access to video files with tab parameter
+  • Audio - Direct access to audio files with tab parameter
+✓ Integrated with existing MediaAdminPage component for seamless navigation
+✓ Added proper icons (FolderOpen, FileImage, FileVideo, FileAudio) for visual clarity
+✓ URL query parameter support for direct tab navigation (?tab=images/videos/audio)
+
 ### Implemented Supabase Storage for Media Files (January 15, 2025)
 ✓ Created comprehensive Supabase Storage integration for images, videos, and audio files
 ✓ Built MediaUploader component with drag-and-drop functionality and progress tracking
