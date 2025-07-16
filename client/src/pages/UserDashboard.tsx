@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -45,7 +46,18 @@ export default function UserDashboard() {
   const { data: savedArticles, isLoading: savedLoading, error: savedError } = useQuery({
     queryKey: ['/api/saved-articles'],
     queryFn: async () => {
-      const response = await fetch('/api/saved-articles');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No authentication session');
+      }
+      
+      const response = await fetch('/api/saved-articles', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 500) {
           const errorData = await response.json();
@@ -65,7 +77,18 @@ export default function UserDashboard() {
   const { data: readingHistory, isLoading: historyLoading, error: historyError } = useQuery({
     queryKey: ['/api/reading-history'],
     queryFn: async () => {
-      const response = await fetch('/api/reading-history');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No authentication session');
+      }
+      
+      const response = await fetch('/api/reading-history', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 500) {
           const errorData = await response.json();
@@ -85,7 +108,23 @@ export default function UserDashboard() {
   const { data: userAnalytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['/api/user/analytics'],
     queryFn: async () => {
-      const response = await fetch('/api/user/analytics');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return {
+          totalInteractions: 0,
+          interactionsByType: {},
+          topCategories: [],
+          recentReading: []
+        };
+      }
+      
+      const response = await fetch('/api/user/analytics', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 500) {
           return {
@@ -106,7 +145,18 @@ export default function UserDashboard() {
   const { data: userPreferences, isLoading: preferencesLoading } = useQuery({
     queryKey: ['/api/user/preferences'],
     queryFn: async () => {
-      const response = await fetch('/api/user/preferences');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return [];
+      }
+      
+      const response = await fetch('/api/user/preferences', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 500) {
           return [];
@@ -122,7 +172,18 @@ export default function UserDashboard() {
   const { data: userInteractions, isLoading: interactionsLoading } = useQuery({
     queryKey: ['/api/user/interactions'],
     queryFn: async () => {
-      const response = await fetch('/api/user/interactions');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return [];
+      }
+      
+      const response = await fetch('/api/user/interactions', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 500) {
           return [];
