@@ -146,30 +146,38 @@ const Search = () => {
           <>
             <div className="space-y-4">
               {articles.map((article) => (
-                <Link key={article.id} href={`/article/${article.slug}`}>
-                  <a className="block bg-white rounded shadow-sm p-4 hover:shadow-md transition flex flex-col md:flex-row">
-                    <div className="flex-shrink-0 w-full md:w-32 h-48 md:h-24 mb-4 md:mb-0 md:mr-4">
-                      <img 
-                        src={article.imageUrl} 
-                        alt={article.title} 
-                        className="w-full h-full object-cover rounded"
-                      />
+                <div key={article.id} className="bg-white rounded shadow-sm p-4 hover:shadow-md transition flex flex-col md:flex-row">
+                  <div className="flex-shrink-0 w-full md:w-32 h-48 md:h-24 mb-4 md:mb-0 md:mr-4">
+                    <Link href={`/article/${article.slug}`}>
+                      <a>
+                        <img 
+                          src={article.imageUrl} 
+                          alt={article.title} 
+                          className="w-full h-full object-cover rounded hover:opacity-90 transition"
+                        />
+                      </a>
+                    </Link>
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center mb-1">
+                      <Link href={`/category/${article.category.slug}`}>
+                        <a className="text-xs bg-light px-2 py-1 rounded mr-2 hover:bg-accent hover:text-white transition">
+                          {article.category.name}
+                        </a>
+                      </Link>
+                      <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.publishedAt)}</span>
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center mb-1">
-                        <Link href={`/category/${article.category.slug}`}>
-                          <a className="text-xs bg-light px-2 py-1 rounded mr-2 hover:bg-accent hover:text-white transition">
-                            {article.category.name}
-                          </a>
-                        </Link>
-                        <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.publishedAt)}</span>
-                      </div>
-                      <h3 className="font-bold text-lg mb-2 font-hind">{article.title}</h3>
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{article.excerpt}</p>
-                      <span className="text-accent text-sm">বিস্তারিত পড়ুন</span>
-                    </div>
-                  </a>
-                </Link>
+                    <Link href={`/article/${article.slug}`}>
+                      <a>
+                        <h3 className="font-bold text-lg mb-2 font-hind hover:text-accent transition">{article.title}</h3>
+                      </a>
+                    </Link>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{article.excerpt}</p>
+                    <Link href={`/article/${article.slug}`}>
+                      <a className="text-accent text-sm hover:underline">বিস্তারিত পড়ুন</a>
+                    </Link>
+                  </div>
+                </div>
               ))}
             </div>
             
