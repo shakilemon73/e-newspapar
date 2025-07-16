@@ -29,70 +29,104 @@ const Home = () => {
       <Helmet>
         <title>প্রথম আলো | বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র</title>
         <meta name="description" content="বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta property="og:title" content="প্রথম আলো | বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র" />
+        <meta property="og:description" content="বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার" />
+        <meta property="og:type" content="website" />
       </Helmet>
 
-      <div className="container mx-auto px-4 py-6">
+      <main className="min-h-screen bg-background">
         {/* Breaking News Ticker */}
-        <BreakingNewsTicker />
+        <section className="fade-in">
+          <BreakingNewsTicker />
+        </section>
 
         {/* Featured Section with Slideshow */}
-        <FeaturedSlideshow />
+        <section className="container-modern py-6 slide-up">
+          <FeaturedSlideshow />
+        </section>
 
         {/* Weather and Latest News Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Weather Widget */}
-          <WeatherWidget />
-          
-          {/* Latest News */}
-          <LatestNews />
-        </div>
+        <section className="container-modern py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Weather Widget */}
+            <div className="slide-in-right">
+              <WeatherWidget />
+            </div>
+            
+            {/* Latest News */}
+            <div className="slide-up">
+              <LatestNews />
+            </div>
+          </div>
+        </section>
         
         {/* Personalized Recommendations */}
-        <PersonalizedRecommendations />
+        <section className="container-modern py-6 fade-in">
+          <PersonalizedRecommendations />
+        </section>
 
         {/* Category News Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          {categories.map((category) => (
-            <CategoryNewsSection 
-              key={category.slug} 
-              categorySlug={category.slug} 
-              limit={4}
-            />
-          ))}
-        </div>
+        <section className="container-modern py-6">
+          <div className="grid-news mb-8">
+            {categories.map((category, index) => (
+              <div 
+                key={category.slug} 
+                className="bounce-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <CategoryNewsSection 
+                  categorySlug={category.slug} 
+                  limit={4}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* E-Paper Section */}
-        <EPaperSection />
+        <section className="container-modern py-6 scale-in">
+          <EPaperSection />
+        </section>
 
         {/* Popular News Section */}
-        <PopularNewsSection />
+        <section className="container-modern py-6 slide-up">
+          <PopularNewsSection />
+        </section>
         
         {/* Video Content Section */}
-        <div className="mb-8">
+        <section className="container-modern py-6 fade-in">
           <VideoContent />
-        </div>
+        </section>
 
         {/* Lifestyle and Entertainment */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {lifestyleCategories.map((category) => (
-            <CategoryNewsSection 
-              key={category.slug} 
-              categorySlug={category.slug} 
-              limit={4}
-            />
-          ))}
-        </div>
+        <section className="container-modern py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {lifestyleCategories.map((category, index) => (
+              <div 
+                key={category.slug} 
+                className="rotate-in"
+                style={{ animationDelay: `${index * 0.2}s` }}
+              >
+                <CategoryNewsSection 
+                  categorySlug={category.slug} 
+                  limit={4}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
         
         {/* Audio Articles Section */}
-        <div className="mb-8">
+        <section className="container-modern py-6 slide-in-right">
           <AudioArticles />
-        </div>
+        </section>
         
         {/* Social Media Feed Section */}
-        <div className="mb-8">
+        <section className="container-modern py-6 fade-in">
           <SocialMediaFeed />
-        </div>
-      </div>
+        </section>
+      </main>
     </>
   );
 };
