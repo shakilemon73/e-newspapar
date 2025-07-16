@@ -264,26 +264,28 @@ export const Header = () => {
       <nav className="bg-background/98 backdrop-blur-sm border-b border-border">
         <div className="container-modern">
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
-            <Link href="/" className="nav-link">
-              <Home size={16} className="mr-1" />
-              প্রথম পাতা
-            </Link>
-            
-            {categories.map(category => (
-              <Link 
-                key={category.id}
-                href={`/category/${category.slug}`} 
-                className="nav-link"
-              >
-                {category.name}
+          <div className="hidden md:flex items-center justify-start py-2 overflow-x-auto">
+            <div className="flex items-center space-x-2 min-w-max">
+              <Link href="/" className="nav-link flex items-center whitespace-nowrap">
+                <Home size={16} className="mr-1" />
+                প্রথম পাতা
               </Link>
-            ))}
-            
-            <Link href="/epaper" className="nav-link">ই-পেপার</Link>
-            <Link href="/videos" className="nav-link">ভিডিও</Link>
-            <Link href="/audio-articles" className="nav-link">অডিও</Link>
-            <Link href="/advanced-search" className="nav-link">উন্নত অনুসন্ধান</Link>
+              
+              {categories.map(category => (
+                <Link 
+                  key={category.id}
+                  href={`/category/${category.slug}`} 
+                  className="nav-link whitespace-nowrap"
+                >
+                  {category.name}
+                </Link>
+              ))}
+              
+              <Link href="/epaper" className="nav-link whitespace-nowrap">ই-পেপার</Link>
+              <Link href="/videos" className="nav-link whitespace-nowrap">ভিডিও</Link>
+              <Link href="/audio-articles" className="nav-link whitespace-nowrap">অডিও</Link>
+              <Link href="/advanced-search" className="nav-link whitespace-nowrap">উন্নত অনুসন্ধান</Link>
+            </div>
           </div>
           
           {/* Mobile Navigation */}
