@@ -1937,27 +1937,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Advanced Bengali search
+  // Advanced Bengali search - using the same approach as regular search
   app.get(`${apiPrefix}/search/advanced`, async (req, res) => {
     try {
       const { q: query, category, limit } = req.query;
       
-      console.log('Advanced search endpoint called with params:', { query, category, limit });
+      console.log('Advanced search endpoint called with query:', query);
       
       if (!query) {
-        console.log('No query provided');
         return res.status(400).json({ error: 'Search query is required' });
       }
       
-      console.log('Calling advancedBengaliSearch function...');
-      const results = await advancedBengaliSearch(
+      // Use the same search logic as regular search but with additional filters
+      const searchResults = await storage.searchArticles(
         query as string,
-        category ? parseInt(category as string) : null,
-        limit ? parseInt(limit as string) : 20
+        parseInt(limit as string) || 20,
+        0
       );
       
-      console.log('Advanced search results:', results?.length || 0);
-      return res.json(results);
+      // Filter by category if provided
+      let filteredResults = searchResults;
+      if (category) {
+        const categoryId = parseInt(category as string);
+        filteredResults = searchResults.filter(article => article.categoryId === categoryId);
+      }
+      
+      // Transform results to match advanced search format
+      const transformedResults = filteredResults.map(article => ({
+        id: article.id,
+        title: article.title,
+        excerpt: article.excerpt,
+        image_url: article.imageUrl,
+        published_at: article.publishedAt,
+        category_name: article.category?.name || '',
+        search_rank: 1.0
+      }));
+      
+      console.log('Advanced search results:', transformedResults.length);
+      return res.json(transformedResults);
     } catch (error) {
       console.error('Error performing advanced search:', error);
       return res.status(500).json({ error: 'Failed to perform search' });

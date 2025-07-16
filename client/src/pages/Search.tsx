@@ -153,32 +153,28 @@ const Search = () => {
                 <div key={article.id} className="bg-white rounded shadow-sm p-4 hover:shadow-md transition flex flex-col md:flex-row">
                   <div className="flex-shrink-0 w-full md:w-32 h-48 md:h-24 mb-4 md:mb-0 md:mr-4">
                     <Link href={`/article/${article.slug}`}>
-                      <a>
-                        <img 
-                          src={article.imageUrl} 
-                          alt={article.title} 
-                          className="w-full h-full object-cover rounded hover:opacity-90 transition"
-                        />
-                      </a>
+                      <img 
+                        src={article.imageUrl} 
+                        alt={article.title} 
+                        className="w-full h-full object-cover rounded hover:opacity-90 transition cursor-pointer"
+                      />
                     </Link>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center mb-1">
                       <Link href={`/category/${article.category.slug}`}>
-                        <a className="text-xs bg-light px-2 py-1 rounded mr-2 hover:bg-accent hover:text-white transition">
+                        <span className="text-xs bg-light px-2 py-1 rounded mr-2 hover:bg-accent hover:text-white transition cursor-pointer">
                           {article.category.name}
-                        </a>
+                        </span>
                       </Link>
                       <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.publishedAt)}</span>
                     </div>
                     <Link href={`/article/${article.slug}`}>
-                      <a>
-                        <h3 className="font-bold text-lg mb-2 font-hind hover:text-accent transition">{article.title}</h3>
-                      </a>
+                      <h3 className="font-bold text-lg mb-2 font-hind hover:text-accent transition cursor-pointer">{article.title}</h3>
                     </Link>
                     <p className="text-sm text-gray-600 mb-2 line-clamp-2">{article.excerpt}</p>
                     <Link href={`/article/${article.slug}`}>
-                      <a className="text-accent text-sm hover:underline">বিস্তারিত পড়ুন</a>
+                      <span className="text-accent text-sm hover:underline cursor-pointer">বিস্তারিত পড়ুন</span>
                     </Link>
                   </div>
                 </div>
