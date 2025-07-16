@@ -619,23 +619,23 @@ export default function UserDashboard() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-muted-foreground">মাসিক পড়া</span>
-                      <span className="text-foreground">{userStats.readArticles}/৫০</span>
+                      <span className="text-foreground">{finalUserStats.readArticles}/৫০</span>
                     </div>
-                    <Progress value={Math.min((userStats.readArticles / 50) * 100, 100)} className="h-2" />
+                    <Progress value={Math.min((finalUserStats.readArticles / 50) * 100, 100)} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-muted-foreground">সংরক্ষণ লক্ষ্য</span>
-                      <span className="text-foreground">{userStats.savedArticles}/২০</span>
+                      <span className="text-foreground">{finalUserStats.savedArticles}/২০</span>
                     </div>
-                    <Progress value={Math.min((userStats.savedArticles / 20) * 100, 100)} className="h-2" />
+                    <Progress value={Math.min((finalUserStats.savedArticles / 20) * 100, 100)} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                       <span className="text-muted-foreground">পড়ার ধারা</span>
-                      <span className="text-foreground">{userStats.readingStreak}/৩০ দিন</span>
+                      <span className="text-foreground">{finalUserStats.readingStreak}/৩০ দিন</span>
                     </div>
-                    <Progress value={Math.min((userStats.readingStreak / 30) * 100, 100)} className="h-2" />
+                    <Progress value={Math.min((finalUserStats.readingStreak / 30) * 100, 100)} className="h-2" />
                   </div>
                 </div>
               </CardContent>
