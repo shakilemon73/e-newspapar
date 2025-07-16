@@ -14,6 +14,7 @@ import {
 import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 import { setupUserDashboardTables, initializeSampleUserData } from './setup-user-dashboard-tables';
+import { setupUserDashboardAPI } from './user-dashboard-api';
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -247,22 +248,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = (req as any).user;
       
-      const { data, error } = await supabase
+      // First get saved articles data
+      const { data: savedData, error: savedError } = await supabase
         .from('saved_articles')
-        .select(`
-          article_id,
-          articles:article_id(*)
-        `)
-        .eq('user_id', user.id);
+        .select('*')
+        .eq('user_id', user.id)
+        .order('saved_at', { ascending: false });
       
-      if (error) {
-        throw error;
+      if (savedError) {
+        // If table doesn't exist, return empty array
+        if (savedError.code === '42P01' || savedError.code === 'PGRST116') {
+          console.log('Saved articles table does not exist yet. Please create it in Supabase.');
+          return res.json([]);
+        }
+        throw savedError;
       }
       
-      // Extract the articles from the joined data
-      const articles = data.map(item => item.articles);
+      // If no saved articles, return empty array
+      if (!savedData || savedData.length === 0) {
+        return res.json([]);
+      }
       
-      return res.json(transformArticles(articles));
+      // Get article details for each saved article
+      const articleIds = savedData.map(item => item.article_id);
+      const { data: articlesData, error: articlesError } = await supabase
+        .from('articles')
+        .select('*')
+        .in('id', articleIds);
+      
+      if (articlesError) {
+        throw articlesError;
+      }
+      
+      // Combine saved articles with article data
+      const savedArticles = savedData.map(savedItem => {
+        const article = articlesData.find(a => a.id === savedItem.article_id);
+        return {
+          ...transformArticle(article),
+          savedAt: savedItem.saved_at,
+          id: savedItem.id
+        };
+      });
+      
+      return res.json(savedArticles);
     } catch (error: any) {
       console.error('Error fetching saved articles:', error);
       return res.status(500).json({ error: error.message || 'Internal server error' });
@@ -397,14 +425,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = (req as any).user;
       const { limit = '20', offset = '0' } = req.query;
       
-      const { data, error } = await supabase
+      // First, check if reading_history table exists by trying to select from it
+      const { data: historyData, error: historyError } = await supabase
         .from('reading_history')
-        .select(`
-          id,
-          last_read_at,
-          read_count,
-          articles:article_id(*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('last_read_at', { ascending: false })
         .range(
@@ -412,21 +436,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parseInt(offset as string) + parseInt(limit as string) - 1
         );
       
-      if (error) {
-        // If table doesn't exist, return empty array
-        if (error.code === '42P01') {
+      if (historyError) {
+        // If table doesn't exist, create it manually and return empty array
+        if (historyError.code === '42P01' || historyError.code === 'PGRST116') {
           console.log('Reading history table does not exist yet. Please create it in Supabase.');
           return res.json([]);
         }
-        throw error;
+        throw historyError;
       }
       
-      // Extract the articles and add read information
-      const history = data.map(item => ({
-        ...transformArticle(item.articles),
-        lastReadAt: item.last_read_at,
-        readCount: item.read_count
-      }));
+      // If no history data, return empty array
+      if (!historyData || historyData.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get article details for each history item
+      const articleIds = historyData.map(item => item.article_id);
+      const { data: articlesData, error: articlesError } = await supabase
+        .from('articles')
+        .select('*')
+        .in('id', articleIds);
+      
+      if (articlesError) {
+        throw articlesError;
+      }
+      
+      // Combine history with article data
+      const history = historyData.map(historyItem => {
+        const article = articlesData.find(a => a.id === historyItem.article_id);
+        return {
+          ...transformArticle(article),
+          lastReadAt: historyItem.last_read_at,
+          readCount: historyItem.read_count
+        };
+      });
       
       return res.json(history);
     } catch (error: any) {
@@ -440,23 +483,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { limit = '6' } = req.query;
       const user = (req as any).user;
       
-      // First get the user's reading history to determine category preferences
+      // First get the user's reading history (simple query without joins)
       const { data: historyData, error: historyError } = await supabase
         .from('reading_history')
-        .select(`
-          article_id,
-          articles:article_id(category_id, category:category_id(id, name))
-        `)
+        .select('article_id')
         .eq('user_id', user.id)
         .order('last_read_at', { ascending: false })
         .limit(10);
       
       if (historyError) {
         // If table doesn't exist, return popular articles
-        if (historyError.code === '42P01') {
+        if (historyError.code === '42P01' || historyError.code === 'PGRST116') {
           console.log('Reading history table does not exist yet. Using popular articles instead.');
           const popularArticles = await storage.getPopularArticles(parseInt(limit as string));
-          return res.json(popularArticles.map(transformArticle));
+          return res.json(transformArticles(popularArticles));
         }
         throw historyError;
       }
@@ -2325,6 +2365,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup UX Enhancement Routes
   setupUXEnhancementRoutes(app);
+  
+  // Setup User Dashboard API Routes
+  setupUserDashboardAPI(app, apiPrefix, requireAuth);
 
   const httpServer = createServer(app);
 

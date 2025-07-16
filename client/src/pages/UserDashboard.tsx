@@ -42,6 +42,44 @@ export default function UserDashboard() {
   const queryClient = useQueryClient();
   const [setupRequired, setSetupRequired] = useState(false);
 
+  // Fetch user statistics
+  const { data: userStats, isLoading: statsLoading, error: statsError } = useQuery({
+    queryKey: ['/api/user/stats'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No authentication session');
+      }
+      
+      const response = await fetch('/api/user/stats', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 500) {
+          const errorData = await response.json();
+          if (errorData.error && (errorData.error.includes('does not exist') || errorData.error.includes('relation'))) {
+            setSetupRequired(true);
+            return {
+              savedArticles: 0,
+              readArticles: 0,
+              readingStreak: 0,
+              totalInteractions: 0,
+              memberSince: new Date().toLocaleDateString('bn-BD'),
+              favoriteCategories: []
+            };
+          }
+        }
+        throw new Error('Failed to fetch user statistics');
+      }
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
   // Fetch user's saved articles
   const { data: savedArticles, isLoading: savedLoading, error: savedError } = useQuery({
     queryKey: ['/api/saved-articles'],
@@ -61,7 +99,7 @@ export default function UserDashboard() {
       if (!response.ok) {
         if (response.status === 500) {
           const errorData = await response.json();
-          if (errorData.error.includes('relation "saved_articles" does not exist')) {
+          if (errorData.error && (errorData.error.includes('does not exist') || errorData.error.includes('relation'))) {
             setSetupRequired(true);
             return [];
           }
@@ -216,15 +254,14 @@ export default function UserDashboard() {
     return null;
   }
 
-  // Calculate real user stats from actual data
-  const userStats = {
+  // Use userStats from API or calculate from local data
+  const finalUserStats = userStats || {
     savedArticles: savedArticles?.length || 0,
     readArticles: readingHistory?.length || 0,
     memberSince: new Date(user.created_at).toLocaleDateString('bn-BD'),
     totalInteractions: userAnalytics?.totalInteractions || 0,
     readingStreak: calculateReadingStreak(readingHistory || []),
-    favoriteCategories: userPreferences?.slice(0, 3) || [],
-    recentActivity: userInteractions?.slice(0, 5) || []
+    favoriteCategories: userPreferences?.slice(0, 3) || []
   };
 
   // Calculate reading streak from actual data
@@ -338,7 +375,7 @@ export default function UserDashboard() {
                         সংরক্ষিত নিবন্ধ
                       </p>
                       <p className="text-2xl font-bold text-foreground">
-                        {userStats.savedArticles}
+                        {finalUserStats.savedArticles}
                       </p>
                     </div>
                   </div>
@@ -354,7 +391,7 @@ export default function UserDashboard() {
                         পড়া নিবন্ধ
                       </p>
                       <p className="text-2xl font-bold text-foreground">
-                        {userStats.readArticles}
+                        {finalUserStats.readArticles}
                       </p>
                     </div>
                   </div>
@@ -370,7 +407,7 @@ export default function UserDashboard() {
                         পড়ার ধারা
                       </p>
                       <p className="text-2xl font-bold text-foreground">
-                        {userStats.readingStreak} দিন
+                        {finalUserStats.readingStreak} দিন
                       </p>
                     </div>
                   </div>
@@ -386,7 +423,7 @@ export default function UserDashboard() {
                         মোট মিথস্ক্রিয়া
                       </p>
                       <p className="text-2xl font-bold text-foreground">
-                        {userStats.totalInteractions}
+                        {finalUserStats.totalInteractions}
                       </p>
                     </div>
                   </div>
