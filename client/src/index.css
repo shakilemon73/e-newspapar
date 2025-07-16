@@ -818,6 +818,309 @@ hr {
   }
 }
 
+/* UX Enhancement Styles */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Accessibility Enhancements */
+.reading-focus-mode {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.reading-focus-mode * {
+  transition: opacity 0.3s ease;
+}
+
+.high-contrast {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
+  --primary: 210 100% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 90%;
+  --secondary-foreground: 0 0% 10%;
+  --muted: 0 0% 95%;
+  --muted-foreground: 0 0% 20%;
+  --accent: 0 0% 95%;
+  --accent-foreground: 0 0% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 80%;
+  --input: 0 0% 80%;
+  --ring: 210 100% 40%;
+}
+
+.high-contrast.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 0%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 210 100% 60%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 10%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 5%;
+  --muted-foreground: 0 0% 80%;
+  --accent: 0 0% 5%;
+  --accent-foreground: 0 0% 90%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 20%;
+  --ring: 210 100% 60%;
+}
+
+.reduced-motion,
+.reduced-motion *,
+.reduced-motion *:before,
+.reduced-motion *:after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+.dyslexia-friendly {
+  font-family: 'OpenDyslexic', Arial, sans-serif;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+  line-height: 1.8;
+}
+
+.dyslexia-friendly h1,
+.dyslexia-friendly h2,
+.dyslexia-friendly h3,
+.dyslexia-friendly h4,
+.dyslexia-friendly h5,
+.dyslexia-friendly h6 {
+  font-weight: 600;
+  margin-bottom: 1em;
+}
+
+.dyslexia-friendly p {
+  margin-bottom: 1.5em;
+  text-align: left;
+}
+
+.color-blind-friendly {
+  filter: none;
+}
+
+.color-blind-friendly .text-red-500 {
+  color: #dc2626;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.color-blind-friendly .text-green-500 {
+  color: #059669;
+  font-weight: 600;
+  font-style: italic;
+}
+
+.color-blind-friendly .text-blue-500 {
+  color: #2563eb;
+  font-weight: 600;
+  border-bottom: 2px solid currentColor;
+}
+
+.color-blind-friendly .text-yellow-500 {
+  color: #d97706;
+  font-weight: 600;
+  background-color: #fef3c7;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+}
+
+/* Enhanced Article Content */
+.article-content {
+  font-size: var(--reading-font-size, 16px);
+  font-family: var(--reading-font-family, system-ui);
+  line-height: var(--reading-line-height, 1.6);
+  color: hsl(var(--foreground));
+}
+
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  color: hsl(var(--foreground));
+}
+
+.article-content h1 {
+  font-size: 2.25em;
+}
+
+.article-content h2 {
+  font-size: 1.875em;
+}
+
+.article-content h3 {
+  font-size: 1.5em;
+}
+
+.article-content p {
+  margin-bottom: 1.5em;
+  text-align: justify;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 2em 0;
+}
+
+.article-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 2em 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+}
+
+.article-content ul,
+.article-content ol {
+  margin-bottom: 1.5em;
+  padding-left: 2em;
+}
+
+.article-content li {
+  margin-bottom: 0.5em;
+}
+
+.article-content a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.article-content a:hover {
+  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary));
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+}
+
+/* Enhanced Search Animations */
+.search-suggestion-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.search-suggestion-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.search-suggestion-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.search-suggestion-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+/* Enhanced Card Interactions */
+.card-hover {
+  transition: all 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+/* Enhanced Loading States */
+.loading-shimmer {
+  background: linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--muted-foreground) / 0.1) 50%, hsl(var(--muted)) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Enhanced Breaking News Animation */
+.animate-scroll {
+  display: inline-block;
+  animation: scroll-left 20s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Enhanced Typography */
+.headline {
+  font-family: 'SolaimanLipi', Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
 /* Enhanced Print Styles */
 @media print {
   * {

@@ -10,6 +10,11 @@ import PersonalizedRecommendations from '@/components/PersonalizedRecommendation
 import SocialMediaFeed from '@/components/SocialMediaFeed';
 import VideoContent from '@/components/VideoContent';
 import AudioArticles from '@/components/AudioArticles';
+import { 
+  ContentDiscoveryWidget, 
+  UserEngagementPanel, 
+  EnhancedFilterPanel 
+} from '@/components/UXEnhancementSuite';
 
 const Home = () => {
   // Each category is handled by the CategoryNewsSection component
@@ -48,7 +53,7 @@ const Home = () => {
 
         {/* Weather and Latest News Widgets */}
         <section className="container-modern py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Weather Widget */}
             <div className="slide-in-right">
               <WeatherWidget />
@@ -57,6 +62,11 @@ const Home = () => {
             {/* Latest News */}
             <div className="slide-up">
               <LatestNews />
+            </div>
+            
+            {/* Content Discovery Widget */}
+            <div className="slide-in-left">
+              <ContentDiscoveryWidget />
             </div>
           </div>
         </section>
@@ -91,7 +101,14 @@ const Home = () => {
 
         {/* Popular News Section */}
         <section className="container-modern py-6 slide-up">
-          <PopularNewsSection />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <PopularNewsSection />
+            </div>
+            <div className="slide-in-left">
+              <UserEngagementPanel />
+            </div>
+          </div>
         </section>
         
         {/* Video Content Section */}

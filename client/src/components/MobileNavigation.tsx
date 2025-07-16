@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
@@ -96,6 +96,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
         className="w-80 p-0 bg-background border-r border-border"
       >
         <div className="h-full flex flex-col">
+          <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           {/* Header */}
           <div className="p-4 border-b border-border bg-primary/5">
             <div className="flex items-center justify-between">
@@ -155,10 +156,10 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
               <div className="space-y-1">
                 {mainMenuItems.map((item) => (
                   <Link key={item.href} href={item.href} onClick={closeNavigation}>
-                    <a className="flex items-center px-3 py-3 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors">
+                    <span className="flex items-center px-3 py-3 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors cursor-pointer">
                       <item.icon className="h-5 w-5 mr-3" />
                       {item.label}
-                    </a>
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -190,9 +191,9 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
                           href={`/category/${category.slug}`} 
                           onClick={closeNavigation}
                         >
-                          <a className="block px-3 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors">
+                          <span className="block px-3 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors cursor-pointer">
                             সব {category.name}
-                          </a>
+                          </span>
                         </Link>
                       </div>
                     )}
@@ -209,10 +210,10 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
                 </h3>
                 {userMenuItems.map((item) => (
                   <Link key={item.href} href={item.href} onClick={closeNavigation}>
-                    <a className="flex items-center px-3 py-3 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors">
+                    <span className="flex items-center px-3 py-3 text-sm font-medium text-foreground hover:text-primary hover:bg-accent/10 rounded-lg transition-colors cursor-pointer">
                       <item.icon className="h-5 w-5 mr-3" />
                       {item.label}
-                    </a>
+                    </span>
                   </Link>
                 ))}
                 
@@ -235,11 +236,11 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
               <span>© ২০২৫ প্রথম আলো</span>
               <div className="flex space-x-2">
                 <Link href="/privacy-policy" onClick={closeNavigation}>
-                  <a className="hover:text-primary transition-colors">গোপনীয়তা</a>
+                  <span className="hover:text-primary transition-colors cursor-pointer">গোপনীয়তা</span>
                 </Link>
                 <span>•</span>
                 <Link href="/terms-of-service" onClick={closeNavigation}>
-                  <a className="hover:text-primary transition-colors">শর্তাবলী</a>
+                  <span className="hover:text-primary transition-colors cursor-pointer">শর্তাবলী</span>
                 </Link>
               </div>
             </div>
