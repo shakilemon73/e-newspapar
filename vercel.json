@@ -5,18 +5,62 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist/public"
+        "distDir": "dist"
       }
-    },
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/categories/([^/]+)",
+      "dest": "/api/categories.js?slug=$1"
+    },
+    {
+      "src": "/api/categories",
+      "dest": "/api/categories.js"
+    },
+    {
+      "src": "/api/breaking-news",
+      "dest": "/api/breaking-news.js"
+    },
+    {
+      "src": "/api/weather/([^/]+)",
+      "dest": "/api/weather.js?city=$1"
+    },
+    {
+      "src": "/api/weather",
+      "dest": "/api/weather.js"
+    },
+    {
+      "src": "/api/epapers/latest",
+      "dest": "/api/epapers.js?latest=true"
+    },
+    {
+      "src": "/api/epapers",
+      "dest": "/api/epapers.js"
+    },
+    {
+      "src": "/api/videos",
+      "dest": "/api/videos.js"
+    },
+    {
+      "src": "/api/audio-articles",
+      "dest": "/api/audio-articles.js"
+    },
+    {
+      "src": "/api/social-media",
+      "dest": "/api/social-media.js"
+    },
+    {
+      "src": "/api/articles/([^/]+)",
+      "dest": "/api/articles.js?slug=$1"
+    },
+    {
+      "src": "/api/search",
+      "dest": "/api/search.js"
+    },
+    {
       "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/api/index.js"
     },
     {
       "handle": "filesystem"
@@ -26,6 +70,9 @@
       "dest": "/index.html"
     }
   ],
-  "installCommand": "npm install",
-  "buildCommand": "npm run build"
+  "functions": {
+    "api/index.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

@@ -347,5 +347,7 @@ app.get('/api/social-media', async (req, res) => {
   }
 });
 
-// Export for Vercel
-module.exports = app;
+// Export for Vercel serverless function
+module.exports = (req, res) => {
+  return app(req, res);
+};
