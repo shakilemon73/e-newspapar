@@ -1,15 +1,11 @@
 [build]
-  publish = "dist/public"
+  publish = "dist"
   command = "npm run build"
 
 [build.environment]
   NODE_VERSION = "18"
 
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/server/:splat"
-  status = 200
-
+# SPA redirects - all routes should go to index.html
 [[redirects]]
   from = "/*"
   to = "/index.html"
