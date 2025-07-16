@@ -247,6 +247,15 @@ Uses Supabase PostgreSQL with the following main entities:
 ✓ Client-server separation maintained with proper authentication flow
 ✓ Project now optimized for Replit native environment
 
+**⚠️ INCOMPLETE: UX Enhancement Tables Status (6/8 Created)**
+✓ **EXISTING**: user_achievements, user_preferences, user_interactions, article_analytics, user_search_history, trending_topics
+❌ **MISSING**: user_reading_history, user_saved_articles
+
+**To Complete Setup:**
+Manual creation required in Supabase SQL Editor for the 2 missing tables:
+1. user_reading_history - tracks user reading behavior and engagement
+2. user_saved_articles - manages user's saved articles and bookmarks
+
 ### ✅ SUCCESSFUL MIGRATION FROM REPLIT AGENT TO REPLIT ENVIRONMENT (January 16, 2025)
 ✓ **COMPLETED**: Successfully migrated Bengali News Website from Replit Agent to standard Replit environment
 ✓ All required Node.js packages (nodejs-20) installed and configured properly  
