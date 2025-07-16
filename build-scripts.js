@@ -29,8 +29,14 @@ const builds = {
   vercel: () => {
     console.log('🔷 Building for Vercel...');
     buildFrontend();
-    // Vercel uses serverless functions in api/ directory
-    console.log('✅ Vercel build complete');
+    
+    // Ensure API directory exists and is properly configured
+    if (!existsSync('api')) {
+      console.log('❌ API directory missing - please ensure api/index.js exists');
+      process.exit(1);
+    }
+    
+    console.log('✅ Vercel build complete - frontend built, API functions ready');
   },
 
   netlify: () => {
