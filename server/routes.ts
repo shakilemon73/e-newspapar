@@ -2369,6 +2369,394 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup User Dashboard API Routes
   setupUserDashboardAPI(app, apiPrefix, requireAuth);
 
+  // Create User Dashboard Tables Endpoint
+  app.post(`${apiPrefix}/admin/create-user-dashboard-tables`, requireAdmin, async (req, res) => {
+    try {
+      console.log('🚀 Creating user dashboard tables via API...');
+      
+      const tablesToCreate = [
+        {
+          name: 'reading_history',
+          sql: `
+            CREATE TABLE IF NOT EXISTS reading_history (
+              id SERIAL PRIMARY KEY,
+              user_id UUID NOT NULL,
+              article_id INTEGER NOT NULL,
+              last_read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              read_count INTEGER DEFAULT 1,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              UNIQUE(user_id, article_id)
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_reading_history_user_id ON reading_history(user_id);
+            CREATE INDEX IF NOT EXISTS idx_reading_history_article_id ON reading_history(article_id);
+            CREATE INDEX IF NOT EXISTS idx_reading_history_last_read_at ON reading_history(last_read_at);
+            
+            ALTER TABLE reading_history ENABLE ROW LEVEL SECURITY;
+          `
+        },
+        {
+          name: 'saved_articles',
+          sql: `
+            CREATE TABLE IF NOT EXISTS saved_articles (
+              id SERIAL PRIMARY KEY,
+              user_id UUID NOT NULL,
+              article_id INTEGER NOT NULL,
+              saved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              UNIQUE(user_id, article_id)
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_saved_articles_user_id ON saved_articles(user_id);
+            CREATE INDEX IF NOT EXISTS idx_saved_articles_article_id ON saved_articles(article_id);
+            CREATE INDEX IF NOT EXISTS idx_saved_articles_saved_at ON saved_articles(saved_at);
+            
+            ALTER TABLE saved_articles ENABLE ROW LEVEL SECURITY;
+          `
+        },
+        {
+          name: 'user_achievements',
+          sql: `
+            CREATE TABLE IF NOT EXISTS user_achievements (
+              id SERIAL PRIMARY KEY,
+              user_id UUID NOT NULL,
+              achievement_id INTEGER NOT NULL,
+              earned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              UNIQUE(user_id, achievement_id)
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
+            
+            ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+          `
+        },
+        {
+          name: 'user_analytics',
+          sql: `
+            CREATE TABLE IF NOT EXISTS user_analytics (
+              id SERIAL PRIMARY KEY,
+              user_id UUID NOT NULL,
+              total_interactions INTEGER DEFAULT 0,
+              reading_streak INTEGER DEFAULT 0,
+              favorite_categories TEXT[],
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+              UNIQUE(user_id)
+            );
+            
+            CREATE INDEX IF NOT EXISTS idx_user_analytics_user_id ON user_analytics(user_id);
+            
+            ALTER TABLE user_analytics ENABLE ROW LEVEL SECURITY;
+          `
+        },
+        {
+          name: 'achievements',
+          sql: `
+            CREATE TABLE IF NOT EXISTS achievements (
+              id SERIAL PRIMARY KEY,
+              name VARCHAR(255) NOT NULL,
+              description TEXT NOT NULL,
+              icon VARCHAR(100) NOT NULL,
+              requirement_type VARCHAR(50) NOT NULL,
+              requirement_value INTEGER NOT NULL,
+              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            );
+            
+            ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+          `
+        }
+      ];
+
+      const policies = [
+        // Reading history policies
+        `DROP POLICY IF EXISTS "Users can view own reading history" ON reading_history;`,
+        `CREATE POLICY "Users can view own reading history" ON reading_history FOR SELECT USING (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can insert own reading history" ON reading_history;`,
+        `CREATE POLICY "Users can insert own reading history" ON reading_history FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can update own reading history" ON reading_history;`,
+        `CREATE POLICY "Users can update own reading history" ON reading_history FOR UPDATE USING (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can delete own reading history" ON reading_history;`,
+        `CREATE POLICY "Users can delete own reading history" ON reading_history FOR DELETE USING (auth.uid() = user_id);`,
+        
+        // Saved articles policies
+        `DROP POLICY IF EXISTS "Users can view own saved articles" ON saved_articles;`,
+        `CREATE POLICY "Users can view own saved articles" ON saved_articles FOR SELECT USING (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can insert own saved articles" ON saved_articles;`,
+        `CREATE POLICY "Users can insert own saved articles" ON saved_articles FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can delete own saved articles" ON saved_articles;`,
+        `CREATE POLICY "Users can delete own saved articles" ON saved_articles FOR DELETE USING (auth.uid() = user_id);`,
+        
+        // User achievements policies
+        `DROP POLICY IF EXISTS "Users can view own achievements" ON user_achievements;`,
+        `CREATE POLICY "Users can view own achievements" ON user_achievements FOR SELECT USING (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can insert own achievements" ON user_achievements;`,
+        `CREATE POLICY "Users can insert own achievements" ON user_achievements FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        
+        // User analytics policies
+        `DROP POLICY IF EXISTS "Users can view own analytics" ON user_analytics;`,
+        `CREATE POLICY "Users can view own analytics" ON user_analytics FOR SELECT USING (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can insert own analytics" ON user_analytics;`,
+        `CREATE POLICY "Users can insert own analytics" ON user_analytics FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        `DROP POLICY IF EXISTS "Users can update own analytics" ON user_analytics;`,
+        `CREATE POLICY "Users can update own analytics" ON user_analytics FOR UPDATE USING (auth.uid() = user_id);`,
+        
+        // Achievements policies (public read)
+        `DROP POLICY IF EXISTS "Anyone can view achievements" ON achievements;`,
+        `CREATE POLICY "Anyone can view achievements" ON achievements FOR SELECT USING (true);`
+      ];
+
+      const results = {
+        tables: {},
+        policies: {},
+        achievements: null
+      };
+
+      // Create tables by trying to query them first
+      for (const table of tablesToCreate) {
+        try {
+          // Try to query the table to see if it exists
+          const { data: testData, error: testError } = await supabase
+            .from(table.name)
+            .select('*')
+            .limit(1);
+          
+          if (testError && (testError.code === '42P01' || testError.code === 'PGRST116')) {
+            // Table doesn't exist, we need to create it manually
+            results.tables[table.name] = `❌ Table doesn't exist. Please create manually in Supabase SQL Editor.`;
+          } else {
+            // Table exists
+            results.tables[table.name] = `✅ Table exists and is accessible`;
+          }
+        } catch (error) {
+          results.tables[table.name] = `❌ Error checking table: ${error.message}`;
+        }
+      }
+
+      // Try to create sample achievements if the table exists
+      try {
+        const { data: existingAchievements, error: achievementsError } = await supabase
+          .from('achievements')
+          .select('*')
+          .limit(1);
+        
+        if (!achievementsError) {
+          if (existingAchievements.length === 0) {
+            // Insert sample achievements
+            const { data, error } = await supabase.from('achievements').insert([
+              {
+                name: 'প্রথম পড়া',
+                description: 'প্রথম নিবন্ধ পড়া সম্পন্ন করুন',
+                icon: 'BookOpen',
+                requirement_type: 'articles_read',
+                requirement_value: 1
+              },
+              {
+                name: 'নিয়মিত পাঠক',
+                description: '৫টি নিবন্ধ পড়ুন',
+                icon: 'Target',
+                requirement_type: 'articles_read',
+                requirement_value: 5
+              },
+              {
+                name: 'সংগ্রাহক',
+                description: 'প্রথম নিবন্ধ সংরক্ষণ করুন',
+                icon: 'Heart',
+                requirement_type: 'articles_saved',
+                requirement_value: 1
+              },
+              {
+                name: 'আগ্রহী পাঠক',
+                description: '১০টি নিবন্ধ পড়ুন',
+                icon: 'Award',
+                requirement_type: 'articles_read',
+                requirement_value: 10
+              },
+              {
+                name: 'নিয়মিত দর্শক',
+                description: '৭ দিন পরপর পড়ুন',
+                icon: 'Calendar',
+                requirement_type: 'reading_streak',
+                requirement_value: 7
+              }
+            ]);
+            
+            results.achievements = error ? `❌ Error creating achievements: ${error.message}` : `✅ Sample achievements created`;
+          } else {
+            results.achievements = `✅ Achievements already exist`;
+          }
+        } else {
+          results.achievements = `❌ Achievements table not accessible: ${achievementsError.message}`;
+        }
+      } catch (error) {
+        results.achievements = `❌ Error with achievements: ${error.message}`;
+      }
+
+      // Return the comprehensive SQL script for manual creation
+      const sqlScript = `
+-- User Dashboard Tables Creation Script
+-- Copy and paste this entire script into your Supabase SQL Editor
+
+-- Create reading_history table
+CREATE TABLE IF NOT EXISTS reading_history (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  article_id INTEGER NOT NULL,
+  last_read_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  read_count INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, article_id)
+);
+
+-- Create saved_articles table
+CREATE TABLE IF NOT EXISTS saved_articles (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  article_id INTEGER NOT NULL,
+  saved_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, article_id)
+);
+
+-- Create user_achievements table
+CREATE TABLE IF NOT EXISTS user_achievements (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  achievement_id INTEGER NOT NULL,
+  earned_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, achievement_id)
+);
+
+-- Create user_analytics table
+CREATE TABLE IF NOT EXISTS user_analytics (
+  id SERIAL PRIMARY KEY,
+  user_id UUID NOT NULL,
+  total_interactions INTEGER DEFAULT 0,
+  reading_streak INTEGER DEFAULT 0,
+  favorite_categories TEXT[],
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
+-- Create achievements table
+CREATE TABLE IF NOT EXISTS achievements (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  icon VARCHAR(100) NOT NULL,
+  requirement_type VARCHAR(50) NOT NULL,
+  requirement_value INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create indexes for performance
+CREATE INDEX IF NOT EXISTS idx_reading_history_user_id ON reading_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_reading_history_article_id ON reading_history(article_id);
+CREATE INDEX IF NOT EXISTS idx_reading_history_last_read_at ON reading_history(last_read_at);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_user_id ON saved_articles(user_id);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_article_id ON saved_articles(article_id);
+CREATE INDEX IF NOT EXISTS idx_saved_articles_saved_at ON saved_articles(saved_at);
+CREATE INDEX IF NOT EXISTS idx_user_achievements_user_id ON user_achievements(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_analytics_user_id ON user_analytics(user_id);
+
+-- Enable Row Level Security
+ALTER TABLE reading_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_articles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_analytics ENABLE ROW LEVEL SECURITY;
+ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Users can view own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can insert own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can update own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can delete own reading history" ON reading_history;
+
+DROP POLICY IF EXISTS "Users can view own saved articles" ON saved_articles;
+DROP POLICY IF EXISTS "Users can insert own saved articles" ON saved_articles;
+DROP POLICY IF EXISTS "Users can delete own saved articles" ON saved_articles;
+
+DROP POLICY IF EXISTS "Users can view own achievements" ON user_achievements;
+DROP POLICY IF EXISTS "Users can insert own achievements" ON user_achievements;
+
+DROP POLICY IF EXISTS "Users can view own analytics" ON user_analytics;
+DROP POLICY IF EXISTS "Users can insert own analytics" ON user_analytics;
+DROP POLICY IF EXISTS "Users can update own analytics" ON user_analytics;
+
+DROP POLICY IF EXISTS "Anyone can view achievements" ON achievements;
+
+-- Create RLS policies for reading_history
+CREATE POLICY "Users can view own reading history" ON reading_history
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own reading history" ON reading_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own reading history" ON reading_history
+  FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete own reading history" ON reading_history
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Create RLS policies for saved_articles
+CREATE POLICY "Users can view own saved articles" ON saved_articles
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own saved articles" ON saved_articles
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own saved articles" ON saved_articles
+  FOR DELETE USING (auth.uid() = user_id);
+
+-- Create RLS policies for user_achievements
+CREATE POLICY "Users can view own achievements" ON user_achievements
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own achievements" ON user_achievements
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Create RLS policies for user_analytics
+CREATE POLICY "Users can view own analytics" ON user_analytics
+  FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can insert own analytics" ON user_analytics
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own analytics" ON user_analytics
+  FOR UPDATE USING (auth.uid() = user_id);
+
+-- Create RLS policies for achievements (public read)
+CREATE POLICY "Anyone can view achievements" ON achievements
+  FOR SELECT USING (true);
+
+-- Insert sample achievements
+INSERT INTO achievements (name, description, icon, requirement_type, requirement_value)
+VALUES 
+  ('প্রথম পড়া', 'প্রথম নিবন্ধ পড়া সম্পন্ন করুন', 'BookOpen', 'articles_read', 1),
+  ('নিয়মিত পাঠক', '৫টি নিবন্ধ পড়ুন', 'Target', 'articles_read', 5),
+  ('সংগ্রাহক', 'প্রথম নিবন্ধ সংরক্ষণ করুন', 'Heart', 'articles_saved', 1),
+  ('আগ্রহী পাঠক', '১০টি নিবন্ধ পড়ুন', 'Award', 'articles_read', 10),
+  ('নিয়মিত দর্শক', '৭ দিন পরপর পড়ুন', 'Calendar', 'reading_streak', 7)
+ON CONFLICT DO NOTHING;
+      `;
+
+      return res.json({
+        success: true,
+        message: 'Database creation check completed',
+        results,
+        sqlScript,
+        instructions: {
+          step1: 'Go to your Supabase project dashboard',
+          step2: 'Navigate to SQL Editor',
+          step3: 'Copy and paste the sqlScript above',
+          step4: 'Run the script to create all tables',
+          step5: 'All user dashboard features will work immediately'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Error in database creation endpoint:', error);
+      return res.status(500).json({
+        success: false,
+        error: error.message,
+        message: 'Please create the tables manually using the SQL script in the response'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -157,11 +157,11 @@ export const setupUXEnhancementRoutes = (app: Express) => {
     try {
       const { userId } = req.params;
 
+      // Try to get achievements without ordering first to see what columns exist
       const { data, error } = await supabase
         .from('user_achievements')
         .select('*')
-        .eq('user_id', userId)
-        .order('earned_at', { ascending: false });
+        .eq('user_id', userId);
 
       if (error) throw error;
       res.json(data);

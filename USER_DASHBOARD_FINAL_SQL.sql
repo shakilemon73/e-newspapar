@@ -1,102 +1,3 @@
-/**
- * Comprehensive Migration Test and Manual Creation Guide
- * This script tests table existence and provides manual creation instructions
- */
-
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
-
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  console.error('❌ Missing required environment variables');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-
-async function testEndpoint(endpoint, description) {
-  try {
-    const response = await fetch(`http://localhost:5000${endpoint}`);
-    const data = await response.json();
-    
-    if (response.ok) {
-      console.log(`✅ ${description}: Working`);
-      return true;
-    } else {
-      console.log(`❌ ${description}: Error - ${data.error || 'Unknown error'}`);
-      return false;
-    }
-  } catch (error) {
-    console.log(`❌ ${description}: Failed - ${error.message}`);
-    return false;
-  }
-}
-
-async function runComprehensiveTest() {
-  console.log('🚀 Running comprehensive migration test...');
-  
-  // Check if tables exist
-  const tablesToTest = [
-    'reading_history',
-    'saved_articles', 
-    'user_achievements',
-    'user_analytics',
-    'achievements'
-  ];
-  
-  const tableStatus = {};
-  
-  for (const table of tablesToTest) {
-    try {
-      const { data, error } = await supabase.from(table).select('*').limit(1);
-      if (error) {
-        if (error.code === '42P01' || error.code === 'PGRST116') {
-          tableStatus[table] = 'NOT_EXISTS';
-        } else {
-          tableStatus[table] = `ERROR: ${error.message}`;
-        }
-      } else {
-        tableStatus[table] = 'EXISTS';
-      }
-    } catch (error) {
-      tableStatus[table] = `EXCEPTION: ${error.message}`;
-    }
-  }
-  
-  console.log('\n📊 Table Status:');
-  Object.entries(tableStatus).forEach(([table, status]) => {
-    const icon = status === 'EXISTS' ? '✅' : '❌';
-    console.log(`  ${icon} ${table}: ${status}`);
-  });
-  
-  // Test API endpoints
-  console.log('\n🔗 Testing API Endpoints:');
-  await testEndpoint('/api/categories', 'Categories API');
-  await testEndpoint('/api/articles', 'Articles API');
-  await testEndpoint('/api/reading-history', 'Reading History API');
-  await testEndpoint('/api/user/1/reading-history', 'User Reading History API');
-  await testEndpoint('/api/user/1/saved-articles', 'User Saved Articles API');
-  await testEndpoint('/api/user/1/achievements', 'User Achievements API');
-  
-  // Calculate missing tables
-  const missingTables = Object.entries(tableStatus)
-    .filter(([_, status]) => status !== 'EXISTS')
-    .map(([table, _]) => table);
-  
-  if (missingTables.length > 0) {
-    console.log('\n🔧 MANUAL CREATION REQUIRED:');
-    console.log('The following tables need to be created manually in Supabase SQL Editor:');
-    console.log(missingTables.join(', '));
-    
-    console.log('\n📝 COMPLETE SQL SCRIPT:');
-    console.log('Copy and paste this entire script into your Supabase SQL Editor:');
-    console.log('=' .repeat(80));
-    console.log(`
 -- User Dashboard Tables Creation Script
 -- Copy and paste this entire script into your Supabase SQL Editor
 
@@ -171,7 +72,7 @@ ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_analytics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies if they exist
+-- Drop existing policies if they exist (to avoid conflicts)
 DROP POLICY IF EXISTS "Users can view own reading history" ON reading_history;
 DROP POLICY IF EXISTS "Users can insert own reading history" ON reading_history;
 DROP POLICY IF EXISTS "Users can update own reading history" ON reading_history;
@@ -235,22 +136,3 @@ VALUES
   ('আগ্রহী পাঠক', '১০টি নিবন্ধ পড়ুন', 'Award', 'articles_read', 10),
   ('নিয়মিত দর্শক', '৭ দিন পরপর পড়ুন', 'Calendar', 'reading_streak', 7)
 ON CONFLICT DO NOTHING;
-`);
-    console.log('=' .repeat(80));
-    
-    console.log('\n📋 SETUP INSTRUCTIONS:');
-    console.log('1. Go to your Supabase project dashboard');
-    console.log('2. Navigate to SQL Editor');
-    console.log('3. Copy and paste the SQL script above');
-    console.log('4. Run the script to create all tables');
-    console.log('5. All user dashboard features will work immediately');
-    
-  } else {
-    console.log('\n🎉 All tables exist! User dashboard should be fully functional.');
-  }
-  
-  console.log('\n✨ Migration test complete!');
-}
-
-// Run the test
-runComprehensiveTest().catch(console.error);
