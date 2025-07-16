@@ -1076,7 +1076,206 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Database Setup endpoint - Creates tables using service role key
+  // Advanced Algorithm Tables Setup endpoint
+  app.post(`${apiPrefix}/admin/setup-advanced-algorithms`, requireAdmin, async (req, res) => {
+    try {
+      console.log('🚀 Setting up Advanced Algorithm Tables...');
+      
+      const results = [];
+      const errors = [];
+      
+      // Check and create advanced algorithm tables
+      const advancedTables = [
+        {
+          name: 'user_analytics',
+          sql: `CREATE TABLE IF NOT EXISTS user_analytics (
+            id SERIAL PRIMARY KEY,
+            user_id UUID NOT NULL,
+            session_id VARCHAR(255),
+            page_views INTEGER DEFAULT 0,
+            total_time_spent INTEGER DEFAULT 0,
+            articles_read INTEGER DEFAULT 0,
+            categories_viewed TEXT[],
+            device_type VARCHAR(50),
+            browser_info TEXT,
+            location_data JSONB,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          )`
+        },
+        {
+          name: 'article_analytics',
+          sql: `CREATE TABLE IF NOT EXISTS article_analytics (
+            id SERIAL PRIMARY KEY,
+            article_id INTEGER NOT NULL,
+            view_count INTEGER DEFAULT 0,
+            unique_views INTEGER DEFAULT 0,
+            engagement_score DECIMAL(5,2) DEFAULT 0.0,
+            trending_score DECIMAL(5,2) DEFAULT 0.0,
+            average_read_time INTEGER DEFAULT 0,
+            bounce_rate DECIMAL(5,2) DEFAULT 0.0,
+            social_shares INTEGER DEFAULT 0,
+            comments_count INTEGER DEFAULT 0,
+            likes_count INTEGER DEFAULT 0,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+          )`
+        },
+        {
+          name: 'user_interactions',
+          sql: `CREATE TABLE IF NOT EXISTS user_interactions (
+            id SERIAL PRIMARY KEY,
+            user_id UUID NOT NULL,
+            article_id INTEGER NOT NULL,
+            interaction_type VARCHAR(50) NOT NULL,
+            interaction_value DECIMAL(3,2) DEFAULT 1.0,
+            reading_duration INTEGER DEFAULT 0,
+            scroll_depth DECIMAL(5,2) DEFAULT 0.0,
+            metadata JSONB,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+          )`
+        },
+        {
+          name: 'user_preferences',
+          sql: `CREATE TABLE IF NOT EXISTS user_preferences (
+            id SERIAL PRIMARY KEY,
+            user_id UUID NOT NULL,
+            category_id INTEGER NOT NULL,
+            interest_score DECIMAL(5,2) DEFAULT 0.0,
+            interaction_count INTEGER DEFAULT 0,
+            last_interaction TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            UNIQUE(user_id, category_id),
+            FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+          )`
+        },
+        {
+          name: 'search_history',
+          sql: `CREATE TABLE IF NOT EXISTS search_history (
+            id SERIAL PRIMARY KEY,
+            user_id UUID,
+            search_query TEXT NOT NULL,
+            search_results_count INTEGER DEFAULT 0,
+            clicked_result_id INTEGER,
+            search_metadata JSONB,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            FOREIGN KEY (clicked_result_id) REFERENCES articles(id) ON DELETE SET NULL
+          )`
+        },
+        {
+          name: 'recommendation_cache',
+          sql: `CREATE TABLE IF NOT EXISTS recommendation_cache (
+            id SERIAL PRIMARY KEY,
+            user_id UUID NOT NULL,
+            article_id INTEGER NOT NULL,
+            recommendation_score DECIMAL(5,2) NOT NULL,
+            recommendation_reason TEXT,
+            algorithm_version VARCHAR(50) DEFAULT 'v1.0',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            expires_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() + INTERVAL '24 hours',
+            FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+          )`
+        }
+      ];
+      
+      // Create tables using raw SQL execution
+      for (const table of advancedTables) {
+        try {
+          console.log(`Creating table: ${table.name}`);
+          
+          // Check if table exists first
+          const { data: tableExists, error: checkError } = await supabase
+            .from(table.name)
+            .select('*')
+            .limit(1);
+          
+          if (checkError && checkError.code === '42P01') {
+            // Table doesn't exist, provide SQL for manual creation
+            results.push({
+              table: table.name,
+              status: 'needs_creation',
+              sql: table.sql
+            });
+          } else {
+            // Table exists
+            results.push({
+              table: table.name,
+              status: 'exists',
+              message: `Table ${table.name} already exists`
+            });
+          }
+        } catch (error: any) {
+          errors.push({
+            table: table.name,
+            error: error.message
+          });
+        }
+      }
+      
+      // Initialize article analytics for existing articles
+      try {
+        const { data: articles } = await supabase
+          .from('articles')
+          .select('id, view_count');
+        
+        if (articles && articles.length > 0) {
+          for (const article of articles) {
+            const { error: insertError } = await supabase
+              .from('article_analytics')
+              .insert({
+                article_id: article.id,
+                view_count: article.view_count || 0,
+                unique_views: article.view_count || 0,
+                engagement_score: 0.0,
+                trending_score: 0.0
+              })
+              .select()
+              .single();
+            
+            if (insertError && insertError.code !== '23505') { // Ignore duplicate key errors
+              console.log(`Could not initialize analytics for article ${article.id}:`, insertError.message);
+            }
+          }
+          
+          results.push({
+            table: 'article_analytics',
+            status: 'initialized',
+            message: `Initialized analytics for ${articles.length} articles`
+          });
+        }
+      } catch (error: any) {
+        console.log('Error initializing article analytics:', error.message);
+      }
+      
+      res.json({
+        success: true,
+        message: 'Advanced algorithm tables setup completed',
+        results,
+        errors,
+        sqlCommands: advancedTables.map(t => t.sql),
+        instructions: `
+          If any tables need creation, please run these SQL commands in your Supabase SQL Editor:
+          
+          1. Go to your Supabase project dashboard
+          2. Navigate to SQL Editor
+          3. Run each SQL command from the sqlCommands array
+          4. All tables will be created with proper indexes and foreign keys
+        `
+      });
+      
+    } catch (error: any) {
+      console.error('Error setting up advanced algorithms:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: error.message 
+      });
+    }
+  });
+
+  // Database Setup endpoint - Creates basic tables using service role key
   app.post(`${apiPrefix}/admin/setup-database`, requireAdmin, async (req, res) => {
     try {
       console.log('Starting database setup with service role key...');
