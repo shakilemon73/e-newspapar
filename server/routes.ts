@@ -13,6 +13,7 @@ import {
 } from './advanced-algorithms.js';
 import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
+import { setupUserDashboardTables, initializeSampleUserData } from './setup-user-dashboard-tables';
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -1884,6 +1885,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error initializing advanced algorithms:', error);
       return res.status(500).json({ error: 'Failed to initialize advanced algorithms' });
+    }
+  });
+
+  // Setup user dashboard tables endpoint
+  app.post(`${apiPrefix}/admin/setup-user-dashboard`, requireAuth, async (req, res) => {
+    try {
+      const user = (req as any).user;
+      
+      // Check if user is admin
+      if (!user || user.user_metadata?.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      
+      console.log('Setting up user dashboard tables...');
+      await setupUserDashboardTables();
+      await initializeSampleUserData();
+      
+      return res.json({ 
+        success: true, 
+        message: 'User dashboard tables setup completed successfully' 
+      });
+    } catch (error: any) {
+      console.error('Error setting up user dashboard tables:', error);
+      return res.status(500).json({ error: error.message || 'Internal server error' });
     }
   });
 
