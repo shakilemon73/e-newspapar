@@ -451,22 +451,39 @@ const ArticleDetail = () => {
       utterance.pitch = speechPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
       
-      // Try different language codes for Bengali
+      // Get available voices and select the best one
       const voices = speechSynthesis.getVoices();
       console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
       
-      // Find Bengali voice or fall back to English
-      const bengaliVoice = voices.find(voice => 
-        voice.lang.includes('bn') || voice.lang.includes('hi') || voice.name.includes('Bengali')
+      // Priority order: Bengali > Hindi > English
+      let selectedVoice = null;
+      
+      // First try to find Bengali voice
+      selectedVoice = voices.find(voice => 
+        voice.lang.includes('bn') || voice.name.toLowerCase().includes('bengali')
       );
       
-      if (bengaliVoice) {
-        utterance.voice = bengaliVoice;
-        utterance.lang = bengaliVoice.lang;
-        console.log('Using Bengali voice:', bengaliVoice.name, bengaliVoice.lang);
+      if (!selectedVoice) {
+        // If no Bengali, try Hindi (closer to Bengali than English)
+        selectedVoice = voices.find(voice => 
+          voice.lang.includes('hi') || voice.name.includes('हिन्दी')
+        );
+      }
+      
+      if (!selectedVoice) {
+        // Finally fallback to English
+        selectedVoice = voices.find(voice => 
+          voice.lang.includes('en-US') || voice.lang.includes('en-GB')
+        );
+      }
+      
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+        console.log('Using voice:', selectedVoice.name, selectedVoice.lang);
       } else {
-        utterance.lang = 'en-US'; // Fallback to English
-        console.log('No Bengali voice found, using English');
+        utterance.lang = 'en-US'; // Final fallback
+        console.log('No specific voice found, using default English');
       }
       
       // Set up event listeners
@@ -511,7 +528,38 @@ const ArticleDetail = () => {
       };
 
       console.log('Starting speech synthesis');
-      speechSynthesis.speak(utterance);
+      
+      // Ensure speech synthesis is ready
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        console.log('Cancelled previous speech');
+      }
+      
+      // Add a small delay to ensure proper initialization
+      setTimeout(() => {
+        try {
+          speechSynthesis.speak(utterance);
+          console.log('Speech synthesis started successfully');
+          
+          // Check if speech actually started after a brief delay
+          setTimeout(() => {
+            if (!speechSynthesis.speaking && !speechSynthesis.pending) {
+              console.log('Speech synthesis did not start - trying again');
+              speechSynthesis.speak(utterance);
+            }
+          }, 200);
+          
+        } catch (error) {
+          console.error('Error starting speech synthesis:', error);
+          setIsAudioPlaying(false);
+          setCurrentUtterance(null);
+          toast({
+            title: "অডিও ত্রুটি",
+            description: "স্পিচ সিন্থেসিস শুরু করতে সমস্যা হয়েছে",
+            variant: "destructive",
+          });
+        }
+      }, 100);
     }
   };
 
