@@ -15,7 +15,7 @@ import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 import { setupUserDashboardTables, initializeSampleUserData } from './setup-user-dashboard-tables';
 import { setupUserDashboardAPI } from './user-dashboard-api';
-import { setupTemporaryAdminRoutes } from './temporary-admin-routes';
+
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -2418,7 +2418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupUserDashboardAPI(app, apiPrefix, requireAuth);
   
   // TEMPORARY: Setup admin routes for database creation (REMOVE AFTER SETUP)
-  setupTemporaryAdminRoutes(app);
+  // setupTemporaryAdminRoutes(app); // REMOVED: Advanced tables are now working properly
 
   // Create User Dashboard Tables Endpoint
   app.post(`${apiPrefix}/admin/create-user-dashboard-tables`, requireAdmin, async (req, res) => {
