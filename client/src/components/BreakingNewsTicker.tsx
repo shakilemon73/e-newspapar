@@ -36,33 +36,33 @@ export const BreakingNewsTicker = () => {
 
   if (isLoading) {
     return (
-      <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex items-center">
-        <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
+      <div className="breaking-news mb-6 bg-card border border-border p-3 rounded shadow-sm flex items-center">
+        <div className="flex-shrink-0 bg-accent text-accent-foreground px-3 py-1 rounded flex items-center font-medium">
           <span>ব্রেকিং</span>
         </div>
-        <div className="ml-4">লোড হচ্ছে...</div>
+        <div className="ml-4 text-foreground font-bold">লোড হচ্ছে...</div>
       </div>
     );
   }
 
   if (error || breakingNews.length === 0) {
     return (
-      <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex items-center">
-        <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
+      <div className="breaking-news mb-6 bg-card border border-border p-3 rounded shadow-sm flex items-center">
+        <div className="flex-shrink-0 bg-accent text-accent-foreground px-3 py-1 rounded flex items-center font-medium">
           <span>ব্রেকিং</span>
         </div>
-        <div className="ml-4">{error || 'কোন ব্রেকিং নিউজ নেই'}</div>
+        <div className="ml-4 text-foreground font-bold">{error || 'কোন ব্রেকিং নিউজ নেই'}</div>
       </div>
     );
   }
 
   return (
-    <div className="breaking-news mb-6 bg-card dark:bg-card p-3 rounded shadow-sm flex">
-      <div className="flex-shrink-0 bg-accent text-white px-3 py-1 rounded flex items-center font-medium">
+    <div className="breaking-news mb-6 bg-card border border-border p-3 rounded shadow-sm flex">
+      <div className="flex-shrink-0 bg-accent text-accent-foreground px-3 py-1 rounded flex items-center font-medium">
         <span>ব্রেকিং</span>
       </div>
       <div className="ticker-wrap ml-4 overflow-hidden flex-1">
-        <div className="ticker animate-marquee font-medium">
+        <div className="ticker animate-marquee font-bold text-foreground">
           {breakingNews.map((news) => (
             <span key={news.id} className="mx-4">{news.content}</span>
           ))}
