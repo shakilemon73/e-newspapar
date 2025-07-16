@@ -1,15 +1,20 @@
 # 🚀 Vercel Deployment Guide - Bengali News Website
 
-## ✅ Fixed Vercel Configuration Issue
+## ✅ Fixed All Vercel Configuration Issues
 
-The "functions/builds conflict" error has been **completely resolved**. Your Bengali News Website is now ready for seamless Vercel deployment.
+Both deployment errors have been **completely resolved**:
+
+1. ✅ **"functions/builds conflict"** - Removed conflicting `builds` property
+2. ✅ **"routes cannot be present with rewrites/headers"** - Removed conflicting `routes` property
 
 ### 🔧 What Was Fixed
 
 1. **Removed conflicting `builds` property** from `vercel.json`
-2. **Optimized serverless functions** configuration
-3. **Enhanced API routing** for better performance
-4. **Added proper CORS headers** for cross-origin requests
+2. **Removed conflicting `routes` property** - Using modern `rewrites` instead
+3. **Streamlined configuration** for Vercel's latest requirements
+4. **Optimized serverless functions** with proper runtime settings
+5. **Enhanced API routing** using `rewrites` for better performance
+6. **Added proper CORS headers** for cross-origin requests
 
 ## 🚀 Deploy to Vercel Now
 

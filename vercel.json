@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "bengali-news-website",
   "buildCommand": "vite build",
   "outputDirectory": "dist/public",
   "installCommand": "npm install",
@@ -11,25 +10,11 @@
       "destination": "/api/index.js"
     }
   ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "functions": {
     "api/index.js": {
       "runtime": "nodejs20.x",
-      "maxDuration": 30,
-      "memory": 1024
+      "maxDuration": 30
     }
-  },
-  "env": {
-    "NODE_ENV": "production"
   },
   "headers": [
     {
