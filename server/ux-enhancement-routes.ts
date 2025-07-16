@@ -54,6 +54,19 @@ export const setupUXEnhancementRoutes = (app: Express) => {
           .single();
 
         if (error) throw error;
+        
+        // Check for new achievements after reading activity
+        if (completed && user_id && user_id !== 'anonymous') {
+          try {
+            const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+            const userStats = await calculateUserStatsForAchievements(user_id);
+            await checkAndAwardAchievements(user_id, userStats);
+          } catch (achievementError) {
+            console.error('Error checking achievements:', achievementError);
+            // Don't fail the main request if achievements fail
+          }
+        }
+        
         res.json(data);
       }
     } catch (error) {
@@ -108,6 +121,18 @@ export const setupUXEnhancementRoutes = (app: Express) => {
         throw error;
       }
 
+      // Check for new achievements after saving article
+      if (user_id && user_id !== 'anonymous') {
+        try {
+          const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+          const userStats = await calculateUserStatsForAchievements(user_id);
+          await checkAndAwardAchievements(user_id, userStats);
+        } catch (achievementError) {
+          console.error('Error checking achievements:', achievementError);
+          // Don't fail the main request if achievements fail
+        }
+      }
+
       res.json(data);
     } catch (error) {
       console.error('Error saving article:', error);
@@ -152,22 +177,33 @@ export const setupUXEnhancementRoutes = (app: Express) => {
 
   // ========== USER ACHIEVEMENTS ==========
   
-  // Get user achievements
+  // Get user achievements with details
   app.get('/api/user/:userId/achievements', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-
-      // Try to get achievements without ordering first to see what columns exist
-      const { data, error } = await supabase
-        .from('user_achievements')
-        .select('*')
-        .eq('user_id', userId);
-
-      if (error) throw error;
-      res.json(data);
+      const { getUserAchievements } = await import('./achievements-system.js');
+      
+      const achievements = await getUserAchievements(userId);
+      res.json(achievements);
     } catch (error) {
       console.error('Error getting achievements:', error);
       res.status(500).json({ error: 'Failed to get achievements' });
+    }
+  });
+
+  // Get achievement progress
+  app.get('/api/user/:userId/achievement-progress', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { getAchievementProgress, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+      
+      const userStats = await calculateUserStatsForAchievements(userId);
+      const progress = await getAchievementProgress(userId, userStats);
+      
+      res.json(progress);
+    } catch (error) {
+      console.error('Error getting achievement progress:', error);
+      res.status(500).json({ error: 'Failed to get achievement progress' });
     }
   });
 

@@ -233,6 +233,60 @@ export default function UserDashboard() {
     enabled: !!user,
   });
 
+  // Fetch user achievements
+  const { data: userAchievements, isLoading: achievementsLoading } = useQuery({
+    queryKey: ['/api/user/achievements', user?.id],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !user?.id) {
+        return [];
+      }
+      
+      const response = await fetch(`/api/user/${user.id}/achievements`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 500) {
+          return [];
+        }
+        throw new Error('Failed to fetch user achievements');
+      }
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
+  // Fetch achievement progress
+  const { data: achievementProgress, isLoading: progressLoading } = useQuery({
+    queryKey: ['/api/user/achievement-progress', user?.id],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session || !user?.id) {
+        return [];
+      }
+      
+      const response = await fetch(`/api/user/${user.id}/achievement-progress`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 500) {
+          return [];
+        }
+        throw new Error('Failed to fetch achievement progress');
+      }
+      return response.json();
+    },
+    enabled: !!user?.id,
+  });
+
   // Check authentication
   useEffect(() => {
     if (!authLoading && !user) {
@@ -435,9 +489,10 @@ export default function UserDashboard() {
           {/* Main Content Area */}
           <div className="lg:col-span-2">
             <Tabs defaultValue="saved" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="saved">সংরক্ষিত নিবন্ধ</TabsTrigger>
                 <TabsTrigger value="history">পড়ার ইতিহাস</TabsTrigger>
+                <TabsTrigger value="achievements">অর্জনসমূহ</TabsTrigger>
                 <TabsTrigger value="activity">কার্যকলাপ</TabsTrigger>
               </TabsList>
 
@@ -526,6 +581,112 @@ export default function UserDashboard() {
                       <p className="text-muted-foreground text-center py-8">
                         কোন পড়ার ইতিহাস নেই
                       </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="achievements">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>অর্জনসমূহ</CardTitle>
+                    <CardDescription>
+                      আপনার সংগ্রহ করা অর্জনগুলি এবং অগ্রগতি
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {achievementsLoading || progressLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {/* Earned Achievements */}
+                        {userAchievements?.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                              <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
+                              অর্জিত পুরস্কার ({userAchievements.length})
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {userAchievements.map((achievement: any) => (
+                                <div key={achievement.id} className="p-4 border border-border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20">
+                                  <div className="flex items-center">
+                                    <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-full mr-3">
+                                      <Trophy className="h-6 w-6 text-yellow-600" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="font-semibold text-foreground">{achievement.achievements?.name}</h4>
+                                      <p className="text-sm text-muted-foreground">{achievement.achievements?.description}</p>
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        অর্জিত: {new Date(achievement.earned_at).toLocaleDateString('bn-BD')}
+                                      </p>
+                                    </div>
+                                    <CheckCircle className="h-6 w-6 text-green-500" />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Achievement Progress */}
+                        {achievementProgress?.length > 0 && (
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                              <Target className="h-5 w-5 mr-2 text-blue-500" />
+                              অগ্রগতি
+                            </h3>
+                            <div className="space-y-4">
+                              {achievementProgress
+                                .filter((progress: any) => !progress.isEarned)
+                                .slice(0, 5)
+                                .map((progress: any) => (
+                                <div key={progress.id} className="p-4 border border-border rounded-lg bg-card">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center">
+                                      <div className="p-2 bg-muted rounded-full mr-3">
+                                        {progress.icon === 'BookOpen' && <BookOpen className="h-4 w-4" />}
+                                        {progress.icon === 'Trophy' && <Trophy className="h-4 w-4" />}
+                                        {progress.icon === 'Award' && <Award className="h-4 w-4" />}
+                                        {progress.icon === 'Star' && <Star className="h-4 w-4" />}
+                                        {progress.icon === 'Heart' && <Heart className="h-4 w-4" />}
+                                        {progress.icon === 'Archive' && <BookOpen className="h-4 w-4" />}
+                                        {progress.icon === 'Zap' && <Zap className="h-4 w-4" />}
+                                        {progress.icon === 'Calendar' && <Calendar className="h-4 w-4" />}
+                                        {progress.icon === 'Target' && <Target className="h-4 w-4" />}
+                                        {progress.icon === 'Activity' && <Activity className="h-4 w-4" />}
+                                      </div>
+                                      <div>
+                                        <h4 className="font-medium text-foreground">{progress.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{progress.description}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <p className="text-sm font-medium text-foreground">
+                                        {progress.currentValue}/{progress.requirement}
+                                      </p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {Math.round(progress.progressPercentage)}%
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Progress value={progress.progressPercentage} className="h-2" />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* No achievements message */}
+                        {(!userAchievements || userAchievements.length === 0) && (!achievementProgress || achievementProgress.length === 0) && (
+                          <div className="text-center py-8">
+                            <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">এখনো কোন অর্জন নেই</p>
+                            <p className="text-sm text-muted-foreground mt-2">নিবন্ধ পড়ুন এবং সাইটের সাথে মিথস্ক্রিয়া করুন</p>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
