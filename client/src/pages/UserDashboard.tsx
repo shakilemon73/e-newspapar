@@ -346,7 +346,7 @@ export default function UserDashboard() {
                   {user.user_metadata?.name || user.email}
                 </h1>
                 <p className="text-muted-foreground">
-                  সদস্য হয়েছেন: {userStats.memberSince}
+                  সদস্য হয়েছেন: {finalUserStats.memberSince}
                 </p>
               </div>
             </div>
