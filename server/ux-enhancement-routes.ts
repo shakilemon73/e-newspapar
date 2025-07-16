@@ -66,20 +66,13 @@ export const setupUXEnhancementRoutes = (app: Express) => {
   app.get('/api/user/:userId/reading-history', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { limit = 20, offset = 0 } = req.query;
+      const { limit = 20 } = req.query;
 
-      const { data, error } = await supabase
-        .from('user_reading_history')
-        .select(`
-          *,
-          article:articles(id, title, slug, excerpt, image_url, published_at, category:categories(name, slug))
-        `)
-        .eq('user_id', userId)
-        .order('read_at', { ascending: false })
-        .range(Number(offset), Number(offset) + Number(limit) - 1);
-
-      if (error) throw error;
-      res.json(data);
+      // Use the advanced algorithms function which handles schema cache issues
+      const { getUserReadingHistory } = await import('./advanced-algorithms.js');
+      const history = await getUserReadingHistory(userId, parseInt(limit as string));
+      
+      res.json(history);
     } catch (error) {
       console.error('Error getting reading history:', error);
       res.status(500).json({ error: 'Failed to get reading history' });
@@ -126,26 +119,13 @@ export const setupUXEnhancementRoutes = (app: Express) => {
   app.get('/api/user/:userId/saved-articles', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { folder_name, limit = 20, offset = 0 } = req.query;
+      const { limit = 20 } = req.query;
 
-      let query = supabase
-        .from('user_saved_articles')
-        .select(`
-          *,
-          article:articles(id, title, slug, excerpt, image_url, published_at, category:categories(name, slug))
-        `)
-        .eq('user_id', userId);
-
-      if (folder_name) {
-        query = query.eq('folder_name', folder_name);
-      }
-
-      const { data, error } = await query
-        .order('saved_at', { ascending: false })
-        .range(Number(offset), Number(offset) + Number(limit) - 1);
-
-      if (error) throw error;
-      res.json(data);
+      // Use the advanced algorithms function which handles schema cache issues
+      const { getUserSavedArticles } = await import('./advanced-algorithms.js');
+      const savedArticles = await getUserSavedArticles(userId, parseInt(limit as string));
+      
+      res.json(savedArticles);
     } catch (error) {
       console.error('Error getting saved articles:', error);
       res.status(500).json({ error: 'Failed to get saved articles' });
@@ -231,10 +211,15 @@ export const setupUXEnhancementRoutes = (app: Express) => {
 
       if (error) {
         if (error.code === 'PGRST116') { // No rows returned
-          // Create default preferences
+          // Create default preferences with category_id
           const { data: newPrefs, error: insertError } = await supabase
             .from('user_preferences')
-            .insert({ user_id: userId })
+            .upsert({ 
+              user_id: userId,
+              category_id: 1, // Default to first category
+              interest_score: 0.5,
+              interaction_count: 0
+            })
             .select()
             .single();
 

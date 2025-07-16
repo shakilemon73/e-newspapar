@@ -12,6 +12,7 @@ import {
   getUserAnalytics
 } from './advanced-algorithms.js';
 import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
+import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -2121,20 +2122,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       
-      const { data: topics } = await supabase
-        .from('trending_topics')
-        .select(`
-          id,
-          topic_name,
-          mention_count,
-          trending_score,
-          created_at,
-          categories(name, slug)
-        `)
-        .order('trending_score', { ascending: false })
-        .limit(limit);
+      // Use the advanced algorithms function which handles schema cache issues
+      const { getTrendingTopics } = await import('./advanced-algorithms.js');
+      const topics = await getTrendingTopics(limit);
       
-      return res.json(topics || []);
+      return res.json(topics);
     } catch (error) {
       console.error('Error getting trending topics:', error);
       return res.status(500).json({ error: 'Failed to get trending topics' });
@@ -2215,6 +2207,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating notification preferences:', error);
       return res.status(500).json({ error: 'Failed to update preferences' });
+    }
+  });
+
+  // Supabase Migration Routes
+  app.post(`${apiPrefix}/admin/migrate-to-supabase`, requireAdmin, async (req, res) => {
+    try {
+      const result = await migrateToSupabase();
+      return res.json(result);
+    } catch (error) {
+      console.error('Error migrating to Supabase:', error);
+      return res.status(500).json({ error: 'Failed to migrate to Supabase' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/database-status`, requireAdmin, async (req, res) => {
+    try {
+      const status = await getDatabaseStatus();
+      return res.json(status);
+    } catch (error) {
+      console.error('Error checking database status:', error);
+      return res.status(500).json({ error: 'Failed to check database status' });
+    }
+  });
+
+  // ========== SEARCH ROUTES ==========
+  
+  // Basic search route
+  app.get(`${apiPrefix}/search`, async (req, res) => {
+    try {
+      const { q: query, limit = '10', offset = '0' } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ error: 'Search query is required' });
+      }
+      
+      const results = await storage.searchArticles(
+        query,
+        parseInt(limit as string),
+        parseInt(offset as string)
+      );
+      
+      return res.json(results.map(transformArticle));
+    } catch (error) {
+      console.error('Error searching articles:', error);
+      return res.status(500).json({ error: 'Failed to search articles' });
+    }
+  });
+
+  // Advanced search route
+  app.get(`${apiPrefix}/advanced-search`, async (req, res) => {
+    try {
+      const { q: query, category, limit = '20' } = req.query;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ error: 'Search query is required' });
+      }
+      
+      const categoryId = category ? parseInt(category as string) : null;
+      const results = await advancedBengaliSearch(query, categoryId, parseInt(limit as string));
+      
+      return res.json(results);
+    } catch (error) {
+      console.error('Error in advanced search:', error);
+      return res.status(500).json({ error: 'Failed to perform advanced search' });
+    }
+  });
+
+  // ========== ADMIN DASHBOARD ROUTES ==========
+  
+  // Admin dashboard stats
+  app.get(`${apiPrefix}/admin/dashboard/stats`, requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getDashboardStats();
+      return res.json(stats);
+    } catch (error) {
+      console.error('Error getting dashboard stats:', error);
+      return res.status(500).json({ error: 'Failed to get dashboard stats' });
+    }
+  });
+
+  // Admin analytics
+  app.get(`${apiPrefix}/admin/dashboard/analytics`, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getArticleStats();
+      return res.json(analytics);
+    } catch (error) {
+      console.error('Error getting analytics:', error);
+      return res.status(500).json({ error: 'Failed to get analytics' });
     }
   });
 
