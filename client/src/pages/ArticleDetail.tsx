@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRoute, Link } from 'wouter';
 import { Helmet } from 'react-helmet';
+import { updateDisplayUrl, decodeSlug, getCleanShareUrl } from '@/lib/utils/url-utils';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
 import { ArticleSummary } from '@/components/ArticleSummary';
@@ -601,10 +602,11 @@ const ArticleDetail = () => {
 
   // Share functionality
   const shareArticle = async () => {
+    const cleanUrl = getCleanShareUrl(article.slug, article.title);
     const shareData = {
       title: article.title,
       text: article.excerpt,
-      url: window.location.href,
+      url: cleanUrl,
     };
 
     try {
@@ -612,7 +614,7 @@ const ArticleDetail = () => {
         await navigator.share(shareData);
       } else {
         // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(window.location.href);
+        await navigator.clipboard.writeText(cleanUrl);
         toast({
           title: "লিংক কপি হয়েছে",
           description: "আর্টিকেলের লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
@@ -844,6 +846,15 @@ const ArticleDetail = () => {
         const data = await response.json();
         setArticle(data);
         
+        // Update URL to show clean Bengali title
+        if (data.title) {
+          const cleanUrl = getCleanShareUrl(data.slug, data.title);
+          const currentUrl = window.location.href;
+          if (currentUrl !== cleanUrl) {
+            updateDisplayUrl(cleanUrl);
+          }
+        }
+        
         // Calculate estimated reading time
         const wordCount = data.content.split(' ').length;
         setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
@@ -1056,7 +1067,7 @@ const ArticleDetail = () => {
         <meta property="og:title" content={article.title} />
         <meta property="og:description" content={article.excerpt} />
         <meta property="og:image" content={article.image_url} />
-        <meta property="og:url" content={window.location.href} />
+        <meta property="og:url" content={getCleanShareUrl(article.slug, article.title)} />
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="প্রথম আলো" />
         <meta property="article:author" content="প্রথম আলো সংবাদদাতা" />
@@ -1069,7 +1080,7 @@ const ArticleDetail = () => {
         <meta name="twitter:image" content={article.image_url} />
         <meta name="twitter:site" content="@prothomalo" />
         <meta name="twitter:creator" content="@prothomalo" />
-        <link rel="canonical" href={window.location.href} />
+        <link rel="canonical" href={getCleanShareUrl(article.slug, article.title)} />
       </Helmet>
 
       {/* Enhanced Reading Progress Bar */}

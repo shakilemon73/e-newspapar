@@ -740,7 +740,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Decoded slug:', slug);
       
-      const article = await storage.getArticleBySlug(slug);
+      // First try to find by original slug
+      let article = await storage.getArticleBySlug(slug);
+      
+      // If not found, try to find by title match (clean Bengali URL)
+      if (!article) {
+        const allArticles = await storage.getAllArticles(100, 0);
+        
+        // Create a clean slug from the title and compare
+        const createCleanSlug = (title) => {
+          return title
+            .trim()
+            .toLowerCase()
+            .replace(/[^\u0980-\u09FF\u0020\u002D\u005F\u0041-\u005A\u0061-\u007A\u0030-\u0039]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        };
+        
+        article = allArticles.find(a => {
+          const cleanTitleSlug = createCleanSlug(a.title);
+          return cleanTitleSlug === slug || a.slug === slug;
+        });
+      }
+      
       if (!article) {
         return res.status(404).json({ error: 'Article not found' });
       }

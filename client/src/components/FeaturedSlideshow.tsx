@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { createBengaliSlug } from '@/lib/utils/url-utils';
 
 interface Category {
   id: number;
@@ -123,7 +124,7 @@ export const FeaturedSlideshow = () => {
                   {article.category.name}
                 </Link>
                 <h2 className="headline text-white mt-2 mb-2">
-                  <Link href={`/article/${article.slug}`} className="text-white hover:text-gray-200 transition">
+                  <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-white hover:text-gray-200 transition">
                     {article.title}
                   </Link>
                 </h2>
@@ -131,7 +132,7 @@ export const FeaturedSlideshow = () => {
                 <div className="flex items-center mt-2 text-sm">
                   <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
                   <span className="mx-2">•</span>
-                  <Link href={`/article/${article.slug}`} className="text-accent hover:underline">
+                  <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-accent hover:underline">
                     বিস্তারিত পড়ুন
                   </Link>
                 </div>
@@ -168,7 +169,7 @@ export const FeaturedSlideshow = () => {
             </div>
             <div className="p-3">
               <h3 className="news-title mb-1 line-clamp-2">
-                <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
+                <Link href={`/article/${createBengaliSlug(article.title)}`} className="hover:text-accent transition">
                   {article.title}
                 </Link>
               </h3>
