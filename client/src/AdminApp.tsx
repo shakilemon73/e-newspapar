@@ -23,6 +23,7 @@ import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
 import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
 import AdvancedAlgorithmsPage from "@/pages/admin/AdvancedAlgorithmsPage";
 import TrendingAnalyticsPage from "@/pages/admin/TrendingAnalyticsPage";
+import FooterPagesAdminPage from "@/pages/admin/FooterPagesAdminPage";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -164,6 +165,12 @@ function AdminRouter() {
       <Route path="/admin/trending-analytics">
         <AdminRouteGuard>
           <TrendingAnalyticsPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/footer-pages">
+        <AdminRouteGuard>
+          <FooterPagesAdminPage />
         </AdminRouteGuard>
       </Route>
       

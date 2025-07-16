@@ -76,6 +76,11 @@ const navigation = [
     icon: Calendar,
   },
   {
+    name: 'Footer Pages',
+    href: '/admin/footer-pages',
+    icon: FileText,
+  },
+  {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,
