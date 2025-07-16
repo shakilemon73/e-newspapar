@@ -123,6 +123,29 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 16, 2025)
 
+### ✅ DARK MODE TEXT VISIBILITY AND ALIGNMENT ISSUES COMPLETELY FIXED (January 16, 2025)
+✓ **COMPLETED**: Successfully resolved all text visibility and alignment issues in both light and dark modes
+✓ Enhanced dark mode color scheme with improved contrast ratios for better readability
+✓ Fixed card components to use proper border-border classes for consistent visibility
+✓ Updated FeaturedSlideshow, LatestNews, CategoryNewsSection, and PopularNewsSection with explicit dark mode support
+✓ Fixed Footer component with proper primary-foreground text colors for consistent visibility
+✓ Replaced all gray-* hardcoded colors with semantic color tokens (text-foreground, text-muted-foreground, bg-muted)
+✓ Enhanced loading states and skeleton components with proper dark mode color support
+✓ Fixed all text elements to use semantic color classes ensuring visibility in both themes
+✓ Improved button states and hover effects with proper contrast ratios
+✓ All components now follow consistent dark mode design patterns
+✓ Text is now clearly visible and properly aligned in both light and dark modes
+
+**Dark Mode Improvements:**
+- Enhanced card background colors from 210 11% 6% to 210 11% 8% for better visibility
+- Improved muted text colors from 0 0% 65% to 0 0% 70% for better readability
+- Fixed border colors with increased contrast in dark mode
+- All text elements now use semantic color tokens for consistent theming
+- Loading states and skeleton components properly themed
+- Footer component redesigned with proper primary color theming
+
+## Recent Changes (January 16, 2025)
+
 ### ✅ COMPLETELY SEPARATED ADMIN AND USER ROUTING SYSTEMS (January 16, 2025)
 ✓ **COMPLETED**: Successfully created completely separate admin and user routing systems for enhanced security
 ✓ Created dedicated AdminApp.tsx for all admin-related functionality with independent routing

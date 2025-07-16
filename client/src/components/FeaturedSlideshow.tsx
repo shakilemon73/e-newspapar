@@ -81,10 +81,10 @@ export const FeaturedSlideshow = () => {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 h-96 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
+        <div className="lg:col-span-2 h-96 bg-card border border-border rounded shadow-sm animate-pulse"></div>
         <div className="space-y-4">
-          <div className="h-48 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
-          <div className="h-48 bg-card dark:bg-card rounded shadow-sm animate-pulse"></div>
+          <div className="h-48 bg-card border border-border rounded shadow-sm animate-pulse"></div>
+          <div className="h-48 bg-card border border-border rounded shadow-sm animate-pulse"></div>
         </div>
       </div>
     );
@@ -93,11 +93,11 @@ export const FeaturedSlideshow = () => {
   if (error || (featuredArticles.length === 0 && sideArticles.length === 0)) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 p-4 bg-card dark:bg-card rounded shadow-sm">
-          <p className="text-center py-12">{error || 'কোন নিবন্ধ পাওয়া যায়নি'}</p>
+        <div className="lg:col-span-2 p-4 bg-card border border-border rounded shadow-sm">
+          <p className="text-center py-12 text-muted-foreground">{error || 'কোন নিবন্ধ পাওয়া যায়নি'}</p>
         </div>
-        <div className="p-4 bg-card dark:bg-card rounded shadow-sm">
-          <p className="text-center py-12">কোন পাশের নিবন্ধ পাওয়া যায়নি</p>
+        <div className="p-4 bg-card border border-border rounded shadow-sm">
+          <p className="text-center py-12 text-muted-foreground">কোন পাশের নিবন্ধ পাওয়া যায়নি</p>
         </div>
       </div>
     );
@@ -107,7 +107,7 @@ export const FeaturedSlideshow = () => {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
       {/* Main Featured Slideshow */}
       <div className="lg:col-span-2">
-        <div className="slideshow-container bg-card dark:bg-card rounded shadow-sm overflow-hidden">
+        <div className="slideshow-container bg-card border border-border rounded shadow-sm overflow-hidden">
           {featuredArticles.map((article, index) => (
             <div 
               key={article.id} 

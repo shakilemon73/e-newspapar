@@ -38,32 +38,32 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-primary dark:bg-primary text-white pt-10 pb-4">
+    <footer className="bg-primary text-primary-foreground pt-10 pb-4">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <h4 className="text-xl font-bold mb-4 font-hind">প্রথম আলো</h4>
-            <p className="text-gray-300 mb-4">দেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার</p>
+            <h4 className="text-xl font-bold mb-4 text-primary-foreground">প্রথম আলো</h4>
+            <p className="text-primary-foreground/80 mb-4">দেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার</p>
             <div className="flex space-x-4 mb-4">
-              <a href="https://facebook.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
+              <a href="https://facebook.com" className="text-primary-foreground hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-facebook-f"></i>
               </a>
-              <a href="https://twitter.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
+              <a href="https://twitter.com" className="text-primary-foreground hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-twitter"></i>
               </a>
-              <a href="https://youtube.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
+              <a href="https://youtube.com" className="text-primary-foreground hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-youtube"></i>
               </a>
-              <a href="https://instagram.com" className="hover:text-accent transition" target="_blank" rel="noopener noreferrer">
+              <a href="https://instagram.com" className="text-primary-foreground hover:text-accent transition" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-instagram"></i>
               </a>
             </div>
             <div className="flex items-center space-x-2">
-              <a href="https://play.google.com/store" className="block px-3 py-2 bg-gray-800 hover:bg-accent rounded transition flex items-center space-x-2" target="_blank" rel="noopener noreferrer">
+              <a href="https://play.google.com/store" className="block px-3 py-2 bg-primary-foreground/10 hover:bg-accent rounded transition flex items-center space-x-2" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-android"></i>
                 <span>Android App</span>
               </a>
-              <a href="https://apps.apple.com" className="block px-3 py-2 bg-gray-800 hover:bg-accent rounded transition flex items-center space-x-2" target="_blank" rel="noopener noreferrer">
+              <a href="https://apps.apple.com" className="block px-3 py-2 bg-primary-foreground/10 hover:bg-accent rounded transition flex items-center space-x-2" target="_blank" rel="noopener noreferrer">
                 <i className="fab fa-apple"></i>
                 <span>iOS App</span>
               </a>
@@ -71,11 +71,11 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h4 className="text-lg font-bold mb-4 font-hind">বিভাগসমূহ</h4>
+            <h4 className="text-lg font-bold mb-4 text-primary-foreground">বিভাগসমূহ</h4>
             <ul className="space-y-2">
               {categories.map(category => (
                 <li key={category.id}>
-                  <Link href={`/category/${category.slug}`} className="text-gray-300 hover:text-accent transition">
+                  <Link href={`/category/${category.slug}`} className="text-primary-foreground/80 hover:text-accent transition">
                     {category.name}
                   </Link>
                 </li>
@@ -84,41 +84,41 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h4 className="text-lg font-bold mb-4 font-hind">আমাদের সম্পর্কে</h4>
+            <h4 className="text-lg font-bold mb-4 text-primary-foreground">আমাদের সম্পর্কে</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-gray-300 hover:text-accent transition">পরিচিতি</Link>
+                <Link href="/about" className="text-primary-foreground/80 hover:text-accent transition">পরিচিতি</Link>
               </li>
               <li>
-                <Link href="/editorial-policy" className="text-gray-300 hover:text-accent transition">সম্পাদকীয় নীতিমালা</Link>
+                <Link href="/editorial-policy" className="text-primary-foreground/80 hover:text-accent transition">সম্পাদকীয় নীতিমালা</Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-300 hover:text-accent transition">যোগাযোগ</Link>
+                <Link href="/contact" className="text-primary-foreground/80 hover:text-accent transition">যোগাযোগ</Link>
               </li>
               <li>
-                <Link href="/advertisement" className="text-gray-300 hover:text-accent transition">বিজ্ঞাপন</Link>
+                <Link href="/advertisement" className="text-primary-foreground/80 hover:text-accent transition">বিজ্ঞাপন</Link>
               </li>
               <li>
-                <Link href="/archive" className="text-gray-300 hover:text-accent transition">আর্কাইভ</Link>
+                <Link href="/archive" className="text-primary-foreground/80 hover:text-accent transition">আর্কাইভ</Link>
               </li>
               <li>
-                <Link href="/privacy-policy" className="text-gray-300 hover:text-accent transition">গোপনীয়তা নীতি</Link>
+                <Link href="/privacy-policy" className="text-primary-foreground/80 hover:text-accent transition">গোপনীয়তা নীতি</Link>
               </li>
               <li>
-                <Link href="/terms-of-service" className="text-gray-300 hover:text-accent transition">ব্যবহারের শর্তাবলী</Link>
+                <Link href="/terms-of-service" className="text-primary-foreground/80 hover:text-accent transition">ব্যবহারের শর্তাবলী</Link>
               </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="text-lg font-bold mb-4 font-hind">সংবাদ আপডেট</h4>
-            <p className="text-gray-300 mb-4">আমাদের নিউজলেটার সাবস্ক্রাইব করুন এবং সর্বশেষ খবর পান</p>
+            <h4 className="text-lg font-bold mb-4 text-primary-foreground">সংবাদ আপডেট</h4>
+            <p className="text-primary-foreground/80 mb-4">আমাদের নিউজলেটার সাবস্ক্রাইব করুন এবং সর্বশেষ খবর পান</p>
             <form onSubmit={handleSubscribe}>
               <div className="mb-4">
                 <Input
                   type="email"
                   placeholder="আপনার ইমেইল ঠিকানা"
-                  className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent text-white"
+                  className="w-full px-4 py-2 rounded bg-primary-foreground/10 border border-primary-foreground/20 focus:outline-none focus:ring-2 focus:ring-accent text-primary-foreground placeholder:text-primary-foreground/60"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

@@ -68,7 +68,7 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
 
   if (isLoading) {
     return (
-      <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
+      <div className="bg-card border border-border rounded shadow-sm p-4 h-full">
         <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
           <Skeleton className="h-6 w-32" />
           <Skeleton className="h-4 w-20" />
@@ -95,14 +95,14 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
 
   if (error || !category || articles.length === 0) {
     return (
-      <div className="bg-card dark:bg-card rounded shadow-sm p-4">
+      <div className="bg-card border border-border rounded shadow-sm p-4">
         <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
-          <h3 className="text-lg font-bold font-hind">{category?.name || 'বিভাগ'}</h3>
-          <Link href={`/category/${categorySlug}`} className="text-accent text-sm hover:underline">
+          <h3 className="text-lg font-bold text-foreground">{category?.name || 'বিভাগ'}</h3>
+          <Link href={`/category/${categorySlug}`} className="text-accent text-sm hover:text-accent/80 transition-colors">
             সবগুলো <i className="fas fa-angle-right ml-1"></i>
           </Link>
         </div>
-        <p className="text-center py-8">{error || 'এই বিভাগে কোন খবর পাওয়া যায়নি'}</p>
+        <p className="text-center py-8 text-muted-foreground">{error || 'এই বিভাগে কোন খবর পাওয়া যায়নি'}</p>
       </div>
     );
   }
@@ -112,10 +112,10 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
   const relatedArticles = articles.slice(1);
 
   return (
-    <div className="bg-card dark:bg-card rounded shadow-sm p-4 h-full">
+    <div className="bg-card border border-border rounded shadow-sm p-4 h-full">
       <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
-        <h3 className="text-lg font-bold font-hind">{category.name}</h3>
-        <Link href={`/category/${category.slug}`} className="text-accent text-sm hover:underline">
+        <h3 className="text-lg font-bold text-foreground">{category.name}</h3>
+        <Link href={`/category/${category.slug}`} className="text-accent text-sm hover:text-accent/80 transition-colors">
           সবগুলো <i className="fas fa-angle-right ml-1"></i>
         </Link>
       </div>

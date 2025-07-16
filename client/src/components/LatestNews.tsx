@@ -49,17 +49,17 @@ export const LatestNews = () => {
 
   if (isLoading) {
     return (
-      <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
-        <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
+      <div className="lg:col-span-2 bg-card border border-border rounded shadow-sm p-4">
+        <h3 className="text-lg font-semibold text-foreground mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
         <div className="space-y-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-3 animate-pulse">
-              <div className="flex-shrink-0 w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="flex-shrink-0 w-20 h-20 bg-muted rounded"></div>
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/5"></div>
+                <div className="h-4 bg-muted rounded w-1/4"></div>
+                <div className="h-6 bg-muted rounded"></div>
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/5"></div>
               </div>
             </div>
           ))}
@@ -70,16 +70,16 @@ export const LatestNews = () => {
 
   if (error || latestNews.length === 0) {
     return (
-      <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4">
-        <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
-        <p className="text-center py-8">{error || 'কোন সর্বশেষ খবর পাওয়া যায়নি'}</p>
+      <div className="lg:col-span-2 bg-card border border-border rounded shadow-sm p-4">
+        <h3 className="text-lg font-semibold text-foreground mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
+        <p className="text-center py-8 text-muted-foreground">{error || 'কোন সর্বশেষ খবর পাওয়া যায়নি'}</p>
       </div>
     );
   }
 
   return (
-    <div className="lg:col-span-2 bg-card dark:bg-card rounded shadow-sm p-4 h-full">
-      <h3 className="category-title text-lg mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
+    <div className="lg:col-span-2 bg-card border border-border rounded shadow-sm p-4 h-full">
+      <h3 className="text-lg font-semibold text-foreground mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
       
       <div className="space-y-4">
         {latestNews.map((news) => (
@@ -93,24 +93,24 @@ export const LatestNews = () => {
                 />
               </Link>
             </div>
-            <div>
-              <Link href={`/category/${news.category.slug}`} className="text-xs font-medium text-accent">
+            <div className="flex-1">
+              <Link href={`/category/${news.category.slug}`} className="text-xs font-medium text-accent hover:text-accent/80 transition-colors">
                 {news.category.name}
               </Link>
-              <h4 className="news-title mb-1">
-                <Link href={`/article/${news.slug}`} className="hover:text-accent transition">
+              <h4 className="text-base font-semibold text-foreground mb-1 leading-tight">
+                <Link href={`/article/${news.slug}`} className="hover:text-primary transition-colors">
                   {news.title}
                 </Link>
               </h4>
-              <p className="article-excerpt text-sm line-clamp-2">{news.excerpt}</p>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getRelativeTimeInBengali(news.publishedAt)}</div>
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{news.excerpt}</p>
+              <div className="text-xs text-muted-foreground">{getRelativeTimeInBengali(news.publishedAt)}</div>
             </div>
           </div>
         ))}
       </div>
       
       <div className="mt-4 text-center">
-        <Link href="/latest" className="text-accent hover:underline font-medium">
+        <Link href="/latest" className="text-accent hover:text-accent/80 font-medium transition-colors">
           আরও সংবাদ <i className="fas fa-angle-right ml-1"></i>
         </Link>
       </div>
