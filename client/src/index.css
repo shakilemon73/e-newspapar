@@ -809,14 +809,25 @@ hr {
   }
 }
 
-/* Breaking News Progress Bar Animation */
-@keyframes progress-bar {
+/* Breaking News Marquee Animation - Smooth and Professional */
+@keyframes marquee-smooth {
   0% {
-    transform: scaleX(0);
+    transform: translateX(100%);
   }
   100% {
-    transform: scaleX(1);
+    transform: translateX(-100%);
   }
+}
+
+.animate-marquee-smooth {
+  animation: marquee-smooth 30s linear infinite;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Pause animation on hover for better UX */
+.breaking-news-wrapper:hover .animate-marquee-smooth {
+  animation-play-state: paused;
 }
 
 /* UX Enhancement Styles */
