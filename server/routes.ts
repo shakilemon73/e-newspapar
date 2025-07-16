@@ -1942,16 +1942,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { q: query, category, limit } = req.query;
       
+      console.log('Advanced search endpoint called with params:', { query, category, limit });
+      
       if (!query) {
+        console.log('No query provided');
         return res.status(400).json({ error: 'Search query is required' });
       }
       
+      console.log('Calling advancedBengaliSearch function...');
       const results = await advancedBengaliSearch(
         query as string,
         category ? parseInt(category as string) : null,
         limit ? parseInt(limit as string) : 20
       );
       
+      console.log('Advanced search results:', results?.length || 0);
       return res.json(results);
     } catch (error) {
       console.error('Error performing advanced search:', error);

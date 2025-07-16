@@ -515,6 +515,8 @@ async function updateUserPreferences(userId, articleId) {
  */
 export async function advancedBengaliSearch(query, categoryId = null, limit = 20) {
   try {
+    console.log('Advanced Bengali search called with query:', query, 'categoryId:', categoryId);
+    
     let queryBuilder = supabase
       .from('articles')
       .select(`
@@ -524,18 +526,37 @@ export async function advancedBengaliSearch(query, categoryId = null, limit = 20
         image_url,
         published_at,
         category_id,
-        categories!inner(name, slug)
+        view_count,
+        categories(name, slug)
       `)
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
+      .or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%`)
       .order('published_at', { ascending: false });
     
     if (categoryId) {
       queryBuilder = queryBuilder.eq('category_id', categoryId);
     }
     
-    const { data: results } = await queryBuilder.limit(limit);
+    const { data: results, error } = await queryBuilder.limit(limit);
     
-    return results || [];
+    if (error) {
+      console.error('Advanced search error:', error);
+      return [];
+    }
+    
+    console.log('Advanced search results:', results?.length || 0);
+    
+    // Transform results to match expected format
+    const transformedResults = results?.map(article => ({
+      id: article.id,
+      title: article.title,
+      excerpt: article.excerpt || '',
+      image_url: article.image_url || '',
+      published_at: article.published_at,
+      category_name: article.categories?.name || '',
+      search_rank: 1.0 // Default search rank
+    })) || [];
+    
+    return transformedResults;
     
   } catch (error) {
     console.error('Error in advanced Bengali search:', error);
