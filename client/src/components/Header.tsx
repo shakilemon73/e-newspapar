@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MobileNavigation } from './MobileNavigation';
+import { EnhancedSearchSystem } from './EnhancedSearchSystem';
 
 interface Category {
   id: number;
@@ -200,21 +202,13 @@ export const Header = () => {
             
             {/* Desktop Search */}
             <div className="hidden md:flex items-center space-x-4">
-              <form onSubmit={handleSearch} className="relative">
-                <Input
-                  type="text"
-                  placeholder="সংবাদ খুঁজুন..."
-                  className="input-modern w-80 pr-12"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button 
-                  type="submit" 
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-                >
-                  <Search size={20} />
-                </button>
-              </form>
+              <EnhancedSearchSystem 
+                placeholder="সংবাদ খুঁজুন..."
+                className="w-80"
+                showHistory={true}
+                showTrending={true}
+                showFilters={true}
+              />
             </div>
 
             {/* Mobile Controls */}
@@ -226,13 +220,7 @@ export const Header = () => {
               >
                 <Search size={20} />
               </button>
-              <button 
-                onClick={toggleMobileMenu}
-                className="p-2 rounded-lg hover:bg-accent/10 transition-colors"
-                aria-label="Menu"
-              >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+              <MobileNavigation categories={categories} />
             </div>
           </div>
         </div>
@@ -241,22 +229,13 @@ export const Header = () => {
       {/* Mobile Search */}
       {searchOpen && (
         <div className="md:hidden bg-background border-b border-border p-4 slide-up">
-          <form onSubmit={handleSearch} className="relative">
-            <Input
-              id="mobile-search"
-              type="text"
-              placeholder="সংবাদ খুঁজুন..."
-              className="input-modern w-full pr-12"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button 
-              type="submit" 
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Search size={20} />
-            </button>
-          </form>
+          <EnhancedSearchSystem 
+            placeholder="সংবাদ খুঁজুন..."
+            className="w-full"
+            showHistory={true}
+            showTrending={true}
+            showFilters={false}
+          />
         </div>
       )}
       
