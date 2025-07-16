@@ -11,7 +11,7 @@ export function createBengaliSlug(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    // Keep Bengali characters, letters, numbers, spaces, and hyphens
+    // Keep only Bengali characters, English letters, numbers, spaces, and hyphens
     .replace(/[^\u0980-\u09FF\u0020\u002D\u005F\u0041-\u005A\u0061-\u007A\u0030-\u0039]/g, '')
     // Replace spaces with hyphens
     .replace(/\s+/g, '-')
@@ -92,7 +92,9 @@ export function decodeSlug(slug: string): string {
 export function updateDisplayUrl(cleanUrl: string): void {
   try {
     if (window.history.replaceState) {
-      window.history.replaceState(null, '', cleanUrl);
+      // Always use unencoded Bengali text in the URL
+      const decodedUrl = decodeURIComponent(cleanUrl);
+      window.history.replaceState(null, '', decodedUrl);
     }
   } catch (e) {
     console.log('Could not update display URL:', e);

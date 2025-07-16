@@ -101,7 +101,8 @@ interface Article {
 
 const ArticleDetail = () => {
   const [, params] = useRoute('/article/:slug');
-  const articleSlug = params?.slug || '';
+  const rawSlug = params?.slug || '';
+  const articleSlug = decodeSlug(rawSlug);
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
   

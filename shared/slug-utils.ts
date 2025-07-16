@@ -12,8 +12,8 @@ export function generateBengaliSlug(title: string): string {
   return title
     .trim()
     .toLowerCase()
-    // Remove special characters but keep Bengali characters
-    .replace(/[^\u0980-\u09FF\u200D\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\u0590-\u05FF\u0020\u002D\u005F\u0041-\u005A\u0061-\u007A\u0030-\u0039]/g, '')
+    // Keep only Bengali characters, English letters, numbers, spaces, and hyphens
+    .replace(/[^\u0980-\u09FF\u0020\u002D\u005F\u0041-\u005A\u0061-\u007A\u0030-\u0039]/g, '')
     // Replace spaces with hyphens
     .replace(/\s+/g, '-')
     // Remove multiple consecutive hyphens
