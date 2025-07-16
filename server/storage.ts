@@ -173,47 +173,65 @@ export const storage = {
     console.log('Searching for:', query);
     
     try {
-      // Try individual ILIKE queries first to test
-      const { data: titleResults, error: titleError } = await supabase
+      // Create common English to Bengali word mappings for better search
+      const searchTerms = [query.toLowerCase()];
+      const commonMappings: { [key: string]: string } = {
+        'bangladesh': 'বাংলাদেশ',
+        'cricket': 'ক্রিকেট',
+        'politics': 'রাজনীতি',
+        'economy': 'অর্থনীতি',
+        'international': 'আন্তর্জাতিক',
+        'sports': 'খেলা',
+        'entertainment': 'বিনোদন',
+        'technology': 'প্রযুক্তি',
+        'health': 'স্বাস্থ্য',
+        'education': 'শিক্ষা',
+        'lifestyle': 'লাইফস্টাইল',
+        'food': 'খাদ্য',
+        'weather': 'আবহাওয়া',
+        'news': 'সংবাদ',
+        'government': 'সরকার',
+        'minister': 'মন্ত্রী',
+        'president': 'রাষ্ট্রপতি',
+        'prime': 'প্রধান',
+        'dhaka': 'ঢাকা',
+        'chittagong': 'চট্টগ্রাম',
+        'sylhet': 'সিলেট',
+        'rajshahi': 'রাজশাহী',
+        'khulna': 'খুলনা',
+        'barisal': 'বরিশাল',
+        'rangpur': 'রংপুর',
+        'mymensingh': 'ময়মনসিংহ'
+      };
+
+      // Add Bengali equivalent if found
+      if (commonMappings[query.toLowerCase()]) {
+        searchTerms.push(commonMappings[query.toLowerCase()]);
+      }
+
+      // Search in both title and content with OR condition for all terms
+      const { data: results, error } = await supabase
         .from('articles')
         .select(`
           *,
           category:categories(*)
         `)
-        .ilike('title', `%${query}%`)
+        .or(
+          searchTerms.map(term => 
+            `title.ilike.%${term}%,content.ilike.%${term}%,excerpt.ilike.%${term}%`
+          ).join(',')
+        )
         .order('published_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
-      console.log('Title search results:', titleResults?.length || 0);
+      console.log('Search results:', results?.length || 0);
       
-      if (titleError) {
-        console.error('Title search error:', titleError);
-      }
-
-      // If title search found results, return them
-      if (titleResults && titleResults.length > 0) {
-        console.log('Found results in title search');
-        return titleResults;
-      }
-
-      // Otherwise try content search
-      const { data: contentResults, error: contentError } = await supabase
-        .from('articles')
-        .select(`
-          *,
-          category:categories(*)
-        `)
-        .ilike('content', `%${query}%`)
-        .order('published_at', { ascending: false })
-        .range(offset, offset + limit - 1);
-
-      console.log('Content search results:', contentResults?.length || 0);
-      
-      if (contentError) {
-        console.error('Content search error:', contentError);
+      if (error) {
+        console.error('Search error:', error);
+        return [];
       }
       
-      return contentResults || [];
+      return results || [];
     } catch (err) {
       console.error('Search function error:', err);
       throw err;
