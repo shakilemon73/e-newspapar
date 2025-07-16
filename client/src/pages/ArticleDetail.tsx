@@ -130,6 +130,10 @@ const ArticleDetail = () => {
   const [audioProgress, setAudioProgress] = useState<number>(0);
   const [audioVolume, setAudioVolume] = useState<number>(0.8);
   const [isAudioMuted, setIsAudioMuted] = useState<boolean>(false);
+  const [speechSynthesis, setSpeechSynthesis] = useState<SpeechSynthesis | null>(null);
+  const [currentUtterance, setCurrentUtterance] = useState<SpeechSynthesisUtterance | null>(null);
+  const [speechRate, setSpeechRate] = useState<number>(1);
+  const [speechPitch, setSpeechPitch] = useState<number>(1);
   
   // Reading Analytics
   const [readingTime, setReadingTime] = useState<number>(0);
@@ -379,30 +383,141 @@ const ArticleDetail = () => {
     });
   };
 
-  // Audio controls
-  const toggleAudio = () => {
-    if (audioRef.current) {
-      if (isAudioPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
+  // Initialize Speech Synthesis
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, []);
+
+  // Cleanup speech synthesis on unmount or article change
+  useEffect(() => {
+    return () => {
+      if (speechSynthesis) {
+        speechSynthesis.cancel();
+        setIsAudioPlaying(false);
+        setCurrentUtterance(null);
+        setAudioProgress(0);
       }
-      setIsAudioPlaying(!isAudioPlaying);
+    };
+  }, [speechSynthesis, articleSlug]);
+
+  // Text-to-Speech controls
+  const toggleAudio = () => {
+    if (!speechSynthesis || !article) return;
+
+    if (isAudioPlaying) {
+      // Stop current speech
+      speechSynthesis.cancel();
+      setIsAudioPlaying(false);
+      setCurrentUtterance(null);
+      setAudioProgress(0);
+    } else {
+      // Start speech synthesis
+      const textToSpeak = `${article.title}. ${article.content}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      
+      // Configure speech parameters
+      utterance.rate = speechRate;
+      utterance.pitch = speechPitch;
+      utterance.volume = isAudioMuted ? 0 : audioVolume;
+      utterance.lang = 'bn-BD'; // Bengali language
+      
+      // Set up event listeners
+      utterance.onstart = () => {
+        setIsAudioPlaying(true);
+        setCurrentUtterance(utterance);
+      };
+      
+      utterance.onend = () => {
+        setIsAudioPlaying(false);
+        setCurrentUtterance(null);
+        setAudioProgress(100);
+      };
+      
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event.error);
+        setIsAudioPlaying(false);
+        setCurrentUtterance(null);
+        toast({
+          title: "অডিও ত্রুটি",
+          description: "টেক্সট থেকে স্পিচ সুবিধা সমর্থিত নয়",
+          variant: "destructive",
+        });
+      };
+
+      // Track progress (approximate)
+      utterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const progress = (event.charIndex / textToSpeak.length) * 100;
+          setAudioProgress(Math.min(progress, 100));
+        }
+      };
+
+      speechSynthesis.speak(utterance);
     }
   };
 
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setAudioVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
+    if (currentUtterance) {
+      // Stop current speech and restart with new volume
+      speechSynthesis.cancel();
+      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = speechRate;
+      utterance.pitch = speechPitch;
+      utterance.volume = isAudioMuted ? 0 : newVolume;
+      utterance.lang = 'bn-BD';
+      speechSynthesis.speak(utterance);
     }
   };
 
   const toggleMute = () => {
     setIsAudioMuted(!isAudioMuted);
-    if (audioRef.current) {
-      audioRef.current.muted = !isAudioMuted;
+    if (currentUtterance) {
+      // Update current utterance volume
+      speechSynthesis.cancel();
+      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = speechRate;
+      utterance.pitch = speechPitch;
+      utterance.volume = !isAudioMuted ? 0 : audioVolume;
+      utterance.lang = 'bn-BD';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handleSpeechRateChange = (value: number[]) => {
+    const newRate = value[0];
+    setSpeechRate(newRate);
+    if (currentUtterance && isAudioPlaying) {
+      // Restart with new rate
+      speechSynthesis.cancel();
+      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = newRate;
+      utterance.pitch = speechPitch;
+      utterance.volume = isAudioMuted ? 0 : audioVolume;
+      utterance.lang = 'bn-BD';
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const handleSpeechPitchChange = (value: number[]) => {
+    const newPitch = value[0];
+    setSpeechPitch(newPitch);
+    if (currentUtterance && isAudioPlaying) {
+      // Restart with new pitch
+      speechSynthesis.cancel();
+      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.rate = speechRate;
+      utterance.pitch = newPitch;
+      utterance.volume = isAudioMuted ? 0 : audioVolume;
+      utterance.lang = 'bn-BD';
+      speechSynthesis.speak(utterance);
     }
   };
 
@@ -900,7 +1015,96 @@ const ArticleDetail = () => {
                         </DropdownMenuContent>
                       </DropdownMenu>
 
-                      <TextToSpeech content={article.content} />
+                      {/* Text-to-Speech Audio Controls */}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={toggleAudio}
+                          className="gap-2 transition-all duration-300 hover:scale-105"
+                          disabled={!speechSynthesis}
+                        >
+                          {isAudioPlaying ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                          {isAudioPlaying ? 'থামান' : 'শুনুন'}
+                        </Button>
+                        
+                        {/* Audio Settings */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-64">
+                            <DropdownMenuLabel>অডিও সেটিংস</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            
+                            <div className="p-3 space-y-4">
+                              {/* Volume Control */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">ভলিউম</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={toggleMute}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    {isAudioMuted ? (
+                                      <VolumeX className="w-3 h-3" />
+                                    ) : (
+                                      <Volume2 className="w-3 h-3" />
+                                    )}
+                                  </Button>
+                                </div>
+                                <Slider
+                                  value={[audioVolume]}
+                                  onValueChange={handleVolumeChange}
+                                  max={1}
+                                  min={0}
+                                  step={0.1}
+                                  className="w-full"
+                                />
+                              </div>
+                              
+                              {/* Speech Rate */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">গতি</span>
+                                  <span className="text-xs text-muted-foreground">{speechRate}x</span>
+                                </div>
+                                <Slider
+                                  value={[speechRate]}
+                                  onValueChange={handleSpeechRateChange}
+                                  max={2}
+                                  min={0.5}
+                                  step={0.1}
+                                  className="w-full"
+                                />
+                              </div>
+                              
+                              {/* Speech Pitch */}
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm">টোন</span>
+                                  <span className="text-xs text-muted-foreground">{speechPitch}x</span>
+                                </div>
+                                <Slider
+                                  value={[speechPitch]}
+                                  onValueChange={handleSpeechPitchChange}
+                                  max={2}
+                                  min={0.5}
+                                  step={0.1}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   </div>
                   
@@ -1001,6 +1205,20 @@ const ArticleDetail = () => {
                       </div>
                       <Progress value={readingProgress} className="h-2" />
                     </div>
+                    
+                    {/* Audio Progress */}
+                    {isAudioPlaying && (
+                      <div className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span className="flex items-center gap-1">
+                            <Volume2 className="w-3 h-3" />
+                            অডিও প্রগ্রেস
+                          </span>
+                          <span className="font-medium">{Math.round(audioProgress)}%</span>
+                        </div>
+                        <Progress value={audioProgress} className="h-2 bg-blue-100" />
+                      </div>
+                    )}
                     
                     <div className="grid grid-cols-2 gap-4 pt-2">
                       <div className="text-center">
