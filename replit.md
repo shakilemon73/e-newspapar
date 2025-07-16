@@ -123,6 +123,20 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 16, 2025)
 
+### ✅ FIXED FEATURED ARTICLES ENDPOINT ISSUE (January 16, 2025)
+✓ **COMPLETED**: Successfully resolved the `/api/articles/featured` endpoint returning 404 errors
+✓ The issue was route order - the dynamic `:slug` route was catching `/featured` before the dedicated route
+✓ Moved the `/api/articles/featured` route to appear before the `/api/articles/:slug` route in server/routes.ts
+✓ Tested successfully - now returns proper featured articles with `isFeatured: true`
+✓ All other endpoints (latest, popular, general articles) continue working correctly
+✓ Bengali news website is now fully functional with all API endpoints working properly
+
+**Technical Fix:**
+- Route order matters in Express.js - specific routes must come before parameterized routes
+- `/api/articles/featured` must be defined before `/api/articles/:slug`
+- Featured articles endpoint now returns actual featured articles from database
+- All article transformation working correctly (snake_case to camelCase)
+
 ### ✅ COMPREHENSIVE SOCIAL MEDIA INTEGRATION COMPLETED (January 16, 2025)
 ✓ **COMPLETED**: Implemented comprehensive social media link preview functionality for all major platforms
 ✓ Added complete Open Graph meta tags support for Facebook, WhatsApp, Telegram, and Instagram

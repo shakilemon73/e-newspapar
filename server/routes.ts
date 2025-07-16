@@ -724,6 +724,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get(`${apiPrefix}/articles/featured`, async (req, res) => {
+    try {
+      const { limit = '5' } = req.query;
+      const articles = await storage.getFeaturedArticles(parseInt(limit as string));
+      return res.json(transformArticles(articles));
+    } catch (error) {
+      console.error('Error fetching featured articles:', error);
+      return res.status(500).json({ error: 'Failed to fetch featured articles' });
+    }
+  });
+
   app.get(`${apiPrefix}/articles/:slug`, async (req, res) => {
     try {
       let { slug } = req.params;
