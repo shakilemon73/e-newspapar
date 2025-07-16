@@ -72,40 +72,59 @@ ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_analytics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Users can view own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can insert own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can update own reading history" ON reading_history;
+DROP POLICY IF EXISTS "Users can delete own reading history" ON reading_history;
+
+DROP POLICY IF EXISTS "Users can view own saved articles" ON saved_articles;
+DROP POLICY IF EXISTS "Users can insert own saved articles" ON saved_articles;
+DROP POLICY IF EXISTS "Users can delete own saved articles" ON saved_articles;
+
+DROP POLICY IF EXISTS "Users can view own achievements" ON user_achievements;
+DROP POLICY IF EXISTS "Users can insert own achievements" ON user_achievements;
+
+DROP POLICY IF EXISTS "Users can view own analytics" ON user_analytics;
+DROP POLICY IF EXISTS "Users can insert own analytics" ON user_analytics;
+DROP POLICY IF EXISTS "Users can update own analytics" ON user_analytics;
+
+DROP POLICY IF EXISTS "Anyone can view achievements" ON achievements;
+
 -- Create RLS policies for reading_history
-CREATE POLICY IF NOT EXISTS "Users can view own reading history" ON reading_history
+CREATE POLICY "Users can view own reading history" ON reading_history
   FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can insert own reading history" ON reading_history
+CREATE POLICY "Users can insert own reading history" ON reading_history
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can update own reading history" ON reading_history
+CREATE POLICY "Users can update own reading history" ON reading_history
   FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can delete own reading history" ON reading_history
+CREATE POLICY "Users can delete own reading history" ON reading_history
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Create RLS policies for saved_articles
-CREATE POLICY IF NOT EXISTS "Users can view own saved articles" ON saved_articles
+CREATE POLICY "Users can view own saved articles" ON saved_articles
   FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can insert own saved articles" ON saved_articles
+CREATE POLICY "Users can insert own saved articles" ON saved_articles
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can delete own saved articles" ON saved_articles
+CREATE POLICY "Users can delete own saved articles" ON saved_articles
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Create RLS policies for user_achievements
-CREATE POLICY IF NOT EXISTS "Users can view own achievements" ON user_achievements
+CREATE POLICY "Users can view own achievements" ON user_achievements
   FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can insert own achievements" ON user_achievements
+CREATE POLICY "Users can insert own achievements" ON user_achievements
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Create RLS policies for user_analytics
-CREATE POLICY IF NOT EXISTS "Users can view own analytics" ON user_analytics
+CREATE POLICY "Users can view own analytics" ON user_analytics
   FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can insert own analytics" ON user_analytics
+CREATE POLICY "Users can insert own analytics" ON user_analytics
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Users can update own analytics" ON user_analytics
+CREATE POLICY "Users can update own analytics" ON user_analytics
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Create RLS policies for achievements (public read)
-CREATE POLICY IF NOT EXISTS "Anyone can view achievements" ON achievements
+CREATE POLICY "Anyone can view achievements" ON achievements
   FOR SELECT USING (true);
 
 -- Insert sample achievements
