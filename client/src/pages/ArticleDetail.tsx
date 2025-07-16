@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRoute, Link } from 'wouter';
 import { Helmet } from 'react-helmet';
-import { updateDisplayUrl, decodeSlug, getCleanShareUrl } from '@/lib/utils/url-utils';
+import { updateDisplayUrl, decodeSlug, getCleanShareUrl, createBengaliSlug } from '@/lib/utils/url-utils';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
 import { ArticleSummary } from '@/components/ArticleSummary';
@@ -332,10 +332,14 @@ const ArticleDetail = () => {
   const handleShare = async (platform: string = 'copy') => {
     if (!article) return;
 
+    // Always use clean Bengali URL for sharing
+    const cleanSlug = createBengaliSlug(article.title);
+    const cleanUrl = `${window.location.origin}/article/${cleanSlug}`;
+
     const shareData = {
       title: article.title,
       text: article.excerpt || article.title,
-      url: window.location.href
+      url: cleanUrl
     };
 
     switch (platform) {
@@ -849,9 +853,12 @@ const ArticleDetail = () => {
         
         // Update URL to show clean Bengali title
         if (data.title) {
-          const cleanUrl = getCleanShareUrl(data.slug, data.title);
-          const currentUrl = window.location.href;
-          if (currentUrl !== cleanUrl) {
+          const cleanSlug = createBengaliSlug(data.title);
+          const cleanUrl = `/article/${cleanSlug}`;
+          const currentPath = window.location.pathname;
+          
+          // Fix URL if it contains encoded characters
+          if (currentPath.includes('%') || currentPath !== cleanUrl) {
             updateDisplayUrl(cleanUrl);
           }
         }

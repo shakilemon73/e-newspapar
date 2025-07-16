@@ -153,6 +153,8 @@ Uses Supabase PostgreSQL with the following main entities:
 **URL Encoding Fixes:**
 - **Bengali URL Support**: Proper decoding of URL-encoded Bengali characters
 - **Slug Utilities**: Functions for generating, encoding, and decoding Bengali slugs
+- **Browser URL Display**: Clean Bengali text in browser address bar instead of encoded characters
+- **Share Functionality**: Always generates clean Bengali URLs for better user experience
 - **Double Encoding Handling**: Fixes for multiple encoding layers in URLs
 - **User-Friendly URLs**: Clean Bengali text in URLs instead of encoded characters
 

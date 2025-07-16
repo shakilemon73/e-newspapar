@@ -92,9 +92,8 @@ export function decodeSlug(slug: string): string {
 export function updateDisplayUrl(cleanUrl: string): void {
   try {
     if (window.history.replaceState) {
-      // Always use unencoded Bengali text in the URL
-      const decodedUrl = decodeURIComponent(cleanUrl);
-      window.history.replaceState(null, '', decodedUrl);
+      // Force browser to display clean Bengali text in URL bar
+      window.history.replaceState(null, '', cleanUrl);
     }
   } catch (e) {
     console.log('Could not update display URL:', e);

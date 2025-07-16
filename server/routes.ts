@@ -764,6 +764,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Still not found? Try a broader title search
+      if (!article) {
+        const allArticles = await storage.getAllArticles(100, 0);
+        article = allArticles.find(a => {
+          const titleWords = a.title.split(' ');
+          const slugWords = slug.split('-');
+          return titleWords.some(word => slugWords.includes(word.toLowerCase()));
+        });
+      }
+      
       if (!article) {
         return res.status(404).json({ error: 'Article not found' });
       }
