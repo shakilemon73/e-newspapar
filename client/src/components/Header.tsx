@@ -63,8 +63,13 @@ export const Header = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Search form submitted with query:', searchQuery);
     if (searchQuery.trim()) {
+      console.log('Navigating to search page with query:', searchQuery);
       setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery(''); // Clear search after submission
+    } else {
+      console.log('Empty search query, not navigating');
     }
   };
   
