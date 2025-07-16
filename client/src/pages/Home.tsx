@@ -17,6 +17,7 @@ import {
   EnhancedFilterPanel 
 } from '@/components/UXEnhancementSuite';
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
+import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 
 const Home = () => {
   // Generate comprehensive social media meta tags for home page
@@ -86,6 +87,16 @@ const Home = () => {
         {/* Personalized Recommendations */}
         <section className="container-modern py-6 fade-in">
           <PersonalizedRecommendations />
+        </section>
+
+        {/* Homepage Feature Suite - Missing Features */}
+        <section className="container-modern py-6 slide-up">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
+              আপনার জন্য বিশেষ সুবিধা
+            </h2>
+            <HomepageFeatureSuite />
+          </div>
         </section>
 
         {/* Context-Aware UX Suite */}

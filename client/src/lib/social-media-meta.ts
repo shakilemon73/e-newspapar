@@ -111,14 +111,14 @@ export function generateSocialMetaTags(config: SocialMetaConfig) {
     'og:image:alt': title,
     'og:url': canonicalUrl,
     'og:type': type,
-    'og:site_name': siteName,
+    'og:site_name': siteName || 'প্রথম আলো',
     'og:locale': 'bn_BD',
     
     // Article-specific Open Graph tags
     ...(type === 'article' && {
-      'article:author': author,
-      'article:section': section,
-      'article:published_time': publishedTime,
+      'article:author': author || 'প্রথম আলো সংবাদদাতা',
+      'article:section': section || '',
+      'article:published_time': publishedTime || '',
       'article:tag': tags.join(', ')
     }),
     
@@ -128,8 +128,8 @@ export function generateSocialMetaTags(config: SocialMetaConfig) {
     'twitter:description': optimizedDescription,
     'twitter:image': imageUrl,
     'twitter:image:alt': title,
-    'twitter:site': twitterHandle,
-    'twitter:creator': twitterHandle,
+    'twitter:site': twitterHandle || DEFAULT_CONFIG.twitterHandle || '',
+    'twitter:creator': twitterHandle || DEFAULT_CONFIG.twitterHandle || '',
     
     // Additional platform-specific tags
     
@@ -145,8 +145,8 @@ export function generateSocialMetaTags(config: SocialMetaConfig) {
     'canonical': canonicalUrl,
     
     // Mobile app integration
-    'apple-mobile-web-app-title': siteName,
-    'application-name': siteName,
+    'apple-mobile-web-app-title': siteName || 'প্রথম আলো',
+    'application-name': siteName || 'প্রথম আলো',
     
     // Additional SEO
     'robots': 'index, follow',
