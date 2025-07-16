@@ -1,5 +1,14 @@
 @import "./lib/animations.css";
 
+/* Import SolaimanLipi - The most popular Bengali font for news websites */
+@import url('https://fonts.cdnfonts.com/css/solaimanlipi');
+
+/* Import Kalpurush - Modern Bengali font for digital media */
+@import url('https://fonts.maateen.me/kalpurush/font.css');
+
+/* Import AponaLohit - Clean Bengali font for body text */
+@import url('https://fonts.maateen.me/apona-lohit/font.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -148,15 +157,6 @@
     overflow-x: hidden;
     transition: background-color var(--duration-200) var(--timing-ease-in-out);
   }
-
-  /* Import SolaimanLipi - The most popular Bengali font for news websites */
-  @import url('https://fonts.cdnfonts.com/css/solaimanlipi');
-  
-  /* Import Kalpurush - Modern Bengali font for digital media */
-  @import url('https://fonts.maateen.me/kalpurush/font.css');
-  
-  /* Import AponaLohit - Clean Bengali font for body text */
-  @import url('https://fonts.maateen.me/apona-lohit/font.css');
 
   /* Noto Sans Bengali - Fallback font for better compatibility */
   @font-face {
@@ -525,17 +525,6 @@ hr {
     @apply animate-pulse shadow-lg;
   }
 
-  /* Breaking News Progress Bar Animation */
-  @keyframes progress-bar {
-    0% {
-      transform: scaleX(0);
-    }
-    100% {
-      transform: scaleX(1);
-    }
-  }
-}
-
   .date-text {
     @apply text-sm text-muted-foreground font-medium;
   }
@@ -555,22 +544,13 @@ hr {
   }
 
   .mobile-nav-link {
-    @apply text-foreground hover:text-primary transition-colors duration-200;
-    @apply font-medium px-4 py-3 rounded-lg hover:bg-accent/10;
-    @apply focus:outline-none focus:ring-2 focus:ring-ring;
-    @apply text-base;
-    @apply flex items-center;
-    @apply w-full;
+    @apply block w-full text-left px-6 py-3 text-base font-medium;
+    @apply text-foreground hover:text-primary hover:bg-accent/10;
+    @apply transition-colors duration-200 border-b border-border/50;
   }
 
   .nav-link-active {
     @apply nav-link text-primary bg-primary/10;
-  }
-
-  .mobile-nav-link {
-    @apply block w-full text-left px-6 py-3 text-base font-medium;
-    @apply text-foreground hover:text-primary hover:bg-accent/10;
-    @apply transition-colors duration-200 border-b border-border/50;
   }
 
   /* Enhanced Layout Components */
@@ -826,6 +806,16 @@ hr {
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+/* Breaking News Progress Bar Animation */
+@keyframes progress-bar {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
   }
 }
 
