@@ -1,4 +1,4 @@
-import { supabase } from './supabase.js';
+import { supabase } from './supabase';
 
 // Advanced Algorithm Functions for Bengali News Website
 
