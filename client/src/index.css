@@ -1243,3 +1243,223 @@ hr {
   from {opacity: .4} 
   to {opacity: 1}
 }
+
+/* Enhanced Category Page Specific Styles */
+.category-page {
+  background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  min-height: 100vh;
+}
+
+.category-header {
+  position: relative;
+  overflow: hidden;
+}
+
+.category-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, hsl(var(--primary) / 0.05) 0%, hsl(var(--accent) / 0.05) 100%);
+  z-index: -1;
+}
+
+.category-title-animated {
+  animation: slideUp 0.8s ease-out, fadeIn 0.8s ease-out;
+}
+
+.category-nav-chip {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.category-nav-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.category-nav-chip:hover::before {
+  left: 100%;
+}
+
+.category-nav-chip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.2);
+}
+
+.article-card-grid {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.article-card-grid:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px hsl(var(--foreground) / 0.1);
+}
+
+.article-card-list {
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.article-card-list:hover {
+  border-left-color: hsl(var(--primary));
+  background: hsl(var(--muted) / 0.3);
+  transform: translateX(8px);
+}
+
+.search-input-enhanced {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.search-input-enhanced:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
+}
+
+.view-toggle-button {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.view-toggle-button:hover {
+  transform: scale(1.1);
+}
+
+.sort-dropdown {
+  backdrop-filter: blur(10px);
+  background: hsl(var(--background) / 0.95);
+  border: 1px solid hsl(var(--border));
+}
+
+.empty-state-icon {
+  animation: bounceIn 0.8s ease-out;
+}
+
+.load-more-button {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent)));
+  transition: all 0.3s ease;
+}
+
+.load-more-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s;
+}
+
+.load-more-button:hover::before {
+  left: 100%;
+}
+
+.load-more-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsl(var(--primary) / 0.3);
+}
+
+/* Staggered Animation for Articles */
+.article-grid-container > .article-card-grid:nth-child(1) {
+  animation: slideUp 0.6s ease-out 0.1s both;
+}
+
+.article-grid-container > .article-card-grid:nth-child(2) {
+  animation: slideUp 0.6s ease-out 0.2s both;
+}
+
+.article-grid-container > .article-card-grid:nth-child(3) {
+  animation: slideUp 0.6s ease-out 0.3s both;
+}
+
+.article-grid-container > .article-card-grid:nth-child(4) {
+  animation: slideUp 0.6s ease-out 0.4s both;
+}
+
+.article-grid-container > .article-card-grid:nth-child(5) {
+  animation: slideUp 0.6s ease-out 0.5s both;
+}
+
+.article-grid-container > .article-card-grid:nth-child(6) {
+  animation: slideUp 0.6s ease-out 0.6s both;
+}
+
+/* Enhanced Mobile Responsive Design for Category Page */
+@media (max-width: 768px) {
+  .category-title-animated {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  
+  .category-nav-chip {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .article-card-grid:hover {
+    transform: none;
+  }
+  
+  .search-input-enhanced:focus-within {
+    transform: none;
+  }
+}
+
+/* Enhanced Accessibility for Category Page */
+@media (prefers-reduced-motion: reduce) {
+  .category-title-animated,
+  .article-grid-container > .article-card-grid,
+  .category-nav-chip,
+  .article-card-grid,
+  .article-card-list {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* High Contrast Mode for Category Page */
+@media (prefers-contrast: high) {
+  .category-nav-chip {
+    border: 2px solid hsl(var(--foreground));
+  }
+  
+  .article-card-grid,
+  .article-card-list {
+    border: 2px solid hsl(var(--border));
+  }
+}
+
+/* Print Styles for Category Page */
+@media print {
+  .category-page {
+    background: white !important;
+  }
+  
+  .load-more-button,
+  .view-toggle-button,
+  .search-input-enhanced,
+  .sort-dropdown {
+    display: none !important;
+  }
+  
+  .article-card-grid,
+  .article-card-list {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+}
