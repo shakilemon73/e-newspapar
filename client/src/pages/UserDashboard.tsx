@@ -544,9 +544,9 @@ export default function UserDashboard() {
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-6 w-6 animate-spin" />
                       </div>
-                    ) : userStats.recentActivity?.length ? (
+                    ) : userInteractions?.length ? (
                       <div className="space-y-4">
-                        {userStats.recentActivity.map((activity: any, index: number) => (
+                        {userInteractions.map((activity: any, index: number) => (
                           <div key={index} className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                             {activity.interactionType === 'read' && <BookOpen className="h-5 w-5 text-blue-600" />}
                             {activity.interactionType === 'save' && <Heart className="h-5 w-5 text-green-600" />}
