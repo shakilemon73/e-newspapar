@@ -23,7 +23,7 @@ interface Article {
   excerpt: string;
   imageUrl: string;
   publishedAt: string;
-  category: Category;
+  category: Category | null;
 }
 
 const SavedArticles = () => {
@@ -173,12 +173,18 @@ const SavedArticles = () => {
                     <div className="md:w-2/3 p-4 md:p-6 flex flex-col">
                       <CardHeader className="p-0 pb-2">
                         <div className="flex items-center justify-between">
-                          <Link
-                            href={`/category/${article.category.slug}`}
-                            className="text-sm font-medium text-accent hover:underline mb-1 inline-block"
-                          >
-                            {article.category.name}
-                          </Link>
+                          {article.category ? (
+                            <Link
+                              href={`/category/${article.category.slug}`}
+                              className="text-sm font-medium text-accent hover:underline mb-1 inline-block"
+                            >
+                              {article.category.name}
+                            </Link>
+                          ) : (
+                            <span className="text-sm font-medium text-muted-foreground mb-1 inline-block">
+                              বিভাগ অনুপস্থিত
+                            </span>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
