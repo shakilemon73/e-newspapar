@@ -11,6 +11,7 @@ import {
   advancedBengaliSearch,
   getUserAnalytics
 } from './advanced-algorithms.js';
+import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 
 // Validation schemas for Supabase
 const categoriesInsertSchema = z.object({
@@ -2216,6 +2217,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ error: 'Failed to update preferences' });
     }
   });
+
+  // Setup UX Enhancement Routes
+  setupUXEnhancementRoutes(app);
 
   const httpServer = createServer(app);
 

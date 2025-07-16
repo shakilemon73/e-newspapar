@@ -15,6 +15,7 @@ import {
   UserEngagementPanel, 
   EnhancedFilterPanel 
 } from '@/components/UXEnhancementSuite';
+import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 
 const Home = () => {
   // Each category is handled by the CategoryNewsSection component
@@ -74,6 +75,11 @@ const Home = () => {
         {/* Personalized Recommendations */}
         <section className="container-modern py-6 fade-in">
           <PersonalizedRecommendations />
+        </section>
+
+        {/* Context-Aware UX Suite */}
+        <section className="container-modern py-6 slide-up">
+          <ContextAwareUXSuite />
         </section>
 
         {/* Category News Sections */}
