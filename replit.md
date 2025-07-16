@@ -123,6 +123,28 @@ Uses Supabase PostgreSQL with the following main entities:
 
 ## Recent Changes (January 16, 2025)
 
+### ✅ TEXT-TO-SPEECH FEATURE SUCCESSFULLY IMPLEMENTED (January 16, 2025)
+✓ **COMPLETED**: Added comprehensive text-to-speech functionality to ArticleDetail page using Web Speech API
+✓ Implemented native browser text-to-speech without requiring AI or external services
+✓ Added Bengali language support with automatic voice detection and English fallback
+✓ Created intuitive audio controls with Play/Pause button labeled "শুনুন" (Listen)
+✓ Built advanced audio settings dropdown with volume, speech rate, and pitch controls
+✓ Added HTML tag stripping to ensure clean text content for speech synthesis
+✓ Implemented real-time audio progress tracking in reading statistics section
+✓ Added proper cleanup to stop speech synthesis on page navigation
+✓ Enhanced user experience with Bengali toast notifications for audio status
+✓ Created comprehensive error handling and debugging with console logging
+
+**Text-to-Speech Features:**
+- **Native Browser Support**: Uses Web Speech API for zero-dependency audio
+- **Bengali Language**: Automatic detection of Bengali voices with English fallback
+- **Interactive Controls**: Play/Pause with visual feedback and status updates
+- **Audio Settings**: Volume control (0-100%), speech rate (0.5x-2x), pitch (0.5x-2x)
+- **Progress Tracking**: Real-time audio progress display in reading statistics
+- **Clean Text Processing**: HTML tag removal for proper speech synthesis
+- **Error Handling**: Comprehensive error messages and fallback behaviors
+- **User Feedback**: Bengali toast notifications for audio start/stop/error states
+
 ### ✅ BREAKING NEWS COMPONENT REDESIGNED WITH UX PHILOSOPHY PRINCIPLES (January 16, 2025)
 ✓ **COMPLETED**: Completely redesigned breaking news component following Don Norman's UX principles and user's design philosophy
 ✓ Applied Don Norman's principles: Discoverability, Feedback, Constraints, Mapping, and Signifiers

@@ -387,6 +387,13 @@ const ArticleDetail = () => {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       setSpeechSynthesis(window.speechSynthesis);
+      
+      // Load voices if not already loaded
+      if (window.speechSynthesis.getVoices().length === 0) {
+        window.speechSynthesis.addEventListener('voiceschanged', () => {
+          console.log('Voices loaded:', window.speechSynthesis.getVoices().length);
+        });
+      }
     }
   }, []);
 
@@ -402,37 +409,86 @@ const ArticleDetail = () => {
     };
   }, [speechSynthesis, articleSlug]);
 
+  // Helper function to strip HTML tags from content
+  const stripHtmlTags = (html: string): string => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.body.textContent || doc.body.innerText || '';
+  };
+
   // Text-to-Speech controls
   const toggleAudio = () => {
-    if (!speechSynthesis || !article) return;
+    console.log('Audio button clicked');
+    console.log('Speech synthesis available:', !!speechSynthesis);
+    console.log('Article available:', !!article);
+    
+    if (!speechSynthesis || !article) {
+      toast({
+        title: "অডিও অসুবিধা",
+        description: "আপনার ব্রাউজার টেক্সট-টু-স্পিচ সাপোর্ট করে না",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (isAudioPlaying) {
       // Stop current speech
+      console.log('Stopping speech');
       speechSynthesis.cancel();
       setIsAudioPlaying(false);
       setCurrentUtterance(null);
       setAudioProgress(0);
     } else {
-      // Start speech synthesis
-      const textToSpeak = `${article.title}. ${article.content}`;
+      // Clean text content by stripping HTML tags
+      const cleanContent = stripHtmlTags(article.content);
+      const textToSpeak = `${article.title}. ${cleanContent}`;
+      console.log('Text to speak length:', textToSpeak.length);
+      console.log('Text preview:', textToSpeak.substring(0, 100) + '...');
+      
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       
-      // Configure speech parameters
+      // Configure speech parameters - try different language codes
       utterance.rate = speechRate;
       utterance.pitch = speechPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'bn-BD'; // Bengali language
+      
+      // Try different language codes for Bengali
+      const voices = speechSynthesis.getVoices();
+      console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
+      
+      // Find Bengali voice or fall back to English
+      const bengaliVoice = voices.find(voice => 
+        voice.lang.includes('bn') || voice.lang.includes('hi') || voice.name.includes('Bengali')
+      );
+      
+      if (bengaliVoice) {
+        utterance.voice = bengaliVoice;
+        utterance.lang = bengaliVoice.lang;
+        console.log('Using Bengali voice:', bengaliVoice.name, bengaliVoice.lang);
+      } else {
+        utterance.lang = 'en-US'; // Fallback to English
+        console.log('No Bengali voice found, using English');
+      }
       
       // Set up event listeners
       utterance.onstart = () => {
+        console.log('Speech started');
         setIsAudioPlaying(true);
         setCurrentUtterance(utterance);
+        toast({
+          title: "অডিও শুরু হয়েছে",
+          description: "নিবন্ধটি পড়া হচ্ছে...",
+        });
       };
       
       utterance.onend = () => {
+        console.log('Speech ended');
         setIsAudioPlaying(false);
         setCurrentUtterance(null);
         setAudioProgress(100);
+        toast({
+          title: "অডিও সম্পন্ন",
+          description: "নিবন্ধটি সম্পূর্ণ পড়া হয়েছে",
+        });
       };
       
       utterance.onerror = (event) => {
@@ -441,7 +497,7 @@ const ArticleDetail = () => {
         setCurrentUtterance(null);
         toast({
           title: "অডিও ত্রুটি",
-          description: "টেক্সট থেকে স্পিচ সুবিধা সমর্থিত নয়",
+          description: `সমস্যা: ${event.error}`,
           variant: "destructive",
         });
       };
@@ -454,6 +510,7 @@ const ArticleDetail = () => {
         }
       };
 
+      console.log('Starting speech synthesis');
       speechSynthesis.speak(utterance);
     }
   };
@@ -461,63 +518,53 @@ const ArticleDetail = () => {
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setAudioVolume(newVolume);
-    if (currentUtterance) {
-      // Stop current speech and restart with new volume
-      speechSynthesis.cancel();
-      const textToSpeak = `${article?.title}. ${article?.content}`;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = speechRate;
-      utterance.pitch = speechPitch;
-      utterance.volume = isAudioMuted ? 0 : newVolume;
-      utterance.lang = 'bn-BD';
-      speechSynthesis.speak(utterance);
+    if (currentUtterance && speechSynthesis) {
+      // Just update the volume without restarting
+      currentUtterance.volume = isAudioMuted ? 0 : newVolume;
     }
   };
 
   const toggleMute = () => {
     setIsAudioMuted(!isAudioMuted);
-    if (currentUtterance) {
-      // Update current utterance volume
-      speechSynthesis.cancel();
-      const textToSpeak = `${article?.title}. ${article?.content}`;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.rate = speechRate;
-      utterance.pitch = speechPitch;
-      utterance.volume = !isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'bn-BD';
-      speechSynthesis.speak(utterance);
+    if (currentUtterance && speechSynthesis) {
+      // Just update the volume without restarting
+      currentUtterance.volume = !isAudioMuted ? 0 : audioVolume;
     }
   };
 
   const handleSpeechRateChange = (value: number[]) => {
     const newRate = value[0];
     setSpeechRate(newRate);
-    if (currentUtterance && isAudioPlaying) {
-      // Restart with new rate
+    // Note: Rate changes require restarting speech synthesis
+    if (currentUtterance && isAudioPlaying && speechSynthesis && article) {
       speechSynthesis.cancel();
-      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const cleanContent = stripHtmlTags(article.content);
+      const textToSpeak = `${article.title}. ${cleanContent}`;
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = newRate;
       utterance.pitch = speechPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'bn-BD';
+      utterance.lang = 'en-US';
       speechSynthesis.speak(utterance);
+      setCurrentUtterance(utterance);
     }
   };
 
   const handleSpeechPitchChange = (value: number[]) => {
     const newPitch = value[0];
     setSpeechPitch(newPitch);
-    if (currentUtterance && isAudioPlaying) {
-      // Restart with new pitch
+    // Note: Pitch changes require restarting speech synthesis
+    if (currentUtterance && isAudioPlaying && speechSynthesis && article) {
       speechSynthesis.cancel();
-      const textToSpeak = `${article?.title}. ${article?.content}`;
+      const cleanContent = stripHtmlTags(article.content);
+      const textToSpeak = `${article.title}. ${cleanContent}`;
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = speechRate;
       utterance.pitch = newPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'bn-BD';
+      utterance.lang = 'en-US';
       speechSynthesis.speak(utterance);
+      setCurrentUtterance(utterance);
     }
   };
 
