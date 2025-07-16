@@ -11,11 +11,7 @@ import PersonalizedRecommendations from '@/components/PersonalizedRecommendation
 import SocialMediaFeed from '@/components/SocialMediaFeed';
 import VideoContent from '@/components/VideoContent';
 import AudioArticles from '@/components/AudioArticles';
-import { 
-  ContentDiscoveryWidget, 
-  UserEngagementPanel, 
-  EnhancedFilterPanel 
-} from '@/components/UXEnhancementSuite';
+
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 
@@ -66,7 +62,7 @@ const Home = () => {
 
         {/* Weather and Latest News Widgets */}
         <section className="container-modern py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Weather Widget */}
             <div className="slide-in-right">
               <WeatherWidget />
@@ -75,11 +71,6 @@ const Home = () => {
             {/* Latest News */}
             <div className="slide-up">
               <LatestNews />
-            </div>
-            
-            {/* Content Discovery Widget */}
-            <div className="slide-in-left">
-              <ContentDiscoveryWidget />
             </div>
           </div>
         </section>
@@ -99,10 +90,7 @@ const Home = () => {
           </div>
         </section>
 
-        {/* Context-Aware UX Suite */}
-        <section className="container-modern py-6 slide-up">
-          <ContextAwareUXSuite />
-        </section>
+
 
         {/* Category News Sections */}
         <section className="container-modern py-6">
@@ -129,14 +117,7 @@ const Home = () => {
 
         {/* Popular News Section */}
         <section className="container-modern py-6 slide-up">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <PopularNewsSection />
-            </div>
-            <div className="slide-in-left">
-              <UserEngagementPanel />
-            </div>
-          </div>
+          <PopularNewsSection />
         </section>
         
         {/* Video Content Section */}

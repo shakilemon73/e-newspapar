@@ -236,7 +236,7 @@ export const ReadingStatsWidget = () => {
     );
   }
 
-  const mockStats = {
+  const userStats = {
     articles_read: stats?.articles_read || 0,
     articles_saved: stats?.articles_saved || 0,
     reading_streak: stats?.reading_streak || 0,
@@ -257,13 +257,13 @@ export const ReadingStatsWidget = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-primary">
-                {mockStats.articles_read}
+                {userStats.articles_read}
               </p>
               <p className="text-xs text-muted-foreground">পড়া নিবন্ধ</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
-                {mockStats.reading_streak}
+                {userStats.reading_streak}
               </p>
               <p className="text-xs text-muted-foreground">দিনের স্ট্রিক</p>
             </div>
@@ -277,7 +277,7 @@ export const ReadingStatsWidget = () => {
                 <Bookmark className="w-4 h-4 text-blue-500" />
                 <span className="text-sm">সংরক্ষিত</span>
               </div>
-              <span className="text-sm font-medium">{mockStats.articles_saved}</span>
+              <span className="text-sm font-medium">{userStats.articles_saved}</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -285,7 +285,7 @@ export const ReadingStatsWidget = () => {
                 <Clock className="w-4 h-4 text-orange-500" />
                 <span className="text-sm">পড়ার সময়</span>
               </div>
-              <span className="text-sm font-medium">{mockStats.total_reading_time} মিনিট</span>
+              <span className="text-sm font-medium">{userStats.total_reading_time} মিনিট</span>
             </div>
 
             <div className="flex items-center justify-between">
@@ -293,7 +293,7 @@ export const ReadingStatsWidget = () => {
                 <Target className="w-4 h-4 text-purple-500" />
                 <span className="text-sm">বিভাগ অন্বেষণ</span>
               </div>
-              <span className="text-sm font-medium">{mockStats.categories_explored}</span>
+              <span className="text-sm font-medium">{userStats.categories_explored}</span>
             </div>
           </div>
 
@@ -514,15 +514,22 @@ export const ReadingPreferencesWidget = () => {
   );
 };
 
-// Complete Feature Suite Component
+// Complete Feature Suite Component - Organized Layout
 export const HomepageFeatureSuite = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <DiscoveryWidget />
-      <TrendingTopicsWidget />
-      <ReadingStatsWidget />
-      <SocialActivitiesWidget />
-      <ReadingPreferencesWidget />
+    <div className="space-y-8">
+      {/* Top Row - Primary Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <DiscoveryWidget />
+        <TrendingTopicsWidget />
+        <ReadingStatsWidget />
+      </div>
+      
+      {/* Bottom Row - Secondary Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <SocialActivitiesWidget />
+        <ReadingPreferencesWidget />
+      </div>
     </div>
   );
 };
