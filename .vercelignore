@@ -1,0 +1,15 @@
+# Vercel ignore file
+node_modules
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.git/
+README.md
+docs/
+db/seed.ts
+create-tables-now.js
+scripts/
