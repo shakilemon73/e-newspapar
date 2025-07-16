@@ -21,6 +21,12 @@
       "dest": "/$1"
     }
   ],
+  "outputDirectory": "dist/public",
+  "framework": "vite",
+  "buildCommand": "npm run build:vercel",
+  "env": {
+    "NODE_ENV": "production"
+  },
   "functions": {
     "api/index.js": {
       "runtime": "nodejs20.x",
