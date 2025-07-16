@@ -525,6 +525,17 @@ hr {
     @apply animate-pulse shadow-lg;
   }
 
+  /* Breaking News Progress Bar Animation */
+  @keyframes progress-bar {
+    0% {
+      transform: scaleX(0);
+    }
+    100% {
+      transform: scaleX(1);
+    }
+  }
+}
+
   .date-text {
     @apply text-sm text-muted-foreground font-medium;
   }
