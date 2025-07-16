@@ -290,9 +290,9 @@ export const Header = () => {
           
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
-            <div className="md:hidden mobile-menu bg-background border-t border-border slide-up">
-              <div className="py-2 space-y-1">
-                <Link href="/" className="mobile-nav-link">
+            <div className="md:hidden mobile-menu bg-background border-t border-border animate-in slide-in-from-top-2 duration-200">
+              <div className="py-4 px-4 space-y-2">
+                <Link href="/" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
                   <Home size={16} className="mr-2" />
                   প্রথম পাতা
                 </Link>
@@ -302,28 +302,29 @@ export const Header = () => {
                     key={category.id}
                     href={`/category/${category.slug}`} 
                     className="mobile-nav-link"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     {category.name}
                   </Link>
                 ))}
                 
-                <Link href="/epaper" className="mobile-nav-link">ই-পেপার</Link>
-                <Link href="/videos" className="mobile-nav-link">ভিডিও</Link>
-                <Link href="/audio-articles" className="mobile-nav-link">অডিও</Link>
-                <Link href="/advanced-search" className="mobile-nav-link">উন্নত অনুসন্ধান</Link>
+                <Link href="/epaper" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>ই-পেপার</Link>
+                <Link href="/videos" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>ভিডিও</Link>
+                <Link href="/audio-articles" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>অডিও</Link>
+                <Link href="/advanced-search" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>উন্নত অনুসন্ধান</Link>
                 
                 {user && (
                   <>
                     <div className="border-t border-border/50 my-2"></div>
-                    <Link href="/dashboard" className="mobile-nav-link">
+                    <Link href="/dashboard" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
                       <Home size={16} className="mr-2" />
                       ড্যাশবোর্ড
                     </Link>
-                    <Link href="/saved-articles" className="mobile-nav-link">
+                    <Link href="/saved-articles" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
                       <Bookmark size={16} className="mr-2" />
                       সংরক্ষিত আর্টিকেল
                     </Link>
-                    <Link href="/reading-history" className="mobile-nav-link">
+                    <Link href="/reading-history" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>
                       <Bell size={16} className="mr-2" />
                       পড়ার ইতিহাস
                     </Link>
