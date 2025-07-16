@@ -10,6 +10,16 @@
       "destination": "/api/index.js"
     }
   ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
   "functions": {
     "api/index.js": {
       "runtime": "nodejs20.x",
