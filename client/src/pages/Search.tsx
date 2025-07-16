@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { generateSearchMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 
 interface Category {
   id: number;
@@ -101,11 +102,24 @@ const Search = () => {
     }
   };
 
+  // Generate comprehensive social media meta tags for search page
+  const socialMetaTags = generateSearchMetaTags(query);
+  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
+
   return (
     <>
       <Helmet>
-        <title>{query ? `"${query}" এর ফলাফল` : 'অনুসন্ধান'} - প্রথম আলো</title>
-        <meta name="description" content={query ? `"${query}" এর সার্চ ফলাফল - প্রথম আলো` : 'প্রথম আলো অনুসন্ধান পেজ'} />
+        <title>{socialMetaTags.title}</title>
+        {metaElements.map((meta, index) => 
+          meta.property ? (
+            <meta key={index} property={meta.property} content={meta.content} />
+          ) : (
+            <meta key={index} name={meta.name} content={meta.content} />
+          )
+        )}
+        {linkElements.map((link, index) => (
+          <link key={index} rel={link.rel} href={link.href} />
+        ))}
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

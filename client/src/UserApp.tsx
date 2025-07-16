@@ -19,6 +19,7 @@ import Search from "@/pages/Search";
 import AdvancedSearch from "@/pages/AdvancedSearch";
 import PersonalizedRecommendations from "@/pages/PersonalizedRecommendations";
 import UserAnalytics from "@/pages/UserAnalytics";
+import SocialMediaTest from "@/pages/SocialMediaTest";
 
 // User Authentication Pages
 import Login from "@/pages/Login";
@@ -55,6 +56,7 @@ function UserRouter() {
       <Route path="/advanced-search" component={AdvancedSearch} />
       <Route path="/recommendations" component={PersonalizedRecommendations} />
       <Route path="/user-analytics" component={UserAnalytics} />
+      <Route path="/social-media-test" component={SocialMediaTest} />
       
       {/* User Authentication Routes */}
       <Route path="/login" component={Login} />

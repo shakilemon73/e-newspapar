@@ -1,4 +1,5 @@
 import { Helmet } from 'react-helmet';
+import { generateHomeMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import BreakingNewsTicker from '@/components/BreakingNewsTicker';
 import FeaturedSlideshow from '@/components/FeaturedSlideshow';
 import WeatherWidget from '@/components/WeatherWidget';
@@ -18,6 +19,10 @@ import {
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 
 const Home = () => {
+  // Generate comprehensive social media meta tags for home page
+  const socialMetaTags = generateHomeMetaTags();
+  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
+
   // Each category is handled by the CategoryNewsSection component
   const categories = [
     { slug: 'politics', name: 'রাজনীতি' },
@@ -33,12 +38,18 @@ const Home = () => {
   return (
     <>
       <Helmet>
-        <title>প্রথম আলো | বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র</title>
-        <meta name="description" content="বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার" />
+        <title>{socialMetaTags.title}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta property="og:title" content="প্রথম আলো | বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র" />
-        <meta property="og:description" content="বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার" />
-        <meta property="og:type" content="website" />
+        {metaElements.map((meta, index) => 
+          meta.property ? (
+            <meta key={index} property={meta.property} content={meta.content} />
+          ) : (
+            <meta key={index} name={meta.name} content={meta.content} />
+          )
+        )}
+        {linkElements.map((link, index) => (
+          <link key={index} rel={link.rel} href={link.href} />
+        ))}
       </Helmet>
 
       <main className="min-h-screen bg-background">

@@ -3,6 +3,7 @@ import { useRoute } from 'wouter';
 import { Helmet } from 'react-helmet';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { generateCategoryMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 
 interface Category {
   id: number;
@@ -147,11 +148,28 @@ const Category = () => {
     );
   }
 
+  // Generate comprehensive social media meta tags for category page
+  const socialMetaTags = generateCategoryMetaTags({
+    name: category.name,
+    slug: category.slug,
+    description: category.description
+  });
+  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
+
   return (
     <>
       <Helmet>
-        <title>{category.name} - প্রথম আলো</title>
-        <meta name="description" content={category.description || `${category.name} সম্পর্কিত সর্বশেষ খবর - প্রথম আলো`} />
+        <title>{socialMetaTags.title}</title>
+        {metaElements.map((meta, index) => 
+          meta.property ? (
+            <meta key={index} property={meta.property} content={meta.content} />
+          ) : (
+            <meta key={index} name={meta.name} content={meta.content} />
+          )
+        )}
+        {linkElements.map((link, index) => (
+          <link key={index} rel={link.rel} href={link.href} />
+        ))}
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

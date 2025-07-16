@@ -9,6 +9,7 @@ import { TextToSpeech } from '@/components/TextToSpeech';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
+import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { 
   Bookmark, 
   BookmarkCheck, 
@@ -1066,29 +1067,34 @@ const ArticleDetail = () => {
     );
   }
 
+  // Generate comprehensive social media meta tags
+  const socialMetaTags = generateArticleMetaTags({
+    title: article.title,
+    excerpt: article.excerpt,
+    image_url: article.image_url,
+    slug: article.slug,
+    published_at: article.published_at,
+    category: article.category,
+    author: article.author || 'প্রথম আলো সংবাদদাতা'
+  });
+
+  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
+
   // World-class main article content
   return (
     <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark' : ''} ${isFullscreen ? 'p-0' : ''}`}>
       <Helmet>
-        <title>{article.title} | প্রথম আলো</title>
-        <meta name="description" content={article.excerpt} />
-        <meta property="og:title" content={article.title} />
-        <meta property="og:description" content={article.excerpt} />
-        <meta property="og:image" content={article.image_url} />
-        <meta property="og:url" content={getCleanShareUrl(article.slug, article.title)} />
-        <meta property="og:type" content="article" />
-        <meta property="og:site_name" content="প্রথম আলো" />
-        <meta property="article:author" content="প্রথম আলো সংবাদদাতা" />
-        <meta property="article:published_time" content={article.published_at} />
-        <meta property="article:section" content={article.category?.name} />
-        <meta property="article:tag" content={article.category?.name} />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={article.title} />
-        <meta name="twitter:description" content={article.excerpt} />
-        <meta name="twitter:image" content={article.image_url} />
-        <meta name="twitter:site" content="@prothomalo" />
-        <meta name="twitter:creator" content="@prothomalo" />
-        <link rel="canonical" href={getCleanShareUrl(article.slug, article.title)} />
+        <title>{socialMetaTags.title}</title>
+        {metaElements.map((meta, index) => 
+          meta.property ? (
+            <meta key={index} property={meta.property} content={meta.content} />
+          ) : (
+            <meta key={index} name={meta.name} content={meta.content} />
+          )
+        )}
+        {linkElements.map((link, index) => (
+          <link key={index} rel={link.rel} href={link.href} />
+        ))}
       </Helmet>
 
       {/* Enhanced Reading Progress Bar */}
