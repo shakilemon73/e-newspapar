@@ -1,0 +1,310 @@
+/**
+ * Direct table creation script using Supabase client
+ * This script creates all advanced tables needed for the Bengali News Website
+ */
+
+import { createClient } from '@supabase/supabase-js';
+import 'dotenv/config';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceRoleKey) {
+  console.error('Missing required environment variables');
+  process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+const createAdvancedTables = async () => {
+  console.log('🚀 Creating advanced database tables...');
+  
+  const tables = [
+    {
+      name: 'user_notifications',
+      sql: `
+        CREATE TABLE IF NOT EXISTS user_notifications (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          type VARCHAR(50) DEFAULT 'info',
+          is_read BOOLEAN DEFAULT FALSE,
+          action_url TEXT,
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          read_at TIMESTAMP WITH TIME ZONE,
+          expires_at TIMESTAMP WITH TIME ZONE
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_user_notifications_user_id ON user_notifications(user_id);
+        CREATE INDEX IF NOT EXISTS idx_user_notifications_created_at ON user_notifications(created_at);
+        CREATE INDEX IF NOT EXISTS idx_user_notifications_is_read ON user_notifications(is_read);
+      `
+    },
+    {
+      name: 'user_sessions',
+      sql: `
+        CREATE TABLE IF NOT EXISTS user_sessions (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          session_start TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          session_end TIMESTAMP WITH TIME ZONE,
+          pages_visited INTEGER DEFAULT 0,
+          articles_read INTEGER DEFAULT 0,
+          time_spent INTEGER DEFAULT 0,
+          device_info JSONB DEFAULT '{}',
+          ip_address INET,
+          user_agent TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
+        CREATE INDEX IF NOT EXISTS idx_user_sessions_start ON user_sessions(session_start);
+      `
+    },
+    {
+      name: 'user_feedback',
+      sql: `
+        CREATE TABLE IF NOT EXISTS user_feedback (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+          rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+          comment TEXT,
+          feedback_type VARCHAR(50) DEFAULT 'rating',
+          is_helpful BOOLEAN,
+          tags TEXT[],
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_user_id ON user_feedback(user_id);
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_article_id ON user_feedback(article_id);
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_rating ON user_feedback(rating);
+      `
+    },
+    {
+      name: 'reading_goals',
+      sql: `
+        CREATE TABLE IF NOT EXISTS reading_goals (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          goal_type VARCHAR(50) NOT NULL,
+          target_value INTEGER NOT NULL,
+          current_value INTEGER DEFAULT 0,
+          time_period VARCHAR(20) DEFAULT 'monthly',
+          start_date DATE DEFAULT CURRENT_DATE,
+          end_date DATE,
+          is_active BOOLEAN DEFAULT TRUE,
+          is_completed BOOLEAN DEFAULT FALSE,
+          completed_at TIMESTAMP WITH TIME ZONE,
+          reward_claimed BOOLEAN DEFAULT FALSE,
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_reading_goals_user_id ON reading_goals(user_id);
+        CREATE INDEX IF NOT EXISTS idx_reading_goals_active ON reading_goals(is_active);
+        CREATE INDEX IF NOT EXISTS idx_reading_goals_completed ON reading_goals(is_completed);
+      `
+    },
+    {
+      name: 'user_clustering',
+      sql: `
+        CREATE TABLE IF NOT EXISTS user_clustering (
+          id SERIAL PRIMARY KEY,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          cluster_id INTEGER NOT NULL,
+          cluster_name VARCHAR(100),
+          confidence_score DECIMAL(5,4) CHECK (confidence_score >= 0 AND confidence_score <= 1),
+          features JSONB DEFAULT '{}',
+          last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_user_clustering_user_id ON user_clustering(user_id);
+        CREATE INDEX IF NOT EXISTS idx_user_clustering_cluster_id ON user_clustering(cluster_id);
+        CREATE INDEX IF NOT EXISTS idx_user_clustering_confidence ON user_clustering(confidence_score);
+      `
+    },
+    {
+      name: 'content_similarity',
+      sql: `
+        CREATE TABLE IF NOT EXISTS content_similarity (
+          id SERIAL PRIMARY KEY,
+          article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+          similar_article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+          similarity_score DECIMAL(5,4) CHECK (similarity_score >= 0 AND similarity_score <= 1),
+          similarity_type VARCHAR(50) DEFAULT 'content',
+          algorithm_used VARCHAR(100),
+          features_compared TEXT[],
+          computed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          UNIQUE(article_id, similar_article_id)
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_content_similarity_article_id ON content_similarity(article_id);
+        CREATE INDEX IF NOT EXISTS idx_content_similarity_score ON content_similarity(similarity_score);
+        CREATE INDEX IF NOT EXISTS idx_content_similarity_type ON content_similarity(similarity_type);
+      `
+    },
+    {
+      name: 'performance_metrics',
+      sql: `
+        CREATE TABLE IF NOT EXISTS performance_metrics (
+          id SERIAL PRIMARY KEY,
+          metric_name VARCHAR(100) NOT NULL,
+          metric_value DECIMAL(10,4),
+          metric_unit VARCHAR(20),
+          context_type VARCHAR(50),
+          context_id INTEGER,
+          metadata JSONB DEFAULT '{}',
+          recorded_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          date_bucket DATE DEFAULT CURRENT_DATE
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_performance_metrics_name ON performance_metrics(metric_name);
+        CREATE INDEX IF NOT EXISTS idx_performance_metrics_date ON performance_metrics(date_bucket);
+        CREATE INDEX IF NOT EXISTS idx_performance_metrics_context ON performance_metrics(context_type, context_id);
+      `
+    },
+    {
+      name: 'article_comments',
+      sql: `
+        CREATE TABLE IF NOT EXISTS article_comments (
+          id SERIAL PRIMARY KEY,
+          article_id INTEGER REFERENCES articles(id) ON DELETE CASCADE,
+          user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+          parent_comment_id INTEGER REFERENCES article_comments(id) ON DELETE CASCADE,
+          content TEXT NOT NULL,
+          is_approved BOOLEAN DEFAULT FALSE,
+          is_flagged BOOLEAN DEFAULT FALSE,
+          flag_reason TEXT,
+          likes_count INTEGER DEFAULT 0,
+          replies_count INTEGER DEFAULT 0,
+          metadata JSONB DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          approved_at TIMESTAMP WITH TIME ZONE,
+          approved_by UUID REFERENCES auth.users(id)
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_article_comments_article_id ON article_comments(article_id);
+        CREATE INDEX IF NOT EXISTS idx_article_comments_user_id ON article_comments(user_id);
+        CREATE INDEX IF NOT EXISTS idx_article_comments_parent ON article_comments(parent_comment_id);
+        CREATE INDEX IF NOT EXISTS idx_article_comments_approved ON article_comments(is_approved);
+        CREATE INDEX IF NOT EXISTS idx_article_comments_created ON article_comments(created_at);
+      `
+    }
+  ];
+
+  const results = [];
+  
+  for (const table of tables) {
+    try {
+      console.log(`Creating table: ${table.name}...`);
+      
+      // Execute the SQL directly
+      const { data, error } = await supabase.rpc('exec_sql', { 
+        sql_text: table.sql 
+      });
+      
+      if (error) {
+        console.error(`❌ Error creating table ${table.name}:`, error);
+        results.push({ table: table.name, success: false, error: error.message });
+      } else {
+        console.log(`✅ Table ${table.name} created successfully`);
+        results.push({ table: table.name, success: true });
+      }
+    } catch (err) {
+      console.error(`❌ Error creating table ${table.name}:`, err);
+      results.push({ table: table.name, success: false, error: err.message });
+    }
+  }
+
+  console.log('\n📊 Results Summary:');
+  results.forEach(result => {
+    if (result.success) {
+      console.log(`✅ ${result.table}: Created successfully`);
+    } else {
+      console.log(`❌ ${result.table}: ${result.error}`);
+    }
+  });
+
+  const successCount = results.filter(r => r.success).length;
+  console.log(`\n🎯 Total: ${successCount}/${results.length} tables created successfully`);
+
+  return results;
+};
+
+// Test function to verify tables exist
+const testTables = async () => {
+  console.log('\n🔍 Testing created tables...');
+  
+  const tableNames = [
+    'user_notifications', 'user_sessions', 'user_feedback', 'reading_goals',
+    'user_clustering', 'content_similarity', 'performance_metrics', 'article_comments'
+  ];
+
+  const results = [];
+  
+  for (const tableName of tableNames) {
+    try {
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .limit(1);
+      
+      if (error) {
+        results.push({ table: tableName, exists: false, error: error.message });
+      } else {
+        results.push({ table: tableName, exists: true });
+      }
+    } catch (err) {
+      results.push({ table: tableName, exists: false, error: err.message });
+    }
+  }
+
+  console.log('\n📋 Table Status:');
+  results.forEach(result => {
+    if (result.exists) {
+      console.log(`✅ ${result.table}: Table exists and accessible`);
+    } else {
+      console.log(`❌ ${result.table}: ${result.error || 'Table not found'}`);
+    }
+  });
+
+  const existingCount = results.filter(r => r.exists).length;
+  console.log(`\n✨ ${existingCount}/${results.length} tables are ready to use`);
+
+  return results;
+};
+
+// Main execution
+const main = async () => {
+  try {
+    console.log('🎯 Starting advanced table creation process...\n');
+    
+    await createAdvancedTables();
+    await testTables();
+    
+    console.log('\n🚀 Advanced table creation process completed!');
+    console.log('💡 You can now use all the advanced features in your Bengali News Website');
+    
+  } catch (error) {
+    console.error('💥 Fatal error:', error);
+    process.exit(1);
+  }
+};
+
+// Run if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
