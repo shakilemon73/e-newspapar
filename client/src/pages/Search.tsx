@@ -21,10 +21,14 @@ interface Article {
 
 const Search = () => {
   const [location] = useLocation();
-  const query = new URLSearchParams(location.includes('?') ? location.split('?')[1] : '').get('q') || '';
+  
+  // Better URL parsing for wouter
+  const urlParams = new URLSearchParams(window.location.search);
+  const query = urlParams.get('q') || '';
   
   // Debug logging
   console.log('Search page - location:', location);
+  console.log('Search page - window.location.search:', window.location.search);
   console.log('Search page - query:', query);
   
   const [articles, setArticles] = useState<Article[]>([]);
