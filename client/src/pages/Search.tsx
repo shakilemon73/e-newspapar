@@ -21,7 +21,11 @@ interface Article {
 
 const Search = () => {
   const [location] = useLocation();
-  const query = new URLSearchParams(location.split('?')[1]).get('q') || '';
+  const query = new URLSearchParams(location.includes('?') ? location.split('?')[1] : '').get('q') || '';
+  
+  // Debug logging
+  console.log('Search page - location:', location);
+  console.log('Search page - query:', query);
   
   const [articles, setArticles] = useState<Article[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -111,9 +115,7 @@ const Search = () => {
         {!query && (
           <div className="bg-white rounded shadow-sm p-8 text-center">
             <p className="text-lg mb-4">অনুসন্ধান করতে উপরের সার্চ বাক্সে আপনার কীওয়ার্ড লিখুন</p>
-            <Link href="/">
-              <a className="text-accent hover:underline">হোমপেজে ফিরে যান</a>
-            </Link>
+            <Link href="/" className="text-accent hover:underline">হোমপেজে ফিরে যান</Link>
           </div>
         )}
         
@@ -136,9 +138,7 @@ const Search = () => {
         {query && !isLoading && articles.length === 0 && (
           <div className="bg-white rounded shadow-sm p-8 text-center">
             <p className="text-lg mb-4">"{query}" এর জন্য কোন ফলাফল পাওয়া যায়নি</p>
-            <Link href="/">
-              <a className="text-accent hover:underline">হোমপেজে ফিরে যান</a>
-            </Link>
+            <Link href="/" className="text-accent hover:underline">হোমপেজে ফিরে যান</Link>
           </div>
         )}
         

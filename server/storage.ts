@@ -170,18 +170,54 @@ export const storage = {
   },
 
   async searchArticles(query: string, limit = 10, offset = 0) {
-    const { data, error } = await supabase
-      .from('articles')
-      .select(`
-        *,
-        category:categories(*)
-      `)
-      .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    console.log('Searching for:', query);
     
-    if (error) throw error;
-    return data || [];
+    try {
+      // Try individual ILIKE queries first to test
+      const { data: titleResults, error: titleError } = await supabase
+        .from('articles')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .ilike('title', `%${query}%`)
+        .order('published_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      console.log('Title search results:', titleResults?.length || 0);
+      
+      if (titleError) {
+        console.error('Title search error:', titleError);
+      }
+
+      // If title search found results, return them
+      if (titleResults && titleResults.length > 0) {
+        console.log('Found results in title search');
+        return titleResults;
+      }
+
+      // Otherwise try content search
+      const { data: contentResults, error: contentError } = await supabase
+        .from('articles')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .ilike('content', `%${query}%`)
+        .order('published_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      console.log('Content search results:', contentResults?.length || 0);
+      
+      if (contentError) {
+        console.error('Content search error:', contentError);
+      }
+      
+      return contentResults || [];
+    } catch (err) {
+      console.error('Search function error:', err);
+      throw err;
+    }
   },
 
   async createArticle(data: any) {

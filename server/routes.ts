@@ -647,15 +647,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/articles/search`, async (req, res) => {
     try {
       const { q, limit = '10', offset = '0' } = req.query;
+      
       if (!q) {
+        console.log('No search query provided');
         return res.status(400).json({ error: 'Search query is required' });
       }
       
+      // Properly decode the query parameter for Bengali text
+      let decodedQuery: string;
+      try {
+        decodedQuery = decodeURIComponent(q as string);
+        // If still looks encoded, try additional decoding
+        if (decodedQuery.includes('à¦') || decodedQuery.includes('%')) {
+          decodedQuery = Buffer.from(decodedQuery, 'latin1').toString('utf8');
+        }
+      } catch (e) {
+        decodedQuery = q as string;
+      }
+      console.log('Search API called with query:', decodedQuery, 'limit:', limit, 'offset:', offset);
+      
       const articles = await storage.searchArticles(
-        q as string, 
+        decodedQuery, 
         parseInt(limit as string), 
         parseInt(offset as string)
       );
+      
+      console.log('Transformed articles count:', articles?.length || 0);
       return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error searching articles:', error);
