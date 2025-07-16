@@ -1387,6 +1387,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
+
   // Personalized Recommendations route
   app.get(`${apiPrefix}/personalized-recommendations`, async (req, res) => {
     try {
