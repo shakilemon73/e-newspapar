@@ -725,7 +725,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/articles/:slug`, async (req, res) => {
     try {
-      const { slug } = req.params;
+      let { slug } = req.params;
+      
+      // Properly decode URL-encoded Bengali characters
+      try {
+        slug = decodeURIComponent(slug);
+        // Handle double encoding issues
+        if (slug.includes('%')) {
+          slug = decodeURIComponent(slug);
+        }
+      } catch (e) {
+        console.log('Error decoding slug:', e);
+      }
+      
+      console.log('Decoded slug:', slug);
+      
       const article = await storage.getArticleBySlug(slug);
       if (!article) {
         return res.status(404).json({ error: 'Article not found' });

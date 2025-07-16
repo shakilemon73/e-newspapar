@@ -415,6 +415,214 @@ const ArticleDetail = () => {
     return doc.body.textContent || doc.body.innerText || '';
   };
 
+  // PDF Generation Function
+  const generatePDF = () => {
+    if (!article) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    
+    const cleanContent = stripHtmlTags(article.content);
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="bn">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${article.title} - প্রথম আলো</title>
+        <style>
+          @page {
+            size: A4;
+            margin: 2cm;
+          }
+          
+          body {
+            font-family: 'Kalpurush', 'SolaimanLipi', 'Vrinda', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            background: white;
+          }
+          
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+          }
+          
+          .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 5px;
+          }
+          
+          .website-info {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 10px;
+          }
+          
+          .article-meta {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+          }
+          
+          .article-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 15px;
+            line-height: 1.3;
+          }
+          
+          .article-excerpt {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 15px;
+            font-style: italic;
+          }
+          
+          .article-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 15px;
+          }
+          
+          .article-content {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #374151;
+            text-align: justify;
+            hyphens: auto;
+          }
+          
+          .article-content p {
+            margin-bottom: 15px;
+          }
+          
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+          }
+          
+          .category-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 10px;
+          }
+          
+          .print-info {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+          }
+          
+          @media print {
+            body {
+              -webkit-print-color-adjust: exact;
+              color-adjust: exact;
+            }
+            
+            .header {
+              page-break-inside: avoid;
+            }
+            
+            .article-title {
+              page-break-after: avoid;
+            }
+            
+            .article-content {
+              orphans: 3;
+              widows: 3;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="logo">প্রথম আলো</div>
+          <div class="website-info">বাংলাদেশের অগ্রণী অনলাইন সংবাদপত্র</div>
+          <div class="website-info">www.prothomalo.com</div>
+        </div>
+        
+        <div class="article-meta">
+          <div class="category-badge">${article.category?.name || 'সাধারণ'}</div>
+          <h1 class="article-title">${article.title}</h1>
+          <div class="article-excerpt">${article.excerpt}</div>
+          <div class="article-info">
+            <span>প্রকাশকাল: ${formatBengaliDate(article.published_at)}</span>
+            <span>দেখা হয়েছে: ${article.view_count || 0} বার</span>
+          </div>
+        </div>
+        
+        <div class="article-content">
+          ${cleanContent.split('\n').map(paragraph => 
+            paragraph.trim() ? `<p>${paragraph}</p>` : ''
+          ).join('')}
+        </div>
+        
+        <div class="footer">
+          <p><strong>প্রথম আলো</strong> - সত্যের পথে, শান্তির পথে</p>
+          <p>© ${new Date().getFullYear()} প্রথম আলো। সমস্ত অধিকার সংরক্ষিত।</p>
+          <div class="print-info">
+            <p>প্রিন্ট করা হয়েছে: ${new Date().toLocaleString('bn-BD')}</p>
+            <p>URL: ${window.location.href}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    
+    // Wait for content to load, then print
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
+  };
+
+  // Share functionality
+  const shareArticle = async () => {
+    const shareData = {
+      title: article.title,
+      text: article.excerpt,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "লিংক কপি হয়েছে",
+          description: "আর্টিকেলের লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
+  };
+
   // Text-to-Speech controls
   const toggleAudio = () => {
     console.log('Audio button clicked');
@@ -849,7 +1057,19 @@ const ArticleDetail = () => {
         <meta property="og:description" content={article.excerpt} />
         <meta property="og:image" content={article.image_url} />
         <meta property="og:url" content={window.location.href} />
+        <meta property="og:type" content="article" />
+        <meta property="og:site_name" content="প্রথম আলো" />
+        <meta property="article:author" content="প্রথম আলো সংবাদদাতা" />
+        <meta property="article:published_time" content={article.published_at} />
+        <meta property="article:section" content={article.category?.name} />
+        <meta property="article:tag" content={article.category?.name} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={article.title} />
+        <meta name="twitter:description" content={article.excerpt} />
+        <meta name="twitter:image" content={article.image_url} />
+        <meta name="twitter:site" content="@prothomalo" />
+        <meta name="twitter:creator" content="@prothomalo" />
+        <link rel="canonical" href={window.location.href} />
       </Helmet>
 
       {/* Enhanced Reading Progress Bar */}
@@ -1200,6 +1420,16 @@ const ArticleDetail = () => {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
+
+                      {/* PDF Download Button */}
+                      <Button
+                        onClick={generatePDF}
+                        variant="outline"
+                        className="gap-2 transition-all duration-300 hover:scale-105"
+                      >
+                        <Download className="w-4 h-4" />
+                        PDF ডাউনলোড
+                      </Button>
                     </div>
                   </div>
                   
