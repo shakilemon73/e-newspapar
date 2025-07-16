@@ -79,16 +79,34 @@ export const storage = {
   },
 
   async getPopularArticles(limit = 5) {
+    // Get articles ordered by views (most read first)
     const { data, error } = await supabase
       .from('articles')
       .select(`
         *,
         category:categories(*)
       `)
-      .order('view_count', { ascending: false })
+      .order('views', { ascending: false })
       .limit(limit);
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error fetching popular articles:', error);
+      // If views column doesn't exist, try view_count
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('articles')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .order('view_count', { ascending: false })
+        .limit(limit);
+      
+      if (fallbackError) {
+        console.error('Error with fallback query:', fallbackError);
+        throw fallbackError;
+      }
+      return fallbackData || [];
+    }
     return data || [];
   },
 

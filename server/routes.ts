@@ -73,7 +73,7 @@ const transformArticle = (article: any) => {
     category: article.category,
     categoryId: article.category_id,
     isFeatured: article.is_featured || false,
-    viewCount: article.view_count || 0,
+    viewCount: article.views || article.view_count || 0,
     createdAt: article.created_at,
     updatedAt: article.updated_at
   };
