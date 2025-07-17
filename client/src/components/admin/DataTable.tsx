@@ -142,6 +142,14 @@ export function DataTable({
           </div>
         );
       default:
+        // Handle objects by converting them to strings or displaying a fallback
+        if (typeof value === 'object' && value !== null) {
+          // For objects, try to display a meaningful property or stringify safely
+          if (value.name) return value.name;
+          if (value.title) return value.title;
+          if (value.id) return `#${value.id}`;
+          return JSON.stringify(value);
+        }
         return value;
     }
   };
