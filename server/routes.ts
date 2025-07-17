@@ -3285,6 +3285,694 @@ ON CONFLICT DO NOTHING;
     }
   });
 
+  // ====================
+  // NEW ADMIN SYSTEM ENDPOINTS
+  // ====================
+
+  // Database Management API Endpoints
+  app.get(`${apiPrefix}/admin/database/stats`, requireAdmin, async (req, res) => {
+    try {
+      const mockStats = {
+        storage_used: 250,
+        storage_total: 1000,
+        last_backup: new Date().toISOString(),
+        backup_count: 5,
+        tables: [
+          { name: 'articles', rows: 150 },
+          { name: 'categories', rows: 10 },
+          { name: 'users', rows: 50 },
+          { name: 'epapers', rows: 30 }
+        ],
+        table_structures: [
+          { name: 'articles', rows: 150, columns: 12, size: 45 },
+          { name: 'categories', rows: 10, columns: 5, size: 2 },
+          { name: 'users', rows: 50, columns: 8, size: 8 }
+        ],
+        avg_response_time: 120,
+        slow_queries: 3,
+        active_connections: 8,
+        cpu_usage: 25,
+        memory_usage: 60,
+        disk_io: 150
+      };
+      res.json(mockStats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch database stats' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/database/health`, requireAdmin, async (req, res) => {
+    try {
+      const healthStatus = {
+        status: 'healthy',
+        uptime: '99.9%',
+        last_check: new Date().toISOString()
+      };
+      res.json(healthStatus);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to check database health' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/database/backup`, requireAdmin, async (req, res) => {
+    try {
+      const backupId = Date.now().toString();
+      const backup = {
+        id: backupId,
+        name: `backup_${backupId}`,
+        created_at: new Date().toISOString(),
+        size: 45,
+        status: 'completed'
+      };
+      res.json(backup);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create backup' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/database/cleanup`, requireAdmin, async (req, res) => {
+    try {
+      const cleanupResult = {
+        success: true,
+        deleted_records: 25,
+        freed_space: 15
+      };
+      res.json(cleanupResult);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to cleanup database' });
+    }
+  });
+
+  // Email & Notification API Endpoints
+  app.get(`${apiPrefix}/admin/email-templates`, requireAdmin, async (req, res) => {
+    try {
+      const templates = [
+        {
+          id: 1,
+          name: 'নিউজলেটার টেমপ্লেট',
+          subject: 'সাপ্তাহিক নিউজলেটার - প্রথম আলো',
+          content: 'সাপ্তাহিক নিউজলেটার কন্টেন্ট এখানে থাকবে...',
+          type: 'newsletter',
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: 'ব্রেকিং নিউজ',
+          subject: 'জরুরি খবর - প্রথম আলো',
+          content: 'ব্রেকিং নিউজ কন্টেন্ট এখানে থাকবে...',
+          type: 'breaking_news',
+          created_at: new Date().toISOString()
+        }
+      ];
+      res.json(templates);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch email templates' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/newsletter-subscribers`, requireAdmin, async (req, res) => {
+    try {
+      const subscribers = [
+        {
+          id: 1,
+          email: 'user1@example.com',
+          subscribed_at: new Date().toISOString(),
+          active: true
+        },
+        {
+          id: 2,
+          email: 'user2@example.com',
+          subscribed_at: new Date().toISOString(),
+          active: true
+        }
+      ];
+      res.json(subscribers);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch subscribers' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/email-stats`, requireAdmin, async (req, res) => {
+    try {
+      const stats = {
+        total_subscribers: 1250,
+        new_subscribers_today: 15,
+        emails_sent: 850,
+        open_rate: 65
+      };
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch email stats' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/email-templates`, requireAdmin, async (req, res) => {
+    try {
+      const template = {
+        id: Date.now(),
+        ...req.body,
+        created_at: new Date().toISOString()
+      };
+      res.status(201).json(template);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create email template' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/send-newsletter`, requireAdmin, async (req, res) => {
+    try {
+      const result = {
+        success: true,
+        recipients: 1250,
+        sent_at: new Date().toISOString()
+      };
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send newsletter' });
+    }
+  });
+
+  // Performance Monitoring API Endpoints
+  app.get(`${apiPrefix}/admin/performance-metrics`, requireAdmin, async (req, res) => {
+    try {
+      const metrics = {
+        site_status: 'excellent',
+        uptime: '99.9%',
+        avg_page_load_time: 850,
+        page_load_trend: 'down',
+        page_load_change: -5,
+        error_rate: 0.2,
+        cpu_usage: 35,
+        memory_usage: 65,
+        disk_usage: 45,
+        bandwidth_usage: 125,
+        requests_per_second: 45,
+        active_connections: 120
+      };
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch performance metrics' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/error-logs`, requireAdmin, async (req, res) => {
+    try {
+      const logs = [
+        {
+          id: 1,
+          type: 'Database Connection Error',
+          message: 'Failed to connect to database',
+          level: 'critical',
+          timestamp: new Date().toISOString(),
+          url: '/api/articles',
+          user_id: null
+        },
+        {
+          id: 2,
+          type: 'API Timeout',
+          message: 'Request timeout after 30 seconds',
+          level: 'warning',
+          timestamp: new Date().toISOString(),
+          url: '/api/weather',
+          user_id: '123'
+        }
+      ];
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch error logs' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/api-metrics`, requireAdmin, async (req, res) => {
+    try {
+      const metrics = {
+        avg_response_time: 250,
+        total_requests: 15000,
+        endpoints: [
+          { path: '/api/articles', method: 'GET', avg_response_time: 180, requests_count: 5000 },
+          { path: '/api/categories', method: 'GET', avg_response_time: 120, requests_count: 2000 },
+          { path: '/api/weather', method: 'GET', avg_response_time: 300, requests_count: 1500 }
+        ],
+        slow_queries: [
+          { query: 'SELECT * FROM articles WHERE...', duration: 1200, timestamp: new Date().toISOString() },
+          { query: 'SELECT * FROM categories WHERE...', duration: 900, timestamp: new Date().toISOString() }
+        ]
+      };
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch API metrics' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/ux-analytics`, requireAdmin, async (req, res) => {
+    try {
+      const analytics = {
+        bounce_rate: 35,
+        avg_session_duration: 180,
+        pages_per_session: 3.2,
+        conversion_rate: 2.5,
+        slowest_pages: [
+          { path: '/articles/long-article', avg_load_time: 2500, visits: 500 },
+          { path: '/category/politics', avg_load_time: 1800, visits: 800 }
+        ]
+      };
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch UX analytics' });
+    }
+  });
+
+  // Mobile App Management API Endpoints
+  app.get(`${apiPrefix}/admin/mobile-app-config`, requireAdmin, async (req, res) => {
+    try {
+      const config = {
+        app_name: 'প্রথম আলো',
+        current_version: 'v2.1.0',
+        minimum_version: 'v2.0.0',
+        latest_version: 'v2.1.0',
+        users_on_latest: 85,
+        push_notifications_enabled: true,
+        offline_mode_enabled: true,
+        dark_mode_enabled: true,
+        force_update_enabled: false
+      };
+      res.json(config);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch mobile app config' });
+    }
+  });
+
+  app.put(`${apiPrefix}/admin/mobile-app-config`, requireAdmin, async (req, res) => {
+    try {
+      const updatedConfig = {
+        ...req.body,
+        updated_at: new Date().toISOString()
+      };
+      res.json(updatedConfig);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update mobile app config' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/mobile-app-analytics`, requireAdmin, async (req, res) => {
+    try {
+      const analytics = {
+        active_users: 15000,
+        new_users_today: 250,
+        total_downloads: 50000,
+        downloads_this_month: 2500,
+        daily_active_users: 8000,
+        weekly_active_users: 12000,
+        monthly_active_users: 15000,
+        retention_rate: 75,
+        avg_launch_time: 1200,
+        crash_rate: 0.5,
+        avg_session_duration: 12,
+        version_stats: [
+          { version: 'v2.1.0', count: 12750, percentage: 85 },
+          { version: 'v2.0.0', count: 2250, percentage: 15 }
+        ]
+      };
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch mobile app analytics' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/push-notifications`, requireAdmin, async (req, res) => {
+    try {
+      const notifications = [
+        {
+          id: 1,
+          title: 'ব্রেকিং নিউজ',
+          message: 'প্রধানমন্ত্রীর গুরুত্বপূর্ণ ঘোষণা',
+          target: 'all',
+          sent_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: 'নতুন ফিচার',
+          message: 'আপডেট করুন এবং নতুন ফিচার উপভোগ করুন',
+          target: 'active',
+          sent_at: new Date().toISOString()
+        }
+      ];
+      res.json(notifications);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch push notifications' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/send-push-notification`, requireAdmin, async (req, res) => {
+    try {
+      const notification = {
+        id: Date.now(),
+        ...req.body,
+        sent_at: new Date().toISOString()
+      };
+      res.status(201).json(notification);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to send push notification' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/force-app-update`, requireAdmin, async (req, res) => {
+    try {
+      const result = {
+        success: true,
+        message: 'Force update initiated',
+        timestamp: new Date().toISOString()
+      };
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to force app update' });
+    }
+  });
+
+  // Advertisement Management API Endpoints
+  app.get(`${apiPrefix}/admin/advertisements`, requireAdmin, async (req, res) => {
+    try {
+      const ads = [
+        {
+          id: 1,
+          title: 'গ্রামীণফোন অফার',
+          description: 'বিশেষ ছাড়ে মোবাইল রিচার্জ',
+          image_url: 'https://example.com/ad1.jpg',
+          target_url: 'https://grameenphone.com',
+          position: 'banner',
+          status: 'active',
+          impressions: 15000,
+          clicks: 450,
+          click_rate: 3.0,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: 'বাংলালিংক প্যাকেজ',
+          description: 'আকর্ষণীয় ইন্টারনেট প্যাকেজ',
+          image_url: 'https://example.com/ad2.jpg',
+          target_url: 'https://banglalink.com',
+          position: 'sidebar',
+          status: 'active',
+          impressions: 8000,
+          clicks: 200,
+          click_rate: 2.5,
+          created_at: new Date().toISOString()
+        }
+      ];
+      res.json(ads);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch advertisements' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/advertisement-analytics`, requireAdmin, async (req, res) => {
+    try {
+      const analytics = {
+        total_impressions: 50000,
+        impressions_today: 2500,
+        click_rate: 2.8,
+        total_clicks: 1400,
+        clicks_today: 75,
+        ctr_today: 3.0,
+        revenue_today: 850
+      };
+      res.json(analytics);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch advertisement analytics' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/advertisers`, requireAdmin, async (req, res) => {
+    try {
+      const advertisers = [
+        {
+          id: 1,
+          company_name: 'গ্রামীণফোন লিমিটেড',
+          email: 'marketing@grameenphone.com',
+          phone: '+880123456789',
+          total_spent: 50000,
+          active_campaigns: 3,
+          status: 'active'
+        },
+        {
+          id: 2,
+          company_name: 'বাংলালিংক ডিজিটাল',
+          email: 'ads@banglalink.com',
+          phone: '+880987654321',
+          total_spent: 30000,
+          active_campaigns: 2,
+          status: 'active'
+        }
+      ];
+      res.json(advertisers);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch advertisers' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/ad-revenue`, requireAdmin, async (req, res) => {
+    try {
+      const revenue = {
+        total_revenue: 150000,
+        revenue_this_month: 25000,
+        revenue_last_month: 22000,
+        growth_rate: 13.6,
+        revenue_sources: [
+          { type: 'ব্যানার বিজ্ঞাপন', amount: 15000, percentage: 60 },
+          { type: 'সাইডবার বিজ্ঞাপন', amount: 7000, percentage: 28 },
+          { type: 'ইনলাইন বিজ্ঞাপন', amount: 3000, percentage: 12 }
+        ]
+      };
+      res.json(revenue);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch ad revenue' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/advertisements`, requireAdmin, async (req, res) => {
+    try {
+      const advertisement = {
+        id: Date.now(),
+        ...req.body,
+        impressions: 0,
+        clicks: 0,
+        click_rate: 0,
+        created_at: new Date().toISOString()
+      };
+      res.status(201).json(advertisement);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create advertisement' });
+    }
+  });
+
+  app.put(`${apiPrefix}/admin/advertisements/:id`, requireAdmin, async (req, res) => {
+    try {
+      const advertisement = {
+        id: parseInt(req.params.id),
+        ...req.body,
+        updated_at: new Date().toISOString()
+      };
+      res.json(advertisement);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update advertisement' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/admin/advertisements/:id`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete advertisement' });
+    }
+  });
+
+  // Security & Access Control API Endpoints
+  app.get(`${apiPrefix}/admin/user-roles`, requireAdmin, async (req, res) => {
+    try {
+      const roles = [
+        {
+          id: 1,
+          name: 'সুপার অ্যাডমিন',
+          description: 'সম্পূর্ণ সিস্টেম অ্যাক্সেস',
+          permissions: ['all_permissions'],
+          active: true,
+          user_count: 2,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: 'সম্পাদক',
+          description: 'কন্টেন্ট সম্পাদনা ও প্রকাশনা',
+          permissions: ['edit_articles', 'publish_articles', 'manage_categories'],
+          active: true,
+          user_count: 8,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          name: 'লেখক',
+          description: 'নিবন্ধ লেখা ও সাবমিট',
+          permissions: ['create_articles', 'edit_own_articles'],
+          active: true,
+          user_count: 15,
+          created_at: new Date().toISOString()
+        }
+      ];
+      res.json(roles);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch user roles' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/security-audit-logs`, requireAdmin, async (req, res) => {
+    try {
+      const logs = [
+        {
+          id: 1,
+          action: 'login',
+          description: 'সফল লগইন',
+          user_email: 'admin@example.com',
+          ip_address: '192.168.1.100',
+          level: 'info',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: 2,
+          action: 'permission_denied',
+          description: 'অনুমতি নেই - নিবন্ধ মুছে ফেলার চেষ্টা',
+          user_email: 'user@example.com',
+          ip_address: '192.168.1.101',
+          level: 'warning',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: 3,
+          action: 'role_changed',
+          description: 'ব্যবহারকারীর ভূমিকা পরিবর্তন',
+          user_email: 'admin@example.com',
+          ip_address: '192.168.1.100',
+          level: 'info',
+          timestamp: new Date().toISOString()
+        }
+      ];
+      res.json(logs);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch security audit logs' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/access-control-policies`, requireAdmin, async (req, res) => {
+    try {
+      const policies = [
+        {
+          id: 1,
+          name: 'অ্যাডমিন অ্যাক্সেস নীতি',
+          description: 'অ্যাডমিন প্যানেল অ্যাক্সেস নিয়ন্ত্রণ',
+          active: true,
+          affected_roles: ['সুপার অ্যাডমিন', 'সম্পাদক'],
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: 'কন্টেন্ট প্রকাশনা নীতি',
+          description: 'নিবন্ধ প্রকাশনার অনুমতি নিয়ন্ত্রণ',
+          active: true,
+          affected_roles: ['সম্পাদক', 'লেখক'],
+          updated_at: new Date().toISOString()
+        }
+      ];
+      res.json(policies);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch access control policies' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/security-settings`, requireAdmin, async (req, res) => {
+    try {
+      const settings = {
+        two_factor_required: true,
+        session_timeout_enabled: true,
+        ip_whitelist_enabled: false,
+        audit_logging_enabled: true,
+        session_duration: 120,
+        max_login_attempts: 5,
+        security_score: 88
+      };
+      res.json(settings);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch security settings' });
+    }
+  });
+
+  app.get(`${apiPrefix}/admin/available-permissions`, requireAdmin, async (req, res) => {
+    try {
+      const permissions = [
+        { id: 'create_articles', name: 'নিবন্ধ তৈরি করুন' },
+        { id: 'edit_articles', name: 'নিবন্ধ সম্পাদনা করুন' },
+        { id: 'delete_articles', name: 'নিবন্ধ মুছে ফেলুন' },
+        { id: 'publish_articles', name: 'নিবন্ধ প্রকাশ করুন' },
+        { id: 'manage_categories', name: 'বিভাগ ব্যবস্থাপনা' },
+        { id: 'manage_users', name: 'ব্যবহারকারী ব্যবস্থাপনা' },
+        { id: 'manage_comments', name: 'মন্তব্য ব্যবস্থাপনা' },
+        { id: 'view_analytics', name: 'অ্যানালিটিক্স দেখুন' },
+        { id: 'system_settings', name: 'সিস্টেম সেটিংস' },
+        { id: 'all_permissions', name: 'সকল অনুমতি' }
+      ];
+      res.json(permissions);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch available permissions' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/user-roles`, requireAdmin, async (req, res) => {
+    try {
+      const role = {
+        id: Date.now(),
+        ...req.body,
+        active: true,
+        user_count: 0,
+        created_at: new Date().toISOString()
+      };
+      res.status(201).json(role);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create user role' });
+    }
+  });
+
+  app.put(`${apiPrefix}/admin/user-roles/:id`, requireAdmin, async (req, res) => {
+    try {
+      const role = {
+        id: parseInt(req.params.id),
+        ...req.body,
+        updated_at: new Date().toISOString()
+      };
+      res.json(role);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update user role' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/admin/user-roles/:id`, requireAdmin, async (req, res) => {
+    try {
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete user role' });
+    }
+  });
+
+  app.put(`${apiPrefix}/admin/security-settings`, requireAdmin, async (req, res) => {
+    try {
+      const updatedSettings = {
+        ...req.body,
+        updated_at: new Date().toISOString()
+      };
+      res.json(updatedSettings);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update security settings' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

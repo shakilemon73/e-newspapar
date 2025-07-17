@@ -28,6 +28,12 @@ import UserDashboardAdminPage from "@/pages/admin/UserDashboardAdminPage";
 import CommentManagementPage from "@/pages/admin/CommentManagementPage";
 import SEOManagementPage from "@/pages/admin/SEOManagementPage";
 import SearchManagementPage from "@/pages/admin/SearchManagementPage";
+import DatabaseManagementPage from "@/pages/admin/DatabaseManagementPage";
+import EmailNotificationPage from "@/pages/admin/EmailNotificationPage";
+import PerformanceMonitoringPage from "@/pages/admin/PerformanceMonitoringPage";
+import MobileAppManagementPage from "@/pages/admin/MobileAppManagementPage";
+import AdvertisementManagementPage from "@/pages/admin/AdvertisementManagementPage";
+import SecurityAccessControlPage from "@/pages/admin/SecurityAccessControlPage";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -199,6 +205,42 @@ function AdminRouter() {
       <Route path="/admin/search">
         <AdminRouteGuard>
           <SearchManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/database">
+        <AdminRouteGuard>
+          <DatabaseManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/email-notifications">
+        <AdminRouteGuard>
+          <EmailNotificationPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/performance">
+        <AdminRouteGuard>
+          <PerformanceMonitoringPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/mobile-app">
+        <AdminRouteGuard>
+          <MobileAppManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/advertisements">
+        <AdminRouteGuard>
+          <AdvertisementManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/security">
+        <AdminRouteGuard>
+          <SecurityAccessControlPage />
         </AdminRouteGuard>
       </Route>
       

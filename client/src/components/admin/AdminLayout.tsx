@@ -22,7 +22,14 @@ import {
   MessageSquare,
   TrendingUp,
   Bot,
-  Globe
+  Globe,
+  Search,
+  Database,
+  Mail,
+  Activity,
+  Smartphone,
+  DollarSign,
+  Key
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -84,19 +91,31 @@ const navigation = [
       { name: 'Search Management', href: '/admin/search', icon: Search },
     ],
   },
-
   {
-    name: 'Social & Weather',
-    icon: Share2,
+    name: 'Communication',
+    icon: Mail,
     children: [
+      { name: 'Email & Notifications', href: '/admin/email-notifications', icon: Mail },
       { name: 'Social Media', href: '/admin/social', icon: Share2 },
-      { name: 'Weather', href: '/admin/weather', icon: Cloud },
     ],
   },
   {
-    name: 'Publishing',
-    href: '/admin/publishing',
-    icon: Calendar,
+    name: 'System Management',
+    icon: Settings,
+    children: [
+      { name: 'Database Management', href: '/admin/database', icon: Database },
+      { name: 'Performance Monitoring', href: '/admin/performance', icon: Activity },
+      { name: 'Mobile App Management', href: '/admin/mobile-app', icon: Smartphone },
+      { name: 'Security & Access Control', href: '/admin/security', icon: Key },
+    ],
+  },
+  {
+    name: 'Business',
+    icon: DollarSign,
+    children: [
+      { name: 'Advertisement Management', href: '/admin/advertisements', icon: DollarSign },
+      { name: 'Weather', href: '/admin/weather', icon: Cloud },
+    ],
   },
   {
     name: 'Footer Pages',
