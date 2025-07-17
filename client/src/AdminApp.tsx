@@ -1,16 +1,17 @@
 import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/hooks/use-supabase-auth";
 import { useSupabaseAuth } from "@/hooks/use-supabase-auth";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 // Admin Pages
-import AdminAccess from "@/pages/admin-access";
+import EnhancedAdminAccess from "@/pages/EnhancedAdminAccess";
 import AdminLogin from "@/pages/AdminLogin";
-import AdminDashboard from "@/pages/AdminDashboard";
-import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
+import EnhancedAdminDashboard from "@/pages/EnhancedAdminDashboard";
+import EnhancedArticlesAdminPage from "@/pages/admin/EnhancedArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
 import BreakingNewsAdminPage from "@/pages/admin/BreakingNewsAdminPage";
@@ -88,7 +89,7 @@ function AdminRouter() {
   return (
     <Switch>
       {/* Admin Access Portal - Secure Entry Point */}
-      <Route path="/admin-access" component={AdminAccess} />
+      <Route path="/admin-access" component={EnhancedAdminAccess} />
       
       {/* Admin Login - Public */}
       <Route path="/admin-login" component={AdminLogin} />
@@ -96,13 +97,13 @@ function AdminRouter() {
       {/* Protected Admin Routes */}
       <Route path="/admin-dashboard">
         <AdminRouteGuard>
-          <AdminDashboard />
+          <EnhancedAdminDashboard />
         </AdminRouteGuard>
       </Route>
       
       <Route path="/admin/articles">
         <AdminRouteGuard>
-          <ArticlesAdminPage />
+          <EnhancedArticlesAdminPage />
         </AdminRouteGuard>
       </Route>
       
@@ -247,7 +248,24 @@ function AdminRouter() {
       {/* Default redirect to dashboard for admin routes */}
       <Route path="/admin">
         <AdminRouteGuard>
-          <AdminDashboard />
+          <div className="p-6 space-y-6">
+            <h1 className="text-2xl font-bold">Admin Portal</h1>
+            <p className="text-muted-foreground">Welcome to the admin portal. Please select a section from the navigation menu.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">Content Management</h3>
+                <p className="text-sm text-muted-foreground">Manage articles, categories, and breaking news</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">User Management</h3>
+                <p className="text-sm text-muted-foreground">Monitor users, comments, and interactions</p>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">System Management</h3>
+                <p className="text-sm text-muted-foreground">Database, performance, and security controls</p>
+              </div>
+            </div>
+          </div>
         </AdminRouteGuard>
       </Route>
       
@@ -260,12 +278,14 @@ function AdminRouter() {
 export default function AdminApp() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <div className="min-h-screen bg-background">
-          <AdminRouter />
-          <Toaster />
-        </div>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-background">
+            <AdminRouter />
+            <Toaster />
+          </div>
+        </AuthProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
