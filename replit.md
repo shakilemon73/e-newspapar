@@ -249,7 +249,7 @@ Uses Supabase PostgreSQL with the following main entities:
 - **User Dashboard Integration**: Dedicated achievements tab with earned/progress sections
 - **Icon Support**: Visual icons for each achievement type (Trophy, Star, Heart, etc.)
 
-### ✅ SUCCESSFUL MIGRATION FROM REPLIT AGENT TO REPLIT ENVIRONMENT COMPLETED (January 16, 2025)
+### ✅ SUCCESSFUL MIGRATION FROM REPLIT AGENT TO REPLIT ENVIRONMENT COMPLETED (January 17, 2025)
 ✓ **COMPLETED**: Successfully migrated Bengali News Website from Replit Agent to standard Replit environment
 ✓ Fixed runtime errors in UserDashboard.tsx by correcting userStats to finalUserStats references
 ✓ All required Node.js packages (nodejs-20) installed and configured properly  
@@ -267,6 +267,20 @@ Uses Supabase PostgreSQL with the following main entities:
 - Database integration working seamlessly with Supabase
 - Complete feature set operational: articles, categories, weather, e-papers, user dashboard
 - Authentication and role-based access control functioning properly
+
+### ✅ FIXED POPULAR ARTICLES DATABASE COLUMN ERROR (January 17, 2025)
+✓ **COMPLETED**: Resolved "column articles.views does not exist" error in popular articles endpoint
+✓ Fixed storage.ts getPopularArticles function to use correct column name 'view_count' instead of 'views'
+✓ Updated database query to properly sort articles by view count in descending order
+✓ Popular articles API endpoint now returns correct data with proper view count sorting
+✓ All database queries now use consistent column naming conventions
+✓ Migration from Replit Agent to Replit environment fully completed with zero errors
+
+**Technical Fix:**
+- Database table has 'view_count' column, not 'views' column
+- Updated getPopularArticles function in server/storage.ts to use correct column name
+- Removed fallback query logic as primary query now works correctly
+- Popular articles endpoint tested and confirmed working with proper data
 
 ### ✅ HOMEPAGE LAYOUT ISSUES FIXED (January 16, 2025)
 ✓ **COMPLETED**: Fixed all homepage layout duplicate components and mock data issues
