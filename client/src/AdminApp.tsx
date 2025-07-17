@@ -24,6 +24,10 @@ import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
 import AdvancedAlgorithmsPage from "@/pages/admin/AdvancedAlgorithmsPage";
 import TrendingAnalyticsPage from "@/pages/admin/TrendingAnalyticsPage";
 import FooterPagesAdminPage from "@/pages/admin/FooterPagesAdminPage";
+import UserDashboardAdminPage from "@/pages/admin/UserDashboardAdminPage";
+import CommentManagementPage from "@/pages/admin/CommentManagementPage";
+import SEOManagementPage from "@/pages/admin/SEOManagementPage";
+import SearchManagementPage from "@/pages/admin/SearchManagementPage";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -171,6 +175,30 @@ function AdminRouter() {
       <Route path="/admin/footer-pages">
         <AdminRouteGuard>
           <FooterPagesAdminPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/user-dashboard">
+        <AdminRouteGuard>
+          <UserDashboardAdminPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/comments">
+        <AdminRouteGuard>
+          <CommentManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/seo">
+        <AdminRouteGuard>
+          <SEOManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/search">
+        <AdminRouteGuard>
+          <SearchManagementPage />
         </AdminRouteGuard>
       </Route>
       

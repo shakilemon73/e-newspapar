@@ -17,7 +17,12 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  Shield,
+  MessageSquare,
+  TrendingUp,
+  Bot,
+  Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -58,7 +63,25 @@ const navigation = [
     icon: Users,
     children: [
       { name: 'User Management', href: '/admin/users', icon: Users },
+      { name: 'User Dashboard', href: '/admin/user-dashboard', icon: LayoutDashboard },
       { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+    ],
+  },
+  {
+    name: 'Content Moderation',
+    icon: Shield,
+    children: [
+      { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
+      { name: 'Trending Analytics', href: '/admin/trending-analytics', icon: TrendingUp },
+      { name: 'Advanced Algorithms', href: '/admin/advanced-algorithms', icon: Bot },
+    ],
+  },
+  {
+    name: 'SEO & Search',
+    icon: Search,
+    children: [
+      { name: 'SEO Management', href: '/admin/seo', icon: Globe },
+      { name: 'Search Management', href: '/admin/search', icon: Search },
     ],
   },
 
