@@ -227,7 +227,7 @@ export function setupFixedAPI(app: Express) {
           feedback_type: 'report',
           rating: null,
           comment: `Reason: ${reason}${description ? ` | Description: ${description}` : ''}`,
-          user_agent: req.headers['user-agent'] || 'Unknown',
+          metadata: { user_agent: req.headers['user-agent'] || 'Unknown' },
           created_at: new Date().toISOString()
         })
         .select()

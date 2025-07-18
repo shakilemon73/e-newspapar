@@ -183,8 +183,8 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
         .from('user_likes')
         .insert({
           user_id: user.id,
-          article_id: parseInt(articleId),
-          like_type: 'article'
+          content_type: 'article',
+          content_id: parseInt(articleId)
         })
         .select()
         .single();
@@ -212,7 +212,8 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
         .from('user_likes')
         .delete()
         .eq('user_id', user.id)
-        .eq('article_id', parseInt(articleId));
+        .eq('content_type', 'article')
+        .eq('content_id', parseInt(articleId));
       
       if (error) throw error;
       res.json({ success: true });
@@ -232,14 +233,16 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
         .from('user_likes')
         .select('id')
         .eq('user_id', user.id)
-        .eq('article_id', parseInt(articleId))
+        .eq('content_type', 'article')
+        .eq('content_id', parseInt(articleId))
         .single();
       
       // Get total like count
       const { count: likeCount } = await supabase
         .from('user_likes')
         .select('*', { count: 'exact' })
-        .eq('article_id', parseInt(articleId));
+        .eq('content_type', 'article')
+        .eq('content_id', parseInt(articleId));
       
       res.json({
         isLiked: !!userLike,
@@ -354,11 +357,13 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       const { pollId } = req.params;
       const { optionId, userId } = req.body;
       
+      // Use user_interactions table for poll votes since poll_votes doesn't exist
       // Check if user already voted
       const { data: existingVote } = await supabase
-        .from('poll_votes')
+        .from('user_interactions')
         .select('id')
-        .eq('poll_id', parseInt(pollId))
+        .eq('interaction_type', 'poll_vote')
+        .eq('article_id', parseInt(pollId))
         .eq('user_id', userId)
         .single();
       
@@ -367,17 +372,20 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       }
       
       const { data, error } = await supabase
-        .from('poll_votes')
+        .from('user_interactions')
         .insert({
-          poll_id: parseInt(pollId),
-          option_id: optionId,
-          user_id: userId
+          user_id: userId,
+          article_id: parseInt(pollId), // Using article_id to store poll_id
+          interaction_type: 'poll_vote',
+          interaction_value: optionId.toString(),
+          metadata: { poll_id: parseInt(pollId), option_id: optionId },
+          created_at: new Date().toISOString()
         })
         .select()
         .single();
       
       if (error) throw error;
-      res.json(data);
+      res.json({ success: true, vote: data });
     } catch (error: any) {
       console.error('Error voting in poll:', error);
       res.status(500).json({ error: 'Failed to vote in poll' });
