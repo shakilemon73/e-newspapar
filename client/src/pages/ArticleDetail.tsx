@@ -1296,7 +1296,7 @@ const ArticleDetail = () => {
                           <div>
                             <p className="font-medium text-sm">সম্পাদকীয় টিম</p>
                             <p className="text-xs text-muted-foreground">
-                              {formatBengaliDate(article.published_at)}
+                              {getRelativeTimeInBengali(article.published_at)}
                             </p>
                           </div>
                         </div>

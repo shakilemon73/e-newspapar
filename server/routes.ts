@@ -4551,11 +4551,123 @@ ON CONFLICT DO NOTHING;
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return res.json(data);
+      if (error) {
+        console.error('Error fetching comments:', error);
+        return res.status(500).json({ error: 'Failed to fetch comments' });
+      }
+      
+      return res.json(data || []);
     } catch (error) {
       console.error('Error fetching article comments:', error);
       return res.status(500).json({ error: 'Failed to fetch article comments' });
+    }
+  });
+
+  // Like status endpoint
+  app.get(`${apiPrefix}/articles/:id/like-status`, async (req, res) => {
+    try {
+      const articleId = parseInt(req.params.id);
+      
+      // Get total like count for article
+      const { data: likesData, error: likesError } = await supabase
+        .from('user_likes')
+        .select('id', { count: 'exact' })
+        .eq('article_id', articleId);
+      
+      let likeCount = 0;
+      if (!likesError && likesData) {
+        likeCount = likesData.length;
+      }
+      
+      // For authenticated users, check if they liked this article
+      const authHeader = req.headers.authorization;
+      let isLiked = false;
+      
+      if (authHeader) {
+        try {
+          const token = authHeader.replace('Bearer ', '');
+          const { data: { user }, error } = await supabase.auth.getUser(token);
+          
+          if (user && !error) {
+            const { data: userLike } = await supabase
+              .from('user_likes')
+              .select('id')
+              .eq('user_id', user.id)
+              .eq('article_id', articleId)
+              .single();
+            
+            isLiked = !!userLike;
+          }
+        } catch (authError) {
+          // Silent auth failure is OK
+        }
+      }
+      
+      return res.json({ 
+        isLiked, 
+        likeCount 
+      });
+    } catch (error: any) {
+      console.error('Error getting like status:', error);
+      return res.json({ isLiked: false, likeCount: 0 });
+    }
+  });
+
+  // Like article endpoint
+  app.post(`${apiPrefix}/articles/:id/like`, requireAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      const articleId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      const { data, error } = await supabase
+        .from('user_likes')
+        .insert({
+          user_id: userId,
+          article_id: articleId,
+          like_type: 'article'
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        if (error.code === '23505') {
+          return res.status(409).json({ error: 'Already liked' });
+        }
+        throw error;
+      }
+      
+      res.json(data);
+    } catch (error: any) {
+      console.error('Error liking article:', error);
+      res.status(500).json({ error: 'Failed to like article' });
+    }
+  });
+
+  // Unlike article endpoint
+  app.delete(`${apiPrefix}/articles/:id/like`, requireAuth, async (req, res) => {
+    try {
+      const userId = req.user?.id;
+      const articleId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      const { error } = await supabase
+        .from('user_likes')
+        .delete()
+        .eq('user_id', userId)
+        .eq('article_id', articleId);
+      
+      if (error) throw error;
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('Error unliking article:', error);
+      res.status(500).json({ error: 'Failed to unlike article' });
     }
   });
 
