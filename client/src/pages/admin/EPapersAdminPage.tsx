@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -110,6 +111,7 @@ const epaperColumns = [
 
 export default function EPapersAdminPage() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEpaper, setSelectedEpaper] = useState<any>(null);
   const [mode, setMode] = useState<'create' | 'edit'>('create');

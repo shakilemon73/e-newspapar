@@ -23,6 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -40,6 +41,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,15 +56,17 @@ import {
 const breakingNewsFormSchema = z.object({
   content: z.string().min(10, 'Content must be at least 10 characters'),
   is_active: z.boolean().default(true),
+  article_id: z.number().optional(),
+  creation_type: z.enum(['new', 'existing']).default('new'),
 });
 
 type BreakingNewsFormValues = z.infer<typeof breakingNewsFormSchema>;
 
-const breakingNewsColumns = [
-  { key: 'id', label: 'ID', sortable: true },
+const getBreakingNewsColumns = (t: any) => [
+  { key: 'id', label: t('id', 'ID', 'আইডি'), sortable: true },
   { 
     key: 'content', 
-    label: 'Content', 
+    label: t('content', 'Content', 'বিষয়বস্তু'), 
     sortable: true,
     render: (value: string) => (
       <div className="max-w-[400px] truncate font-medium">{value}</div>
@@ -70,27 +74,27 @@ const breakingNewsColumns = [
   },
   { 
     key: 'is_active', 
-    label: 'Status', 
+    label: t('status', 'Status', 'অবস্থা'), 
     sortable: true,
     render: (value: boolean) => (
       <Badge variant={value ? 'default' : 'secondary'}>
         {value ? (
-          <><Radio className="h-3 w-3 mr-1" /> Live</>
+          <><Radio className="h-3 w-3 mr-1" /> {t('live', 'Live', 'লাইভ')}</>
         ) : (
-          <><XCircle className="h-3 w-3 mr-1" /> Inactive</>
+          <><XCircle className="h-3 w-3 mr-1" /> {t('inactive', 'Inactive', 'নিষ্ক্রিয়')}</>
         )}
       </Badge>
     )
   },
   { 
     key: 'created_at', 
-    label: 'Created', 
+    label: t('created', 'Created', 'তৈরি'), 
     sortable: true,
     render: (value: string) => <DateFormatter date={value} type="relative" />
   },
   { 
     key: 'updated_at', 
-    label: 'Updated', 
+    label: t('updated', 'Updated', 'আপডেট'), 
     sortable: true,
     render: (value: string) => <DateFormatter date={value} type="relative" />
   },
@@ -98,17 +102,21 @@ const breakingNewsColumns = [
 
 export default function BreakingNewsAdminPage() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [newsToDelete, setNewsToDelete] = useState<any>(null);
+  const [creationType, setCreationType] = useState<'new' | 'existing'>('new');
 
   const form = useForm<BreakingNewsFormValues>({
     resolver: zodResolver(breakingNewsFormSchema),
     defaultValues: {
       content: '',
       is_active: true,
+      creation_type: 'new',
+      article_id: undefined,
     },
   });
 
@@ -120,6 +128,17 @@ export default function BreakingNewsAdminPage() {
       if (!response.ok) throw new Error('Failed to fetch breaking news');
       return response.json();
     },
+  });
+
+  // Fetch articles for selection
+  const { data: articles } = useQuery({
+    queryKey: ['/api/articles'],
+    queryFn: async () => {
+      const response = await fetch('/api/articles?limit=50');
+      if (!response.ok) throw new Error('Failed to fetch articles');
+      return response.json();
+    },
+    enabled: creationType === 'existing'
   });
 
   // Create/Update mutation
@@ -271,15 +290,15 @@ export default function BreakingNewsAdminPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Bell className="h-8 w-8" />
-              Breaking News Management
+              {t('breaking-news-management', 'Breaking News Management', 'ব্রেকিং নিউজ ব্যবস্থাপনা')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage urgent news alerts and breaking news
+              {t('manage-breaking-news-desc', 'Manage urgent news alerts and breaking news', 'জরুরি সংবাদ সতর্কতা এবং ব্রেকিং নিউজ পরিচালনা করুন')}
             </p>
           </div>
           <Button onClick={handleCreateNews} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Create Breaking News
+            {t('create-breaking-news', 'Create Breaking News', 'ব্রেকিং নিউজ তৈরি করুন')}
           </Button>
         </div>
 
@@ -287,52 +306,52 @@ export default function BreakingNewsAdminPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total News</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('total-news', 'Total News', 'মোট সংবাদ')}</CardTitle>
               <Bell className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{totalNews}</div>
               <p className="text-xs text-muted-foreground">
-                Breaking news items
+                {t('breaking-news-items', 'Breaking news items', 'ব্রেকিং নিউজ আইটেম')}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active/Live</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('active-live', 'Active/Live', 'সক্রিয়/লাইভ')}</CardTitle>
               <Radio className="h-4 w-4 text-green-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{activeNews}</div>
               <p className="text-xs text-muted-foreground">
-                Currently visible
+                {t('currently-visible', 'Currently visible', 'বর্তমানে দৃশ্যমান')}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Inactive</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('inactive', 'Inactive', 'নিষ্ক্রিয়')}</CardTitle>
               <XCircle className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-gray-600">{inactiveNews}</div>
               <p className="text-xs text-muted-foreground">
-                Hidden from public
+                {t('hidden-from-public', 'Hidden from public', 'জনসাধারণের কাছ থেকে লুকানো')}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Last 24h</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('last-24h', 'Last 24h', 'শেষ ২৪ ঘন্টা')}</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{recentNews}</div>
               <p className="text-xs text-muted-foreground">
-                Recent updates
+                {t('recent-updates', 'Recent updates', 'সাম্প্রতিক আপডেট')}
               </p>
             </CardContent>
           </Card>
@@ -380,9 +399,9 @@ export default function BreakingNewsAdminPage() {
         {/* Breaking News Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Breaking News</CardTitle>
+            <CardTitle>{t('all-breaking-news', 'All Breaking News', 'সকল ব্রেকিং নিউজ')}</CardTitle>
             <CardDescription>
-              Manage all breaking news alerts and their status
+              {t('manage-breaking-news-alerts', 'Manage all breaking news alerts and their status', 'সকল ব্রেকিং নিউজ সতর্কতা এবং তাদের অবস্থা পরিচালনা করুন')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -393,8 +412,8 @@ export default function BreakingNewsAdminPage() {
             ) : (
               <DataTable
                 data={breakingNews || []}
-                columns={breakingNewsColumns}
-                searchPlaceholder="Search breaking news..."
+                columns={getBreakingNewsColumns(t)}
+                searchPlaceholder={t('search-breaking-news', 'Search breaking news...', 'ব্রেকিং নিউজ খুঁজুন...')}
                 onEdit={handleEditNews}
                 onDelete={handleDeleteNews}
                 loading={isLoading}
@@ -408,20 +427,93 @@ export default function BreakingNewsAdminPage() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {mode === 'create' ? 'Create Breaking News' : 'Edit Breaking News'}
+                {mode === 'create' ? t('create-breaking-news', 'Create Breaking News', 'ব্রেকিং নিউজ তৈরি করুন') : t('edit-breaking-news', 'Edit Breaking News', 'ব্রেকিং নিউজ সম্পাদনা করুন')}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                {/* Creation Type Selection */}
+                <FormField
+                  control={form.control}
+                  name="creation_type"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>{t('creation-type', 'Creation Type', 'তৈরির ধরন')}</FormLabel>
+                      <FormControl>
+                        <div className="flex gap-4">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="new"
+                              value="new"
+                              checked={field.value === 'new'}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setCreationType('new');
+                              }}
+                            />
+                            <label htmlFor="new" className="text-sm font-medium">
+                              {t('create-new', 'Create New', 'নতুন তৈরি করুন')}
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id="existing"
+                              value="existing"
+                              checked={field.value === 'existing'}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                setCreationType('existing');
+                              }}
+                            />
+                            <label htmlFor="existing" className="text-sm font-medium">
+                              {t('use-existing', 'Use Existing Article', 'বিদ্যমান নিবন্ধ ব্যবহার করুন')}
+                            </label>
+                          </div>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {/* Article Selection (for existing articles) */}
+                {creationType === 'existing' && (
+                  <FormField
+                    control={form.control}
+                    name="article_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('select-article', 'Select Article', 'নিবন্ধ নির্বাচন করুন')}</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('choose-article', 'Choose an article...', 'একটি নিবন্ধ নির্বাচন করুন...')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {articles?.map((article: any) => (
+                                <SelectItem key={article.id} value={article.id.toString()}>
+                                  {article.title}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
                   name="content"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Breaking News Content *</FormLabel>
+                      <FormLabel>{t('breaking-news-content', 'Breaking News Content', 'ব্রেকিং নিউজ কন্টেন্ট')} *</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Enter breaking news content..."
+                          placeholder={t('enter-breaking-news', 'Enter breaking news content...', 'ব্রেকিং নিউজ কন্টেন্ট লিখুন...')}
                           className="min-h-[100px]"
                           {...field}
                         />
@@ -438,10 +530,10 @@ export default function BreakingNewsAdminPage() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">
-                          Publish Immediately
+                          {t('publish-immediately', 'Publish Immediately', 'তাত্ক্ষণিক প্রকাশ করুন')}
                         </FormLabel>
                         <p className="text-sm text-muted-foreground">
-                          This breaking news will be visible to all users
+                          {t('breaking-news-visible', 'This breaking news will be visible to all users', 'এই ব্রেকিং নিউজটি সকল ব্যবহারকারীর কাছে দৃশ্যমান হবে')}
                         </p>
                       </div>
                       <FormControl>
@@ -458,27 +550,26 @@ export default function BreakingNewsAdminPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle className="h-4 w-4 text-yellow-600" />
                     <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                      Important Notice
+                      {t('important-notice', 'Important Notice', 'গুরুত্বপূর্ণ বিজ্ঞপ্তি')}
                     </p>
                   </div>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Breaking news will appear at the top of the website and in the ticker. 
-                    Only activate when necessary to avoid overwhelming users.
+                    {t('breaking-news-warning', 'Breaking news will appear at the top of the website and in the ticker. Only activate when necessary to avoid overwhelming users.', 'ব্রেকিং নিউজ ওয়েবসাইটের শীর্ষে এবং টিকারে প্রদর্শিত হবে। ব্যবহারকারীদের অভিভূত করা এড়াতে কেবল প্রয়োজনীয় সময় সক্রিয় করুন।')}
                   </p>
                 </div>
 
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
+                    {t('cancel', 'Cancel', 'বাতিল')}
                   </Button>
                   <Button type="submit" disabled={saveMutation.isPending}>
                     {saveMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Saving...
+                        {t('saving', 'Saving...', 'সংরক্ষণ করা হচ্ছে...')}
                       </>
                     ) : (
-                      mode === 'create' ? 'Create & Publish' : 'Update Breaking News'
+                      mode === 'create' ? t('create-publish', 'Create & Publish', 'তৈরি এবং প্রকাশ করুন') : t('update-breaking-news', 'Update Breaking News', 'ব্রেকিং নিউজ আপডেট করুন')
                     )}
                   </Button>
                 </DialogFooter>

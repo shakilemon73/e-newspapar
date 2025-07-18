@@ -19,6 +19,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -89,6 +90,7 @@ const userColumns = [
 
 export default function UsersAdminPage() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [roleChangeDialog, setRoleChangeDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<string>('');

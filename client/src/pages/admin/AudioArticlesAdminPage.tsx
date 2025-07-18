@@ -25,6 +25,7 @@ import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AudioArticle {
   id: number;
@@ -41,6 +42,7 @@ interface AudioArticle {
 
 export default function AudioArticlesAdminPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const [editingAudio, setEditingAudio] = useState<AudioArticle | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);

@@ -24,6 +24,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,6 +53,7 @@ const platformColors = {
 
 export default function SocialMediaAdminPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const [editingPost, setEditingPost] = useState<SocialMediaPost | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -184,21 +186,21 @@ export default function SocialMediaAdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Social Media Management
+              {t('social-media-management', 'Social Media Management', 'সোশ্যাল মিডিয়া ব্যবস্থাপনা')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage social media posts for your Bengali news website
+              {t('manage-social-media-posts', 'Manage social media posts for your Bengali news website', 'আপনার বাংলা সংবাদ ওয়েবসাইটের জন্য সোশ্যাল মিডিয়া পোস্ট পরিচালনা করুন')}
             </p>
           </div>
           <Button onClick={() => setIsFormOpen(true)} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add New Post
+            {t('add-new-post', 'Add New Post', 'নতুন পোস্ট যোগ করুন')}
           </Button>
         </div>
 
         {/* Platform Filter */}
         <div className="flex items-center gap-4">
-          <Label htmlFor="platform-filter">Filter by Platform:</Label>
+          <Label htmlFor="platform-filter">{t('filter-by-platform', 'Filter by Platform:', 'প্ল্যাটফর্ম দ্বারা ফিল্টার করুন:')}</Label>
           <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
             <SelectTrigger id="platform-filter" className="w-48">
               <SelectValue placeholder="Select platform" />
@@ -219,7 +221,7 @@ export default function SocialMediaAdminPage() {
               <div className="flex items-center space-x-2">
                 <Share2 className="h-8 w-8 text-blue-600" />
                 <div>
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Posts</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('total-posts', 'Total Posts', 'মোট পোস্ট')}</p>
                   <p className="text-2xl font-bold">{socialPosts?.length || 0}</p>
                 </div>
               </div>
@@ -263,9 +265,9 @@ export default function SocialMediaAdminPage() {
         {/* Social Media Posts List */}
         <Card>
           <CardHeader>
-            <CardTitle>Social Media Posts</CardTitle>
+            <CardTitle>{t('social-media-posts', 'Social Media Posts', 'সোশ্যাল মিডিয়া পোস্ট')}</CardTitle>
             <CardDescription>
-              Manage your social media integration and posts
+              {t('manage-social-media-integration', 'Manage your social media integration and posts', 'আপনার সোশ্যাল মিডিয়া ইন্টিগ্রেশন এবং পোস্ট পরিচালনা করুন')}
             </CardDescription>
           </CardHeader>
           <CardContent>
