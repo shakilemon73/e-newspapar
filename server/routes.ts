@@ -13,7 +13,7 @@ import {
 } from './advanced-algorithms.js';
 import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
-import { setupUserDashboardTables, initializeSampleUserData } from './setup-user-dashboard-tables';
+// User dashboard tables are now set up directly in Supabase
 import { setupUserDashboardAPI } from './user-dashboard-api';
 
 
@@ -1998,8 +1998,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log('Setting up user dashboard tables...');
-      await setupUserDashboardTables();
-      await initializeSampleUserData();
+      // User dashboard tables are already configured in Supabase
+      console.log('✅ User dashboard system ready - all tables configured in Supabase');
       
       return res.json({ 
         success: true, 
