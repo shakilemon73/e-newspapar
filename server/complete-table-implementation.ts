@@ -312,11 +312,15 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
     try {
       const { email, preferences } = req.body;
       
+      if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+      }
+      
       const { data, error } = await supabase
-        .from('newsletters')
+        .from('newsletter_subscribers')
         .insert({
-          email,
-          preferences,
+          email: email.trim().toLowerCase(),
+          preferences: preferences || { breaking_news: true, daily_digest: true },
           subscribed_at: new Date().toISOString(),
           is_active: true
         })

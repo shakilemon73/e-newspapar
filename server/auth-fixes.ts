@@ -181,7 +181,7 @@ export function setupFixedAPI(app: Express) {
       }
       
       const { data, error } = await supabase
-        .from('newsletters')
+        .from('newsletter_subscribers')
         .insert({
           email: email.trim().toLowerCase(),
           preferences: preferences || {

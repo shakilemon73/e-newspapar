@@ -8,11 +8,13 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 
 interface Poll {
   id: number;
-  question: string;
+  title: string;
+  question?: string;
   options: Array<{
     id: number;
     text: string;
-    vote_count: number;
+    votes: number;
+    vote_count?: number;
   }>;
   total_votes: number;
   expires_at?: string;
@@ -151,7 +153,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
-                  <span className="text-base">{poll.question}</span>
+                  <span className="text-base">{poll.title || poll.question}</span>
                 </div>
                 {hasVoted && (
                   <CheckCircle className="h-5 w-5 text-green-500" />
@@ -169,8 +171,10 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               {poll.options.map((option) => {
+                // Use votes or vote_count, whichever is available
+                const optionVotes = option.votes || option.vote_count || 0;
                 const percentage = poll.total_votes > 0 
-                  ? Math.round((option.vote_count / poll.total_votes) * 100)
+                  ? Math.round((optionVotes / poll.total_votes) * 100)
                   : 0;
 
                 return (
@@ -179,7 +183,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
                       <span className="text-sm font-medium">{option.text}</span>
                       {hasVoted && (
                         <span className="text-xs text-muted-foreground">
-                          {percentage}% ({option.vote_count})
+                          {percentage}% ({optionVotes})
                         </span>
                       )}
                     </div>
