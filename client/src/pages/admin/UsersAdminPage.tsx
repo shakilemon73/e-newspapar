@@ -95,41 +95,53 @@ export default function UsersAdminPage() {
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [newRole, setNewRole] = useState<string>('');
 
-  // Fetch users from Supabase auth
+  // Fetch users from Supabase auth with proper error handling
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['/api/admin/users'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      return response.json();
-    },
+    retry: false,
   });
 
-  // Get user statistics
+  // Get user statistics with fallback calculation
   const { data: stats } = useQuery({
     queryKey: ['/api/admin/users/stats'],
+    retry: false,
     queryFn: async () => {
-      const response = await fetch('/api/admin/users/stats');
-      if (!response.ok) {
-        // Calculate stats from users data
-        const totalUsers = Array.isArray(users) ? users.length : 0;
-        const adminUsers = Array.isArray(users) ? users.filter(u => u.role === 'admin').length : 0;
-        const activeUsers = Array.isArray(users) ? users.filter(u => {
-          const lastSignIn = new Date(u.last_sign_in_at);
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          return lastSignIn > thirtyDaysAgo;
-        }).length : 0;
-        const newUsers = Array.isArray(users) ? users.filter(u => {
-          const createdAt = new Date(u.created_at);
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-          return createdAt > sevenDaysAgo;
-        }).length : 0;
-        
-        return { totalUsers, adminUsers, activeUsers, newUsers };
+      try {
+        const response = await fetch('/api/admin/users/stats', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          // If stats endpoint fails, calculate from users data
+          if (users && Array.isArray(users)) {
+            const totalUsers = users.length;
+            const adminUsers = users.filter((u: any) => u.role === 'admin').length;
+            const activeUsers = users.filter((u: any) => {
+              const lastSignIn = new Date(u.last_sign_in_at);
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+              return lastSignIn > thirtyDaysAgo;
+            }).length;
+            const newUsers = users.filter((u: any) => {
+              const createdAt = new Date(u.created_at);
+              const sevenDaysAgo = new Date();
+              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+              return createdAt > sevenDaysAgo;
+            }).length;
+            
+            return { totalUsers, adminUsers, activeUsers, newUsers };
+          }
+          return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
+        }
+        return response.json();
+      } catch (error) {
+        // Fallback calculation
+        if (users && Array.isArray(users)) {
+          const totalUsers = users.length;
+          const adminUsers = users.filter((u: any) => u.role === 'admin').length;
+          return { totalUsers, adminUsers, activeUsers: 0, newUsers: 0 };
+        }
+        return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
       }
-      return response.json();
     },
   });
 
@@ -239,10 +251,10 @@ export default function UsersAdminPage() {
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Error Loading Users
+              {t('error_loading_users', 'Error Loading Users', 'ব্যবহারকারী লোড করতে ত্রুটি')}
             </h3>
             <p className="text-gray-500 dark:text-gray-400">
-              {error.message || 'An error occurred while loading users'}
+              {error.message || t('error_loading_users_description', 'An error occurred while loading users', 'ব্যবহারকারী লোড করার সময় একটি ত্রুটি ঘটেছে')}
             </p>
           </div>
         </div>
@@ -257,15 +269,15 @@ export default function UsersAdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Users Management
+              {t('users_management', 'Users Management', 'ব্যবহারকারী ব্যবস্থাপনা')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage users, roles, and permissions
+              {t('users_management_description', 'Manage users, roles, and permissions', 'ব্যবহারকারী, ভূমিকা এবং অনুমতি পরিচালনা করুন')}
             </p>
           </div>
           <Button className="flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
-            Invite User
+            {t('invite_user', 'Invite User', 'ব্যবহারকারী আমন্ত্রণ জানান')}
           </Button>
         </div>
 
