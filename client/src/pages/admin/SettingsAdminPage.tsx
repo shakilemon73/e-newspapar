@@ -29,6 +29,7 @@ import {
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SystemSettings {
   siteName: string;
@@ -96,6 +97,7 @@ const defaultSettings: SystemSettings = {
 
 export default function SettingsAdminPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const [settings, setSettings] = useState<SystemSettings>(defaultSettings);
   const [activeTab, setActiveTab] = useState<string>('general');
@@ -183,10 +185,10 @@ export default function SettingsAdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              System Settings
+              {t('system_settings', 'System Settings', 'সিস্টেম সেটিংস')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Configure your Bengali news website settings
+              {t('configure_settings', 'Configure your Bengali news website settings', 'আপনার বাংলা সংবাদ ওয়েবসাইটের সেটিংস কনফিগার করুন')}
             </p>
           </div>
           <Button 
@@ -199,7 +201,7 @@ export default function SettingsAdminPage() {
             ) : (
               <Save className="h-4 w-4" />
             )}
-            Save Changes
+{t('save_changes', 'Save Changes', 'পরিবর্তনগুলি সংরক্ষণ করুন')}
           </Button>
         </div>
 

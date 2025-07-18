@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -53,11 +54,11 @@ const categoryFormSchema = z.object({
 
 type CategoryFormValues = z.infer<typeof categoryFormSchema>;
 
-const categoryColumns = [
-  { key: 'id', label: 'ID', sortable: true },
+const getCategoryColumns = (t: any) => [
+  { key: 'id', label: t('id', 'ID', 'আইডি'), sortable: true },
   { 
     key: 'name', 
-    label: 'Name', 
+    label: t('name', 'Name', 'নাম'), 
     sortable: true,
     render: (value: string) => (
       <div className="font-medium">{value}</div>
@@ -65,7 +66,7 @@ const categoryColumns = [
   },
   { 
     key: 'slug', 
-    label: 'Slug', 
+    label: t('slug', 'Slug', 'স্লাগ'), 
     sortable: true,
     render: (value: string) => (
       <Badge variant="outline">{value}</Badge>
@@ -73,7 +74,7 @@ const categoryColumns = [
   },
   { 
     key: 'articleCount', 
-    label: 'Articles', 
+    label: t('articles', 'Articles', 'নিবন্ধ'), 
     sortable: true,
     render: (value: number) => (
       <div className="flex items-center gap-1">
@@ -86,6 +87,7 @@ const categoryColumns = [
 
 export default function CategoriesAdminPage() {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -240,15 +242,15 @@ export default function CategoriesAdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Categories Management
+              {t('categories_management', 'Categories Management', 'বিভাগ ব্যবস্থাপনা')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Create and manage article categories
+              {t('categories_description', 'Create and manage article categories', 'নিবন্ধ বিভাগ তৈরি এবং পরিচালনা করুন')}
             </p>
           </div>
           <Button onClick={handleCreateCategory} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Create Category
+            {t('create_category', 'Create Category', 'বিভাগ তৈরি করুন')}
           </Button>
         </div>
 
@@ -302,9 +304,9 @@ export default function CategoriesAdminPage() {
         {/* Categories Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Categories</CardTitle>
+            <CardTitle>{t('all_categories', 'All Categories', 'সমস্ত বিভাগ')}</CardTitle>
             <CardDescription>
-              Manage and organize your article categories
+              {t('manage_categories_description', 'Manage and organize your article categories', 'আপনার নিবন্ধ বিভাগ পরিচালনা এবং সংগঠিত করুন')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -315,7 +317,7 @@ export default function CategoriesAdminPage() {
             ) : (
               <DataTable
                 data={categoriesWithCounts}
-                columns={categoryColumns}
+                columns={getCategoryColumns(t)}
                 searchPlaceholder="Search categories..."
                 onEdit={handleEditCategory}
                 onDelete={handleDeleteCategory}

@@ -24,6 +24,7 @@ import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface VideoContent {
   id: number;
@@ -41,6 +42,7 @@ interface VideoContent {
 
 export default function VideosAdminPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
+  const { t } = useLanguage();
   const [, setLocation] = useLocation();
   const [editingVideo, setEditingVideo] = useState<VideoContent | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -72,16 +74,16 @@ export default function VideosAdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
       toast({
-        title: "Success",
-        description: "Video created successfully",
+        title: t('success', 'Success', 'সফল'),
+        description: t('video_created_successfully', 'Video created successfully', 'ভিডিও সফলভাবে তৈরি হয়েছে'),
       });
       setIsFormOpen(false);
       setEditingVideo(null);
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create video",
+        title: t('error', 'Error', 'ত্রুটি'),
+        description: error.message || t('failed_to_create_video', 'Failed to create video', 'ভিডিও তৈরি করতে ব্যর্থ'),
         variant: "destructive",
       });
     },
@@ -189,15 +191,15 @@ export default function VideosAdminPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Video Management
+              {t('video_management', 'Video Management', 'ভিডিও ব্যবস্থাপনা')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage video content for your Bengali news website
+              {t('video_management_description', 'Manage video content for your Bengali news website', 'আপনার বাংলা সংবাদ ওয়েবসাইটের জন্য ভিডিও কন্টেন্ট পরিচালনা করুন')}
             </p>
           </div>
           <Button onClick={() => openForm()} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Add New Video
+            {t('add_new_video', 'Add New Video', 'নতুন ভিডিও যোগ করুন')}
           </Button>
         </div>
 
