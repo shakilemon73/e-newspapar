@@ -59,6 +59,165 @@ const breakingNewsInsertSchema = z.object({
 
 import supabase from './supabase';
 
+// New table API routes
+const handleNewTableRoutes = (app: Express) => {
+  // Tags API
+  app.get('/api/tags', async (req: Request, res: Response) => {
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*')
+        .order('usage_count', { ascending: false });
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      res.status(500).json({ error: 'Failed to fetch tags' });
+    }
+  });
+
+  // Article Tags API
+  app.get('/api/articles/:id/tags', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { data, error } = await supabase
+        .from('article_tags')
+        .select(`
+          *,
+          tags (
+            id,
+            name,
+            slug,
+            color
+          )
+        `)
+        .eq('article_id', id);
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching article tags:', error);
+      res.status(500).json({ error: 'Failed to fetch article tags' });
+    }
+  });
+
+  // User Bookmarks API
+  app.get('/api/user/:userId/bookmarks', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { data, error } = await supabase
+        .from('user_bookmarks')
+        .select(`
+          *,
+          articles (
+            id,
+            title,
+            slug,
+            excerpt,
+            image_url,
+            published_at
+          )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching user bookmarks:', error);
+      res.status(500).json({ error: 'Failed to fetch user bookmarks' });
+    }
+  });
+
+  // User Likes API
+  app.get('/api/user/:userId/likes', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { data, error } = await supabase
+        .from('user_likes')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching user likes:', error);
+      res.status(500).json({ error: 'Failed to fetch user likes' });
+    }
+  });
+
+  // Polls API
+  app.get('/api/polls', async (req: Request, res: Response) => {
+    try {
+      const { data, error } = await supabase
+        .from('polls')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching polls:', error);
+      res.status(500).json({ error: 'Failed to fetch polls' });
+    }
+  });
+
+  // Page Views API (Analytics)
+  app.get('/api/analytics/page-views', async (req: Request, res: Response) => {
+    try {
+      const { data, error } = await supabase
+        .from('page_views')
+        .select('*')
+        .order('viewed_at', { ascending: false })
+        .limit(100);
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching page views:', error);
+      res.status(500).json({ error: 'Failed to fetch page views' });
+    }
+  });
+
+  // User Profiles API
+  app.get('/api/user/:userId/profile', async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) throw error;
+      res.json(data || {});
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      res.status(500).json({ error: 'Failed to fetch user profile' });
+    }
+  });
+
+  // Media Files API
+  app.get('/api/media', async (req: Request, res: Response) => {
+    try {
+      const { data, error } = await supabase
+        .from('media_files')
+        .select('*')
+        .eq('is_public', true)
+        .order('uploaded_at', { ascending: false });
+      
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching media files:', error);
+      res.status(500).json({ error: 'Failed to fetch media files' });
+    }
+  });
+};
+
 // Data transformation functions
 const transformArticle = (article: any) => {
   if (!article) return article;
@@ -4434,6 +4593,9 @@ ON CONFLICT DO NOTHING;
       return res.status(500).json({ error: 'Failed to fetch user feedback' });
     }
   });
+
+  // Register new table API routes
+  handleNewTableRoutes(app);
 
   const httpServer = createServer(app);
 
