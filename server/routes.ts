@@ -1314,6 +1314,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Location-based weather endpoint
+  app.get(`${apiPrefix}/weather/location/:lat/:lon`, async (req, res) => {
+    try {
+      const { lat, lon } = req.params;
+      const latitude = parseFloat(lat);
+      const longitude = parseFloat(lon);
+      
+      if (isNaN(latitude) || isNaN(longitude)) {
+        return res.status(400).json({ error: 'Invalid coordinates' });
+      }
+      
+      console.log(`[API] Fetching weather for location: ${latitude}, ${longitude}`);
+      const weatherData = await weatherService.getWeatherByLocation(latitude, longitude);
+      
+      return res.json(weatherData);
+    } catch (error) {
+      console.error('Error fetching weather by location:', error);
+      return res.status(500).json({ error: 'Failed to fetch weather for location' });
+    }
+  });
+
   app.post(`${apiPrefix}/weather/:city`, async (req, res) => {
     try {
       const { city } = req.params;

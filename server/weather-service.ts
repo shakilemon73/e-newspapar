@@ -234,6 +234,69 @@ class WeatherService {
       .map(result => result.value);
   }
 
+  // Get weather by user's current location (coordinates)
+  async getWeatherByLocation(lat: number, lon: number): Promise<any> {
+    try {
+      // First try to reverse geocode to get city name
+      const cityName = await this.reverseGeocode(lat, lon);
+      
+      // Get weather data for the coordinates
+      const weatherData = await this.fetchWeatherByCoords(lat, lon, cityName || 'আপনার অবস্থান');
+      
+      return {
+        ...weatherData,
+        isUserLocation: true,
+        coordinates: { lat, lon }
+      };
+    } catch (error) {
+      console.error('Error fetching weather by location:', error);
+      throw error;
+    }
+  }
+
+  // Reverse geocode coordinates to city name
+  private async reverseGeocode(lat: number, lon: number): Promise<string | null> {
+    try {
+      // Check if coordinates match any of our predefined cities
+      for (const [cityKey, cityData] of Object.entries(BENGALI_CITIES)) {
+        const distance = this.calculateDistance(lat, lon, cityData.lat, cityData.lon);
+        if (distance < 50) { // Within 50km
+          return cityData.bengali;
+        }
+      }
+      
+      // If no match found, try reverse geocoding API
+      const response = await fetch(`${this.geocodeUrl}/search?latitude=${lat}&longitude=${lon}&count=1&format=json`);
+      
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      
+      if (data.results && data.results.length > 0) {
+        return data.results[0].name;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return null;
+    }
+  }
+
+  // Calculate distance between two coordinates (Haversine formula)
+  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
   // Update weather data in database
   async updateWeatherInDatabase(storage: any): Promise<void> {
     try {
