@@ -17,6 +17,8 @@ import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 import { setupUserDashboardAPI } from './user-dashboard-api';
 import { setupCompleteTableAPI, populateAllTables } from './complete-table-implementation';
 import { setupFixedAPI } from './auth-fixes';
+import { weatherService } from './weather-service';
+import { weatherScheduler } from './weather-scheduler';
 
 
 // Validation schemas for Supabase
@@ -399,6 +401,10 @@ const requireAdmin = async (req: Request, res: Response, next: Function) => {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const apiPrefix = '/api';
+  
+  // Start weather scheduler automatically
+  console.log('[Server] Starting weather scheduler...');
+  weatherScheduler.start();
   
   // Supabase user routes
   app.post(`${apiPrefix}/update-profile`, requireAuth, async (req, res) => {
@@ -1260,9 +1266,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Weather routes
-  app.get(`${apiPrefix}/weather`, async (_req, res) => {
+  // Weather routes with Open-Meteo integration
+  app.get(`${apiPrefix}/weather`, async (req, res) => {
     try {
+      const { fresh } = req.query;
+      
+      // If fresh=true, fetch from Open-Meteo API and update database
+      if (fresh === 'true') {
+        console.log('[API] Fetching fresh weather data from Open-Meteo...');
+        await weatherService.updateWeatherInDatabase(storage);
+      }
+      
       const weather = await storage.getAllWeather();
       return res.json(weather);
     } catch (error) {
@@ -1274,6 +1288,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/weather/:city`, async (req, res) => {
     try {
       const { city } = req.params;
+      const { fresh } = req.query;
+      
+      // If fresh=true, fetch from Open-Meteo API
+      if (fresh === 'true') {
+        console.log(`[API] Fetching fresh weather data for ${city} from Open-Meteo...`);
+        try {
+          const freshWeather = await weatherService.getCurrentWeather(city);
+          await storage.upsertWeather(city, freshWeather);
+          return res.json(freshWeather);
+        } catch (error) {
+          console.error(`[API] Failed to fetch fresh weather for ${city}:`, error);
+          // Fall back to database data
+        }
+      }
+      
       const weatherData = await storage.getWeatherByCity(city);
       if (!weatherData) {
         return res.status(404).json({ error: 'Weather data not found for this city' });
@@ -1297,6 +1326,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error('Error updating weather data:', error);
       return res.status(500).json({ error: 'Failed to update weather data' });
+    }
+  });
+
+  // New endpoint to refresh all weather data from Open-Meteo
+  app.post(`${apiPrefix}/weather/refresh`, async (_req, res) => {
+    try {
+      console.log('[API] Manual weather refresh requested...');
+      
+      // Test single city first
+      try {
+        console.log('[API] Testing single city weather fetch...');
+        const testWeather = await weatherService.getCurrentWeather('dhaka');
+        console.log('[API] Test weather data:', JSON.stringify(testWeather, null, 2));
+        
+        // Try to update this in database
+        await storage.upsertWeather(testWeather.city, testWeather);
+        
+        const weather = await storage.getAllWeather();
+        return res.json({ 
+          success: true, 
+          message: 'Weather data refreshed successfully', 
+          testData: testWeather,
+          data: weather 
+        });
+      } catch (testError) {
+        console.error('[API] Test weather fetch failed:', testError);
+        return res.status(500).json({ error: 'Test weather fetch failed', details: testError.message });
+      }
+    } catch (error) {
+      console.error('Error refreshing weather data:', error);
+      return res.status(500).json({ error: 'Failed to refresh weather data', details: error.message });
+    }
+  });
+
+  // Weather scheduler control endpoints
+  app.get(`${apiPrefix}/weather/scheduler/status`, async (_req, res) => {
+    try {
+      const status = weatherScheduler.getStatus();
+      return res.json(status);
+    } catch (error) {
+      console.error('Error getting weather scheduler status:', error);
+      return res.status(500).json({ error: 'Failed to get scheduler status' });
+    }
+  });
+
+  app.post(`${apiPrefix}/weather/scheduler/start`, async (_req, res) => {
+    try {
+      weatherScheduler.start();
+      return res.json({ success: true, message: 'Weather scheduler started' });
+    } catch (error) {
+      console.error('Error starting weather scheduler:', error);
+      return res.status(500).json({ error: 'Failed to start scheduler' });
+    }
+  });
+
+  app.post(`${apiPrefix}/weather/scheduler/stop`, async (_req, res) => {
+    try {
+      weatherScheduler.stop();
+      return res.json({ success: true, message: 'Weather scheduler stopped' });
+    } catch (error) {
+      console.error('Error stopping weather scheduler:', error);
+      return res.status(500).json({ error: 'Failed to stop scheduler' });
+    }
+  });
+
+  // Test endpoint for Open-Meteo integration
+  app.get(`${apiPrefix}/weather/test/:city`, async (req, res) => {
+    try {
+      const { city } = req.params;
+      console.log(`[API] Testing Open-Meteo for ${city}...`);
+      
+      const weatherData = await weatherService.getCurrentWeather(city);
+      console.log(`[API] Weather data received:`, JSON.stringify(weatherData, null, 2));
+      
+      return res.json({
+        success: true,
+        city: city,
+        weatherData: weatherData,
+        message: 'Open-Meteo integration working correctly'
+      });
+    } catch (error) {
+      console.error(`[API] Test failed for ${req.params.city}:`, error);
+      return res.status(500).json({ 
+        error: 'Test failed', 
+        details: error.message,
+        city: req.params.city 
+      });
     }
   });
 

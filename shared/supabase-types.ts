@@ -43,6 +43,10 @@ export interface Weather {
   condition: string;
   icon: string;
   forecast: any; // JSON field for forecast data
+  humidity?: number; // Added for Open-Meteo
+  windSpeed?: number; // Added for Open-Meteo
+  windDirection?: number; // Added for Open-Meteo
+  lastFetchTime?: string; // Added for Open-Meteo
   updated_at?: string;
 }
 

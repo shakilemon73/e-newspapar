@@ -409,6 +409,35 @@ export const storage = {
     return weather;
   },
 
+  async createWeather(data: any) {
+    const { data: weather, error } = await supabase
+      .from('weather')
+      .insert({ ...data, updated_at: new Date().toISOString() })
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return weather;
+  },
+
+  async upsertWeather(city: string, data: any) {
+    try {
+      // First try to update
+      const existing = await this.getWeatherByCity(city);
+      
+      if (existing) {
+        console.log(`[Storage] Updating existing weather for ${city}`);
+        return await this.updateWeather(city, data);
+      } else {
+        console.log(`[Storage] Creating new weather entry for ${city}`);
+        return await this.createWeather({ ...data, city });
+      }
+    } catch (error) {
+      console.error(`[Storage] Error upserting weather for ${city}:`, error);
+      throw error;
+    }
+  },
+
   // Breaking news operations
   async getActiveBreakingNews() {
     const { data, error } = await supabase
