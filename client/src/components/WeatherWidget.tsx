@@ -48,16 +48,26 @@ export const WeatherWidget = () => {
           const locationResponse = await fetch(`/api/weather/location/${latitude}/${longitude}`);
           
           if (locationResponse.ok) {
-            const locationWeather = await locationResponse.json();
+            const responseText = await locationResponse.text();
             
-            // Parse the forecast JSON if it's a string
-            if (typeof locationWeather.forecast === 'string') {
-              locationWeather.forecast = JSON.parse(locationWeather.forecast);
+            try {
+              const locationWeather = JSON.parse(responseText);
+              
+              // Parse the forecast JSON if it's a string
+              if (typeof locationWeather.forecast === 'string') {
+                locationWeather.forecast = JSON.parse(locationWeather.forecast);
+              }
+              
+              setWeather(locationWeather);
+              setLocationPermission('granted');
+              console.log(`[Weather] Successfully fetched location weather for ${locationWeather.city}`);
+            } catch (jsonError) {
+              console.error('[Weather] Invalid JSON response:', responseText);
+              throw new Error('Invalid weather data format');
             }
-            
-            setWeather(locationWeather);
-            setLocationPermission('granted');
           } else {
+            const errorText = await locationResponse.text();
+            console.error(`[Weather] API error ${locationResponse.status}:`, errorText);
             throw new Error('Failed to fetch location weather');
           }
         } catch (error) {

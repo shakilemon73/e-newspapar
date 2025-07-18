@@ -237,11 +237,15 @@ class WeatherService {
   // Get weather by user's current location (coordinates)
   async getWeatherByLocation(lat: number, lon: number): Promise<any> {
     try {
+      console.log(`[WeatherService] Fetching weather for location: ${lat}, ${lon}`);
+      
       // First try to reverse geocode to get city name
       const cityName = await this.reverseGeocode(lat, lon);
       
       // Get weather data for the coordinates
       const weatherData = await this.fetchWeatherByCoords(lat, lon, cityName || 'আপনার অবস্থান');
+      
+      console.log(`[WeatherService] Successfully fetched weather for ${cityName}: ${weatherData.temperature}°C`);
       
       return {
         ...weatherData,
@@ -249,7 +253,7 @@ class WeatherService {
         coordinates: { lat, lon }
       };
     } catch (error) {
-      console.error('Error fetching weather by location:', error);
+      console.error('[WeatherService] Error fetching weather by location:', error);
       throw error;
     }
   }
@@ -258,30 +262,29 @@ class WeatherService {
   private async reverseGeocode(lat: number, lon: number): Promise<string | null> {
     try {
       // Check if coordinates match any of our predefined cities
+      let closestCity = null;
+      let minDistance = Infinity;
+      
       for (const [cityKey, cityData] of Object.entries(BENGALI_CITIES)) {
         const distance = this.calculateDistance(lat, lon, cityData.lat, cityData.lon);
-        if (distance < 50) { // Within 50km
-          return cityData.bengali;
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestCity = cityData.bengali;
         }
       }
       
-      // If no match found, try reverse geocoding API
-      const response = await fetch(`${this.geocodeUrl}/search?latitude=${lat}&longitude=${lon}&count=1&format=json`);
-      
-      if (!response.ok) {
-        return null;
-      }
-
-      const data = await response.json();
-      
-      if (data.results && data.results.length > 0) {
-        return data.results[0].name;
+      // If within 50km of a known city, use that
+      if (minDistance < 50) {
+        console.log(`[WeatherService] Location matched to ${closestCity} (${minDistance.toFixed(2)}km away)`);
+        return closestCity;
       }
       
-      return null;
+      // If not near any known city, return generic location name
+      console.log(`[WeatherService] Location not near any known city (closest: ${closestCity} at ${minDistance.toFixed(2)}km)`);
+      return 'আপনার অবস্থান';
     } catch (error) {
       console.error('Reverse geocoding error:', error);
-      return null;
+      return 'আপনার অবস্থান';
     }
   }
 
