@@ -220,40 +220,58 @@ const handleNewTableRoutes = (app: Express) => {
 
 // Data transformation functions
 const transformArticle = (article: any) => {
-  if (!article) return article;
+  if (!article) {
+    console.warn('[Transform] Null article received');
+    return null;
+  }
   
   try {
-    return {
+    // Enhanced data validation and transformation with Bengali fallbacks
+    const transformed = {
       id: article.id,
-      title: article.title,
-      slug: article.slug,
-      excerpt: article.excerpt || '',
-      content: article.content,
-      imageUrl: article.image_url || '',
-      publishedAt: article.published_at || new Date().toISOString(),
-      category: article.category,
-      categoryId: article.category_id,
-      isFeatured: article.is_featured || false,
-      viewCount: article.views || article.view_count || 0,
-      createdAt: article.created_at,
-      updatedAt: article.updated_at
+      title: article.title || 'শিরোনাম নেই',
+      slug: article.slug || `article-${article.id}`,
+      excerpt: article.excerpt || 'সংক্ষিপ্ত বিবরণ নেই',
+      content: article.content || 'বিস্তারিত নেই',
+      imageUrl: article.image_url || 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=400&fit=crop',
+      publishedAt: article.published_at || article.created_at || new Date().toISOString(),
+      category: article.category || { name: 'অন্যান্য', slug: 'other' },
+      categoryId: article.category_id || 0,
+      isFeatured: Boolean(article.is_featured),
+      viewCount: Number(article.views || article.view_count) || 0,
+      createdAt: article.created_at || new Date().toISOString(),
+      updatedAt: article.updated_at || article.created_at || new Date().toISOString()
     };
+    
+    // Validate critical fields
+    if (!transformed.id) {
+      console.warn('[Transform] Article missing ID:', article);
+    }
+    
+    // Validate and fix publishedAt
+    if (!transformed.publishedAt || isNaN(new Date(transformed.publishedAt).getTime())) {
+      console.warn('[Transform] Invalid publishedAt for article:', article.id, 'Using current time');
+      transformed.publishedAt = new Date().toISOString();
+    }
+    
+    return transformed;
   } catch (error) {
     console.error('[Transform] Error transforming article:', error, 'Article data:', article);
+    // Return a safe fallback article with Bengali text
     return {
-      id: article?.id || 0,
-      title: article?.title || 'Untitled',
-      slug: article?.slug || 'untitled',
-      excerpt: article?.excerpt || '',
-      content: article?.content || '',
-      imageUrl: article?.image_url || '',
-      publishedAt: article?.published_at || new Date().toISOString(),
-      category: article?.category || null,
-      categoryId: article?.category_id || 0,
+      id: article?.id || Math.random(),
+      title: 'ত্রুটিপূর্ণ নিবন্ধ',
+      slug: `error-article-${Date.now()}`,
+      excerpt: 'এই নিবন্ধটি লোড করতে সমস্যা হয়েছে',
+      content: 'দুঃখিত, এই নিবন্ধটি সঠিকভাবে প্রদর্শিত হচ্ছে না।',
+      imageUrl: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=400&fit=crop',
+      publishedAt: new Date().toISOString(),
+      category: { name: 'ত্রুটি', slug: 'error' },
+      categoryId: 0,
       isFeatured: false,
       viewCount: 0,
-      createdAt: article?.created_at || new Date().toISOString(),
-      updatedAt: article?.updated_at || new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
   }
 };
@@ -855,7 +873,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         parseInt(offset as string)
       );
       const transformed = transformArticles(articles);
-      console.log(`[API] Returning ${transformed.length} articles`);
+      console.log(`[API] Returning ${transformed.length} general articles`);
       return res.json(transformed);
     } catch (error: any) {
       console.error('[API] Error fetching articles:', error);

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { Skeleton } from '@/components/ui/skeleton';
+import ErrorBoundary from './ErrorBoundary';
+import { apiCache } from '@/lib/utils/api-cache';
+import { measureApiCall } from '@/lib/utils/performance-monitor';
 
 interface Category {
   id: number;
@@ -35,40 +38,94 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
       try {
         setIsLoading(true);
         
-        // Fetch category details
-        const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
+        // Check cache first
+        const cacheKey = `category-${categorySlug}-${limit}`;
+        const cachedData = apiCache.get(cacheKey);
         
-        if (!categoryResponse.ok) {
-          const errorText = await categoryResponse.text();
-          console.error('Category fetch failed:', {
-            status: categoryResponse.status,
-            statusText: categoryResponse.statusText,
-            response: errorText,
-            url: `/api/categories/${categorySlug}`
-          });
-          throw new Error(`Failed to fetch category: ${categoryResponse.status} ${categoryResponse.statusText}`);
+        if (cachedData) {
+          console.log(`[Cache] Using cached data for ${categorySlug}`);
+          setCategory(cachedData.category);
+          setArticles(cachedData.articles);
+          setError(null);
+          setIsLoading(false);
+          return;
         }
         
-        const categoryData = await categoryResponse.json();
+        // Fetch category details with performance monitoring
+        const categoryData = await measureApiCall(
+          `fetch-category-${categorySlug}`,
+          async () => {
+            const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
+            
+            if (!categoryResponse.ok) {
+              const errorText = await categoryResponse.text();
+              console.error('Category fetch failed:', {
+                status: categoryResponse.status,
+                statusText: categoryResponse.statusText,
+                response: errorText,
+                url: `/api/categories/${categorySlug}`
+              });
+              throw new Error(`Failed to fetch category: ${categoryResponse.status} ${categoryResponse.statusText}`);
+            }
+            
+            return categoryResponse.json();
+          },
+          { categorySlug }
+        );
+        
         setCategory(categoryData);
         
-        // Fetch articles for this category
-        const articlesResponse = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}`);
+        // Fetch articles for this category with retry logic
+        let articlesData = [];
+        let retryCount = 0;
+        const maxRetries = 2;
         
-        if (!articlesResponse.ok) {
-          const errorText = await articlesResponse.text();
-          console.error('Articles fetch failed:', {
-            status: articlesResponse.status,
-            statusText: articlesResponse.statusText,
-            response: errorText,
-            url: `/api/articles?category=${categorySlug}&limit=${limit}`
-          });
-          throw new Error(`Failed to fetch category articles: ${articlesResponse.status} ${articlesResponse.statusText}`);
+        while (retryCount <= maxRetries) {
+          try {
+            articlesData = await measureApiCall(
+              `fetch-articles-${categorySlug}`,
+              async () => {
+                const articlesResponse = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}`);
+                
+                if (!articlesResponse.ok) {
+                  const errorText = await articlesResponse.text();
+                  console.error('Articles fetch failed:', {
+                    status: articlesResponse.status,
+                    statusText: articlesResponse.statusText,
+                    response: errorText,
+                    url: `/api/articles?category=${categorySlug}&limit=${limit}`,
+                    attempt: retryCount + 1
+                  });
+                  
+                  throw new Error(`Failed to fetch category articles: ${articlesResponse.status} ${articlesResponse.statusText}`);
+                }
+                
+                return articlesResponse.json();
+              },
+              { categorySlug, limit, attempt: retryCount + 1 }
+            );
+            break;
+          } catch (fetchError) {
+            console.warn(`Fetch attempt ${retryCount + 1} failed:`, fetchError);
+            if (retryCount === maxRetries) {
+              throw fetchError;
+            }
+          }
+          
+          retryCount++;
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
         }
         
-        const articlesData = await articlesResponse.json();
         setArticles(articlesData);
         setError(null);
+        
+        // Cache the successful result
+        apiCache.set(cacheKey, {
+          category: categoryData,
+          articles: articlesData
+        }, 2 * 60 * 1000); // Cache for 2 minutes
+        
       } catch (err: any) {
         const errorMessage = err?.message || 'বিভাগের খবর লোড করতে সমস্যা হয়েছে';
         setError(errorMessage);
@@ -133,7 +190,8 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
   const relatedArticles = articles.slice(1);
 
   return (
-    <div className="bg-card border border-border rounded shadow-sm p-4 h-full">
+    <ErrorBoundary>
+      <div className="bg-card border border-border rounded shadow-sm p-4 h-full">
       <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
         <h3 className="text-lg font-bold text-foreground">{category.name}</h3>
         <Link href={`/category/${category.slug}`} className="text-accent text-sm hover:text-accent/80 transition-colors">
@@ -192,6 +250,7 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         ))}
       </div>
     </div>
+    </ErrorBoundary>
   );
 };
 

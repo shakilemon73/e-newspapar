@@ -1,171 +1,183 @@
 /**
- * Utility functions for date formatting in Bengali
+ * Enhanced Bengali Date and Time formatting utilities
+ * Provides robust error handling and fallback formatting
  */
 
-const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+const BENGALI_NUMBERS: { [key: string]: string } = {
+  '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+  '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+};
 
-export const toBengaliNumber = (num: number): string => {
-  // Handle invalid numbers
-  if (isNaN(num) || !isFinite(num)) {
-    return '০';
+const BENGALI_MONTHS = [
+  'জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
+  'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'
+];
+
+function toBengaliNumbers(num: string | number): string {
+  return String(num).replace(/[0-9]/g, (digit) => BENGALI_NUMBERS[digit] || digit);
+}
+
+// Export for external use
+export const toBengaliNumber = toBengaliNumbers;
+
+function isValidDate(date: any): boolean {
+  if (!date) return false;
+  
+  const parsedDate = new Date(date);
+  return parsedDate instanceof Date && !isNaN(parsedDate.getTime());
+}
+
+function parseDate(dateInput: any): Date | null {
+  if (!dateInput) {
+    console.warn('[Date] Invalid date input: null/undefined');
+    return null;
   }
   
-  return Math.floor(num).toString().split('').map(digit => {
-    const numericDigit = parseInt(digit);
-    return isNaN(numericDigit) ? digit : bengaliNumerals[numericDigit];
-  }).join('');
-};
+  // If it's already a Date object
+  if (dateInput instanceof Date) {
+    return isValidDate(dateInput) ? dateInput : null;
+  }
+  
+  // If it's a string or number
+  const parsed = new Date(dateInput);
+  if (isValidDate(parsed)) {
+    return parsed;
+  }
+  
+  console.warn('[Date] Invalid date input:', dateInput, 'Type:', typeof dateInput);
+  return null;
+}
 
-export const bengaliMonths = [
-  'জানুয়ারি',
-  'ফেব্রুয়ারি',
-  'মার্চ',
-  'এপ্রিল',
-  'মে',
-  'জুন',
-  'জুলাই',
-  'আগস্ট',
-  'সেপ্টেম্বর',
-  'অক্টোবর',
-  'নভেম্বর',
-  'ডিসেম্বর'
-];
-
-export const bengaliDays = [
-  'রবিবার',
-  'সোমবার',
-  'মঙ্গলবার',
-  'বুধবার',
-  'বৃহস্পতিবার',
-  'শুক্রবার',
-  'শনিবার'
-];
-
-export const formatBengaliDate = (date: Date | string | number): string => {
+export function formatDateInBengali(dateInput: any): string {
   try {
-    // Handle null, undefined, or empty string
-    if (!date || date === '' || date === 'null' || date === 'undefined' || date === null || date === undefined) {
-      console.debug('Invalid date input for formatting:', { date, type: typeof date });
-      return 'অজানা তারিখ';
-    }
-
-    const dateObj = new Date(date);
+    const date = parseDate(dateInput);
     
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date received for formatting:', { date, type: typeof date, parsed: dateObj });
-      return 'অজানা তারিখ';
+    if (!date) {
+      console.error('[Date] Failed to parse date:', dateInput);
+      return 'অজানা তারিখ'; // "Unknown date" in Bengali
     }
     
-    const day = dateObj.getDate();
-    const month = dateObj.getMonth();
-    const year = dateObj.getFullYear();
+    const day = toBengaliNumbers(date.getDate());
+    const month = BENGALI_MONTHS[date.getMonth()];
+    const year = toBengaliNumbers(date.getFullYear());
     
-    // Validate month index
-    if (month < 0 || month >= bengaliMonths.length) {
-      console.warn('Invalid month index:', { month, date });
-      return 'অজানা তারিখ';
-    }
-    
-    return `${toBengaliNumber(day)} ${bengaliMonths[month]} ${toBengaliNumber(year)}`;
+    return `${day} ${month}, ${year}`;
   } catch (error) {
-    console.error('Error formatting Bengali date:', { error, date, type: typeof date });
+    console.error('[Date] Error formatting Bengali date:', error, 'Input:', dateInput);
     return 'অজানা তারিখ';
   }
-};
+}
 
-export const formatBengaliDateTime = (date: Date | string | number): string => {
+// Alias for backward compatibility
+export const formatBengaliDate = formatDateInBengali;
+
+export function getRelativeTimeInBengali(dateInput: any): string {
   try {
-    const dateObj = new Date(date);
+    const date = parseDate(dateInput);
     
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      return 'অজানা সময়';
+    if (!date) {
+      console.error('[Date] Failed to parse relative time date:', dateInput);
+      return 'কিছুক্ষণ আগে'; // "A while ago" in Bengali
     }
     
-    const day = dateObj.getDate();
-    const month = dateObj.getMonth();
-    const year = dateObj.getFullYear();
-    const hours = dateObj.getHours();
-    const minutes = dateObj.getMinutes();
-    
-    const formattedTime = `${toBengaliNumber(hours)}:${toBengaliNumber(minutes)}`;
-    
-    return `${toBengaliNumber(day)} ${bengaliMonths[month]} ${toBengaliNumber(year)}, ${formattedTime}`;
-  } catch (error) {
-    console.error('Error formatting Bengali date time:', error);
-    return 'অজানা সময়';
-  }
-};
-
-export const getBengaliWeekday = (date: Date | string | number): string => {
-  try {
-    const dateObj = new Date(date);
-    
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      return 'অজানা দিন';
-    }
-    
-    const dayIndex = dateObj.getDay();
-    return bengaliDays[dayIndex];
-  } catch (error) {
-    console.error('Error getting Bengali weekday:', error);
-    return 'অজানা দিন';
-  }
-};
-
-export const getRelativeTimeInBengali = (date: Date | string | number): string => {
-  try {
-    // Handle null, undefined, or empty string
-    if (!date || date === '' || date === 'null' || date === 'undefined' || date === null || date === undefined) {
-      return 'অজানা সময়';
-    }
-
     const now = new Date();
-    const dateObj = new Date(date);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     
-    // Check if the date is valid
-    if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date received:', date);
-      return 'অজানা সময়';
+    // Handle future dates (edge case)
+    if (diffMs < 0) {
+      return 'সম্প্রতি'; // "Recently" in Bengali
     }
     
-    const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-    
-    // Handle future dates
-    if (diffInSeconds < 0) {
-      return 'ভবিষ্যতে';
+    if (diffMinutes < 1) {
+      return 'এইমাত্র'; // "Just now"
+    } else if (diffMinutes < 60) {
+      return `${toBengaliNumbers(diffMinutes)} মিনিট আগে`;
+    } else if (diffHours < 24) {
+      return `${toBengaliNumbers(diffHours)} ঘণ্টা আগে`;
+    } else if (diffDays < 7) {
+      return `${toBengaliNumbers(diffDays)} দিন আগে`;
+    } else {
+      // For older dates, show formatted date
+      return formatDateInBengali(date);
     }
-    
-    if (diffInSeconds < 60) {
-      return `${toBengaliNumber(diffInSeconds)} সেকেন্ড আগে`;
-    }
-    
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${toBengaliNumber(diffInMinutes)} মিনিট আগে`;
-    }
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${toBengaliNumber(diffInHours)} ঘন্টা আগে`;
-    }
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 30) {
-      return `${toBengaliNumber(diffInDays)} দিন আগে`;
-    }
-    
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) {
-      return `${toBengaliNumber(diffInMonths)} মাস আগে`;
-    }
-    
-    const diffInYears = Math.floor(diffInMonths / 12);
-    return `${toBengaliNumber(diffInYears)} বছর আগে`;
   } catch (error) {
-    console.error('Error in getRelativeTimeInBengali:', error, 'Date:', date);
+    console.error('[Date] Error calculating relative time:', error, 'Input:', dateInput);
+    return 'কিছুক্ষণ আগে';
+  }
+}
+
+export function formatTimeInBengali(dateInput: any): string {
+  try {
+    const date = parseDate(dateInput);
+    
+    if (!date) {
+      console.error('[Date] Failed to parse time:', dateInput);
+      return 'অজানা সময়'; // "Unknown time" in Bengali
+    }
+    
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    
+    const bengaliHours = toBengaliNumbers(hours > 12 ? hours - 12 : hours === 0 ? 12 : hours);
+    const bengaliMinutes = toBengaliNumbers(minutes.toString().padStart(2, '0'));
+    const period = hours >= 12 ? 'রাত' : 'সকাল';
+    
+    return `${bengaliHours}:${bengaliMinutes} ${period}`;
+  } catch (error) {
+    console.error('[Date] Error formatting Bengali time:', error, 'Input:', dateInput);
     return 'অজানা সময়';
   }
-};
+}
+
+// Enhanced date parsing for different input formats
+export function parseAndValidateDate(dateInput: any): {
+  isValid: boolean;
+  date: Date | null;
+  error?: string;
+} {
+  try {
+    if (!dateInput) {
+      return {
+        isValid: false,
+        date: null,
+        error: 'No date input provided'
+      };
+    }
+    
+    const parsed = parseDate(dateInput);
+    
+    if (!parsed) {
+      return {
+        isValid: false,
+        date: null,
+        error: `Unable to parse date: ${dateInput}`
+      };
+    }
+    
+    return {
+      isValid: true,
+      date: parsed
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      date: null,
+      error: `Error parsing date: ${error}`
+    };
+  }
+}
+
+// Utility for debugging date issues
+export function debugDate(dateInput: any, context: string = 'unknown'): void {
+  console.log(`[Date Debug - ${context}]`, {
+    input: dateInput,
+    type: typeof dateInput,
+    isValid: isValidDate(dateInput),
+    parsed: parseDate(dateInput),
+    formatted: formatDateInBengali(dateInput),
+    relative: getRelativeTimeInBengali(dateInput)
+  });
+}
