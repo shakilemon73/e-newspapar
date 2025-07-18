@@ -16,6 +16,7 @@ import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 // User dashboard tables are now set up directly in Supabase
 import { setupUserDashboardAPI } from './user-dashboard-api';
 import { setupCompleteTableAPI, populateAllTables } from './complete-table-implementation';
+import { setupFixedAPI } from './auth-fixes';
 
 
 // Validation schemas for Supabase
@@ -4767,6 +4768,9 @@ ON CONFLICT DO NOTHING;
 
   // Register new table API routes
   handleNewTableRoutes(app);
+
+  // Setup fixed authentication and API endpoints
+  setupFixedAPI(app);
 
   const httpServer = createServer(app);
 

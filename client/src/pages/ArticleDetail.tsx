@@ -397,6 +397,135 @@ const ArticleDetail = () => {
     });
   };
 
+  // Report functionality
+  const handleReport = async () => {
+    if (!article) return;
+    
+    const reason = prompt("রিপোর্ট করার কারণ লিখুন:");
+    if (!reason) return;
+    
+    try {
+      const response = await fetch(`/api/articles/${article.id}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: reason.trim(),
+          description: 'User reported from article page'
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "রিপোর্ট জমা দেওয়া হয়েছে",
+          description: "আপনার রিপোর্ট আমাদের কাছে পৌঁছেছে। পর্যালোচনার জন্য ধন্যবাদ।",
+        });
+      } else {
+        throw new Error('Failed to submit report');
+      }
+    } catch (error) {
+      console.error('Error reporting article:', error);
+      toast({
+        title: "রিপোর্ট করতে সমস্যা হয়েছে",
+        description: "দুঃখিত, আপনার রিপোর্ট জমা দিতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Feedback functionality
+  const handleFeedback = async (type: 'helpful' | 'content') => {
+    if (!article) return;
+    
+    try {
+      const response = await fetch(`/api/articles/${article.id}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: type === 'helpful' ? 'helpful' : 'content_feedback',
+          description: type === 'helpful' ? 'User found article helpful' : 'User provided content feedback'
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "ফিডব্যাক জমা দেওয়া হয়েছে",
+          description: "আপনার মতামত আমাদের কাছে পৌঁছেছে। ধন্যবাদ।",
+        });
+      } else {
+        throw new Error('Failed to submit feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      toast({
+        title: "ফিডব্যাক জমা দিতে সমস্যা হয়েছে",
+        description: "দুঃখিত, আপনার ফিডব্যাক জমা দিতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Save for offline reading
+  const handleSaveForOffline = async () => {
+    if (!article) return;
+    
+    if (!user) {
+      toast({
+        title: "লগইন প্রয়োজন",
+        description: "অফলাইন পড়ার জন্য অনুগ্রহ করে লগইন করুন।",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No session found');
+      }
+
+      const response = await fetch(`/api/articles/${article.id}/save`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          folderName: 'offline_reading',
+          notes: 'Saved for offline reading'
+        })
+      });
+
+      if (response.ok) {
+        toast({
+          title: "অফলাইন পড়ার জন্য সংরক্ষিত",
+          description: "নিবন্ধটি আপনার অফলাইন পড়ার তালিকায় যোগ করা হয়েছে।",
+        });
+      } else {
+        const errorData = await response.json();
+        if (response.status === 409) {
+          toast({
+            title: "ইতিমধ্যে সংরক্ষিত",
+            description: "এই নিবন্ধটি ইতিমধ্যে আপনার অফলাইন পড়ার তালিকায় রয়েছে।",
+            variant: "destructive"
+          });
+        } else {
+          throw new Error(errorData.error || 'Failed to save article');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving article for offline:', error);
+      toast({
+        title: "অফলাইন সংরক্ষণে সমস্যা",
+        description: "দুঃখিত, নিবন্ধটি অফলাইন পড়ার জন্য সংরক্ষণে সমস্যা হয়েছে।",
+        variant: "destructive"
+      });
+    }
+  };
+
   // Initialize Speech Synthesis
   useEffect(() => {
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -1296,7 +1425,7 @@ const ArticleDetail = () => {
                           <div>
                             <p className="font-medium text-sm">সম্পাদকীয় টিম</p>
                             <p className="text-xs text-muted-foreground">
-                              {getRelativeTimeInBengali(article.published_at)}
+                              {article.published_at ? getRelativeTimeInBengali(article.published_at) : 'কিছুক্ষণ আগে'}
                             </p>
                           </div>
                         </div>
@@ -1305,7 +1434,7 @@ const ArticleDetail = () => {
                         
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
-                          <span>{getRelativeTimeInBengali(article.published_at)}</span>
+                          <span>{article.published_at ? getRelativeTimeInBengali(article.published_at) : 'কিছুক্ষণ আগে'}</span>
                         </div>
                       </div>
                     </div>
@@ -1487,23 +1616,23 @@ const ArticleDetail = () => {
                       <div className="flex items-center gap-4">
                         <Badge variant="outline" className="gap-1">
                           <Calendar className="w-3 h-3" />
-                          প্রকাশিত: {formatBengaliDate(article.published_at)}
+                          প্রকাশিত: {article.published_at ? formatBengaliDate(article.published_at) : 'অজানা তারিখ'}
                         </Badge>
                         
                         {article.updated_at && article.updated_at !== article.published_at && (
                           <Badge variant="outline" className="gap-1">
                             <RotateCcw className="w-3 h-3" />
-                            আপডেট: {formatBengaliDate(article.updated_at)}
+                            আপডেট: {article.updated_at ? formatBengaliDate(article.updated_at) : 'অজানা তারিখ'}
                           </Badge>
                         )}
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleFeedback('helpful')}>
                           <ThumbsUp className="w-4 h-4 mr-1" />
                           সহায়ক
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleReport()}>
                           <Flag className="w-4 h-4 mr-1" />
                           রিপোর্ট
                         </Button>
@@ -1593,7 +1722,7 @@ const ArticleDetail = () => {
                                   {relatedArticle.title}
                                 </h4>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {getRelativeTimeInBengali(relatedArticle.published_at)}
+                                  {relatedArticle.published_at ? getRelativeTimeInBengali(relatedArticle.published_at) : 'কিছুক্ষণ আগে'}
                                 </p>
                               </div>
                             </div>
@@ -1613,15 +1742,15 @@ const ArticleDetail = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={generatePDF}>
                       <Download className="w-4 h-4 mr-2" />
                       PDF ডাউনলোড
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleFeedback('content')}>
                       <Lightbulb className="w-4 h-4 mr-2" />
                       মূল বিষয়বস্তু
                     </Button>
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={() => handleSaveForOffline()}>
                       <BookOpen className="w-4 h-4 mr-2" />
                       অফলাইন পড়ুন
                     </Button>
