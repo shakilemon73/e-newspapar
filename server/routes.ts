@@ -4235,6 +4235,206 @@ ON CONFLICT DO NOTHING;
     }
   });
 
+  // New routes for previously empty tables
+  
+  // Company Information API
+  app.get(`${apiPrefix}/company-info`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('company_info')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching company info:', error);
+      return res.status(500).json({ error: 'Failed to fetch company info' });
+    }
+  });
+
+  // Privacy Policy API
+  app.get(`${apiPrefix}/privacy-policy`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('privacy_policy_sections')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching privacy policy:', error);
+      return res.status(500).json({ error: 'Failed to fetch privacy policy' });
+    }
+  });
+
+  // Terms of Service API
+  app.get(`${apiPrefix}/terms-of-service`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('terms_of_service_sections')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching terms of service:', error);
+      return res.status(500).json({ error: 'Failed to fetch terms of service' });
+    }
+  });
+
+  // Editorial Policies API
+  app.get(`${apiPrefix}/editorial-policies`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('editorial_policies')
+        .select('*')
+        .eq('is_active', true)
+        .order('priority');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching editorial policies:', error);
+      return res.status(500).json({ error: 'Failed to fetch editorial policies' });
+    }
+  });
+
+  // Editorial Guidelines API
+  app.get(`${apiPrefix}/editorial-guidelines`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('editorial_guidelines')
+        .select('*')
+        .eq('is_active', true)
+        .order('id');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching editorial guidelines:', error);
+      return res.status(500).json({ error: 'Failed to fetch editorial guidelines' });
+    }
+  });
+
+  // Article Comments API
+  app.get(`${apiPrefix}/articles/:id/comments`, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { data, error } = await supabase
+        .from('article_comments')
+        .select('*')
+        .eq('article_id', id)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching article comments:', error);
+      return res.status(500).json({ error: 'Failed to fetch article comments' });
+    }
+  });
+
+  // Community Posts API
+  app.get(`${apiPrefix}/community-posts`, async (req, res) => {
+    try {
+      const { category, limit = '10', offset = '0' } = req.query;
+      let query = supabase
+        .from('community_posts')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: false })
+        .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+      
+      if (category) {
+        query = query.eq('category', category);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching community posts:', error);
+      return res.status(500).json({ error: 'Failed to fetch community posts' });
+    }
+  });
+
+  // Ad Rates API
+  app.get(`${apiPrefix}/ad-rates`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('ad_rates')
+        .select('*')
+        .eq('is_active', true)
+        .order('category');
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching ad rates:', error);
+      return res.status(500).json({ error: 'Failed to fetch ad rates' });
+    }
+  });
+
+  // Contact Messages API (Admin only)
+  app.get(`${apiPrefix}/contact-messages`, requireAdmin, async (req, res) => {
+    try {
+      const { status, limit = '20', offset = '0' } = req.query;
+      let query = supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+      
+      if (status) {
+        query = query.eq('status', status);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching contact messages:', error);
+      return res.status(500).json({ error: 'Failed to fetch contact messages' });
+    }
+  });
+
+  // User Feedback API
+  app.get(`${apiPrefix}/user-feedback`, requireAdmin, async (req, res) => {
+    try {
+      const { article_id, feedback_type, limit = '20', offset = '0' } = req.query;
+      let query = supabase
+        .from('user_feedback')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+      
+      if (article_id) {
+        query = query.eq('article_id', article_id);
+      }
+      
+      if (feedback_type) {
+        query = query.eq('feedback_type', feedback_type);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return res.json(data);
+    } catch (error) {
+      console.error('Error fetching user feedback:', error);
+      return res.status(500).json({ error: 'Failed to fetch user feedback' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
