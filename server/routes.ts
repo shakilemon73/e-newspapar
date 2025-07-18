@@ -457,10 +457,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // First get saved articles data
       const { data: savedData, error: savedError } = await supabase
-        .from('saved_articles')
+        .from('user_bookmarks')
         .select('*')
         .eq('user_id', user.id)
-        .order('saved_at', { ascending: false });
+        .order('created_at', { ascending: false });
       
       if (savedError) {
         // If table doesn't exist, return empty array
@@ -492,7 +492,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const article = articlesData.find(a => a.id === savedItem.article_id);
         return {
           ...transformArticle(article),
-          savedAt: savedItem.saved_at,
+          savedAt: savedItem.created_at,
           id: savedItem.id
         };
       });
@@ -511,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if article is already saved
       const { data: existingSaved, error: checkError } = await supabase
-        .from('saved_articles')
+        .from('user_bookmarks')
         .select()
         .eq('user_id', user.id)
         .eq('article_id', articleId)
@@ -527,11 +527,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Save the article
       const { data, error } = await supabase
-        .from('saved_articles')
+        .from('user_bookmarks')
         .insert({
           user_id: user.id,
           article_id: articleId,
-          saved_at: new Date().toISOString()
+          folder_name: 'default',
+          notes: 'Saved from website'
         });
       
       if (error) {
@@ -551,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = (req as any).user;
       
       const { error } = await supabase
-        .from('saved_articles')
+        .from('user_bookmarks')
         .delete()
         .eq('user_id', user.id)
         .eq('article_id', articleId);
@@ -4573,7 +4574,8 @@ ON CONFLICT DO NOTHING;
       const { data: likesData, error: likesError } = await supabase
         .from('user_likes')
         .select('id', { count: 'exact' })
-        .eq('article_id', articleId);
+        .eq('content_id', articleId)
+        .eq('content_type', 'article');
       
       let likeCount = 0;
       if (!likesError && likesData) {
@@ -4594,7 +4596,8 @@ ON CONFLICT DO NOTHING;
               .from('user_likes')
               .select('id')
               .eq('user_id', user.id)
-              .eq('article_id', articleId)
+              .eq('content_id', articleId)
+              .eq('content_type', 'article')
               .single();
             
             isLiked = !!userLike;
@@ -4628,8 +4631,8 @@ ON CONFLICT DO NOTHING;
         .from('user_likes')
         .insert({
           user_id: userId,
-          article_id: articleId,
-          like_type: 'article'
+          content_id: articleId,
+          content_type: 'article'
         })
         .select()
         .single();
@@ -4662,7 +4665,8 @@ ON CONFLICT DO NOTHING;
         .from('user_likes')
         .delete()
         .eq('user_id', userId)
-        .eq('article_id', articleId);
+        .eq('content_id', articleId)
+        .eq('content_type', 'article');
       
       if (error) throw error;
       res.json({ success: true });

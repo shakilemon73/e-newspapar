@@ -1,0 +1,124 @@
+ArticleDetail.tsx:537 Voices loaded: 22
+/api/articles/4/comments:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/saved_articles?select=*&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&article_id=eq.26:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 Error checking if article is saved: Object
+overrideMethod @ hook.js:608
+/api/articles/26/comments:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+/api/articles/26/like:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)
+hook.js:608 Error toggling like: Error: Failed to like article
+    at handleLikeToggle (LikeButton.tsx:89:15)
+overrideMethod @ hook.js:608
+VM2315:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)
+_storageChangeDispatcher @ content.js:2
+_storageChangeDispatcherCallback @ content.js:2
+VM2318:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)
+_storageChangeDispatcher @ content.js:2
+_storageChangeDispatcherCallback @ content.js:2
+@supabase_supabase-js.js?v=37e9777c:3922  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/saved_articles?select=*&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&article_id=eq.26 404 (Not Found)
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3922
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3943
+fulfilled @ @supabase_supabase-js.js?v=37e9777c:3895
+Promise.then
+step @ @supabase_supabase-js.js?v=37e9777c:3908
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3910
+__awaiter6 @ @supabase_supabase-js.js?v=37e9777c:3892
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3933
+then @ @supabase_supabase-js.js?v=37e9777c:89
+ArticleDetail.tsx:233 Error checking if article is saved: {code: '42P01', details: null, hint: null, message: 'relation "public.saved_articles" does not exist'}
+overrideMethod @ hook.js:608
+checkIfSaved @ ArticleDetail.tsx:233
+await in checkIfSaved
+(anonymous) @ ArticleDetail.tsx:243
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=37e9777c:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=37e9777c:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=37e9777c:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=37e9777c:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=37e9777c:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=37e9777c:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=37e9777c:19447
+(anonymous) @ chunk-UPELNCPK.js?v=37e9777c:19328
+workLoop @ chunk-UPELNCPK.js?v=37e9777c:197
+flushWork @ chunk-UPELNCPK.js?v=37e9777c:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=37e9777c:384
+LikeButton.tsx:75  POST https://00ec21a2-0eaa-4ddf-b349-ecf9f6d4309b-00-2k1vscpw5zde9.kirk.replit.dev/api/articles/26/like 500 (Internal Server Error)
+handleLikeToggle @ LikeButton.tsx:75
+await in handleLikeToggle
+callCallback2 @ chunk-UPELNCPK.js?v=37e9777c:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=37e9777c:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=37e9777c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=37e9777c:3736
+executeDispatch @ chunk-UPELNCPK.js?v=37e9777c:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=37e9777c:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=37e9777c:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=37e9777c:7051
+(anonymous) @ chunk-UPELNCPK.js?v=37e9777c:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=37e9777c:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=37e9777c:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=37e9777c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=37e9777c:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=37e9777c:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=37e9777c:5449
+LikeButton.tsx:108 Error toggling like: Error: Failed to like article
+    at handleLikeToggle (LikeButton.tsx:89:15)
+overrideMethod @ hook.js:608
+handleLikeToggle @ LikeButton.tsx:108
+await in handleLikeToggle
+callCallback2 @ chunk-UPELNCPK.js?v=37e9777c:3674
+invokeGuardedCallbackDev @ chunk-UPELNCPK.js?v=37e9777c:3699
+invokeGuardedCallback @ chunk-UPELNCPK.js?v=37e9777c:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-UPELNCPK.js?v=37e9777c:3736
+executeDispatch @ chunk-UPELNCPK.js?v=37e9777c:7014
+processDispatchQueueItemsInOrder @ chunk-UPELNCPK.js?v=37e9777c:7034
+processDispatchQueue @ chunk-UPELNCPK.js?v=37e9777c:7043
+dispatchEventsForPlugins @ chunk-UPELNCPK.js?v=37e9777c:7051
+(anonymous) @ chunk-UPELNCPK.js?v=37e9777c:7174
+batchedUpdates$1 @ chunk-UPELNCPK.js?v=37e9777c:18913
+batchedUpdates @ chunk-UPELNCPK.js?v=37e9777c:3579
+dispatchEventForPluginEventSystem @ chunk-UPELNCPK.js?v=37e9777c:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-UPELNCPK.js?v=37e9777c:5478
+dispatchEvent @ chunk-UPELNCPK.js?v=37e9777c:5472
+dispatchDiscreteEvent @ chunk-UPELNCPK.js?v=37e9777c:5449
+@supabase_supabase-js.js?v=37e9777c:3922  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/saved_articles?select=*&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&article_id=eq.26 404 (Not Found)
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3922
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3943
+fulfilled @ @supabase_supabase-js.js?v=37e9777c:3895
+Promise.then
+step @ @supabase_supabase-js.js?v=37e9777c:3908
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3910
+__awaiter6 @ @supabase_supabase-js.js?v=37e9777c:3892
+(anonymous) @ @supabase_supabase-js.js?v=37e9777c:3933
+then @ @supabase_supabase-js.js?v=37e9777c:89
+ArticleDetail.tsx:233 Error checking if article is saved: {code: '42P01', details: null, hint: null, message: 'relation "public.saved_articles" does not exist'}
+overrideMethod @ hook.js:608
+checkIfSaved @ ArticleDetail.tsx:233
+await in checkIfSaved
+(anonymous) @ ArticleDetail.tsx:243
+commitHookEffectListMount @ chunk-UPELNCPK.js?v=37e9777c:16915
+commitPassiveMountOnFiber @ chunk-UPELNCPK.js?v=37e9777c:18156
+commitPassiveMountEffects_complete @ chunk-UPELNCPK.js?v=37e9777c:18129
+commitPassiveMountEffects_begin @ chunk-UPELNCPK.js?v=37e9777c:18119
+commitPassiveMountEffects @ chunk-UPELNCPK.js?v=37e9777c:18109
+flushPassiveEffectsImpl @ chunk-UPELNCPK.js?v=37e9777c:19490
+flushPassiveEffects @ chunk-UPELNCPK.js?v=37e9777c:19447
+(anonymous) @ chunk-UPELNCPK.js?v=37e9777c:19328
+workLoop @ chunk-UPELNCPK.js?v=37e9777c:197
+flushWork @ chunk-UPELNCPK.js?v=37e9777c:176
+performWorkUntilDeadline @ chunk-UPELNCPK.js?v=37e9777c:384
+VM2328:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)
+_storageChangeDispatcher @ content.js:2
+_storageChangeDispatcherCallback @ content.js:2
+VM2331:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)
+_storageChangeDispatcher @ content.js:2
+_storageChangeDispatcherCallback @ content.js:2

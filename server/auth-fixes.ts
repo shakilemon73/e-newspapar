@@ -58,13 +58,17 @@ export function setupFixedAPI(app: Express) {
       }
       
       const { data, error } = await supabase
-        .from('comments')
+        .from('article_comments')
         .insert({
           article_id: parseInt(articleId),
           user_id: user.id,
           content: content.trim(),
           author_name: user.user_metadata?.name || user.email?.split('@')[0] || 'Anonymous',
-          is_approved: false // Require moderation
+          author_email: user.email,
+          status: 'pending', // Require moderation
+          is_approved: false,
+          likes_count: 0,
+          dislikes_count: 0
         })
         .select()
         .single();
@@ -86,7 +90,7 @@ export function setupFixedAPI(app: Express) {
       const { articleId } = req.params;
       
       const { data, error } = await supabase
-        .from('comments')
+        .from('article_comments')
         .select('*')
         .eq('article_id', parseInt(articleId))
         .eq('is_approved', true)
@@ -114,8 +118,8 @@ export function setupFixedAPI(app: Express) {
         .from('user_likes')
         .insert({
           user_id: user.id,
-          article_id: parseInt(articleId),
-          like_type: 'article'
+          content_id: parseInt(articleId),
+          content_type: 'article'
         })
         .select()
         .single();
@@ -144,7 +148,8 @@ export function setupFixedAPI(app: Express) {
         .from('user_likes')
         .delete()
         .eq('user_id', user.id)
-        .eq('article_id', parseInt(articleId));
+        .eq('content_id', parseInt(articleId))
+        .eq('content_type', 'article');
       
       if (error) {
         console.error('Error unliking article:', error);
@@ -158,56 +163,7 @@ export function setupFixedAPI(app: Express) {
     }
   });
 
-  app.get(`${apiPrefix}/articles/:articleId/like-status`, async (req, res) => {
-    try {
-      const { articleId } = req.params;
-      const authHeader = req.headers.authorization;
-      
-      // Get total like count
-      const { count: likeCount, error: countError } = await supabase
-        .from('user_likes')
-        .select('*', { count: 'exact' })
-        .eq('article_id', parseInt(articleId));
-      
-      if (countError) {
-        console.error('Error getting like count:', countError);
-        throw countError;
-      }
-      
-      let isLiked = false;
-      
-      // Check if user has liked (if authenticated)
-      if (authHeader) {
-        try {
-          const token = authHeader.replace('Bearer ', '');
-          const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-          
-          if (user && !userError) {
-            const { data: userLike, error: likeError } = await supabase
-              .from('user_likes')
-              .select('id')
-              .eq('user_id', user.id)
-              .eq('article_id', parseInt(articleId))
-              .single();
-            
-            if (!likeError && userLike) {
-              isLiked = true;
-            }
-          }
-        } catch (authError) {
-          // Silent auth failure is OK for like status
-        }
-      }
-      
-      res.json({
-        isLiked,
-        likeCount: likeCount || 0
-      });
-    } catch (error: any) {
-      console.error('Error getting like status:', error);
-      res.status(500).json({ error: 'Failed to get like status' });
-    }
-  });
+
 
   // 3. Fix Newsletter Signup
   app.post(`${apiPrefix}/newsletter/subscribe`, async (req, res) => {
