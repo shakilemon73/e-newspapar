@@ -241,9 +241,9 @@ export default function EnhancedArticlesAdminPage() {
   };
 
   const filteredArticles = articles?.filter((article: Article) => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         article.author.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || article.categoryId.toString() === selectedCategory;
+    const matchesSearch = article.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         article.author?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === 'all' || article.categoryId?.toString() === selectedCategory;
     const matchesStatus = statusFilter === 'all' || article.status === statusFilter;
     
     return matchesSearch && matchesCategory && matchesStatus;
@@ -265,7 +265,7 @@ export default function EnhancedArticlesAdminPage() {
               {article.title}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              {article.category} • {article.author}
+              {typeof article.category === 'object' ? article.category?.name : article.category} • {article.author || 'Admin'}
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -296,14 +296,14 @@ export default function EnhancedArticlesAdminPage() {
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1">
               <Eye className="h-3 w-3" />
-              {article.viewCount}
+              {article.viewCount || 0}
             </span>
             <span className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {article.readTime}min
+              {article.readTime || 5}min
             </span>
           </div>
-          <span>{new Date(article.publishDate).toLocaleDateString()}</span>
+          <span>{article.publishDate ? new Date(article.publishDate).toLocaleDateString() : 'Draft'}</span>
         </div>
       </CardContent>
     </Card>
