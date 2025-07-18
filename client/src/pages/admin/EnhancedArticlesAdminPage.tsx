@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { EnhancedAdminLayout } from "@/components/admin/EnhancedAdminLayout";
+import { apiRequest } from "@/lib/queryClient";
+import { useSupabaseAuth } from "@/hooks/use-supabase-auth";
 import { 
   Plus, 
   Edit3, 
@@ -75,6 +77,7 @@ export default function EnhancedArticlesAdminPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, loading } = useSupabaseAuth();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -113,12 +116,7 @@ export default function EnhancedArticlesAdminPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to create article');
+      const response = await apiRequest('POST', '/api/articles', data);
       return response.json();
     },
     onSuccess: () => {
@@ -130,10 +128,11 @@ export default function EnhancedArticlesAdminPage() {
       setShowCreateForm(false);
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Article creation error:', error);
       toast({
         title: t('error', 'Error', 'ত্রুটি'),
-        description: t('create-failed', 'Failed to create article', 'নিবন্ধ তৈরি করতে ব্যর্থ'),
+        description: error.message || t('create-failed', 'Failed to create article', 'নিবন্ধ তৈরি করতে ব্যর্থ'),
         variant: 'destructive'
       });
     }
@@ -141,12 +140,7 @@ export default function EnhancedArticlesAdminPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch(`/api/articles/${editingArticle?.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!response.ok) throw new Error('Failed to update article');
+      const response = await apiRequest('PUT', `/api/articles/${editingArticle?.id}`, data);
       return response.json();
     },
     onSuccess: () => {
@@ -162,10 +156,7 @@ export default function EnhancedArticlesAdminPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await fetch(`/api/articles/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) throw new Error('Failed to delete article');
+      const response = await apiRequest('DELETE', `/api/articles/${id}`);
       return response.json();
     },
     onSuccess: () => {
@@ -194,10 +185,35 @@ export default function EnhancedArticlesAdminPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!formData.title || !formData.content || !formData.categoryId) {
+      toast({
+        title: t('error', 'Error', 'ত্রুটি'),
+        description: 'Please fill in all required fields (Title, Content, Category)',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // Transform form data for API
+    const apiData = {
+      title: formData.title.trim(),
+      slug: formData.title.toLowerCase().trim().replace(/[^a-z0-9\u0985-\u09FF]+/g, '-'), // Generate slug from title
+      content: formData.content.trim(),
+      excerpt: formData.excerpt?.trim() || '',
+      imageUrl: formData.imageUrl?.trim() || '',
+      categoryId: parseInt(formData.categoryId),
+      isFeatured: formData.isFeatured,
+      publishedAt: new Date().toISOString()
+    };
+    
+    console.log('Submitting article data:', apiData);
+    
     if (editingArticle) {
-      updateMutation.mutate(formData);
+      updateMutation.mutate(apiData);
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(apiData);
     }
   };
 
