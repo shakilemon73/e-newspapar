@@ -118,6 +118,36 @@ const ArticleDetail = () => {
   // Core Article State
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
+  const [viewTracked, setViewTracked] = useState<boolean>(false);
+  
+  // Track article view when component loads
+  useEffect(() => {
+    const trackView = async () => {
+      if (article?.id && !viewTracked) {
+        try {
+          const response = await fetch(`/api/articles/${article.id}/view`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`[View Tracking] Successfully tracked view for article ${article.id}, new count: ${data.viewCount}`);
+            
+            // Update local state with new view count
+            setArticle(prev => prev ? { ...prev, view_count: data.viewCount } : null);
+            setViewTracked(true);
+          }
+        } catch (error) {
+          console.error('Error tracking article view:', error);
+        }
+      }
+    };
+    
+    trackView();
+  }, [article?.id, viewTracked]);
   
   // Fetch related articles using the new API endpoint
   const { data: fetchedRelatedArticles = [] } = useQuery({

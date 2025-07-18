@@ -902,12 +902,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get(`${apiPrefix}/articles/popular`, async (req, res) => {
     try {
-      const { limit = '5' } = req.query;
+      const { limit = '5', timeRange = 'all' } = req.query;
+      
+      // Set cache headers to prevent caching for real-time updates
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+      
       const articles = await storage.getPopularArticles(parseInt(limit as string));
+      console.log(`[API] Returning ${articles.length} popular articles with latest view counts`);
       return res.json(transformArticles(articles));
     } catch (error) {
       console.error('Error fetching popular articles:', error);
       return res.status(500).json({ error: 'Failed to fetch popular articles' });
+    }
+  });
+
+  // Add dedicated view tracking endpoint
+  app.post(`${apiPrefix}/articles/:id/view`, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const articleId = parseInt(id);
+      
+      // Get current view count and increment
+      const { data: currentArticle, error: fetchError } = await supabase
+        .from('articles')
+        .select('view_count')
+        .eq('id', articleId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching article for view tracking:', fetchError);
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      // Increment view count
+      const newViewCount = (currentArticle.view_count || 0) + 1;
+      const { error: updateError } = await supabase
+        .from('articles')
+        .update({ view_count: newViewCount })
+        .eq('id', articleId);
+      
+      if (updateError) {
+        console.error('Error updating view count:', updateError);
+        return res.status(500).json({ error: 'Failed to update view count' });
+      }
+      
+      console.log(`[View Tracking] Article ${articleId} view count updated to ${newViewCount}`);
+      return res.json({ success: true, viewCount: newViewCount });
+    } catch (error) {
+      console.error('Error tracking view:', error);
+      return res.status(500).json({ error: 'Failed to track view' });
     }
   });
 
@@ -1007,7 +1052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Decoded slug:', slug);
       
-      // First try to find by original slug
+      // First try to find by original slug with view count increment
       let article = await storage.getArticleBySlug(slug);
       
       // If not found, try to find by title match (clean Bengali URL)
@@ -1029,6 +1074,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const cleanTitleSlug = createCleanSlug(a.title);
           return cleanTitleSlug === slug || a.slug === slug;
         });
+        
+        // If found, manually increment view count
+        if (article) {
+          await supabase
+            .from('articles')
+            .update({ view_count: (article.view_count || 0) + 1 })
+            .eq('id', article.id);
+          article.view_count = (article.view_count || 0) + 1;
+        }
       }
       
       // Still not found? Try a broader title search
@@ -1039,6 +1093,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const slugWords = slug.split('-');
           return titleWords.some(word => slugWords.includes(word.toLowerCase()));
         });
+        
+        // If found, manually increment view count
+        if (article) {
+          await supabase
+            .from('articles')
+            .update({ view_count: (article.view_count || 0) + 1 })
+            .eq('id', article.id);
+          article.view_count = (article.view_count || 0) + 1;
+        }
       }
       
       if (!article) {

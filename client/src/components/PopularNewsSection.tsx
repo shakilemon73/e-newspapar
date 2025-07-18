@@ -30,13 +30,22 @@ export const PopularNewsSection = () => {
     const fetchPopularArticles = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/articles/popular?limit=5');
+        // Add timestamp to prevent caching and get real-time data
+        const timestamp = new Date().getTime();
+        const response = await fetch(`/api/articles/popular?limit=5&timeRange=${timeRange}&_t=${timestamp}`, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
         
         if (!response.ok) {
           throw new Error('Failed to fetch popular articles');
         }
         
         const data = await response.json();
+        console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         setPopularArticles(data);
         setError(null);
       } catch (err) {
@@ -48,6 +57,11 @@ export const PopularNewsSection = () => {
     };
 
     fetchPopularArticles();
+    
+    // Auto-refresh every 30 seconds to show updated view counts
+    const interval = setInterval(fetchPopularArticles, 30000);
+    
+    return () => clearInterval(interval);
   }, [timeRange]);
 
   const handleTimeRangeChange = (newRange: TimeRange) => {
