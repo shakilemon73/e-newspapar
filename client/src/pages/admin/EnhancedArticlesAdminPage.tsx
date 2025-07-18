@@ -93,16 +93,23 @@ export default function EnhancedArticlesAdminPage() {
     excerpt: '',
     content: '',
     categoryId: '',
+    author: '',
     isFeatured: false,
     isBreaking: false,
     status: 'draft' as const,
     priority: 'medium' as const,
     imageUrl: '',
-    tags: [] as string[]
+    tags: [] as string[],
+    readTime: 5
   });
 
   const { data: articles, isLoading: articlesLoading } = useQuery({
     queryKey: ['/api/articles'],
+    queryFn: async () => {
+      const response = await fetch('/api/articles?limit=100'); // Get all articles for admin
+      if (!response.ok) throw new Error('Failed to fetch articles');
+      return response.json();
+    },
     refetchInterval: 30000
   });
 
@@ -174,12 +181,14 @@ export default function EnhancedArticlesAdminPage() {
       excerpt: '',
       content: '',
       categoryId: '',
+      author: '',
       isFeatured: false,
       isBreaking: false,
       status: 'draft',
       priority: 'medium',
       imageUrl: '',
-      tags: []
+      tags: [],
+      readTime: 5
     });
   };
 
@@ -187,10 +196,10 @@ export default function EnhancedArticlesAdminPage() {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.title || !formData.content || !formData.categoryId) {
+    if (!formData.title || !formData.content || !formData.categoryId || !formData.author) {
       toast({
         title: t('error', 'Error', 'ত্রুটি'),
-        description: 'Please fill in all required fields (Title, Content, Category)',
+        description: 'Please fill in all required fields (Title, Author, Content, Category)',
         variant: 'destructive'
       });
       return;
@@ -204,7 +213,9 @@ export default function EnhancedArticlesAdminPage() {
       excerpt: formData.excerpt?.trim() || '',
       imageUrl: formData.imageUrl?.trim() || '',
       categoryId: parseInt(formData.categoryId),
+      author: formData.author.trim() || 'Admin',
       isFeatured: formData.isFeatured,
+      readTime: formData.readTime || 5,
       publishedAt: new Date().toISOString()
     };
     
@@ -224,12 +235,14 @@ export default function EnhancedArticlesAdminPage() {
       excerpt: article.excerpt,
       content: article.content,
       categoryId: article.categoryId.toString(),
+      author: article.author || 'Admin',
       isFeatured: article.isFeatured,
       isBreaking: article.isBreaking,
       status: article.status,
       priority: article.priority,
       imageUrl: article.imageUrl || '',
-      tags: article.tags || []
+      tags: article.tags || [],
+      readTime: article.readTime || 5
     });
     setShowCreateForm(true);
   };
@@ -532,6 +545,21 @@ export default function EnhancedArticlesAdminPage() {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="author">
+                        {t('author', 'Author', 'লেখক')} *
+                      </Label>
+                      <Input
+                        id="author"
+                        value={formData.author}
+                        onChange={(e) => setFormData(prev => ({ ...prev, author: e.target.value }))}
+                        placeholder={t('enter-author', 'Enter author name', 'লেখকের নাম প্রবেশ করুন')}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                       <Label htmlFor="category">
                         {t('category', 'Category', 'বিভাগ')} *
                       </Label>
@@ -547,6 +575,20 @@ export default function EnhancedArticlesAdminPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="readTime">
+                        {t('read-time', 'Read Time (minutes)', 'পড়ার সময় (মিনিট)')}
+                      </Label>
+                      <Input
+                        id="readTime"
+                        type="number"
+                        value={formData.readTime}
+                        onChange={(e) => setFormData(prev => ({ ...prev, readTime: parseInt(e.target.value) || 5 }))}
+                        placeholder="5"
+                        min="1"
+                        max="60"
+                      />
                     </div>
                   </div>
 

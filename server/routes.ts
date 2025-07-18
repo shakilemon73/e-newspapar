@@ -34,6 +34,8 @@ const articlesInsertSchema = z.object({
   excerpt: z.string().optional(),
   imageUrl: z.string().optional(),
   categoryId: z.number(),
+  author: z.string().min(1).default('Admin'),
+  readTime: z.number().min(1).max(60).default(5),
   isFeatured: z.boolean().default(false),
   publishedAt: z.string().optional()
   // tags: z.array(z.string()).optional() // Removed - column doesn't exist in database
@@ -1151,6 +1153,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         excerpt: validatedData.excerpt,
         image_url: validatedData.imageUrl,
         category_id: validatedData.categoryId,
+        author: validatedData.author || 'Admin',
+        read_time: validatedData.readTime || 5,
         is_featured: validatedData.isFeatured,
         published_at: validatedData.publishedAt || new Date().toISOString()
         // Note: tags column doesn't exist in database, removed for now
@@ -1188,6 +1192,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.excerpt !== undefined) dbData.excerpt = validatedData.excerpt;
       if (validatedData.imageUrl !== undefined) dbData.image_url = validatedData.imageUrl;
       if (validatedData.categoryId) dbData.category_id = validatedData.categoryId;
+      if (validatedData.author) dbData.author = validatedData.author;
+      if (validatedData.readTime) dbData.read_time = validatedData.readTime;
       if (validatedData.isFeatured !== undefined) dbData.is_featured = validatedData.isFeatured;
       if (validatedData.publishedAt) dbData.published_at = validatedData.publishedAt;
       // Note: tags column doesn't exist in database, skipping tags for now
