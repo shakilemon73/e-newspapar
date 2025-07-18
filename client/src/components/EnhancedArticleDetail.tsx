@@ -241,13 +241,12 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
   currentId 
 }) => {
   const { data: relatedArticles } = useQuery({
-    queryKey: [`/api/categories/${categorySlug}/articles`],
-    queryFn: () => fetch(`/api/categories/${categorySlug}/articles`).then(res => res.json()),
+    queryKey: [`/api/articles/${currentId}/related`],
+    queryFn: () => fetch(`/api/articles/${currentId}/related?limit=3`).then(res => res.json()),
+    enabled: !!currentId
   });
 
-  const filteredArticles = relatedArticles?.filter((article: Article) => 
-    article.id !== currentId
-  ).slice(0, 3);
+  const filteredArticles = relatedArticles?.slice(0, 3);
 
   if (!filteredArticles || filteredArticles.length === 0) return null;
 

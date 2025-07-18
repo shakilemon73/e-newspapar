@@ -956,6 +956,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get related articles for an article
+  app.get(`${apiPrefix}/articles/:articleId/related`, async (req, res) => {
+    try {
+      const { articleId } = req.params;
+      const { limit = '3' } = req.query;
+      
+      // Get the current article's category
+      const currentArticle = await storage.getArticleById(parseInt(articleId));
+      if (!currentArticle) {
+        return res.status(404).json({ error: 'Article not found' });
+      }
+      
+      // Get related articles from the same category
+      const relatedArticles = await storage.getArticlesByCategory(
+        currentArticle.category_id,
+        parseInt(limit as string) + 1, // Get one extra to filter out current
+        0
+      );
+      
+      // Filter out the current article and limit results
+      const filteredArticles = relatedArticles
+        .filter(article => article.id !== parseInt(articleId))
+        .slice(0, parseInt(limit as string))
+        .map(transformArticle);
+      
+      return res.json(filteredArticles);
+    } catch (error) {
+      console.error('Error fetching related articles:', error);
+      return res.status(500).json({ error: 'Failed to fetch related articles' });
+    }
+  });
+
   app.get(`${apiPrefix}/articles/:slug`, async (req, res) => {
     try {
       let { slug } = req.params;

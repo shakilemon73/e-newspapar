@@ -117,6 +117,20 @@ const ArticleDetail = () => {
   // Core Article State
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
+  
+  // Fetch related articles using the new API endpoint
+  const { data: fetchedRelatedArticles = [] } = useQuery({
+    queryKey: ['/api/articles', article?.id, 'related'],
+    queryFn: async () => {
+      if (!article) return [];
+      
+      const response = await fetch(`/api/articles/${article.id}/related?limit=3`);
+      if (!response.ok) return [];
+      
+      return response.json();
+    },
+    enabled: !!article
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -212,6 +226,13 @@ const ArticleDetail = () => {
       setIsSaving(false);
     }
   };
+
+  // Update related articles when fetched
+  useEffect(() => {
+    if (fetchedRelatedArticles) {
+      setRelatedArticles(fetchedRelatedArticles);
+    }
+  }, [fetchedRelatedArticles]);
 
   // Check if article is saved
   useEffect(() => {
@@ -1012,7 +1033,7 @@ const ArticleDetail = () => {
             if (relatedResponse.ok) {
               const relatedData = await relatedResponse.json();
               // Filter out the current article
-              setRelatedArticles(relatedData.filter((related: Article) => related.id !== data.id).slice(0, 3));
+              // Related articles now fetched via useQuery above
             }
           } catch (relatedErr) {
             console.warn('Could not fetch related articles:', relatedErr);
