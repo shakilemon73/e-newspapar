@@ -99,13 +99,15 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       const user = (req as any).user;
       
       const { data, error } = await supabase
-        .from('comments')
+        .from('article_comments')
         .insert({
           article_id: parseInt(articleId),
           user_id: user.id,
           content,
           author_name: user.user_metadata?.name || user.email,
-          is_approved: false // Require moderation
+          author_email: user.email,
+          is_approved: false, // Require moderation
+          status: 'pending'
         })
         .select()
         .single();
@@ -123,7 +125,7 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       const { articleId } = req.params;
       
       const { data, error } = await supabase
-        .from('comments')
+        .from('article_comments')
         .select('*')
         .eq('article_id', parseInt(articleId))
         .eq('is_approved', true)
@@ -357,13 +359,11 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       const { pollId } = req.params;
       const { optionId, userId } = req.body;
       
-      // Use user_interactions table for poll votes since poll_votes doesn't exist
       // Check if user already voted
       const { data: existingVote } = await supabase
-        .from('user_interactions')
+        .from('poll_votes')
         .select('id')
-        .eq('interaction_type', 'poll_vote')
-        .eq('article_id', parseInt(pollId))
+        .eq('poll_id', parseInt(pollId))
         .eq('user_id', userId)
         .single();
       
@@ -372,14 +372,11 @@ export function setupCompleteTableAPI(app: Express, apiPrefix: string, requireAu
       }
       
       const { data, error } = await supabase
-        .from('user_interactions')
+        .from('poll_votes')
         .insert({
-          user_id: userId,
-          article_id: parseInt(pollId), // Using article_id to store poll_id
-          interaction_type: 'poll_vote',
-          interaction_value: optionId.toString(),
-          metadata: { poll_id: parseInt(pollId), option_id: optionId },
-          created_at: new Date().toISOString()
+          poll_id: parseInt(pollId),
+          option_id: optionId,
+          user_id: userId
         })
         .select()
         .single();

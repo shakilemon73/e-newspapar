@@ -182,3 +182,11 @@ The system is built to handle Bengali content with proper font support and URL s
 - ✅ **Authentication Robustness**: Improved error handling and user session management across all authenticated endpoints
 - ✅ **API Error Handling**: Added proper error responses and toast notifications for all user interactions
 - ✅ **Real-time Updates**: All functionality now works with live Supabase data and proper user authentication
+
+### Database Schema Fixes (July 18, 2025 - Article Details Page)
+- ✅ **Comments System Connected**: Fixed comments endpoint to use 'article_comments' table instead of non-existent 'comments' table
+- ✅ **User Likes Fixed**: Updated user_likes table structure to use content_type='article' and content_id for proper article association
+- ✅ **Poll Voting System**: Created missing poll_votes table with proper indexes and foreign key relationships
+- ✅ **User Feedback Enhanced**: Fixed user_feedback table to store user_agent in metadata JSON field instead of non-existent column
+- ✅ **Article Details Fully Functional**: All features on article details page now work: comments, likes, polls, reporting, bookmarking
+- ✅ **Database Migration Complete**: All table structures verified and aligned with actual Supabase PostgreSQL schema
