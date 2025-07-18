@@ -2332,6 +2332,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // System Settings Management
+  app.get(`${apiPrefix}/admin/settings`, requireAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('system_settings')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching settings:', error);
+        return res.status(500).json({ error: 'Failed to fetch settings' });
+      }
+      
+      // Convert array to object for easier frontend handling
+      const settings = {};
+      data.forEach(setting => {
+        settings[setting.setting_key] = setting.setting_value;
+      });
+      
+      return res.json(settings);
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      return res.status(500).json({ error: 'Failed to fetch settings' });
+    }
+  });
+
+  app.post(`${apiPrefix}/admin/settings`, requireAdmin, async (req, res) => {
+    try {
+      const settingsData = req.body;
+      console.log('Saving settings:', Object.keys(settingsData));
+      
+      // Flatten nested objects for storage
+      const flattenSettings = (obj, prefix = '') => {
+        const flattened = {};
+        for (const [key, value] of Object.entries(obj)) {
+          const fullKey = prefix ? `${prefix}.${key}` : key;
+          if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            Object.assign(flattened, flattenSettings(value, fullKey));
+          } else {
+            flattened[fullKey] = typeof value === 'string' ? value : JSON.stringify(value);
+          }
+        }
+        return flattened;
+      };
+      
+      const flatSettings = flattenSettings(settingsData);
+      
+      // Save each setting to the database
+      const promises = Object.entries(flatSettings).map(async ([key, value]) => {
+        const { error } = await supabase
+          .from('system_settings')
+          .upsert({
+            setting_key: key,
+            setting_value: value,
+            updated_at: new Date().toISOString()
+          });
+          
+        if (error) {
+          console.error(`Error saving setting ${key}:`, error);
+          throw error;
+        }
+      });
+      
+      await Promise.all(promises);
+      console.log('Settings saved successfully');
+      
+      return res.json({ success: true, message: 'Settings saved successfully' });
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      return res.status(500).json({ error: 'Failed to save settings' });
+    }
+  });
+
+  // Logo upload endpoint
+  app.post(`${apiPrefix}/admin/upload-logo`, requireAdmin, async (req, res) => {
+    try {
+      const { logoData, filename } = req.body;
+      
+      if (!logoData || !filename) {
+        return res.status(400).json({ error: 'Logo data and filename are required' });
+      }
+      
+      // Convert base64 to buffer
+      const buffer = Buffer.from(logoData.split(',')[1], 'base64');
+      
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('media')
+        .upload(`logos/${filename}`, buffer, {
+          contentType: 'image/*',
+          upsert: true
+        });
+      
+      if (error) {
+        console.error('Error uploading logo:', error);
+        return res.status(500).json({ error: 'Failed to upload logo' });
+      }
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('media')
+        .getPublicUrl(`logos/${filename}`);
+      
+      // Save logo URL to settings
+      await supabase
+        .from('system_settings')
+        .upsert({
+          setting_key: 'logo_url',
+          setting_value: urlData.publicUrl,
+          updated_at: new Date().toISOString()
+        });
+      
+      return res.json({ 
+        success: true, 
+        logoUrl: urlData.publicUrl,
+        message: 'Logo uploaded successfully' 
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      return res.status(500).json({ error: 'Failed to upload logo' });
+    }
+  });
+
   // Admin Dashboard Stats
   app.get(`${apiPrefix}/admin/stats`, requireAdmin, async (req, res) => {
     try {

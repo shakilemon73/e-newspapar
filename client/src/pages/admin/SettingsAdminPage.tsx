@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +35,7 @@ interface SystemSettings {
   siteName: string;
   siteDescription: string;
   siteUrl: string;
+  logoUrl: string;
   defaultLanguage: string;
   enableNotifications: boolean;
   enableComments: boolean;
@@ -67,6 +68,7 @@ const defaultSettings: SystemSettings = {
   siteName: 'প্রথম আলো',
   siteDescription: 'বাংলাদেশের শীর্ষ বাংলা সংবাদপত্র',
   siteUrl: 'https://example.com',
+  logoUrl: '',
   defaultLanguage: 'bn',
   enableNotifications: true,
   enableComments: true,
@@ -103,6 +105,7 @@ export default function SettingsAdminPage() {
   const [activeTab, setActiveTab] = useState<string>('general');
   const [hasChanges, setHasChanges] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Check authentication and admin role
   useEffect(() => {
@@ -119,25 +122,40 @@ export default function SettingsAdminPage() {
     setHasChanges(hasChanges);
   }, [settings]);
 
+  // Fetch settings from database
+  const { data: savedSettings, isLoading: loadingSettings } = useQuery({
+    queryKey: ['/api/admin/settings'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Update settings when fetched
+  useEffect(() => {
+    if (savedSettings) {
+      setSettings(prev => ({ ...prev, ...savedSettings }));
+    }
+  }, [savedSettings]);
+
   // Save settings mutation
   const saveSettingsMutation = useMutation({
     mutationFn: async (settingsData: SystemSettings) => {
-      // Since we don't have a specific settings endpoint, we'll save to localStorage
-      // In a real app, this would be saved to the database
-      localStorage.setItem('systemSettings', JSON.stringify(settingsData));
-      return settingsData;
+      const response = await apiRequest('POST', '/api/admin/settings', settingsData);
+      if (!response.ok) {
+        throw new Error('Failed to save settings');
+      }
+      return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Settings saved successfully",
+        title: t('success', 'Success', 'সফল'),
+        description: t('settings_saved_successfully', 'Settings saved successfully', 'সেটিংস সফলভাবে সংরক্ষিত হয়েছে'),
       });
       setHasChanges(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to save settings",
+        title: t('error', 'Error', 'ত্রুটি'),
+        description: error.message || t('failed_to_save_settings', 'Failed to save settings', 'সেটিংস সংরক্ষণ করতে ব্যর্থ'),
         variant: "destructive",
       });
     },
@@ -158,6 +176,46 @@ export default function SettingsAdminPage() {
           [key]: value
         }
       }));
+    }
+  };
+
+  // Logo upload handler
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64Data = e.target?.result as string;
+        
+        try {
+          const response = await apiRequest('POST', '/api/admin/upload-logo', {
+            logoData: base64Data,
+            filename: `logo-${Date.now()}-${file.name}`
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            setSettings(prev => ({ ...prev, logoUrl: result.logoUrl }));
+            toast({
+              title: t('success', 'Success', 'সফল'),
+              description: t('logo_uploaded_successfully', 'Logo uploaded successfully', 'লোগো সফলভাবে আপলোড হয়েছে'),
+            });
+          }
+        } catch (error) {
+          toast({
+            title: t('error', 'Error', 'ত্রুটি'),
+            description: t('failed_to_upload_logo', 'Failed to upload logo', 'লোগো আপলোড করতে ব্যর্থ'),
+            variant: "destructive",
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error('Logo upload error:', error);
     }
   };
 
@@ -278,6 +336,28 @@ export default function SettingsAdminPage() {
                         value={settings.siteUrl}
                         onChange={(e) => handleSettingChange('general', 'siteUrl', e.target.value)}
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="logoUpload">Site Logo</Label>
+                      <div className="flex items-center gap-4">
+                        {settings.logoUrl && (
+                          <img 
+                            src={settings.logoUrl} 
+                            alt="Current Logo" 
+                            className="h-12 w-12 object-contain border rounded"
+                          />
+                        )}
+                        <Input
+                          id="logoUpload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="flex-1"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Upload a logo for your website. Recommended size: 200x50px
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="defaultLanguage">Default Language</Label>
