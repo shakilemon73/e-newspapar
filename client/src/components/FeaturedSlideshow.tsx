@@ -130,7 +130,7 @@ export const FeaturedSlideshow = () => {
                 </h2>
                 <p className="article-excerpt text-sm md:text-base opacity-90 line-clamp-2 text-white">{article.excerpt}</p>
                 <div className="flex items-center mt-2 text-sm">
-                  <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+                  <span>{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
                   <span className="mx-2">•</span>
                   <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-accent hover:underline">
                     বিস্তারিত পড়ুন
@@ -174,7 +174,7 @@ export const FeaturedSlideshow = () => {
                 </Link>
               </h3>
               <p className="article-excerpt text-sm line-clamp-2">{article.excerpt}</p>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">{getRelativeTimeInBengali(article.publishedAt)}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</div>
             </div>
           </div>
         ))}

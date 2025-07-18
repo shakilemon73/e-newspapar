@@ -104,7 +104,7 @@ export const LatestNews = () => {
                 </Link>
               </h4>
               <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{news.excerpt}</p>
-              <div className="text-xs text-muted-foreground">{getRelativeTimeInBengali(news.publishedAt)}</div>
+              <div className="text-xs text-muted-foreground">{news.publishedAt ? getRelativeTimeInBengali(news.publishedAt) : 'কিছুক্ষণ আগে'}</div>
             </div>
           </div>
         ))}

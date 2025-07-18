@@ -139,7 +139,7 @@ export const VideoContent = () => {
           <span className="flex items-center mr-3">
             <i className="far fa-eye mr-1"></i> {formatViewCount(featuredVideo.view_count || 0)} দেখা হয়েছে
           </span>
-          <span>{getRelativeTimeInBengali(featuredVideo.published_at)}</span>
+          <span>{featuredVideo.published_at ? getRelativeTimeInBengali(featuredVideo.published_at) : 'কিছুক্ষণ আগে'}</span>
         </div>
       </div>
       
@@ -170,7 +170,7 @@ export const VideoContent = () => {
                 <span className="flex items-center mr-2">
                   <i className="far fa-eye mr-1"></i> {formatViewCount(video.view_count || 0)}
                 </span>
-                <span>{getRelativeTimeInBengali(video.published_at)}</span>
+                <span>{video.published_at ? getRelativeTimeInBengali(video.published_at) : 'কিছুক্ষণ আগে'}</span>
               </div>
             </div>
           </div>

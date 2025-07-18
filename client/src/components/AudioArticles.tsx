@@ -198,7 +198,7 @@ export const AudioArticles = () => {
               {currentArticle.excerpt}
             </p>
             <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              {getRelativeTimeInBengali(currentArticle.published_at)}
+              {currentArticle.published_at ? getRelativeTimeInBengali(currentArticle.published_at) : 'কিছুক্ষণ আগে'}
             </div>
           </div>
         </div>
@@ -290,7 +290,7 @@ export const AudioArticles = () => {
               <h5 className="font-medium mb-1 text-sm font-hind">{article.title}</h5>
               <div className="flex text-xs text-gray-500 dark:text-gray-400">
                 <span className="mr-2">{article.duration}</span>
-                <span>{getRelativeTimeInBengali(article.published_at)}</span>
+                <span>{article.published_at ? getRelativeTimeInBengali(article.published_at) : 'কিছুক্ষণ আগে'}</span>
               </div>
             </div>
           </div>
