@@ -112,28 +112,53 @@ export const storage = {
   },
 
   async getArticlesByCategorySlug(categorySlug: string, limit = 10, offset = 0) {
-    // First get the category ID
-    const { data: category, error: categoryError } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', categorySlug)
-      .single();
-    
-    if (categoryError) throw categoryError;
-    if (!category) return [];
-    
-    const { data, error } = await supabase
-      .from('articles')
-      .select(`
-        *,
-        category:categories(*)
-      `)
-      .eq('category_id', category.id)
-      .order('published_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-    
-    if (error) throw error;
-    return data || [];
+    try {
+      console.log(`[Storage] Fetching articles for category: ${categorySlug}, limit: ${limit}, offset: ${offset}`);
+      
+      // First get the category ID
+      const { data: category, error: categoryError } = await supabase
+        .from('categories')
+        .select('id, name, slug')
+        .eq('slug', categorySlug)
+        .single();
+      
+      if (categoryError) {
+        console.error(`[Storage] Category lookup error for slug '${categorySlug}':`, categoryError);
+        if (categoryError.code === 'PGRST116') {
+          console.log(`[Storage] Category '${categorySlug}' not found`);
+          return [];
+        }
+        throw categoryError;
+      }
+      
+      if (!category) {
+        console.log(`[Storage] No category found for slug: ${categorySlug}`);
+        return [];
+      }
+      
+      console.log(`[Storage] Found category:`, category);
+      
+      const { data, error } = await supabase
+        .from('articles')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .eq('category_id', category.id)
+        .order('published_at', { ascending: false })
+        .range(offset, offset + limit - 1);
+      
+      if (error) {
+        console.error(`[Storage] Articles fetch error for category ${category.id}:`, error);
+        throw error;
+      }
+      
+      console.log(`[Storage] Found ${data?.length || 0} articles for category '${categorySlug}'`);
+      return data || [];
+    } catch (error) {
+      console.error(`[Storage] getArticlesByCategorySlug failed for '${categorySlug}':`, error);
+      throw error;
+    }
   },
 
   async getArticleBySlug(slug: string) {

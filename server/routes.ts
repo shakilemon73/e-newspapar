@@ -222,26 +222,53 @@ const handleNewTableRoutes = (app: Express) => {
 const transformArticle = (article: any) => {
   if (!article) return article;
   
-  return {
-    id: article.id,
-    title: article.title,
-    slug: article.slug,
-    excerpt: article.excerpt || '',
-    content: article.content,
-    imageUrl: article.image_url || '',
-    publishedAt: article.published_at || new Date().toISOString(),
-    category: article.category,
-    categoryId: article.category_id,
-    isFeatured: article.is_featured || false,
-    viewCount: article.views || article.view_count || 0,
-    createdAt: article.created_at,
-    updatedAt: article.updated_at
-  };
+  try {
+    return {
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      excerpt: article.excerpt || '',
+      content: article.content,
+      imageUrl: article.image_url || '',
+      publishedAt: article.published_at || new Date().toISOString(),
+      category: article.category,
+      categoryId: article.category_id,
+      isFeatured: article.is_featured || false,
+      viewCount: article.views || article.view_count || 0,
+      createdAt: article.created_at,
+      updatedAt: article.updated_at
+    };
+  } catch (error) {
+    console.error('[Transform] Error transforming article:', error, 'Article data:', article);
+    return {
+      id: article?.id || 0,
+      title: article?.title || 'Untitled',
+      slug: article?.slug || 'untitled',
+      excerpt: article?.excerpt || '',
+      content: article?.content || '',
+      imageUrl: article?.image_url || '',
+      publishedAt: article?.published_at || new Date().toISOString(),
+      category: article?.category || null,
+      categoryId: article?.category_id || 0,
+      isFeatured: false,
+      viewCount: 0,
+      createdAt: article?.created_at || new Date().toISOString(),
+      updatedAt: article?.updated_at || new Date().toISOString()
+    };
+  }
 };
 
 const transformArticles = (articles: any[]) => {
-  if (!Array.isArray(articles)) return articles;
-  return articles.map(transformArticle);
+  if (!Array.isArray(articles)) {
+    console.warn('[Transform] transformArticles received non-array:', articles);
+    return [];
+  }
+  try {
+    return articles.map(transformArticle);
+  } catch (error) {
+    console.error('[Transform] Error transforming articles array:', error);
+    return [];
+  }
 };
 
 // Transform EPaper data
@@ -800,29 +827,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/articles`, async (req, res) => {
     try {
       const { limit = '10', offset = '0', category, featured } = req.query;
+      console.log(`[API] GET /articles - limit: ${limit}, offset: ${offset}, category: ${category}, featured: ${featured}`);
       
       if (featured === 'true') {
+        console.log('[API] Fetching featured articles');
         const articles = await storage.getFeaturedArticles(parseInt(limit as string));
-        return res.json(transformArticles(articles));
+        const transformed = transformArticles(articles);
+        console.log(`[API] Returning ${transformed.length} featured articles`);
+        return res.json(transformed);
       }
       
       if (category) {
+        console.log(`[API] Fetching articles for category: ${category}`);
         const articles = await storage.getArticlesByCategorySlug(
           category as string, 
           parseInt(limit as string), 
           parseInt(offset as string)
         );
-        return res.json(transformArticles(articles));
+        const transformed = transformArticles(articles);
+        console.log(`[API] Returning ${transformed.length} articles for category '${category}'`);
+        return res.json(transformed);
       }
       
+      console.log('[API] Fetching all articles');
       const articles = await storage.getAllArticles(
         parseInt(limit as string), 
         parseInt(offset as string)
       );
-      return res.json(transformArticles(articles));
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-      return res.status(500).json({ error: 'Failed to fetch articles' });
+      const transformed = transformArticles(articles);
+      console.log(`[API] Returning ${transformed.length} articles`);
+      return res.json(transformed);
+    } catch (error: any) {
+      console.error('[API] Error fetching articles:', error);
+      return res.status(500).json({ 
+        error: 'Failed to fetch articles', 
+        details: error.message,
+        code: error.code 
+      });
     }
   });
 

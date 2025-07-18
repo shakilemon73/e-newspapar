@@ -45,6 +45,7 @@ export const formatBengaliDate = (date: Date | string | number): string => {
   try {
     // Handle null, undefined, or empty string
     if (!date || date === '' || date === 'null' || date === 'undefined' || date === null || date === undefined) {
+      console.debug('Invalid date input for formatting:', { date, type: typeof date });
       return 'অজানা তারিখ';
     }
 
@@ -52,7 +53,7 @@ export const formatBengaliDate = (date: Date | string | number): string => {
     
     // Check if date is valid
     if (isNaN(dateObj.getTime())) {
-      console.warn('Invalid date received for formatting:', date);
+      console.warn('Invalid date received for formatting:', { date, type: typeof date, parsed: dateObj });
       return 'অজানা তারিখ';
     }
     
@@ -60,9 +61,15 @@ export const formatBengaliDate = (date: Date | string | number): string => {
     const month = dateObj.getMonth();
     const year = dateObj.getFullYear();
     
+    // Validate month index
+    if (month < 0 || month >= bengaliMonths.length) {
+      console.warn('Invalid month index:', { month, date });
+      return 'অজানা তারিখ';
+    }
+    
     return `${toBengaliNumber(day)} ${bengaliMonths[month]} ${toBengaliNumber(year)}`;
   } catch (error) {
-    console.error('Error formatting Bengali date:', error);
+    console.error('Error formatting Bengali date:', { error, date, type: typeof date });
     return 'অজানা তারিখ';
   }
 };

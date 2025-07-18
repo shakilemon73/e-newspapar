@@ -39,7 +39,14 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
         
         if (!categoryResponse.ok) {
-          throw new Error('Failed to fetch category');
+          const errorText = await categoryResponse.text();
+          console.error('Category fetch failed:', {
+            status: categoryResponse.status,
+            statusText: categoryResponse.statusText,
+            response: errorText,
+            url: `/api/categories/${categorySlug}`
+          });
+          throw new Error(`Failed to fetch category: ${categoryResponse.status} ${categoryResponse.statusText}`);
         }
         
         const categoryData = await categoryResponse.json();
@@ -49,15 +56,29 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         const articlesResponse = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}`);
         
         if (!articlesResponse.ok) {
-          throw new Error('Failed to fetch category articles');
+          const errorText = await articlesResponse.text();
+          console.error('Articles fetch failed:', {
+            status: articlesResponse.status,
+            statusText: articlesResponse.statusText,
+            response: errorText,
+            url: `/api/articles?category=${categorySlug}&limit=${limit}`
+          });
+          throw new Error(`Failed to fetch category articles: ${articlesResponse.status} ${articlesResponse.statusText}`);
         }
         
         const articlesData = await articlesResponse.json();
         setArticles(articlesData);
         setError(null);
-      } catch (err) {
-        setError('বিভাগের খবর লোড করতে সমস্যা হয়েছে');
-        console.error('Error fetching category news:', err);
+      } catch (err: any) {
+        const errorMessage = err?.message || 'বিভাগের খবর লোড করতে সমস্যা হয়েছে';
+        setError(errorMessage);
+        console.error('Error fetching category news:', {
+          error: err,
+          categorySlug,
+          limit,
+          message: err?.message,
+          status: err?.status
+        });
       } finally {
         setIsLoading(false);
       }
