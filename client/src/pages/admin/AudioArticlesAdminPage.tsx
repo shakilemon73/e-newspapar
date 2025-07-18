@@ -21,7 +21,7 @@ import {
   Clock,
   Headphones
 } from 'lucide-react';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
@@ -187,7 +187,7 @@ export default function AudioArticlesAdminPage() {
   }
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -439,6 +439,6 @@ export default function AudioArticlesAdminPage() {
           </div>
         )}
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

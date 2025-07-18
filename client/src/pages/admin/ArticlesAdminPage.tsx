@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { DataTable } from '@/components/admin/DataTable';
 import { ContentEditor } from '@/components/admin/ContentEditor';
 import { Button } from '@/components/ui/button';
@@ -259,7 +259,7 @@ export default function ArticlesAdminPage() {
 
   if (error) {
     return (
-      <AdminOnlyLayout>
+      <EnhancedAdminLayout>
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -271,12 +271,12 @@ export default function ArticlesAdminPage() {
             </p>
           </div>
         </div>
-      </AdminOnlyLayout>
+      </EnhancedAdminLayout>
     );
   }
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6 p-6">
         {/* Enhanced Header Section */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
@@ -491,6 +491,6 @@ export default function ArticlesAdminPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

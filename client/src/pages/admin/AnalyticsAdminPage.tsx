@@ -19,7 +19,7 @@ import {
   Clock,
   Loader2
 } from 'lucide-react';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 
 interface AnalyticsData {
   totalArticles: number;
@@ -82,7 +82,7 @@ export default function AnalyticsAdminPage() {
   }
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -383,6 +383,6 @@ export default function AnalyticsAdminPage() {
           </>
         )}
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

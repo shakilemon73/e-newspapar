@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { TrendingAnalyticsDashboard } from '@/components/TrendingAnalyticsDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -96,7 +96,7 @@ export default function TrendingAnalyticsPage() {
   ];
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-white">
@@ -323,6 +323,6 @@ export default function TrendingAnalyticsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

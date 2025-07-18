@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AdminOnlyLayout } from './AdminOnlyLayout';
+import { EnhancedAdminLayout } from './EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -162,7 +162,7 @@ export function EnhancedAnalyticsPage() {
   ];
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6 p-6">
         {/* Enhanced Header with UX Improvements */}
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
@@ -525,6 +525,6 @@ export function EnhancedAnalyticsPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { AdvancedAlgorithmsSetup } from '@/components/AdvancedAlgorithmsSetup';
 import { TrendingAnalyticsDashboard } from '@/components/TrendingAnalyticsDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -80,7 +80,7 @@ export default function AdvancedAlgorithmsPage() {
   };
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
@@ -247,6 +247,6 @@ export default function AdvancedAlgorithmsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }

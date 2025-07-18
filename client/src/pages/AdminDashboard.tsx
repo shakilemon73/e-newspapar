@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useLanguage, LanguageProvider } from '@/hooks/use-language';
-import { AdminOnlyLayout } from '@/components/admin/AdminOnlyLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -226,7 +226,7 @@ function ModernAdminDashboard() {
   ];
 
   return (
-    <AdminOnlyLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-8 p-6 max-w-7xl mx-auto">
         {/* Enhanced Header with UX Improvements */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
@@ -478,7 +478,7 @@ function ModernAdminDashboard() {
           </Card>
         </div>
       </div>
-    </AdminOnlyLayout>
+    </EnhancedAdminLayout>
   );
 }
 
