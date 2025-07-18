@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRoute, Link } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
 import { updateDisplayUrl, decodeSlug, getCleanShareUrl, createBengaliSlug } from '@/lib/utils/url-utils';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
@@ -1025,20 +1026,7 @@ const ArticleDetail = () => {
         const wordCount = data.content.split(' ').length;
         setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
         
-        // Fetch related articles from the same category
-        if (data.category) {
-          try {
-            const relatedResponse = await fetch(`/api/articles?category=${data.category.slug}&limit=4`);
-            
-            if (relatedResponse.ok) {
-              const relatedData = await relatedResponse.json();
-              // Filter out the current article
-              // Related articles now fetched via useQuery above
-            }
-          } catch (relatedErr) {
-            console.warn('Could not fetch related articles:', relatedErr);
-          }
-        }
+        // Related articles are now fetched automatically via useQuery above
         
       } catch (err) {
         setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
