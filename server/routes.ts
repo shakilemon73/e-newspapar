@@ -15,6 +15,7 @@ import { setupUXEnhancementRoutes } from './ux-enhancement-routes';
 import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 // User dashboard tables are now set up directly in Supabase
 import { setupUserDashboardAPI } from './user-dashboard-api';
+import { setupCompleteTableAPI, populateAllTables } from './complete-table-implementation';
 
 
 // Validation schemas for Supabase
@@ -1756,6 +1757,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEBUG: Table status endpoint (no auth required for debugging)
+  app.get(`${apiPrefix}/debug/table-status`, async (req, res) => {
+    try {
+      const requiredTables = [
+        // Core tables (actively used)
+        'categories', 'articles', 'epapers', 'weather', 'breaking_news', 
+        'video_content', 'audio_articles', 'social_media_posts',
+        
+        // User enhancement tables (may be unused)
+        'user_reading_history', 'user_saved_articles', 'user_preferences', 
+        'user_interactions', 'article_analytics', 'user_search_history', 
+        'trending_topics'
+      ];
+      
+      const tableStatus = {};
+      
+      for (const table of requiredTables) {
+        try {
+          const { data, error } = await supabase
+            .from(table)
+            .select('*')
+            .limit(1);
+          
+          if (error) {
+            tableStatus[table] = { exists: false, error: error.message };
+          } else {
+            // Get count
+            const { data: countData, error: countError } = await supabase
+              .from(table)
+              .select('*', { count: 'exact', head: true });
+            
+            tableStatus[table] = { 
+              exists: true, 
+              count: countError ? 'unknown' : countData?.length || 0
+            };
+          }
+        } catch (e) {
+          tableStatus[table] = { exists: false, error: e.message };
+        }
+      }
+      
+      return res.json(tableStatus);
+    } catch (error) {
+      console.error('Error checking table status:', error);
+      return res.status(500).json({ error: 'Failed to check table status' });
+    }
+  });
+
   // Admin role setting endpoint (for initial setup)
   app.post(`${apiPrefix}/admin/set-role`, async (req, res) => {
     try {
@@ -2427,6 +2476,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Setup User Dashboard API Routes
   setupUserDashboardAPI(app, apiPrefix, requireAuth);
+  
+  // Setup Complete Table API for all unused tables
+  setupCompleteTableAPI(app, apiPrefix, requireAuth);
+
+  // Admin endpoint to populate all unused tables
+  app.post(`${apiPrefix}/admin/populate-all-tables`, async (req, res) => {
+    try {
+      console.log('🚀 Starting population of all unused tables...');
+      await populateAllTables();
+      console.log('✅ All tables populated successfully!');
+      return res.json({ success: true, message: 'All unused tables have been populated with sample data' });
+    } catch (error) {
+      console.error('❌ Error populating tables:', error);
+      return res.status(500).json({ error: 'Failed to populate tables' });
+    }
+  });
   
   // TEMPORARY: Setup admin routes for database creation (REMOVE AFTER SETUP)
   // setupTemporaryAdminRoutes(app); // REMOVED: Advanced tables are now working properly

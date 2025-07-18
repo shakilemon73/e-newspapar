@@ -6,9 +6,16 @@ import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
 import { ArticleSummary } from '@/components/ArticleSummary';
 import { TextToSpeech } from '@/components/TextToSpeech';
+import { SavedArticleButton } from '@/components/SavedArticleButton';
+import { LikeButton } from '@/components/LikeButton';
+import { ShareButton } from '@/components/ShareButton';
+import { CommentsSection } from '@/components/CommentsSection';
+import { TagsDisplay } from '@/components/TagsDisplay';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
+import { PollsSection } from '@/components/PollsSection';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
-import supabase from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { 
   Bookmark, 
@@ -1305,55 +1312,22 @@ const ArticleDetail = () => {
                     
                     {/* Enhanced Action Buttons */}
                     <div className="flex items-center gap-3 flex-wrap">
-                      <Button 
-                        onClick={handleSaveArticle}
-                        disabled={isSaving}
-                        variant={isSaved ? "default" : "outline"}
-                        className="gap-2 transition-all duration-300 hover:scale-105"
-                      >
-                        {isSaved ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                        {isSaving ? 'সংরক্ষণ হচ্ছে...' : isSaved ? 'সংরক্ষিত' : 'সংরক্ষণ করুন'}
-                      </Button>
+                      <SavedArticleButton 
+                        articleId={article.id}
+                        variant="button"
+                        className="transition-all duration-300 hover:scale-105"
+                      />
                       
-                      <Button 
-                        onClick={handleLike}
-                        variant={isLiked ? "default" : "outline"}
-                        className="gap-2 transition-all duration-300 hover:scale-105"
-                      >
-                        <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                        পছন্দ ({likeCount})
-                      </Button>
+                      <LikeButton 
+                        articleId={article.id}
+                        className="transition-all duration-300 hover:scale-105"
+                      />
                       
-                      <DropdownMenu open={showShareMenu} onOpenChange={setShowShareMenu}>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline" className="gap-2 transition-all duration-300 hover:scale-105">
-                            <Share2 className="w-4 h-4" />
-                            শেয়ার করুন
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          <DropdownMenuLabel>শেয়ার করার মাধ্যম</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleShare('copy')}>
-                            <Copy className="w-4 h-4 mr-2" />
-                            লিংক কপি করুন
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare('facebook')}>
-                            <Facebook className="w-4 h-4 mr-2" />
-                            ফেসবুকে শেয়ার
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleShare('twitter')}>
-                            <Twitter className="w-4 h-4 mr-2" />
-                            টুইটারে শেয়ার
-                          </DropdownMenuItem>
-                          {navigator.share && (
-                            <DropdownMenuItem onClick={() => handleShare('native')}>
-                              <Send className="w-4 h-4 mr-2" />
-                              অন্যান্য
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <ShareButton 
+                        articleId={article.id}
+                        title={article.title}
+                        className="transition-all duration-300 hover:scale-105"
+                      />
 
                       {/* Text-to-Speech Audio Controls */}
                       <div className="flex items-center gap-2">
@@ -1500,6 +1474,11 @@ const ArticleDetail = () => {
                     <div className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl">
                       <ArticleSummary content={article.content} />
                     </div>
+
+                    {/* Tags Display */}
+                    <div className="mt-6">
+                      <TagsDisplay articleId={article.id} />
+                    </div>
                   </div>
                   
                   {/* Article Footer */}
@@ -1534,6 +1513,9 @@ const ArticleDetail = () => {
                   
                 </CardContent>
               </Card>
+
+              {/* Comments Section */}
+              <CommentsSection articleId={article.id} />
             </div>
 
             {/* Enhanced Sidebar */}
@@ -1645,6 +1627,12 @@ const ArticleDetail = () => {
                     </Button>
                   </CardContent>
                 </Card>
+
+                {/* Newsletter Signup */}
+                <NewsletterSignup />
+
+                {/* Polls Section */}
+                <PollsSection />
               </div>
             )}
           </div>

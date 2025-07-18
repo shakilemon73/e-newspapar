@@ -20,6 +20,7 @@ import AdvancedSearch from "@/pages/AdvancedSearch";
 import PersonalizedRecommendations from "@/pages/PersonalizedRecommendations";
 import UserAnalytics from "@/pages/UserAnalytics";
 import SocialMediaTest from "@/pages/SocialMediaTest";
+import UnusedTablesDemo from "@/pages/UnusedTablesDemo";
 
 // User Authentication Pages
 import Login from "@/pages/Login";
@@ -57,6 +58,7 @@ function UserRouter() {
       <Route path="/recommendations" component={PersonalizedRecommendations} />
       <Route path="/user-analytics" component={UserAnalytics} />
       <Route path="/social-media-test" component={SocialMediaTest} />
+      <Route path="/unused-tables-demo" component={UnusedTablesDemo} />
       
       {/* User Authentication Routes */}
       <Route path="/login" component={Login} />
