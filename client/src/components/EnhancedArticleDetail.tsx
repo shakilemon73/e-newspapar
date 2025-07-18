@@ -16,6 +16,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { Link, useParams } from 'wouter';
+import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -260,12 +261,30 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {filteredArticles.map((article: Article) => (
           <Link key={article.id} href={`/article/${article.slug}`}>
-            <EnhancedArticleCard 
-              article={article}
-              showEngagement={true}
-              showReadingTime={true}
-              compact={true}
-            />
+            <div className="group cursor-pointer transition-all duration-300 hover:bg-muted/50 rounded-lg p-4">
+              <div className="flex gap-4">
+                <img 
+                  src={article.imageUrl || article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80'} 
+                  alt={article.title}
+                  className="w-20 h-20 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80';
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-base line-clamp-2 group-hover:text-primary transition-colors duration-300 mb-2">
+                    {article.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                    {article.excerpt}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {article.publishedAt || article.published_at ? getRelativeTimeInBengali(article.publishedAt || article.published_at) : 'কিছুক্ষণ আগে'}
+                  </p>
+                </div>
+              </div>
+            </div>
           </Link>
         ))}
       </div>

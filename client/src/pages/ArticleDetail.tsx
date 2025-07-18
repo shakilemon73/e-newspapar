@@ -1718,7 +1718,7 @@ const ArticleDetail = () => {
                           <div className="group cursor-pointer transition-all duration-300 hover:bg-muted/50 rounded-lg p-3 -m-3">
                             <div className="flex gap-3">
                               <img 
-                                src={relatedArticle.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80'} 
+                                src={relatedArticle.imageUrl || relatedArticle.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80'} 
                                 alt={relatedArticle.title}
                                 className="w-16 h-16 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
@@ -1731,7 +1731,7 @@ const ArticleDetail = () => {
                                   {relatedArticle.title}
                                 </h4>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  {relatedArticle.published_at ? getRelativeTimeInBengali(relatedArticle.published_at) : 'কিছুক্ষণ আগে'}
+                                  {relatedArticle.publishedAt || relatedArticle.published_at ? getRelativeTimeInBengali(relatedArticle.publishedAt || relatedArticle.published_at) : 'কিছুক্ষণ আগে'}
                                 </p>
                               </div>
                             </div>
