@@ -325,6 +325,8 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [notifications, setNotifications] = useState(3);
   const { t } = useLanguage();
   const { user, logout } = useSupabaseAuth();
 
@@ -346,18 +348,43 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('dark');
+  };
+
   const NavContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+      {/* Header with Bangladesh Cultural Design */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">
-            {t('admin-panel', 'Admin Panel', 'অ্যাডমিন প্যানেল')}
-          </h2>
-          <LanguageToggle />
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 cultural-gradient rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">প</span>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold bangla-text">
+                {t('admin-panel', 'Admin Panel', 'অ্যাডমিন প্যানেল')}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {t('admin-subtitle', 'Content Management System', 'কন্টেন্ট ম্যানেজমেন্ট সিস্টেম')}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="touch-target"
+              aria-label={t('toggle-theme', 'Toggle Theme', 'থিম পরিবর্তন করুন')}
+            >
+              {theme === 'light' ? '🌙' : '☀️'}
+            </Button>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t('admin-subtitle', 'Content Management System', 'কন্টেন্ট ম্যানেজমেন্ট সিস্টেম')}
-        </p>
       </div>
 
       <ScrollArea className="flex-1 p-4">
@@ -375,35 +402,37 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
                       <Link href={item.href}>
                         <Button
                           variant={isActive ? "secondary" : "ghost"}
-                          className={`w-full justify-start h-auto p-3 text-left ${
+                          className={`w-full justify-start h-auto p-3 text-left touch-target micro-interaction ${
                             isActive 
-                              ? 'bg-secondary text-secondary-foreground' 
-                              : 'hover:bg-accent/10'
+                              ? 'admin-sidebar-item active bg-primary/10 text-primary dark:bg-primary/20' 
+                              : 'admin-sidebar-item hover:bg-gray-50 dark:hover:bg-gray-800'
                           }`}
                           onClick={() => isMobile && setSidebarOpen(false)}
                           aria-current={isActive ? 'page' : undefined}
                         >
                           <div className="flex items-center gap-3 w-full">
-                            <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                            <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-700">
+                              <item.icon className="h-4 w-4 shrink-0 text-gray-600 dark:text-gray-300" aria-hidden="true" />
+                            </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <span className="font-medium truncate">
+                                <span className="font-medium truncate bangla-text text-sm">
                                   {t(`nav-${item.id}`, item.enLabel, item.bnLabel)}
                                 </span>
                                 {item.badge && (
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
                                     {item.badge}
                                   </Badge>
                                 )}
                               </div>
                               {item.description && (
-                                <p className="text-xs text-muted-foreground mt-1 truncate">
+                                <p className="text-xs text-muted-foreground mt-1 truncate bangla-text">
                                   {t(`desc-${item.id}`, item.description.en, item.description.bn)}
                                 </p>
                               )}
                             </div>
                             {isActive && (
-                              <ChevronRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+                              <ChevronRight className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                             )}
                           </div>
                         </Button>
@@ -435,18 +464,20 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
         </div>
         <Button 
           variant="outline" 
-          className="w-full justify-start h-10"
+          className="w-full justify-start h-10 touch-target interactive-element"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4 mr-2" />
-          {t('logout', 'Logout', 'লগ আউট')}
+          <span className="bangla-text">
+            {t('logout', 'Logout', 'লগ আউট')}
+          </span>
         </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-900 bangladesh-colors">
       {/* Mobile Sidebar */}
       {isMobile && (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
@@ -454,7 +485,7 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
             <Button
               variant="outline"
               size="icon"
-              className="fixed top-4 left-4 z-50 h-10 w-10"
+              className="fixed top-4 left-4 z-50 h-10 w-10 touch-target interactive-element"
               aria-label={t('open-menu', 'Open menu', 'মেনু খুলুন')}
             >
               <Menu className="h-4 w-4" />
@@ -468,15 +499,74 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
 
       {/* Desktop Sidebar */}
       {!isMobile && (
-        <aside className="w-80 border-r bg-card">
+        <aside className="w-80 border-r bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
           <NavContent />
         </aside>
       )}
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <div className={`${isMobile ? 'pt-16' : ''}`}>
-          <div className="container mx-auto p-4 md:p-6">
+        {/* Enhanced Header */}
+        <header className="admin-header sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-4">
+              {isMobile && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(true)}
+                  className="touch-target"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 cultural-gradient rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">প</span>
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold text-gray-900 dark:text-white bangla-text">
+                    {t('dashboard-title', 'প্রথম আলো Admin', 'প্রথম আলো অ্যাডমিন')}
+                  </h1>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('news-management', 'News Management System', 'সংবাদ ব্যবস্থাপনা সিস্টেম')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-1">
+                  <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="bangla-text text-xs">
+                    {t('server-status', 'All Systems Operational', 'সব সিস্টেম চালু')}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="touch-target"
+                  aria-label={t('notifications', 'Notifications', 'বিজ্ঞপ্তি')}
+                >
+                  <Bell className="h-4 w-4" />
+                  {notifications > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 hover:bg-red-600">
+                      {notifications}
+                    </Badge>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content Area */}
+        <div className={`admin-main minimal-interface ${isMobile ? 'pt-4' : ''}`}>
+          <div className="container mx-auto px-4 md:px-6 py-4 md:py-6">
             {children}
           </div>
         </div>

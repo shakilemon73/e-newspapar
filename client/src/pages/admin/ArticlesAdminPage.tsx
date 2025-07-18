@@ -278,12 +278,14 @@ export default function ArticlesAdminPage() {
   return (
     <EnhancedAdminLayout>
       <div className="space-y-6 p-6">
-        {/* Enhanced Header Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-2xl">
+        {/* Enhanced Header Section with Bangladesh Cultural Design */}
+        <div className="cultural-gradient rounded-2xl p-8 text-white shadow-2xl card-shadow">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold mb-3 tracking-tight">Article Management</h1>
-              <p className="text-blue-100 text-lg leading-relaxed">
+              <h1 className="text-4xl font-bold mb-3 tracking-tight bangla-text">
+                Article Management
+              </h1>
+              <p className="text-green-100 text-lg leading-relaxed scannable-text">
                 Create, manage, and optimize your Bengali news articles with enhanced UX design
               </p>
               <div className="flex items-center mt-4 space-x-4">
@@ -300,7 +302,7 @@ export default function ArticlesAdminPage() {
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 min-h-[44px]"
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 touch-target interactive-element accessible-focus"
                 onClick={() => window.location.reload()}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -308,7 +310,7 @@ export default function ArticlesAdminPage() {
               </Button>
               <Button
                 onClick={handleCreateArticle}
-                className="bg-white text-blue-600 hover:bg-gray-100 min-h-[44px]"
+                className="bg-white text-green-600 hover:bg-gray-100 touch-target interactive-element accessible-focus"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Article
@@ -317,39 +319,39 @@ export default function ArticlesAdminPage() {
           </div>
         </div>
 
-        {/* Enhanced Filters Section */}
-        <Card className="border-0 shadow-lg">
+        {/* Enhanced Filters Section with UX Principles */}
+        <Card className="border-0 shadow-lg card-shadow minimal-card">
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center bangla-text">
               <Filter className="h-5 w-5 mr-2" />
               Filter & Search Articles
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="scannable-text">
               Use advanced filters to find and manage your articles efficiently
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <CardContent className="system-spacing">
+            <div className="mobile-first-grid">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 min-h-[44px]"
+                  className="pl-10 touch-target accessible-focus"
                 />
               </div>
               
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="min-h-[44px]">
+                <SelectTrigger className="touch-target accessible-focus">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="politics">রাজনীতি</SelectItem>
-                  <SelectItem value="sports">খেলা</SelectItem>
-                  <SelectItem value="economy">অর্থনীতি</SelectItem>
-                  <SelectItem value="international">আন্তর্জাতিক</SelectItem>
+                  <SelectItem value="politics" className="bangla-text">রাজনীতি</SelectItem>
+                  <SelectItem value="sports" className="bangla-text">খেলা</SelectItem>
+                  <SelectItem value="economy" className="bangla-text">অর্থনীতি</SelectItem>
+                  <SelectItem value="international" className="bangla-text">আন্তর্জাতিক</SelectItem>
                 </SelectContent>
               </Select>
 

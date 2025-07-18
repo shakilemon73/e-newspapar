@@ -15,7 +15,7 @@
 
 @layer base {
   :root {
-    /* Modern Bengali News Theme Colors */
+    /* Bangladesh Cultural Color Psychology - Green (Islam, Nature, Prosperity) */
     --background: 0 0% 99%;
     --foreground: 210 11% 15%;
     
@@ -25,28 +25,28 @@
     --popover: 0 0% 100%;
     --popover-foreground: 210 11% 15%;
     
-    /* News Brand Colors - Deep Blue (Trust & Authority) */
-    --primary: 215 84% 16%;
+    /* Primary - Deep Green (Bangladesh Flag, Islam, Trust) */
+    --primary: 142 76% 36%;
     --primary-foreground: 0 0% 98%;
     
-    /* Secondary - Light Blue (Professional) */
-    --secondary: 215 25% 97%;
-    --secondary-foreground: 215 84% 16%;
+    /* Secondary - Light Green (Peace, Harmony) */
+    --secondary: 142 25% 97%;
+    --secondary-foreground: 142 76% 20%;
     
     /* Muted - Subtle Gray */
     --muted: 220 13% 96%;
     --muted-foreground: 210 11% 46%;
     
-    /* Accent - Breaking News Red */
+    /* Accent - Red (Bangladesh Flag, Energy) - Use sparingly */
     --accent: 0 84% 60%;
     --accent-foreground: 0 0% 98%;
     
-    /* Success - Green for positive news */
+    /* Success - Bright Green (Achievement, Positive) */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
     
-    /* Warning - Orange for alerts */
-    --warning: 32 95% 55%;
+    /* Warning - Golden Yellow (Caution, Attention) */
+    --warning: 45 95% 55%;
     --warning-foreground: 0 0% 98%;
     
     --destructive: 0 84% 60%;
@@ -55,10 +55,10 @@
     /* Enhanced Border System */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 215 84% 16%;
+    --ring: 142 76% 36%;
     
-    /* Modern Radius System */
-    --radius: 0.75rem;
+    /* Modern Radius System - Subtle for professional look */
+    --radius: 0.5rem;
     
     /* Spacing System (8px grid) */
     --space-1: 0.25rem;  /* 4px */
@@ -103,7 +103,8 @@
     --popover: 210 11% 8%;
     --popover-foreground: 0 0% 95%;
  
-    --primary: 215 84% 65%;
+    /* Primary - Lighter Green for dark mode */
+    --primary: 142 76% 45%;
     --primary-foreground: 210 11% 6%;
  
     --secondary: 210 11% 12%;
@@ -118,7 +119,7 @@
     --success: 142 76% 45%;
     --success-foreground: 210 11% 6%;
     
-    --warning: 32 95% 60%;
+    --warning: 45 95% 60%;
     --warning-foreground: 210 11% 6%;
  
     --destructive: 0 84% 60%;
@@ -220,6 +221,188 @@ h4 {
   font-size: var(--text-lg);
   @apply lg:text-xl;
   font-weight: 500;
+}
+
+/* World-Class UX/UI Enhancement Classes */
+
+/* Don Norman - Clear Visual Affordances */
+.interactive-element {
+  @apply transition-all duration-200 cursor-pointer;
+}
+
+.interactive-element:hover {
+  @apply scale-105;
+}
+
+.interactive-element:active {
+  @apply scale-95;
+}
+
+/* Luke Wroblewski - 44px Touch Targets for Mobile */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
+/* Steve Krug - Scannability */
+.scannable-text {
+  @apply text-sm leading-relaxed max-w-none;
+}
+
+.scannable-text p {
+  @apply mb-4 max-w-[65ch];
+}
+
+/* Aarron Walter - Micro-interactions */
+.micro-interaction {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.micro-interaction:hover {
+  @apply transform translate-y-[-2px] shadow-md;
+}
+
+/* Julie Zhuo - Design System Consistency */
+.card-shadow {
+  @apply shadow-[0_2px_4px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_8px_rgba(0,0,0,0.1)] transition-shadow duration-200;
+}
+
+.system-spacing {
+  @apply space-y-4 p-4;
+}
+
+/* Dieter Rams - Minimal Design */
+.minimal-interface {
+  @apply space-y-4 p-0 m-0;
+}
+
+.minimal-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm;
+}
+
+/* Farai Madzima - Inclusive Design */
+.accessible-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+}
+
+.high-contrast {
+  @apply text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900;
+}
+
+/* Bangladesh Cultural Patterns */
+.bangla-text {
+  font-family: 'SolaimanLipi', 'Kalpurush', 'AponaLohit', 'Noto Sans Bengali', sans-serif;
+  @apply text-lg leading-relaxed;
+}
+
+.cultural-gradient {
+  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(0, 84%, 60%) 100%);
+}
+
+.bangladesh-colors {
+  --green-primary: 142 76% 36%;
+  --red-accent: 0 84% 60%;
+  --gold-secondary: 45 95% 55%;
+}
+
+/* Mobile-First Responsive Design */
+.mobile-first-grid {
+  @apply grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.mobile-nav {
+  @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 md:hidden;
+}
+
+/* Enhanced Admin Interface */
+.admin-sidebar {
+  @apply bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-64 h-full fixed left-0 top-0 z-50;
+  @apply transform transition-transform duration-300 ease-in-out;
+}
+
+.admin-sidebar-item {
+  @apply flex items-center px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200;
+}
+
+.admin-sidebar-item.active {
+  @apply bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground border-r-2 border-primary;
+}
+
+.admin-header {
+  @apply sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-3;
+}
+
+.admin-main {
+  @apply flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4 md:p-6 lg:p-8;
+}
+
+/* Form Enhancements */
+.enhanced-form {
+  @apply space-y-6 max-w-2xl mx-auto;
+}
+
+.enhanced-form .form-group {
+  @apply space-y-2;
+}
+
+.enhanced-form label {
+  @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
+}
+
+.enhanced-form input,
+.enhanced-form textarea,
+.enhanced-form select {
+  @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-800 dark:text-gray-100;
+}
+
+.enhanced-form button {
+  @apply touch-target interactive-element;
+}
+
+/* Loading States */
+.loading-shimmer {
+  @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+.loading-spinner {
+  @apply animate-spin rounded-full h-6 w-6 border-b-2 border-primary;
+}
+
+/* Success/Error States */
+.success-state {
+  @apply bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-4 text-green-800 dark:text-green-200;
+}
+
+.error-state {
+  @apply bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 text-red-800 dark:text-red-200;
+}
+
+/* Data Visualization */
+.chart-container {
+  @apply bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 shadow-sm;
+}
+
+.metric-card {
+  @apply minimal-card space-y-2;
+}
+
+.metric-value {
+  @apply text-2xl font-bold text-gray-900 dark:text-gray-100;
+}
+
+.metric-label {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.metric-trend {
+  @apply text-sm font-medium;
+}
+
+.metric-trend.positive {
+  @apply text-green-600 dark:text-green-400;
+}
+
+.metric-trend.negative {
+  @apply text-red-600 dark:text-red-400;
 }
 
 h5 {
