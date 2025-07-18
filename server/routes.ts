@@ -1763,21 +1763,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // Personalized Recommendations route
+  // Enhanced Personalized Recommendations route
   app.get(`${apiPrefix}/personalized-recommendations`, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
+      const userId = req.query.userId as string;
       
-      // Get articles with good view counts as recommendations
-      const articles = await storage.getPopularArticles(limit);
+      // Use the enhanced algorithm from advanced-algorithms.js
+      const { getPersonalizedRecommendations } = await import('./advanced-algorithms.js');
+      const recommendations = await getPersonalizedRecommendations(userId, limit);
       
-      // Transform to match expected format
-      const recommendations = articles.map(article => ({
+      // Transform and add Bengali reason if not already present
+      const transformedRecommendations = recommendations.map(article => ({
         ...transformArticle(article),
-        reason: 'জনপ্রিয় নিবন্ধ' // Popular article in Bengali
+        reason: article.reason || 'জনপ্রিয় নিবন্ধ'
       }));
       
-      res.json(recommendations);
+      res.json(transformedRecommendations);
     } catch (error: any) {
       console.error('Error fetching personalized recommendations:', error);
       res.status(500).json({ error: 'Could not fetch personalized recommendations' });

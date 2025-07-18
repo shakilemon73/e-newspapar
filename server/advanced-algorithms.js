@@ -68,10 +68,184 @@ async function checkTablesExist() {
 }
 
 /**
- * Removed createAdvancedTables and createPerformanceIndexes functions
- * All table creation is now handled through execute_sql_tool or Supabase SQL Editor
- * Tables are created directly in Supabase with proper indexes and constraints
+ * Trending Topics Algorithm - Works with existing Supabase data
  */
+export async function getTrendingTopics(limit = 10) {
+  try {
+    // Try to get from trending_topics table first
+    const { data: dbTopics } = await supabase
+      .from('trending_topics')
+      .select('*')
+      .order('trend_score', { ascending: false })
+      .limit(limit);
+    
+    if (dbTopics && dbTopics.length > 0) {
+      return dbTopics;
+    }
+    
+    // Fallback: Generate from popular article categories
+    const { data: articles } = await supabase
+      .from('articles')
+      .select('title, view_count, category_id, categories(name)')
+      .order('view_count', { ascending: false })
+      .limit(50);
+    
+    if (!articles) return [];
+    
+    // Create category-based trending topics
+    const categoryScores = new Map();
+    articles.forEach(article => {
+      const categoryName = article.categories?.name || 'অন্যান্য';
+      const currentScore = categoryScores.get(categoryName) || 0;
+      categoryScores.set(categoryName, currentScore + (article.view_count || 0));
+    });
+    
+    // Convert to trending topics format
+    const trending = Array.from(categoryScores.entries())
+      .map(([name, score], index) => ({
+        id: index + 1,
+        topic_name: name,
+        trend_score: Math.min(score / 1000, 100), // Normalize score
+        mentions_count: Math.floor(score / 100),
+        related_keywords: [name],
+        created_at: new Date().toISOString()
+      }))
+      .sort((a, b) => b.trend_score - a.trend_score)
+      .slice(0, limit);
+    
+    return trending;
+  } catch (error) {
+    console.error('Error generating trending topics:', error);
+    return [];
+  }
+}
+
+/**
+ * Enhanced Personalized Recommendations Algorithm
+ */
+export async function getPersonalizedRecommendations(userId = null, limit = 10) {
+  try {
+    let recommendations = [];
+    
+    if (userId) {
+      // Get user's reading history
+      const { data: readingHistory } = await supabase
+        .from('user_reading_history')
+        .select('article_id, time_spent')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (readingHistory && readingHistory.length > 0) {
+        // Get categories from read articles
+        const readArticleIds = readingHistory.map(h => h.article_id);
+        const { data: readArticles } = await supabase
+          .from('articles')
+          .select('category_id')
+          .in('id', readArticleIds);
+        
+        if (readArticles && readArticles.length > 0) {
+          const categoryIds = [...new Set(readArticles.map(a => a.category_id))];
+          
+          // Get similar articles from same categories
+          const { data: similarArticles } = await supabase
+            .from('articles')
+            .select('*, categories(*)')
+            .in('category_id', categoryIds)
+            .not('id', 'in', `(${readArticleIds.join(',')})`)
+            .order('view_count', { ascending: false })
+            .limit(limit);
+          
+          if (similarArticles) {
+            recommendations = similarArticles.map(article => ({
+              ...article,
+              reason: 'আপনার পছন্দের বিষয়ের উপর ভিত্তি করে'
+            }));
+          }
+        }
+      }
+    }
+    
+    // Fallback to popular articles
+    if (recommendations.length === 0) {
+      const { data: popularArticles } = await supabase
+        .from('articles')
+        .select('*, categories(*)')
+        .order('view_count', { ascending: false })
+        .limit(limit);
+      
+      if (popularArticles) {
+        recommendations = popularArticles.map(article => ({
+          ...article,
+          reason: 'জনপ্রিয় নিবন্ধ'
+        }));
+      }
+    }
+    
+    return recommendations;
+  } catch (error) {
+    console.error('Error generating personalized recommendations:', error);
+    return [];
+  }
+}
+
+/**
+ * Article Analytics Algorithm
+ */
+export async function calculateArticleAnalytics(articleId) {
+  try {
+    // Get basic article data
+    const { data: article } = await supabase
+      .from('articles')
+      .select('view_count, created_at')
+      .eq('id', articleId)
+      .single();
+    
+    if (!article) return null;
+    
+    // Calculate engagement metrics
+    const { data: likes } = await supabase
+      .from('user_likes')
+      .select('id')
+      .eq('content_id', articleId)
+      .eq('content_type', 'article');
+    
+    const { data: comments } = await supabase
+      .from('article_comments')
+      .select('id')
+      .eq('article_id', articleId);
+    
+    const { data: bookmarks } = await supabase
+      .from('user_bookmarks')
+      .select('id')
+      .eq('article_id', articleId);
+    
+    // Calculate trending score based on recency and engagement
+    const daysSincePublished = Math.max(1, 
+      (Date.now() - new Date(article.created_at).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    
+    const engagementScore = (likes?.length || 0) * 3 + 
+                           (comments?.length || 0) * 5 + 
+                           (bookmarks?.length || 0) * 2;
+    
+    const trendingScore = ((article.view_count || 0) + engagementScore) / daysSincePublished;
+    
+    return {
+      article_id: articleId,
+      views: article.view_count || 0,
+      likes: likes?.length || 0,
+      comments_count: comments?.length || 0,
+      bookmarks: bookmarks?.length || 0,
+      engagement_score: engagementScore,
+      trending_score: Math.round(trendingScore * 100) / 100,
+      calculated_at: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error calculating article analytics:', error);
+    return null;
+  }
+}
 
 /**
  * Initialize existing data
@@ -104,9 +278,9 @@ async function initializeExistingData() {
 }
 
 /**
- * Get personalized recommendations for a user
+ * Get personalized recommendations for a user (Legacy function)
  */
-export async function getPersonalizedRecommendations(userId, limit = 10) {
+export async function getPersonalizedRecommendationsLegacy(userId, limit = 10) {
   try {
     // Get user's category preferences based on interactions
     const { data: interactions } = await supabase
@@ -480,51 +654,7 @@ export async function getUserAnalytics(userId) {
   }
 }
 
-/**
- * Get trending topics - uses direct database queries
- */
-export async function getTrendingTopics(limit = 10) {
-  try {
-    // First try to get from trending_topics table if it exists
-    const { data: topics, error } = await supabase
-      .from('trending_topics')
-      .select('*')
-      .order('trend_score', { ascending: false })
-      .limit(limit);
-    
-    if (error) {
-      console.log('trending_topics table not found, generating from categories');
-      
-      // Generate trending topics from categories and articles
-      const { data: categories } = await supabase
-        .from('categories')
-        .select('id, name, slug');
-      
-      if (categories && categories.length > 0) {
-        // Create trending topics from categories with calculated scores
-        const trendingTopics = categories.map((category, index) => ({
-          id: category.id + 5, // Offset to avoid conflicts
-          topic_name: category.name,
-          topic_type: 'category',
-          mention_count: 150 - (index * 15), // Decreasing mention counts
-          trend_score: 0.8 - (index * 0.1), // Decreasing trend scores
-          time_period: 'daily',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }));
-        
-        return trendingTopics.slice(0, limit);
-      }
-    }
-    
-    return topics || [];
-  } catch (error) {
-    console.error('Error getting trending topics:', error);
-    
-    // Return empty array instead of hardcoded fallback
-    return [];
-  }
-}
+
 
 /**
  * Get user reading history - bypasses schema cache issues
