@@ -3313,13 +3313,10 @@ ON CONFLICT DO NOTHING;
     try {
       const { status = 'all', search = '' } = req.query;
       
-      // Get comments data from Supabase
+      // Get comments data from Supabase without join due to missing FK
       let query = supabase
         .from('article_comments')
-        .select(`
-          *,
-          articles(title)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (status !== 'all') {
@@ -3337,18 +3334,34 @@ ON CONFLICT DO NOTHING;
         return res.status(500).json({ error: 'Failed to fetch comments' });
       }
       
-      // Transform data for frontend
-      const transformedComments = comments.map(comment => ({
-        id: comment.id,
-        content: comment.content,
-        authorName: comment.author_name,
-        authorEmail: comment.author_email,
-        articleTitle: comment.articles?.title || 'Unknown Article',
-        status: comment.status,
-        createdAt: comment.created_at,
-        updatedAt: comment.updated_at,
-        adminReply: comment.admin_reply
-      }));
+      // Get article titles manually for each comment
+      const transformedComments = await Promise.all(
+        comments.map(async (comment) => {
+          let articleTitle = 'Unknown Article';
+          if (comment.article_id) {
+            const { data: article } = await supabase
+              .from('articles')
+              .select('title')
+              .eq('id', comment.article_id)
+              .single();
+            if (article) {
+              articleTitle = article.title;
+            }
+          }
+          
+          return {
+            id: comment.id,
+            content: comment.content,
+            authorName: comment.author_name,
+            authorEmail: comment.author_email,
+            articleTitle,
+            status: comment.status,
+            createdAt: comment.created_at,
+            updatedAt: comment.updated_at,
+            adminReply: comment.admin_reply
+          };
+        })
+      );
       
       res.json(transformedComments);
     } catch (error) {
