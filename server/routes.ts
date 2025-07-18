@@ -2911,26 +2911,38 @@ ON CONFLICT DO NOTHING;
   app.get(`${apiPrefix}/admin/user-achievements`, requireAdmin, async (req, res) => {
     try {
       // Get user achievements data from Supabase
-      const userAchievements = [
-        {
-          id: '1',
-          title: 'প্রথম পাঠক',
-          description: 'প্রথম নিবন্ধ পড়ুন',
-          earnedCount: 1247
-        },
-        {
-          id: '2',
-          title: 'নিয়মিত পাঠক',
-          description: '৫টি নিবন্ধ পড়ুন',
-          earnedCount: 456
-        },
-        {
-          id: '3',
-          title: 'গ্রন্থকীট',
-          description: '২০টি নিবন্ধ পড়ুন',
-          earnedCount: 123
-        }
-      ];
+      const { data: achievements, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (achievementsError) {
+        console.error('Error fetching achievements:', achievementsError);
+        return res.status(500).json({ error: 'Failed to fetch achievements' });
+      }
+      
+      // Get earned counts for each achievement
+      const { data: earnedCounts, error: earnedError } = await supabase
+        .from('user_achievements')
+        .select('achievement_id');
+      
+      if (earnedError) {
+        console.error('Error fetching earned counts:', earnedError);
+        return res.status(500).json({ error: 'Failed to fetch earned counts' });
+      }
+      
+      // Count how many users have earned each achievement
+      const earnedCountMap = earnedCounts.reduce((acc, item) => {
+        acc[item.achievement_id] = (acc[item.achievement_id] || 0) + 1;
+        return acc;
+      }, {});
+      
+      const userAchievements = achievements.map(achievement => ({
+        id: achievement.id,
+        title: achievement.name,
+        description: achievement.description,
+        earnedCount: earnedCountMap[achievement.id] || 0
+      }));
       
       res.json(userAchievements);
     } catch (error) {
@@ -2963,26 +2975,43 @@ ON CONFLICT DO NOTHING;
       const { status = 'all', search = '' } = req.query;
       
       // Get comments data from Supabase
-      const comments = [
-        {
-          id: '1',
-          content: 'খুবই চমৎকার একটি নিবন্ধ! অনেক কিছু শিখতে পারলাম।',
-          authorName: 'করিম উদ্দিন',
-          articleTitle: 'বাংলাদেশের অর্থনৈতিক অগ্রগতি',
-          createdAt: '2025-01-17T14:30:00Z',
-          status: 'approved'
-        },
-        {
-          id: '2',
-          content: 'এই বিষয়ে আরও বিস্তারিত জানতে চাই।',
-          authorName: 'সালমা খাতুন',
-          articleTitle: 'জলবায়ু পরিবর্তনের প্রভাব',
-          createdAt: '2025-01-17T12:15:00Z',
-          status: 'pending'
-        }
-      ];
+      let query = supabase
+        .from('article_comments')
+        .select(`
+          *,
+          articles(title)
+        `)
+        .order('created_at', { ascending: false });
       
-      res.json(comments);
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+      
+      if (search) {
+        query = query.or(`content.ilike.%${search}%,author_name.ilike.%${search}%`);
+      }
+      
+      const { data: comments, error } = await query;
+      
+      if (error) {
+        console.error('Error fetching comments:', error);
+        return res.status(500).json({ error: 'Failed to fetch comments' });
+      }
+      
+      // Transform data for frontend
+      const transformedComments = comments.map(comment => ({
+        id: comment.id,
+        content: comment.content,
+        authorName: comment.author_name,
+        authorEmail: comment.author_email,
+        articleTitle: comment.articles?.title || 'Unknown Article',
+        status: comment.status,
+        createdAt: comment.created_at,
+        updatedAt: comment.updated_at,
+        adminReply: comment.admin_reply
+      }));
+      
+      res.json(transformedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
       res.status(500).json({ error: 'Failed to fetch comments' });
@@ -2992,12 +3021,21 @@ ON CONFLICT DO NOTHING;
   app.get(`${apiPrefix}/admin/comment-stats`, requireAdmin, async (req, res) => {
     try {
       // Get comment stats from Supabase
+      const { data: comments, error } = await supabase
+        .from('article_comments')
+        .select('status');
+      
+      if (error) {
+        console.error('Error fetching comment stats:', error);
+        return res.status(500).json({ error: 'Failed to fetch comment stats' });
+      }
+      
       const commentStats = {
-        total: 1247,
-        pending: 89,
-        approved: 1098,
-        rejected: 60,
-        reported: 12
+        total: comments.length,
+        pending: comments.filter(c => c.status === 'pending').length,
+        approved: comments.filter(c => c.status === 'approved').length,
+        rejected: comments.filter(c => c.status === 'rejected').length,
+        reported: 0 // Add reported comments feature later
       };
       
       res.json(commentStats);
@@ -3012,6 +3050,16 @@ ON CONFLICT DO NOTHING;
       const { id } = req.params;
       
       // Approve comment in Supabase
+      const { error } = await supabase
+        .from('article_comments')
+        .update({ status: 'approved', updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error approving comment:', error);
+        return res.status(500).json({ error: 'Failed to approve comment' });
+      }
+      
       res.json({ success: true, message: 'Comment approved' });
     } catch (error) {
       console.error('Error approving comment:', error);
@@ -3024,6 +3072,16 @@ ON CONFLICT DO NOTHING;
       const { id } = req.params;
       
       // Reject comment in Supabase
+      const { error } = await supabase
+        .from('article_comments')
+        .update({ status: 'rejected', updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error rejecting comment:', error);
+        return res.status(500).json({ error: 'Failed to reject comment' });
+      }
+      
       res.json({ success: true, message: 'Comment rejected' });
     } catch (error) {
       console.error('Error rejecting comment:', error);
@@ -3036,6 +3094,16 @@ ON CONFLICT DO NOTHING;
       const { id } = req.params;
       
       // Delete comment from Supabase
+      const { error } = await supabase
+        .from('article_comments')
+        .delete()
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error deleting comment:', error);
+        return res.status(500).json({ error: 'Failed to delete comment' });
+      }
+      
       res.json({ success: true, message: 'Comment deleted' });
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -3049,6 +3117,19 @@ ON CONFLICT DO NOTHING;
       const { content } = req.body;
       
       // Send reply to comment in Supabase
+      const { error } = await supabase
+        .from('article_comments')
+        .update({ 
+          admin_reply: content,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (error) {
+        console.error('Error sending reply:', error);
+        return res.status(500).json({ error: 'Failed to send reply' });
+      }
+      
       res.json({ success: true, message: 'Reply sent' });
     } catch (error) {
       console.error('Error sending reply:', error);
@@ -3366,75 +3447,87 @@ ON CONFLICT DO NOTHING;
   // Email & Notification API Endpoints
   app.get(`${apiPrefix}/admin/email-templates`, requireAdmin, async (req, res) => {
     try {
-      const templates = [
-        {
-          id: 1,
-          name: 'নিউজলেটার টেমপ্লেট',
-          subject: 'সাপ্তাহিক নিউজলেটার - প্রথম আলো',
-          content: 'সাপ্তাহিক নিউজলেটার কন্টেন্ট এখানে থাকবে...',
-          type: 'newsletter',
-          created_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          name: 'ব্রেকিং নিউজ',
-          subject: 'জরুরি খবর - প্রথম আলো',
-          content: 'ব্রেকিং নিউজ কন্টেন্ট এখানে থাকবে...',
-          type: 'breaking_news',
-          created_at: new Date().toISOString()
-        }
-      ];
+      const { data: templates, error } = await supabase
+        .from('email_templates')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching email templates:', error);
+        return res.status(500).json({ error: 'Failed to fetch email templates' });
+      }
+      
       res.json(templates);
     } catch (error) {
+      console.error('Error fetching email templates:', error);
       res.status(500).json({ error: 'Failed to fetch email templates' });
     }
   });
 
   app.get(`${apiPrefix}/admin/newsletter-subscribers`, requireAdmin, async (req, res) => {
     try {
-      const subscribers = [
-        {
-          id: 1,
-          email: 'user1@example.com',
-          subscribed_at: new Date().toISOString(),
-          active: true
-        },
-        {
-          id: 2,
-          email: 'user2@example.com',
-          subscribed_at: new Date().toISOString(),
-          active: true
-        }
-      ];
+      const { data: subscribers, error } = await supabase
+        .from('email_subscribers')
+        .select('*')
+        .order('subscribed_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching newsletter subscribers:', error);
+        return res.status(500).json({ error: 'Failed to fetch subscribers' });
+      }
+      
       res.json(subscribers);
     } catch (error) {
+      console.error('Error fetching newsletter subscribers:', error);
       res.status(500).json({ error: 'Failed to fetch subscribers' });
     }
   });
 
   app.get(`${apiPrefix}/admin/email-stats`, requireAdmin, async (req, res) => {
     try {
+      const { data: subscribers, error } = await supabase
+        .from('email_subscribers')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching email stats:', error);
+        return res.status(500).json({ error: 'Failed to fetch email stats' });
+      }
+      
       const stats = {
-        total_subscribers: 1250,
-        new_subscribers_today: 15,
-        emails_sent: 850,
-        open_rate: 65
+        total_subscribers: subscribers.length,
+        new_subscribers_today: subscribers.filter(s => {
+          const today = new Date();
+          const subscribedDate = new Date(s.subscribed_at);
+          return subscribedDate.toDateString() === today.toDateString();
+        }).length,
+        emails_sent: 0, // Add when email sending is implemented
+        open_rate: 0 // Add when email tracking is implemented
       };
+      
       res.json(stats);
     } catch (error) {
+      console.error('Error fetching email stats:', error);
       res.status(500).json({ error: 'Failed to fetch email stats' });
     }
   });
 
   app.post(`${apiPrefix}/admin/email-templates`, requireAdmin, async (req, res) => {
     try {
-      const template = {
-        id: Date.now(),
-        ...req.body,
-        created_at: new Date().toISOString()
-      };
+      const { data: template, error } = await supabase
+        .from('email_templates')
+        .insert([req.body])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating email template:', error);
+        return res.status(500).json({ error: 'Failed to create email template' });
+      }
+      
       res.status(201).json(template);
     } catch (error) {
+      console.error('Error creating email template:', error);
       res.status(500).json({ error: 'Failed to create email template' });
     }
   });
@@ -3545,7 +3638,23 @@ ON CONFLICT DO NOTHING;
   // Mobile App Management API Endpoints
   app.get(`${apiPrefix}/admin/mobile-app-config`, requireAdmin, async (req, res) => {
     try {
-      const config = {
+      const { data: settings, error } = await supabase
+        .from('mobile_app_settings')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching mobile app config:', error);
+        return res.status(500).json({ error: 'Failed to fetch mobile app config' });
+      }
+      
+      // Transform settings array to config object
+      const config = settings.reduce((acc, setting) => {
+        acc[setting.setting_key] = setting.setting_value;
+        return acc;
+      }, {});
+      
+      // Add default values if not present
+      const defaultConfig = {
         app_name: 'প্রথম আলো',
         current_version: 'v2.1.0',
         minimum_version: 'v2.0.0',
@@ -3554,22 +3663,37 @@ ON CONFLICT DO NOTHING;
         push_notifications_enabled: true,
         offline_mode_enabled: true,
         dark_mode_enabled: true,
-        force_update_enabled: false
+        force_update_enabled: false,
+        ...config
       };
-      res.json(config);
+      
+      res.json(defaultConfig);
     } catch (error) {
+      console.error('Error fetching mobile app config:', error);
       res.status(500).json({ error: 'Failed to fetch mobile app config' });
     }
   });
 
   app.put(`${apiPrefix}/admin/mobile-app-config`, requireAdmin, async (req, res) => {
     try {
-      const updatedConfig = {
-        ...req.body,
-        updated_at: new Date().toISOString()
-      };
-      res.json(updatedConfig);
+      const configUpdates = req.body;
+      
+      // Update each setting in the database
+      const updatePromises = Object.entries(configUpdates).map(([key, value]) => {
+        return supabase
+          .from('mobile_app_settings')
+          .upsert({
+            setting_key: key,
+            setting_value: value,
+            updated_at: new Date().toISOString()
+          });
+      });
+      
+      await Promise.all(updatePromises);
+      
+      res.json({ success: true, message: 'Mobile app config updated successfully' });
     } catch (error) {
+      console.error('Error updating mobile app config:', error);
       res.status(500).json({ error: 'Failed to update mobile app config' });
     }
   });
@@ -3601,37 +3725,43 @@ ON CONFLICT DO NOTHING;
 
   app.get(`${apiPrefix}/admin/push-notifications`, requireAdmin, async (req, res) => {
     try {
-      const notifications = [
-        {
-          id: 1,
-          title: 'ব্রেকিং নিউজ',
-          message: 'প্রধানমন্ত্রীর গুরুত্বপূর্ণ ঘোষণা',
-          target: 'all',
-          sent_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          title: 'নতুন ফিচার',
-          message: 'আপডেট করুন এবং নতুন ফিচার উপভোগ করুন',
-          target: 'active',
-          sent_at: new Date().toISOString()
-        }
-      ];
+      const { data: notifications, error } = await supabase
+        .from('push_notifications')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching push notifications:', error);
+        return res.status(500).json({ error: 'Failed to fetch push notifications' });
+      }
+      
       res.json(notifications);
     } catch (error) {
+      console.error('Error fetching push notifications:', error);
       res.status(500).json({ error: 'Failed to fetch push notifications' });
     }
   });
 
   app.post(`${apiPrefix}/admin/send-push-notification`, requireAdmin, async (req, res) => {
     try {
-      const notification = {
-        id: Date.now(),
-        ...req.body,
-        sent_at: new Date().toISOString()
-      };
+      const { data: notification, error } = await supabase
+        .from('push_notifications')
+        .insert([{
+          ...req.body,
+          status: 'sent',
+          sent_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error sending push notification:', error);
+        return res.status(500).json({ error: 'Failed to send push notification' });
+      }
+      
       res.status(201).json(notification);
     } catch (error) {
+      console.error('Error sending push notification:', error);
       res.status(500).json({ error: 'Failed to send push notification' });
     }
   });
