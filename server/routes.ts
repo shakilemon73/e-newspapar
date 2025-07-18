@@ -1039,6 +1039,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       let { slug } = req.params;
       
+      // Check if it's a numeric ID first
+      if (/^\d+$/.test(slug)) {
+        const articleId = parseInt(slug);
+        console.log(`[API] Fetching article by ID: ${articleId}`);
+        
+        const article = await storage.getArticleById(articleId);
+        if (!article) {
+          return res.status(404).json({ error: 'Article not found' });
+        }
+        
+        // Increment view count for ID access
+        const newViewCount = (article.view_count || 0) + 1;
+        await supabase.from('articles').update({ view_count: newViewCount }).eq('id', articleId);
+        article.view_count = newViewCount;
+        
+        return res.json(transformArticle(article));
+      }
+      
       // Properly decode URL-encoded Bengali characters
       try {
         slug = decodeURIComponent(slug);

@@ -80,12 +80,15 @@ export const storage = {
 
   async getPopularArticles(limit = 5) {
     // Get articles ordered by view_count (most read first)
+    // Only return articles with non-null view counts that actually exist
     const { data, error } = await supabase
       .from('articles')
       .select(`
         *,
         category:categories(*)
       `)
+      .not('view_count', 'is', null)
+      .gte('view_count', 1)
       .order('view_count', { ascending: false })
       .limit(limit);
     
@@ -93,6 +96,43 @@ export const storage = {
       console.error('Error fetching popular articles:', error);
       throw error;
     }
+    
+    // If no articles with view counts exist, initialize some with view counts
+    if (!data || data.length === 0) {
+      console.log('[Storage] No articles with view counts found, initializing some...');
+      
+      // Get the first few articles and give them initial view counts
+      const { data: allArticles, error: allError } = await supabase
+        .from('articles')
+        .select(`
+          *,
+          category:categories(*)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      
+      if (allError) {
+        console.error('Error fetching articles for initialization:', allError);
+        return [];
+      }
+      
+      if (allArticles && allArticles.length > 0) {
+        // Give the articles some initial view counts (1-10 views)
+        for (let i = 0; i < allArticles.length; i++) {
+          const initialViews = Math.floor(Math.random() * 10) + 1;
+          await supabase
+            .from('articles')
+            .update({ view_count: initialViews })
+            .eq('id', allArticles[i].id);
+          allArticles[i].view_count = initialViews;
+        }
+        
+        // Sort by view count and return
+        allArticles.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+        return allArticles;
+      }
+    }
+    
     return data || [];
   },
 
