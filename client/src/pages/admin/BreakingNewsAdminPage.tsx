@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { WebsiteAdminLayout } from '@/components/admin/WebsiteAdminLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { DataTable } from '@/components/admin/DataTable';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -247,7 +247,7 @@ export default function BreakingNewsAdminPage() {
 
   if (error) {
     return (
-      <WebsiteAdminLayout>
+      <EnhancedAdminLayout>
         <div className="flex items-center justify-center py-8">
           <div className="text-center">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
@@ -259,12 +259,12 @@ export default function BreakingNewsAdminPage() {
             </p>
           </div>
         </div>
-      </WebsiteAdminLayout>
+      </EnhancedAdminLayout>
     );
   }
 
   return (
-    <WebsiteAdminLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
@@ -509,6 +509,6 @@ export default function BreakingNewsAdminPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </WebsiteAdminLayout>
+    </EnhancedAdminLayout>
   );
 }
