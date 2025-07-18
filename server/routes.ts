@@ -234,8 +234,10 @@ const transformArticle = (article: any) => {
       slug: article.slug || `article-${article.id}`,
       excerpt: article.excerpt || 'সংক্ষিপ্ত বিবরণ নেই',
       content: article.content || 'বিস্তারিত নেই',
-      imageUrl: article.image_url || 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=400&fit=crop',
+      imageUrl: article.image_url || null,
+      image_url: article.image_url || null, // Also provide for backward compatibility
       publishedAt: article.published_at || article.created_at || new Date().toISOString(),
+      published_at: article.published_at || article.created_at || new Date().toISOString(), // Also provide for backward compatibility
       category: article.category || { name: 'অন্যান্য', slug: 'other' },
       categoryId: article.category_id || 0,
       isFeatured: Boolean(article.is_featured),

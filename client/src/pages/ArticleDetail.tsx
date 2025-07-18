@@ -1574,7 +1574,7 @@ const ArticleDetail = () => {
                   <div className="relative group">
                     <div className="overflow-hidden">
                       <img 
-                        src={article.image_url || '/default-article-image.jpg'} 
+                        src={article.imageUrl || article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=600&fit=crop&auto=format&q=80'} 
                         alt={article.title}
                         className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
                         onError={(e) => {
