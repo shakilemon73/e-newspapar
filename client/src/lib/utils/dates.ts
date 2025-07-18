@@ -28,8 +28,8 @@ function isValidDate(date: any): boolean {
 }
 
 function parseDate(dateInput: any): Date | null {
-  if (!dateInput) {
-    console.warn('[Date] Invalid date input: null/undefined');
+  // Early exit for null/undefined/empty values without logging
+  if (!dateInput || dateInput === null || dateInput === undefined || dateInput === '' || dateInput === 'null' || dateInput === 'undefined') {
     return null;
   }
   
@@ -44,6 +44,7 @@ function parseDate(dateInput: any): Date | null {
     return parsed;
   }
   
+  // Only log for genuinely unexpected invalid formats
   console.warn('[Date] Invalid date input:', dateInput, 'Type:', typeof dateInput);
   return null;
 }
@@ -53,7 +54,7 @@ export function formatDateInBengali(dateInput: any): string {
     const date = parseDate(dateInput);
     
     if (!date) {
-      console.error('[Date] Failed to parse date:', dateInput);
+      // Silent fallback for null/undefined values - no error logging
       return 'অজানা তারিখ'; // "Unknown date" in Bengali
     }
     
@@ -76,7 +77,7 @@ export function getRelativeTimeInBengali(dateInput: any): string {
     const date = parseDate(dateInput);
     
     if (!date) {
-      console.error('[Date] Failed to parse relative time date:', dateInput);
+      // Silent fallback for null/undefined values - no error logging
       return 'কিছুক্ষণ আগে'; // "A while ago" in Bengali
     }
     
@@ -114,7 +115,7 @@ export function formatTimeInBengali(dateInput: any): string {
     const date = parseDate(dateInput);
     
     if (!date) {
-      console.error('[Date] Failed to parse time:', dateInput);
+      // Silent fallback for null/undefined values - no error logging
       return 'অজানা সময়'; // "Unknown time" in Bengali
     }
     
