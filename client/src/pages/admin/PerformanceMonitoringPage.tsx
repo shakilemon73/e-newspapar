@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AdminLayout } from '@/components/admin/AdminLayout';
+import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -73,7 +73,7 @@ export default function PerformanceMonitoringPage() {
   };
 
   return (
-    <AdminLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -375,6 +375,6 @@ export default function PerformanceMonitoringPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </AdminLayout>
+    </EnhancedAdminLayout>
   );
 }
