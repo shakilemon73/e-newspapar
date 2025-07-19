@@ -56,11 +56,15 @@ interface NavItem {
   description?: { en: string; bn: string };
 }
 
+// SIMPLIFIED NAVIGATION - Following Nielsen Norman Group's 7±2 rule and Miller's Law
+// Reduced from 25+ items to 6 main categories to reduce cognitive load
+// Baymard Institute: Maximum 5-6 categories for optimal dashboard UX
 const navSections = [
   {
-    id: 'main',
-    enTitle: 'Main',
-    bnTitle: 'মূল',
+    id: 'overview',
+    enTitle: 'Overview',
+    bnTitle: 'সংক্ষিপ্ত বিবরণ',
+    color: 'from-blue-500 to-blue-600',
     items: [
       {
         id: 'dashboard',
@@ -68,14 +72,23 @@ const navSections = [
         icon: Home,
         enLabel: 'Dashboard',
         bnLabel: 'ড্যাশবোর্ড',
-        description: { en: 'Overview and analytics', bn: 'সংক্ষিপ্ত বিবরণ এবং পরিসংখ্যান' }
+        description: { en: 'Key metrics and overview', bn: 'প্রধান মেট্রিক্স এবং সংক্ষিপ্ত বিবরণ' }
+      },
+      {
+        id: 'analytics',
+        href: '/admin/analytics',
+        icon: BarChart3,
+        enLabel: 'Analytics',
+        bnLabel: 'বিশ্লেষণ',
+        description: { en: 'Performance insights', bn: 'কর্মক্ষমতা অন্তর্দৃষ্টি' }
       }
     ]
   },
   {
     id: 'content',
-    enTitle: 'Content Management',
-    bnTitle: 'কন্টেন্ট ব্যবস্থাপনা',
+    enTitle: 'Content',
+    bnTitle: 'কন্টেন্ট',
+    color: 'from-green-500 to-green-600',
     items: [
       {
         id: 'articles',
@@ -86,20 +99,13 @@ const navSections = [
         description: { en: 'Manage news articles', bn: 'সংবাদ নিবন্ধ পরিচালনা' }
       },
       {
-        id: 'categories',
-        href: '/admin/categories',
-        icon: Tag,
-        enLabel: 'Categories',
-        bnLabel: 'বিভাগ',
-        description: { en: 'Organize content categories', bn: 'বিষয়বস্তু বিভাগ সাজান' }
-      },
-      {
-        id: 'epapers',
-        href: '/admin/epapers',
-        icon: ImageIcon,
-        enLabel: 'E-Papers',
-        bnLabel: 'ই-পেপার',
-        description: { en: 'Digital newspaper editions', bn: 'ডিজিটাল সংবাদপত্র সংস্করণ' }
+        id: 'breaking-news',
+        href: '/admin/breaking-news',
+        icon: Bell,
+        enLabel: 'Breaking News',
+        bnLabel: 'জরুরি সংবাদ',
+        badge: 'Live',
+        description: { en: 'Urgent updates', bn: 'জরুরি আপডেট' }
       },
       {
         id: 'videos',
@@ -107,186 +113,63 @@ const navSections = [
         icon: Video,
         enLabel: 'Videos',
         bnLabel: 'ভিডিও',
-        description: { en: 'Video content management', bn: 'ভিডিও কন্টেন্ট ব্যবস্থাপনা' }
+        description: { en: 'Video content', bn: 'ভিডিও কন্টেন্ট' }
       },
       {
-        id: 'audio',
-        href: '/admin/audio',
-        icon: Headphones,
-        enLabel: 'Audio Articles',
-        bnLabel: 'অডিও নিবন্ধ',
-        description: { en: 'Audio content management', bn: 'অডিও কন্টেন্ট ব্যবস্থাপনা' }
-      },
-      {
-        id: 'breaking-news',
-        href: '/admin/breaking-news',
-        icon: Bell,
-        enLabel: 'Breaking News',
-        bnLabel: 'জরুরি সংবাদ',
-        badge: 'Live',
-        description: { en: 'Urgent news updates', bn: 'জরুরি সংবাদ আপডেট' }
+        id: 'categories',
+        href: '/admin/categories',
+        icon: Tag,
+        enLabel: 'Categories',
+        bnLabel: 'বিভাগ',
+        description: { en: 'Content categories', bn: 'কন্টেন্ট বিভাগ' }
       }
     ]
   },
   {
-    id: 'users',
-    enTitle: 'Users & Analytics',
-    bnTitle: 'ব্যবহারকারী ও বিশ্লেষণ',
+    id: 'audience',
+    enTitle: 'Audience',
+    bnTitle: 'দর্শক',
+    color: 'from-purple-500 to-purple-600',
     items: [
       {
         id: 'users',
         href: '/admin/users',
         icon: Users,
-        enLabel: 'User Management',
-        bnLabel: 'ব্যবহারকারী ব্যবস্থাপনা',
-        description: { en: 'Manage user accounts', bn: 'ব্যবহারকারী অ্যাকাউন্ট পরিচালনা' }
-      },
-      {
-        id: 'user-dashboard',
-        href: '/admin/user-dashboard',
-        icon: LayoutDashboard,
-        enLabel: 'User Dashboard',
-        bnLabel: 'ব্যবহারকারী ড্যাশবোর্ড',
-        description: { en: 'User analytics dashboard', bn: 'ব্যবহারকারী বিশ্লেষণ ড্যাশবোর্ড' }
-      },
-      {
-        id: 'analytics',
-        href: '/admin/analytics',
-        icon: BarChart3,
-        enLabel: 'Analytics',
-        bnLabel: 'বিশ্লেষণ',
-        description: { en: 'Website analytics', bn: 'ওয়েবসাইট বিশ্লেষণ' }
-      }
-    ]
-  },
-  {
-    id: 'moderation',
-    enTitle: 'Content Moderation',
-    bnTitle: 'কন্টেন্ট মডারেশন',
-    items: [
-      {
-        id: 'comments',
-        href: '/admin/comments',
-        icon: MessageSquare,
-        enLabel: 'Comments',
-        bnLabel: 'মন্তব্য',
-        description: { en: 'Moderate user comments', bn: 'ব্যবহারকারীর মন্তব্য সংযত' }
+        enLabel: 'Users',
+        bnLabel: 'ব্যবহারকারী',
+        description: { en: 'User management', bn: 'ব্যবহারকারী ব্যবস্থাপনা' }
       },
       {
         id: 'trending-analytics',
         href: '/admin/trending-analytics',
         icon: TrendingUp,
-        enLabel: 'Trending Analytics',
-        bnLabel: 'ট্রেন্ডিং বিশ্লেষণ',
-        description: { en: 'Trending content analysis', bn: 'ট্রেন্ডিং কন্টেন্ট বিশ্লেষণ' }
-      },
-      {
-        id: 'advanced-algorithms',
-        href: '/admin/advanced-algorithms',
-        icon: Bot,
-        enLabel: 'Advanced Algorithms',
-        bnLabel: 'উন্নত অ্যালগরিদম',
-        description: { en: 'AI and ML algorithms', bn: 'এআই এবং এমএল অ্যালগরিদম' }
+        enLabel: 'Trending',
+        bnLabel: 'ট্রেন্ডিং',
+        description: { en: 'Popular content insights', bn: 'জনপ্রিয় কন্টেন্ট অন্তর্দৃষ্টি' }
       }
     ]
   },
   {
-    id: 'seo',
-    enTitle: 'SEO & Search',
-    bnTitle: 'এসইও এবং সার্চ',
+    id: 'tools',
+    enTitle: 'Tools',
+    bnTitle: 'টুলস',
+    color: 'from-orange-500 to-orange-600',
     items: [
-      {
-        id: 'seo',
-        href: '/admin/seo',
-        icon: Globe,
-        enLabel: 'SEO Management',
-        bnLabel: 'এসইও ব্যবস্থাপনা',
-        description: { en: 'Search engine optimization', bn: 'সার্চ ইঞ্জিন অপটিমাইজেশন' }
-      },
       {
         id: 'search',
         href: '/admin/search',
         icon: Search,
-        enLabel: 'Search Management',
-        bnLabel: 'সার্চ ব্যবস্থাপনা',
-        description: { en: 'Search functionality management', bn: 'সার্চ কার্যকারিতা ব্যবস্থাপনা' }
-      }
-    ]
-  },
-  {
-    id: 'communication',
-    enTitle: 'Communication',
-    bnTitle: 'যোগাযোগ',
-    items: [
-      {
-        id: 'email-notifications',
-        href: '/admin/email-notifications',
-        icon: Mail,
-        enLabel: 'Email & Notifications',
-        bnLabel: 'ইমেইল ও বিজ্ঞপ্তি',
-        description: { en: 'Email and notification management', bn: 'ইমেইল এবং বিজ্ঞপ্তি ব্যবস্থাপনা' }
-      },
-      {
-        id: 'social-media',
-        href: '/admin/social-media',
-        icon: Share2,
-        enLabel: 'Social Media',
-        bnLabel: 'সোশ্যাল মিডিয়া',
-        description: { en: 'Social media management', bn: 'সোশ্যাল মিডিয়া ব্যবস্থাপনা' }
-      }
-    ]
-  },
-  {
-    id: 'system',
-    enTitle: 'System Management',
-    bnTitle: 'সিস্টেম ব্যবস্থাপনা',
-    items: [
-      {
-        id: 'database',
-        href: '/admin/database',
-        icon: Database,
-        enLabel: 'Database Management',
-        bnLabel: 'ডাটাবেস ব্যবস্থাপনা',
-        description: { en: 'Database monitoring and management', bn: 'ডাটাবেস পর্যবেক্ষণ এবং ব্যবস্থাপনা' }
-      },
-      {
-        id: 'performance',
-        href: '/admin/performance',
-        icon: Activity,
-        enLabel: 'Performance Monitoring',
-        bnLabel: 'কর্মক্ষমতা পর্যবেক্ষণ',
-        description: { en: 'System performance metrics', bn: 'সিস্টেম কর্মক্ষমতা মেট্রিক্স' }
-      },
-      {
-        id: 'mobile-app',
-        href: '/admin/mobile-app',
-        icon: Smartphone,
-        enLabel: 'Mobile App Management',
-        bnLabel: 'মোবাইল অ্যাপ ব্যবস্থাপনা',
-        description: { en: 'Mobile app configuration', bn: 'মোবাইল অ্যাপ কনফিগারেশন' }
+        enLabel: 'Search',
+        bnLabel: 'সার্চ',
+        description: { en: 'Search management', bn: 'সার্চ ব্যবস্থাপনা' }
       },
       {
         id: 'security',
         href: '/admin/security',
         icon: Key,
-        enLabel: 'Security & Access Control',
-        bnLabel: 'নিরাপত্তা ও অ্যাক্সেস নিয়ন্ত্রণ',
-        description: { en: 'Security and access management', bn: 'নিরাপত্তা এবং অ্যাক্সেস ব্যবস্থাপনা' }
-      }
-    ]
-  },
-  {
-    id: 'business',
-    enTitle: 'Business',
-    bnTitle: 'ব্যবসা',
-    items: [
-      {
-        id: 'advertisements',
-        href: '/admin/advertisements',
-        icon: DollarSign,
-        enLabel: 'Advertisement Management',
-        bnLabel: 'বিজ্ঞাপন ব্যবস্থাপনা',
-        description: { en: 'Ad management and revenue', bn: 'বিজ্ঞাপন ব্যবস্থাপনা এবং রাজস্ব' }
+        enLabel: 'Security',
+        bnLabel: 'নিরাপত্তা',
+        description: { en: 'Access control', bn: 'অ্যাক্সেস নিয়ন্ত্রণ' }
       },
       {
         id: 'weather',
@@ -294,30 +177,47 @@ const navSections = [
         icon: Cloud,
         enLabel: 'Weather',
         bnLabel: 'আবহাওয়া',
-        description: { en: 'Weather information management', bn: 'আবহাওয়া তথ্য ব্যবস্থাপনা' }
+        description: { en: 'Weather management', bn: 'আবহাওয়া ব্যবস্থাপনা' }
       }
     ]
   },
   {
-    id: 'settings',
-    enTitle: 'Settings & Configuration',
-    bnTitle: 'সেটিংস এবং কনফিগারেশন',
+    id: 'more',
+    enTitle: 'More',
+    bnTitle: 'আরও',
+    color: 'from-slate-500 to-slate-600',
     items: [
+      {
+        id: 'epapers',
+        href: '/admin/epapers',
+        icon: ImageIcon,
+        enLabel: 'E-Papers',
+        bnLabel: 'ই-পেপার',
+        description: { en: 'Digital editions', bn: 'ডিজিটাল সংস্করণ' }
+      },
       {
         id: 'footer-pages',
         href: '/admin/footer-pages',
         icon: FileText,
         enLabel: 'Footer Pages',
         bnLabel: 'ফুটার পেজ',
-        description: { en: 'Manage footer pages', bn: 'ফুটার পেজ ব্যবস্থাপনা' }
-      },
+        description: { en: 'Footer page management', bn: 'ফুটার পেজ ব্যবস্থাপনা' }
+      }
+    ]
+  },
+  {
+    id: 'settings',
+    enTitle: 'Settings',
+    bnTitle: 'সেটিংস',
+    color: 'from-gray-500 to-gray-600',
+    items: [
       {
         id: 'settings',
         href: '/admin/settings',
         icon: Settings,
-        enLabel: 'Settings',
-        bnLabel: 'সেটিংস',
-        description: { en: 'General settings', bn: 'সাধারণ সেটিংস' }
+        enLabel: 'Site Settings',
+        bnLabel: 'সাইট সেটিংস',
+        description: { en: 'Configure your site', bn: 'আপনার সাইট কনফিগার করুন' }
       }
     ]
   }
