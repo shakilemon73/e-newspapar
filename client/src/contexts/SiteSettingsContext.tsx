@@ -43,9 +43,10 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch('/api/settings?_t=' + Date.now()); // Cache busting
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched dynamic settings:', data);
         setSettings({
           siteName: data.siteName || defaultSettings.siteName,
           logoUrl: data.logoUrl || defaultSettings.logoUrl,
@@ -53,6 +54,11 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
           siteUrl: data.siteUrl || defaultSettings.siteUrl,
           defaultLanguage: data.defaultLanguage || defaultSettings.defaultLanguage,
         });
+        
+        // Update global window object for immediate access
+        if (typeof window !== 'undefined') {
+          (window as any).globalSiteSettings = data;
+        }
       }
     } catch (error) {
       console.error('Error fetching site settings:', error);
@@ -82,8 +88,15 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
       refreshSettings();
     };
 
+    // Set up periodic refresh to check for admin changes
+    const intervalId = setInterval(() => {
+      refreshSettings();
+    }, 10000); // Refresh every 10 seconds
+
     window.addEventListener('siteSettingsUpdated', handleSettingsUpdate);
+    
     return () => {
+      clearInterval(intervalId);
       window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate);
     };
   }, []);
