@@ -17,7 +17,7 @@ export const useGlobalSiteName = () => {
 /**
  * Component to display site name consistently across the app
  */
-export const SiteName = ({ fallback = 'প্রথম আলো' }: { fallback?: string }) => {
+export const SiteName = ({ fallback = '' }: { fallback?: string }) => {
   const { siteName, isLoading } = useGlobalSiteName();
   
   if (isLoading) return fallback;
@@ -28,7 +28,7 @@ export const SiteName = ({ fallback = 'প্রথম আলো' }: { fallback?
 /**
  * Get site name for non-component usage (e.g., document title, meta tags)
  */
-export const getSiteName = (fallback = 'প্রথম আলো') => {
+export const getSiteName = (fallback = '') => {
   // Access global settings if available
   if (typeof window !== 'undefined' && (window as any).globalSiteSettings) {
     return (window as any).globalSiteSettings.siteName || fallback;

@@ -128,7 +128,7 @@ export function WebsiteAdminLayout({ children }: WebsiteAdminLayoutProps) {
                   Website Admin
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  প্রথম আলো
+                  
                 </p>
               </div>
             </div>

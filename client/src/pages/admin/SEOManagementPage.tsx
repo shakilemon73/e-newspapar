@@ -41,9 +41,9 @@ export default function SEOManagementPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
   const [, setLocation] = useLocation();
   const [seoSettings, setSeoSettings] = useState({
-    siteName: 'প্রথম আলো',
+    siteName: '',
     siteDescription: 'বাংলাদেশের শীর্ষ সংবাদ পত্রিকা',
-    siteKeywords: 'বাংলাদেশ, সংবাদ, খবর, প্রথম আলো',
+    siteKeywords: 'বাংলাদেশ, সংবাদ, খবর, ',
     ogImageUrl: '/og-default-image.svg',
     twitterHandle: '@prothomaloBD',
     facebookAppId: '',
@@ -294,7 +294,7 @@ export default function SEOManagementPage() {
                       id="siteName"
                       value={seoSettings.siteName}
                       onChange={(e) => handleSettingsChange('siteName', e.target.value)}
-                      placeholder="প্রথম আলো"
+                      placeholder=""
                     />
                   </div>
                   <div>
@@ -325,7 +325,7 @@ export default function SEOManagementPage() {
                     id="siteKeywords"
                     value={seoSettings.siteKeywords}
                     onChange={(e) => handleSettingsChange('siteKeywords', e.target.value)}
-                    placeholder="বাংলাদেশ, সংবাদ, খবর, প্রথম আলো"
+                    placeholder="বাংলাদেশ, সংবাদ, খবর, "
                   />
                 </div>
 

@@ -237,7 +237,7 @@ function ModernAdminDashboard() {
               </h1>
               <p className="text-blue-100 text-lg leading-relaxed">
                 {language === 'bn' 
-                  ? 'প্রথম আলো ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ ও ব্যবস্থাপনা'
+                  ? ' ওয়েবসাইটের সম্পূর্ণ নিয়ন্ত্রণ ও ব্যবস্থাপনা'
                   : 'Complete control and management of Prothom Alo website'
                 }
               </p>

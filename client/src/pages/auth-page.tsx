@@ -116,7 +116,7 @@ const AuthPage = () => {
   return (
     <>
       <Helmet>
-        <title>অ্যাকাউন্ট | প্রথম আলো</title>
+        <title>অ্যাকাউন্ট | </title>
       </Helmet>
 
       <div className="container mx-auto px-4 py-12">

@@ -121,8 +121,8 @@ const EPaper = () => {
   return (
     <>
       <Helmet>
-        <title>ই-পেপার আর্কাইভ - প্রথম আলো</title>
-        <meta name="description" content="প্রথম আলোর ই-পেপার আর্কাইভ। পুরনো সংস্করণ সহ সকল ই-পেপার এখানে পাবেন।" />
+        <title>ই-পেপার আর্কাইভ - </title>
+        <meta name="description" content="র ই-পেপার আর্কাইভ। পুরনো সংস্করণ সহ সকল ই-পেপার এখানে পাবেন।" />
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

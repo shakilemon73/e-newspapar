@@ -16,7 +16,7 @@ interface SiteSettingsContextType {
 }
 
 const defaultSettings: SiteSettings = {
-  siteName: 'প্রথম আলো',
+  siteName: '',
   logoUrl: '',
   siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
   siteUrl: '',

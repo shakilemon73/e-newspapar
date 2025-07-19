@@ -124,8 +124,8 @@ const AdminLogin = () => {
   return (
     <>
       <Helmet>
-        <title>অ্যাডমিন লগইন | প্রথম আলো</title>
-        <meta name="description" content="প্রথম আলো অ্যাডমিন প্যানেল লগইন" />
+        <title>অ্যাডমিন লগইন | </title>
+        <meta name="description" content=" অ্যাডমিন প্যানেল লগইন" />
       </Helmet>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

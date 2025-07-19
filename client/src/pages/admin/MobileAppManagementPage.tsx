@@ -203,7 +203,7 @@ export default function MobileAppManagementPage() {
                       <Label htmlFor="app-name">অ্যাপ নাম</Label>
                       <Input
                         id="app-name"
-                        value={appConfig?.app_name || 'প্রথম আলো'}
+                        value={appConfig?.app_name || ''}
                         onChange={(e) => updateConfigMutation.mutate({
                           ...appConfig,
                           app_name: e.target.value

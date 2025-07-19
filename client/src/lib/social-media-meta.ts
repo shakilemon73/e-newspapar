@@ -22,11 +22,11 @@ export interface SocialMetaConfig {
  * Default configuration for the website
  */
 const DEFAULT_CONFIG: Partial<SocialMetaConfig> = {
-  siteName: (typeof window !== 'undefined' && (window as any).globalSiteSettings?.siteName) || 'প্রথম আলো',
+  siteName: (typeof window !== 'undefined' && (window as any).globalSiteSettings?.siteName) || '',
   image: '/og-default-image.svg', // Default fallback image
   type: 'website',
   twitterHandle: '@prothomalo',
-  author: 'প্রথম আলো সংবাদদাতা'
+  author: 'সংবাদদাতা'
 };
 
 /**
@@ -111,12 +111,12 @@ export function generateSocialMetaTags(config: SocialMetaConfig) {
     'og:image:alt': title,
     'og:url': canonicalUrl,
     'og:type': type,
-    'og:site_name': siteName || 'প্রথম আলো',
+    'og:site_name': siteName || '',
     'og:locale': 'bn_BD',
     
     // Article-specific Open Graph tags
     ...(type === 'article' && {
-      'article:author': author || 'প্রথম আলো সংবাদদাতা',
+      'article:author': author || 'সংবাদদাতা',
       'article:section': section || '',
       'article:published_time': publishedTime || '',
       'article:tag': tags.join(', ')
@@ -145,8 +145,8 @@ export function generateSocialMetaTags(config: SocialMetaConfig) {
     'canonical': canonicalUrl,
     
     // Mobile app integration
-    'apple-mobile-web-app-title': siteName || 'প্রথম আলো',
-    'application-name': siteName || 'প্রথম আলো',
+    'apple-mobile-web-app-title': siteName || '',
+    'application-name': siteName || '',
     
     // Additional SEO
     'robots': 'index, follow',
@@ -194,7 +194,7 @@ export function generateCategoryMetaTags(category: {
 }) {
   return generateSocialMetaTags({
     title: category.name,
-    description: category.description || `${category.name} সম্পর্কিত সর্বশেষ খবর - প্রথম আলো`,
+    description: category.description || `${category.name} সম্পর্কিত সর্বশেষ খবর`,
     url: `/category/${category.slug}`,
     section: category.name
   });
@@ -205,7 +205,7 @@ export function generateCategoryMetaTags(category: {
  */
 export function generateHomeMetaTags() {
   return generateSocialMetaTags({
-    title: 'প্রথম আলো',
+    title: 'Bengali News',
     description: 'বাংলাদেশের শীর্ষস্থানীয় অনলাইন সংবাদপত্র। সর্বশেষ খবর, রাজনীতি, অর্থনীতি, খেলা, বিনোদন, আন্তর্জাতিক এবং আরও অনেক কিছু।',
     url: '/'
   });
@@ -217,8 +217,8 @@ export function generateHomeMetaTags() {
 export function generateSearchMetaTags(query?: string) {
   const title = query ? `"${query}" এর ফলাফল` : 'অনুসন্ধান';
   const description = query 
-    ? `"${query}" এর সার্চ ফলাফল - প্রথম আলো` 
-    : 'প্রথম আলো অনুসন্ধান পেজ - খবর, নিবন্ধ এবং আরও অনেক কিছু খুঁজুন';
+    ? `"${query}" এর সার্চ ফলাফল` 
+    : 'অনুসন্ধান পেজ - খবর, নিবন্ধ এবং আরও অনেক কিছু খুঁজুন';
     
   return generateSocialMetaTags({
     title,

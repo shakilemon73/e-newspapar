@@ -142,7 +142,7 @@ const ProfilePage = () => {
   return (
     <>
       <Helmet>
-        <title>প্রোফাইল | প্রথম আলো</title>
+        <title>প্রোফাইল | </title>
       </Helmet>
 
       <div className="container mx-auto px-4 py-12">

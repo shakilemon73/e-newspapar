@@ -2369,7 +2369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!existingSettings || existingSettings.length === 0) {
           console.log('Inserting default settings...');
           const defaultSettings = [
-            { setting_key: 'siteName', setting_value: 'প্রথম আলো', description: 'Website name' },
+            { setting_key: 'siteName', setting_value: '', description: 'Website name' },
             { setting_key: 'siteDescription', setting_value: 'বাংলাদেশের শীর্ষ বাংলা সংবাদপত্র', description: 'Website description' },
             { setting_key: 'siteUrl', setting_value: 'https://example.com', description: 'Website URL' },
             { setting_key: 'logoUrl', setting_value: '', description: 'Website logo URL' },
@@ -2390,7 +2390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Use global settings first, then fallback to defaults
       let settings = {
-        siteName: 'প্রথম আলো',
+        siteName: '',
         siteDescription: 'বাংলাদেশের শীর্ষ বাংলা সংবাদপত্র',
         siteUrl: 'https://example.com',
         logoUrl: '',
@@ -4038,9 +4038,9 @@ ON CONFLICT DO NOTHING;
     try {
       // Get SEO settings from Supabase
       const seoSettings = {
-        siteName: 'প্রথম আলো',
+        siteName: '',
         siteDescription: 'বাংলাদেশের শীর্ষ সংবাদ পত্রিকা',
-        siteKeywords: 'বাংলাদেশ, সংবাদ, খবর, প্রথম আলো',
+        siteKeywords: 'বাংলাদেশ, সংবাদ, খবর',
         canonicalUrl: 'https://prothomalo.com',
         ogImageUrl: '/og-default-image.svg',
         twitterHandle: '@prothomaloBD',
@@ -4085,7 +4085,7 @@ ON CONFLICT DO NOTHING;
         keywordCount: 1890,
         topKeywords: [
           { keyword: 'বাংলাদেশ সংবাদ', position: 3, clicks: 450 },
-          { keyword: 'প্রথম আলো', position: 1, clicks: 890 },
+          { keyword: 'বাংলা সংবাদ', position: 1, clicks: 890 },
           { keyword: 'রাজনীতি', position: 5, clicks: 320 }
         ],
         topPages: [
@@ -4108,15 +4108,15 @@ ON CONFLICT DO NOTHING;
         {
           id: '1',
           pageName: 'হোম পেজ',
-          title: 'প্রথম আলো - বাংলাদেশের শীর্ষ সংবাদ পত্রিকা',
+          title: 'বাংলাদেশের শীর্ষ সংবাদ পত্রিকা',
           description: 'বাংলাদেশের সর্বশেষ সংবাদ, রাজনীতি, খেলা, বিনোদন এবং আরও অনেক কিছু',
-          keywords: 'বাংলাদেশ, সংবাদ, খবর, প্রথম আলো',
+          keywords: 'বাংলাদেশ, সংবাদ, খবর',
           isOptimized: true
         },
         {
           id: '2',
           pageName: 'রাজনীতি',
-          title: 'রাজনীতি - প্রথম আলো',
+          title: 'রাজনীতি',
           description: 'বাংলাদেশের রাজনৈতিক সংবাদ এবং বিশ্লেষণ',
           keywords: 'রাজনীতি, বাংলাদেশ, সংবাদ',
           isOptimized: false
@@ -4564,7 +4564,7 @@ ON CONFLICT DO NOTHING;
       
       // Add default values if not present
       const defaultConfig = {
-        app_name: 'প্রথম আলো',
+        app_name: '',
         current_version: 'v2.1.0',
         minimum_version: 'v2.0.0',
         latest_version: 'v2.1.0',

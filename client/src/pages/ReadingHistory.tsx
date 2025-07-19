@@ -118,7 +118,7 @@ const ReadingHistory = () => {
   return (
     <>
       <Helmet>
-        <title>পড়ার ইতিহাস | প্রথম আলো</title>
+        <title>পড়ার ইতিহাস | </title>
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

@@ -28,7 +28,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
       <div className="bg-black/50 fixed inset-0" onClick={onToggle} />
       <nav className="bg-white dark:bg-gray-900 fixed left-0 top-0 h-full w-80 shadow-xl">
         <div className="p-4">
-          <h2 className="text-2xl font-bold mb-6">প্রথম আলো</h2>
+          <h2 className="text-2xl font-bold mb-6"></h2>
           <ul className="space-y-4">
             {categories.map(category => (
               <li key={category.id}>

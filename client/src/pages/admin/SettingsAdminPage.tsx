@@ -65,7 +65,7 @@ interface SystemSettings {
 }
 
 const defaultSettings: SystemSettings = {
-  siteName: 'প্রথম আলো',
+  siteName: '',
   siteDescription: 'বাংলাদেশের শীর্ষ বাংলা সংবাদপত্র',
   siteUrl: 'https://example.com',
   logoUrl: '',
@@ -331,7 +331,7 @@ export default function SettingsAdminPage() {
                         id="siteName"
                         value={settings.siteName}
                         onChange={(e) => handleSettingChange('general', 'siteName', e.target.value)}
-                        placeholder="প্রথম আলো"
+                        placeholder=""
                       />
                       <p className="text-xs text-gray-500 mt-1">
                         Changing this will update the site name in all 81 places across your website

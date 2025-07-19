@@ -122,7 +122,7 @@ export function AdminOnlyLayout({ children }: AdminOnlyLayoutProps) {
                     Admin Panel
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    প্রথম আলো Management
+                     Management
                   </p>
                 </div>
               </div>

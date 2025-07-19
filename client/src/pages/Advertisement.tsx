@@ -220,7 +220,7 @@ export default function Advertisement() {
         {/* Page Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-4">বিজ্ঞাপন</h1>
-          <p className="text-gray-600">প্রথম আলোতে আপনার ব্যবসার প্রচার করুন</p>
+          <p className="text-gray-600">তে আপনার ব্যবসার প্রচার করুন</p>
         </div>
 
         {/* Advertisement Packages */}
@@ -331,7 +331,7 @@ export default function Advertisement() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Users className="h-6 w-6 text-orange-500" />
-            কেন প্রথম আলোতে বিজ্ঞাপন দিবেন?
+            কেন তে বিজ্ঞাপন দিবেন?
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

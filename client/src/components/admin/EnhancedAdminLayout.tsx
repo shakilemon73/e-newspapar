@@ -526,7 +526,7 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
                 </div>
                 <div>
                   <h1 className="text-lg font-semibold text-gray-900 dark:text-white bangla-text">
-                    {t('dashboard-title', 'প্রথম আলো Admin', 'প্রথম আলো অ্যাডমিন')}
+                    {t('dashboard-title', ' Admin', ' অ্যাডমিন')}
                   </h1>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {t('news-management', 'News Management System', 'সংবাদ ব্যবস্থাপনা সিস্টেম')}

@@ -14,7 +14,7 @@ import { Facebook, Twitter, MessageCircle, Send, Instagram, ExternalLink, Copy, 
  * for Facebook, Twitter, WhatsApp, Telegram, Instagram, and other platforms
  */
 const SocialMediaTest = () => {
-  const [customTitle, setCustomTitle] = useState('প্রথম আলো - সোশ্যাল মিডিয়া টেস্ট');
+  const [customTitle, setCustomTitle] = useState(' - সোশ্যাল মিডিয়া টেস্ট');
   const [customDescription, setCustomDescription] = useState('সোশ্যাল মিডিয়া শেয়ারিং ফিচার টেস্ট করার জন্য এই পেজটি ব্যবহার করুন। WhatsApp, Telegram, Instagram, Facebook এবং Twitter এ লিংক শেয়ার করে দেখুন।');
   const [customImage, setCustomImage] = useState('/og-default-image.svg');
   const [copied, setCopied] = useState(false);
@@ -290,7 +290,7 @@ const SocialMediaTest = () => {
                       )}
                     </div>
                     <div className="p-3 border-t">
-                      <div className="text-sm text-gray-600 uppercase tracking-wide">প্রথম আলো</div>
+                      <div className="text-sm text-gray-600 uppercase tracking-wide"></div>
                       <div className="font-semibold text-gray-900 mt-1">{customTitle}</div>
                       <div className="text-sm text-gray-600 mt-1 line-clamp-2">{customDescription}</div>
                     </div>
@@ -346,7 +346,7 @@ const SocialMediaTest = () => {
                   <li>✅ সঠিক শিরোনাম দেখাচ্ছে</li>
                   <li>✅ বর্ণনা সম্পূর্ণ দেখাচ্ছে</li>
                   <li>✅ ছবি লোড হচ্ছে (1200x630px)</li>
-                  <li>✅ সাইটের নাম "প্রথম আলো" দেখাচ্ছে</li>
+                  <li>✅ সাইটের নাম "" দেখাচ্ছে</li>
                   <li>✅ URL সঠিক আছে</li>
                 </ul>
               </div>

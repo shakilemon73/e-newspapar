@@ -135,7 +135,7 @@ const SavedArticles = () => {
   return (
     <>
       <Helmet>
-        <title>সংরক্ষিত আর্টিকেল | প্রথম আলো</title>
+        <title>সংরক্ষিত আর্টিকেল | </title>
       </Helmet>
 
       <div className="container mx-auto px-4 py-8">

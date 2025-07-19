@@ -64,7 +64,7 @@ const SetAdminRole = () => {
   return (
     <>
       <Helmet>
-        <title>Set Admin Role | প্রথম আলো</title>
+        <title>Set Admin Role | </title>
       </Helmet>
 
       <div className="container mx-auto px-4 py-12">

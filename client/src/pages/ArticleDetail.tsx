@@ -598,7 +598,7 @@ const ArticleDetail = () => {
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${article.title} - প্রথম আলো</title>
+        <title>${article.title} - </title>
         <style>
           @page {
             size: A4;
@@ -726,7 +726,7 @@ const ArticleDetail = () => {
       </head>
       <body>
         <div class="header">
-          <div class="logo">প্রথম আলো</div>
+          <div class="logo"></div>
           <div class="website-info">বাংলাদেশের অগ্রণী অনলাইন সংবাদপত্র</div>
           <div class="website-info">www.prothomalo.com</div>
         </div>
@@ -748,8 +748,8 @@ const ArticleDetail = () => {
         </div>
         
         <div class="footer">
-          <p><strong>প্রথম আলো</strong> - সত্যের পথে, শান্তির পথে</p>
-          <p>© ${new Date().getFullYear()} প্রথম আলো। সমস্ত অধিকার সংরক্ষিত।</p>
+          <p><strong></strong> - সত্যের পথে, শান্তির পথে</p>
+          <p>© ${new Date().getFullYear()} । সমস্ত অধিকার সংরক্ষিত।</p>
           <div class="print-info">
             <p>প্রিন্ট করা হয়েছে: ${new Date().toLocaleString('bn-BD')}</p>
             <p>URL: ${window.location.href}</p>
@@ -1247,7 +1247,7 @@ const ArticleDetail = () => {
     slug: article.slug,
     published_at: article.published_at,
     category: article.category,
-    author: article.author || 'প্রথম আলো সংবাদদাতা'
+    author: article.author || ' সংবাদদাতা'
   });
 
   const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
