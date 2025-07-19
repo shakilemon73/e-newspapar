@@ -138,11 +138,10 @@ export default function SettingsAdminPage() {
   // Save settings mutation
   const saveSettingsMutation = useMutation({
     mutationFn: async (settingsData: SystemSettings) => {
-      const response = await apiRequest('POST', '/api/admin/settings', settingsData);
-      if (!response.ok) {
-        throw new Error('Failed to save settings');
-      }
-      return response.json();
+      return await apiRequest('/api/admin/settings', {
+        method: 'POST',
+        body: JSON.stringify(settingsData)
+      });
     },
     onSuccess: () => {
       toast({
@@ -191,12 +190,13 @@ export default function SettingsAdminPage() {
         const base64Data = e.target?.result as string;
         
         try {
-          const response = await apiRequest('POST', '/api/admin/upload-logo', {
-            logoData: base64Data,
-            filename: `logo-${Date.now()}-${file.name}`
+          const result = await apiRequest('/api/admin/upload-logo', {
+            method: 'POST',
+            body: JSON.stringify({
+              logoData: base64Data,
+              filename: `logo-${Date.now()}-${file.name}`
+            })
           });
-          
-          const result = await response.json();
           
           if (result.success) {
             setSettings(prev => ({ ...prev, logoUrl: result.logoUrl }));
