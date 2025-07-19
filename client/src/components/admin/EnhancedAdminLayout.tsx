@@ -42,7 +42,16 @@ import {
   Sun,
   Folder,
   Image,
-  Newspaper
+  Newspaper,
+  MonitorPlay,
+  Mic,
+  Eye,
+  Star,
+  Clock,
+  BookOpen,
+  Archive,
+  Palette,
+  Code
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -93,8 +102,8 @@ const navSections = [
   },
   {
     id: 'content',
-    enTitle: 'Content',
-    bnTitle: 'কন্টেন্ট',
+    enTitle: 'Content Management',
+    bnTitle: 'কন্টেন্ট ব্যবস্থাপনা',
     items: [
       {
         id: 'categories',
@@ -111,11 +120,11 @@ const navSections = [
         bnLabel: 'ভিডিও'
       },
       {
-        id: 'images',
-        href: '/admin/images',
-        icon: Image,
-        enLabel: 'Images',
-        bnLabel: 'ছবি'
+        id: 'audio-articles',
+        href: '/admin/audio-articles',
+        icon: Headphones,
+        enLabel: 'Audio Articles',
+        bnLabel: 'অডিও নিবন্ধ'
       },
       {
         id: 'epapers',
@@ -123,41 +132,174 @@ const navSections = [
         icon: Newspaper,
         enLabel: 'E-Papers',
         bnLabel: 'ই-পেপার'
+      },
+      {
+        id: 'images',
+        href: '/admin/images',
+        icon: Image,
+        enLabel: 'Images',
+        bnLabel: 'ছবি'
+      }
+    ]
+  },
+  {
+    id: 'engagement',
+    enTitle: 'User Engagement',
+    bnTitle: 'ব্যবহারকারী সম্পৃক্ততা',
+    items: [
+      {
+        id: 'comments',
+        href: '/admin/comments',
+        icon: MessageSquare,
+        enLabel: 'Comments',
+        bnLabel: 'মন্তব্য'
+      },
+      {
+        id: 'social-media',
+        href: '/admin/social-media',
+        icon: Share2,
+        enLabel: 'Social Media',
+        bnLabel: 'সামাজিক মিডিয়া'
+      },
+      {
+        id: 'email-notifications',
+        href: '/admin/email-notifications',
+        icon: Mail,
+        enLabel: 'Email Notifications',
+        bnLabel: 'ইমেইল বিজ্ঞপ্তি'
+      },
+      {
+        id: 'user-dashboard',
+        href: '/admin/user-dashboard',
+        icon: Users,
+        enLabel: 'User Dashboard',
+        bnLabel: 'ব্যবহারকারী ড্যাশবোর্ড'
+      }
+    ]
+  },
+  {
+    id: 'analytics',
+    enTitle: 'Analytics & Reports',
+    bnTitle: 'বিশ্লেষণ ও প্রতিবেদন',
+    items: [
+      {
+        id: 'analytics',
+        href: '/admin/analytics',
+        icon: BarChart3,
+        enLabel: 'Site Analytics',
+        bnLabel: 'সাইট বিশ্লেষণ'
+      },
+      {
+        id: 'trending',
+        href: '/admin/trending-analytics',
+        icon: TrendingUp,
+        enLabel: 'Trending Topics',
+        bnLabel: 'ট্রেন্ডিং বিষয়'
+      },
+      {
+        id: 'performance',
+        href: '/admin/performance',
+        icon: Activity,
+        enLabel: 'Performance',
+        bnLabel: 'কর্মক্ষমতা'
+      }
+    ]
+  },
+  {
+    id: 'marketing',
+    enTitle: 'Marketing & SEO',
+    bnTitle: 'মার্কেটিং ও এসইও',
+    items: [
+      {
+        id: 'advertisements',
+        href: '/admin/advertisements',
+        icon: DollarSign,
+        enLabel: 'Advertisements',
+        bnLabel: 'বিজ্ঞাপন'
+      },
+      {
+        id: 'seo',
+        href: '/admin/seo',
+        icon: Search,
+        enLabel: 'SEO Management',
+        bnLabel: 'এসইও ব্যবস্থাপনা'
+      },
+      {
+        id: 'search-management',
+        href: '/admin/search-management',
+        icon: Eye,
+        enLabel: 'Search Management',
+        bnLabel: 'অনুসন্ধান ব্যবস্থাপনা'
       }
     ]
   },
   {
     id: 'system',
-    enTitle: 'System',
-    bnTitle: 'সিস্টেম',
+    enTitle: 'System & Security',
+    bnTitle: 'সিস্টেম ও নিরাপত্তা',
     items: [
       {
         id: 'users',
         href: '/admin/users',
         icon: Users,
-        enLabel: 'Users',
-        bnLabel: 'ব্যবহারকারী'
+        enLabel: 'User Management',
+        bnLabel: 'ব্যবহারকারী ব্যবস্থাপনা'
       },
       {
-        id: 'analytics',
-        href: '/admin/analytics',
-        icon: BarChart3,
-        enLabel: 'Analytics',
-        bnLabel: 'বিশ্লেষণ'
+        id: 'security',
+        href: '/admin/security',
+        icon: Shield,
+        enLabel: 'Security & Access',
+        bnLabel: 'নিরাপত্তা ও অ্যাক্সেস'
       },
+      {
+        id: 'database',
+        href: '/admin/database',
+        icon: Database,
+        enLabel: 'Database Management',
+        bnLabel: 'ডাটাবেস ব্যবস্থাপনা'
+      },
+      {
+        id: 'algorithms',
+        href: '/admin/algorithms',
+        icon: Bot,
+        enLabel: 'Advanced Algorithms',
+        bnLabel: 'উন্নত অ্যালগরিদম'
+      }
+    ]
+  },
+  {
+    id: 'settings',
+    enTitle: 'Settings & Config',
+    bnTitle: 'সেটিংস ও কনফিগারেশন',
+    items: [
       {
         id: 'weather',
         href: '/admin/weather',
         icon: Cloud,
-        enLabel: 'Weather',
-        bnLabel: 'আবহাওয়া'
+        enLabel: 'Weather Management',
+        bnLabel: 'আবহাওয়া ব্যবস্থাপনা'
+      },
+      {
+        id: 'mobile-app',
+        href: '/admin/mobile-app',
+        icon: Smartphone,
+        enLabel: 'Mobile App',
+        bnLabel: 'মোবাইল অ্যাপ'
+      },
+      {
+        id: 'footer-pages',
+        href: '/admin/footer-pages',
+        icon: BookOpen,
+        enLabel: 'Footer Pages',
+        bnLabel: 'ফুটার পৃষ্ঠা'
       },
       {
         id: 'settings',
         href: '/admin/settings',
         icon: Settings,
-        enLabel: 'Settings',
-        bnLabel: 'সেটিংস'
+        enLabel: 'General Settings',
+        bnLabel: 'সাধারণ সেটিংস'
       }
     ]
   }
