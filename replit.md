@@ -175,6 +175,8 @@ The system is built to handle Bengali content with proper font support and URL s
 - ✅ **API Integration**: Corrected API request format for admin settings with proper authentication
 - ✅ **Login Hooks Fix**: Resolved React hooks error in admin login by removing conflicting useAdminAuth usage
 - ✅ **Authentication Flow**: Streamlined admin login flow to prevent hooks rendering issues
+- ✅ **Settings API Fix**: Fixed API request format error for admin settings save functionality
+- ✅ **Site Name Change**: Admin can now successfully change site name from "প্রথম আলো" to custom name
 - ✅ **Dependencies Verification**: All required packages installed and functional (tsx, express, supabase, etc.)
 - ✅ **Environment Configuration**: Proper TypeScript configuration, Vite build setup, and path aliases configured
 - ✅ **Performance Optimization**: Server running efficiently on port 5000 with proper hot module replacement
