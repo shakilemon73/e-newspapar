@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { SimplifiedAdminLayout } from "@/components/admin/SimplifiedAdminLayout";
+import { EnhancedAdminLayout } from "@/components/admin/EnhancedAdminLayout";
 import { 
   TrendingUp, 
   Users, 
@@ -248,19 +248,19 @@ export default function EnhancedAdminDashboard() {
 
   if (statsError) {
     return (
-      <SimplifiedAdminLayout>
+      <EnhancedAdminLayout>
         <Alert className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             {t('dashboard-error', 'Unable to load dashboard data. Please try again.', 'ড্যাশবোর্ড ডেটা লোড করতে অক্ষম। আবার চেষ্টা করুন।')}
           </AlertDescription>
         </Alert>
-      </SimplifiedAdminLayout>
+      </EnhancedAdminLayout>
     );
   }
 
   return (
-    <SimplifiedAdminLayout>
+    <EnhancedAdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -533,6 +533,6 @@ export default function EnhancedAdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
-    </SimplifiedAdminLayout>
+    </EnhancedAdminLayout>
   );
 }

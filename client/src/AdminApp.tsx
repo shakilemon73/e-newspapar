@@ -37,7 +37,6 @@ import PerformanceMonitoringPage from "@/pages/admin/PerformanceMonitoringPage";
 import MobileAppManagementPage from "@/pages/admin/MobileAppManagementPage";
 import AdvertisementManagementPage from "@/pages/admin/AdvertisementManagementPage";
 import SecurityAccessControlPage from "@/pages/admin/SecurityAccessControlPage";
-import { ContentHubWorkspace, AudienceCenterWorkspace, SystemControlWorkspace, BusinessToolsWorkspace } from "@/components/admin/WorkspacePages";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -243,31 +242,6 @@ function AdminRouter() {
       <Route path="/admin/security">
         <AdminRouteGuard>
           <SecurityAccessControlPage />
-        </AdminRouteGuard>
-      </Route>
-
-      {/* New Workspace Routes */}
-      <Route path="/admin/content-hub">
-        <AdminRouteGuard>
-          <ContentHubWorkspace />
-        </AdminRouteGuard>
-      </Route>
-
-      <Route path="/admin/audience-center">
-        <AdminRouteGuard>
-          <AudienceCenterWorkspace />
-        </AdminRouteGuard>
-      </Route>
-
-      <Route path="/admin/system-control">
-        <AdminRouteGuard>
-          <SystemControlWorkspace />
-        </AdminRouteGuard>
-      </Route>
-
-      <Route path="/admin/business-tools">
-        <AdminRouteGuard>
-          <BusinessToolsWorkspace />
         </AdminRouteGuard>
       </Route>
       
