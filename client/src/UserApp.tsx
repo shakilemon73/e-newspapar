@@ -61,9 +61,9 @@ function UserRouter() {
       <Route path="/social-media-test" component={SocialMediaTest} />
       <Route path="/unused-tables-demo" component={UnusedTablesDemo} />
       
-      {/* User Authentication Routes */}
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
+      {/* User Authentication Routes - Consolidated to AuthPage */}
+      <Route path="/login" component={AuthPage} />
+      <Route path="/register" component={AuthPage} />
       <Route path="/auth" component={AuthPage} />
       <Route path="/profile" component={Profile} />
       <Route path="/dashboard" component={UserDashboard} />

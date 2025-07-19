@@ -16,10 +16,9 @@ import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 // User dashboard tables are now set up directly in Supabase
 import { setupUserDashboardAPI } from './user-dashboard-api';
 import { setupCompleteTableAPI, populateAllTables } from './complete-table-implementation';
-import { setupFixedAPI } from './auth-fixes';
+import { setupFixedAPI, requireAdmin } from './auth-fixes';
 import { weatherService } from './weather-service';
 import { weatherScheduler } from './weather-scheduler';
-import { adminLogin, adminLogout, requireAdminSession, checkAdminSession } from './admin-auth';
 
 
 // Validation schemas for Supabase
@@ -2428,13 +2427,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // New dedicated admin authentication system (completely separate from user auth)
-  app.post(`${apiPrefix}/admin/login`, adminLogin);
-  app.post(`${apiPrefix}/admin/logout`, adminLogout);
-  app.get(`${apiPrefix}/admin/session`, checkAdminSession);
-
-  // Updated admin settings POST with session auth
-  app.post(`${apiPrefix}/admin/settings`, requireAdminSession, async (req, res) => {
+  // Admin settings POST with Supabase auth
+  app.post(`${apiPrefix}/admin/settings`, requireAdmin, async (req, res) => {
     try {
       const settingsData = req.body;
       console.log('Saving settings:', Object.keys(settingsData));

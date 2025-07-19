@@ -42,6 +42,30 @@ export const requireAuth = async (req: Request, res: Response, next: Function) =
   }
 };
 
+// Admin-only middleware - requires Supabase auth with admin role
+export const requireAdmin = async (req: Request, res: Response, next: Function) => {
+  // First verify authentication
+  await new Promise((resolve, reject) => {
+    requireAuth(req, res, (error: any) => {
+      if (error) reject(error);
+      else resolve(null);
+    });
+  }).catch(() => {
+    return; // Error already handled by requireAuth
+  });
+  
+  // Check if user has admin role
+  const user = (req as any).user;
+  if (!user || user.role !== 'admin') {
+    return res.status(403).json({ 
+      error: 'Admin access required',
+      message: 'অ্যাডমিন অনুমতি প্রয়োজন'
+    });
+  }
+  
+  next();
+};
+
 // Fix broken API endpoints
 export function setupFixedAPI(app: Express) {
   const apiPrefix = '/api';

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
@@ -35,15 +35,29 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const AuthPage = () => {
-  const [activeTab, setActiveTab] = useState<string>('login');
+  const [location, setLocation] = useLocation();
   const { user, signIn, signUp, resetPassword, loading } = useSupabaseAuth();
-  const [, setLocation] = useLocation();
+  
+  // Determine active tab based on current route
+  const getActiveTab = () => {
+    if (location === '/register') return 'register';
+    if (location === '/login') return 'login';
+    return 'login'; // default
+  };
+  
+  const [activeTab, setActiveTab] = useState<string>(getActiveTab());
 
-  // Redirect if already logged in
-  if (user) {
-    setLocation('/');
-    return null;
-  }
+  // Update tab when route changes
+  useEffect(() => {
+    setActiveTab(getActiveTab());
+  }, [location]);
+
+  // Redirect if already logged in to dashboard
+  useEffect(() => {
+    if (user) {
+      setLocation('/dashboard');
+    }
+  }, [user, setLocation]);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -73,6 +87,7 @@ const AuthPage = () => {
   const onLoginSubmit = async (values: LoginFormValues) => {
     try {
       await signIn(values.email, values.password);
+      // Redirect handled by useEffect when user state changes
     } catch (error) {
       console.error('Login error:', error);
     }
@@ -83,7 +98,7 @@ const AuthPage = () => {
       await signUp(values.email, values.password, {
         name: values.name,
       });
-      setActiveTab('login');
+      // Redirect handled by useEffect when user state changes
     } catch (error) {
       console.error('Register error:', error);
     }
@@ -108,7 +123,10 @@ const AuthPage = () => {
         <div className="flex flex-col md:flex-row gap-8 items-center">
           {/* Left column: Auth forms */}
           <div className="w-full md:w-1/2 max-w-md mx-auto">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={(value) => {
+              setActiveTab(value);
+              setLocation(`/${value}`);
+            }} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">লগইন</TabsTrigger>
                 <TabsTrigger value="register">রেজিস্ট্রেশন</TabsTrigger>
