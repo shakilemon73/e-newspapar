@@ -2433,11 +2433,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { username, password } = req.body;
       
       // Simple admin credentials for testing
-      if (username === 'admin' && password === 'admin123') {
+      if ((username === 'admin' && password === 'admin123') || 
+          (username === 'shakilemon73@gmail.com' && password === 'admin123')) {
         return res.json({ 
           success: true, 
           token: 'admin-session-token',
-          user: { role: 'admin', email: 'admin@site.com' }
+          user: { role: 'admin', email: username.includes('@') ? username : 'admin@site.com' }
         });
       } else {
         return res.status(401).json({ error: 'Invalid credentials' });
