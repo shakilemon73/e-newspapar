@@ -28,6 +28,8 @@ export const Header = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [siteName, setSiteName] = useState<string>('প্রথম আলো');
+  const [logoUrl, setLogoUrl] = useState<string>('');
   const [location, setLocation] = useLocation();
   const { user, signOut, loading } = useSupabaseAuth();
 
@@ -44,7 +46,7 @@ export const Header = () => {
     // Using Bengali locale
     setCurrentDate(today.toLocaleDateString('bn-BD', options));
     
-    // Fetch categories
+    // Fetch categories and site settings
     const fetchCategories = async () => {
       try {
         const response = await fetch('/api/categories');
@@ -57,7 +59,21 @@ export const Header = () => {
       }
     };
     
+    const fetchSiteSettings = async () => {
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          setSiteName(data.siteName || 'প্রথম আলো');
+          setLogoUrl(data.logoUrl || '');
+        }
+      } catch (error) {
+        console.error('Error fetching site settings:', error);
+      }
+    };
+    
     fetchCategories();
+    fetchSiteSettings();
     
     // Close mobile menu when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
@@ -195,8 +211,21 @@ export const Header = () => {
           <div className="flex items-center justify-between py-4">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="headline gradient-text hover:scale-105 transition-transform duration-200">
-                প্রথম আলো
+              <Link href="/" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200">
+                {logoUrl && (
+                  <img 
+                    src={logoUrl} 
+                    alt={siteName}
+                    className="h-10 w-auto object-contain"
+                    onError={(e) => {
+                      // Hide logo if it fails to load
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                )}
+                <span className="headline gradient-text">
+                  {siteName}
+                </span>
               </Link>
             </div>
             
