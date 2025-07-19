@@ -2285,7 +2285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin role setting endpoint (for initial setup)
+  // Admin role setting endpoint (for initial setup) - No auth required for initial setup
   app.post(`${apiPrefix}/admin/set-role`, async (req, res) => {
     try {
       const { email, role } = req.body;

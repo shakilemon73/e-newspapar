@@ -31,7 +31,7 @@ const SetAdminRole = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: adminEmail,
+          email: adminEmail.trim(),
           role: 'admin'
         }),
       });

@@ -3,8 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
-import { AdminSessionProvider } from "@/hooks/use-admin-session";
-import { useAdminSession } from "@/hooks/use-admin-session";
+import { SupabaseAdminAuthProvider } from "@/hooks/use-supabase-admin-auth";
+import { AuthProvider as SupabaseAuthProvider } from "@/hooks/use-supabase-auth";
+import { useSupabaseAdminAuth } from "@/hooks/use-supabase-admin-auth";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -54,14 +55,14 @@ function AdminNotFound() {
 
 // Admin Route Protection
 function AdminRouteGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAdminSession();
+  const { isAdmin, loading } = useSupabaseAdminAuth();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!loading && !isAdmin) {
       setLocation('/admin-login');
     }
-  }, [loading, isAuthenticated, setLocation]);
+  }, [loading, isAdmin, setLocation]);
 
   if (loading) {
     return (
@@ -74,7 +75,7 @@ function AdminRouteGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAdmin) {
     return null;
   }
 
@@ -279,12 +280,14 @@ export default function AdminApp() {
     <ThemeProvider>
       <LanguageProvider>
         <SiteSettingsProvider>
-          <AdminSessionProvider>
-            <div className="min-h-screen bg-background">
-              <AdminRouter />
-              <Toaster />
-            </div>
-          </AdminSessionProvider>
+          <SupabaseAuthProvider>
+            <SupabaseAdminAuthProvider>
+              <div className="min-h-screen bg-background">
+                <AdminRouter />
+                <Toaster />
+              </div>
+            </SupabaseAdminAuthProvider>
+          </SupabaseAuthProvider>
         </SiteSettingsProvider>
       </LanguageProvider>
     </ThemeProvider>
