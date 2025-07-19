@@ -21,6 +21,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/s
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { SiteName } from '@/hooks/use-global-site-name';
 
 interface Category {
   id: number;
@@ -100,7 +101,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
           {/* Header */}
           <div className="p-4 border-b border-border bg-primary/5">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-primary">প্রথম আলো</h2>
+              <h2 className="text-xl font-bold text-primary"><SiteName /></h2>
               <Button
                 variant="ghost"
                 size="icon"
@@ -233,7 +234,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
           {/* Footer */}
           <div className="p-4 border-t border-border bg-muted/10">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span>© ২০২৫ প্রথম আলো</span>
+              <span>© ২০২৫ <SiteName /></span>
               <div className="flex space-x-2">
                 <Link href="/privacy-policy" onClick={closeNavigation}>
                   <span className="hover:text-primary transition-colors cursor-pointer">গোপনীয়তা</span>

@@ -45,6 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DateFormatter } from './DateFormatter';
 import { ReadingTimeEstimator } from './AccessibilityEnhancements';
 import { EnhancedArticleCard } from './UXEnhancementSuite';
+import { SiteName } from '@/hooks/use-global-site-name';
 
 // Personalized Recommendations Widget
 const PersonalizedRecommendationsWidget: React.FC = () => {
@@ -417,7 +418,7 @@ export const EnhancedHomepage: React.FC = () => {
         <div className="container-modern py-12">
           <div className="text-center space-y-4">
             <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
-              প্রথম আলো
+              <SiteName />
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র

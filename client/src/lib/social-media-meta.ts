@@ -22,7 +22,7 @@ export interface SocialMetaConfig {
  * Default configuration for the website
  */
 const DEFAULT_CONFIG: Partial<SocialMetaConfig> = {
-  siteName: 'প্রথম আলো',
+  siteName: (typeof window !== 'undefined' && (window as any).globalSiteSettings?.siteName) || 'প্রথম আলো',
   image: '/og-default-image.svg', // Default fallback image
   type: 'website',
   twitterHandle: '@prothomalo',

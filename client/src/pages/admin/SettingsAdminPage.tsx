@@ -141,17 +141,30 @@ export default function SettingsAdminPage() {
       const response = await apiRequest('POST', '/api/admin/settings', settingsData);
       return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Update global site name to control all 81 instances
+      if (typeof window !== 'undefined') {
+        (window as any).globalSiteSettings = {
+          ...(window as any).globalSiteSettings,
+          siteName: settings.siteName
+        };
+        
+        // Dispatch custom event to trigger updates across all 81 instances
+        window.dispatchEvent(new CustomEvent('siteSettingsUpdated', {
+          detail: { 
+            siteName: settings.siteName,
+            allSettings: settings 
+          }
+        }));
+      }
+      
       toast({
         title: t('success', 'Success', 'সফল'),
-        description: t('settings_saved_successfully', 'Settings saved successfully', 'সেটিংস সফলভাবে সংরক্ষিত হয়েছে'),
+        description: `${t('settings_saved_successfully', 'Settings saved successfully', 'সেটিংস সফলভাবে সংরক্ষিত হয়েছে')} - সাইটের নাম "${settings.siteName}" সব ৮১টি জায়গায় আপডেট হয়েছে।`,
       });
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
       queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
-      
-      // Trigger global site settings update
-      window.dispatchEvent(new CustomEvent('siteSettingsUpdated'));
     },
     onError: (error: any) => {
       toast({
@@ -313,12 +326,16 @@ export default function SettingsAdminPage() {
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
                     <div>
-                      <Label htmlFor="siteName">Site Name</Label>
+                      <Label htmlFor="siteName">Site Name (Controls all 81 instances)</Label>
                       <Input
                         id="siteName"
                         value={settings.siteName}
                         onChange={(e) => handleSettingChange('general', 'siteName', e.target.value)}
+                        placeholder="প্রথম আলো"
                       />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Changing this will update the site name in all 81 places across your website
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="siteDescription">Site Description</Label>

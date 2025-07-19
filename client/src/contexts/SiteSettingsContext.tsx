@@ -74,7 +74,11 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
     fetchSettings();
 
     // Listen for custom events to refresh settings
-    const handleSettingsUpdate = () => {
+    const handleSettingsUpdate = (event: any) => {
+      console.log('Site settings updated globally:', event.detail);
+      if (event.detail?.siteName) {
+        setSettings(prev => ({ ...prev, siteName: event.detail.siteName }));
+      }
       refreshSettings();
     };
 
