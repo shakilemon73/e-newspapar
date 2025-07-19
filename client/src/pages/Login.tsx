@@ -22,10 +22,14 @@ const Login = () => {
   const { user, signIn, loading } = useSupabaseAuth();
   const [, setLocation] = useLocation();
 
-  // Redirect if already logged in
+  // Redirect based on user role
   useEffect(() => {
     if (user) {
-      setLocation('/');
+      if (user.user_metadata?.role === 'admin') {
+        setLocation('/admin-dashboard');
+      } else {
+        setLocation('/');
+      }
     }
   }, [user, setLocation]);
 
@@ -40,7 +44,7 @@ const Login = () => {
   const onSubmit = async (values: LoginFormValues) => {
     try {
       await signIn(values.email, values.password);
-      setLocation('/dashboard');
+      // Let useEffect handle the redirect based on user role
     } catch (error) {
       console.error('Login error:', error);
     }

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield } from 'lucide-react';
+import { Shield, LogOut } from 'lucide-react';
 
 const adminLoginSchema = z.object({
   email: z.string().email('সঠিক ইমেইল প্রদান করুন'),
@@ -20,7 +20,7 @@ const adminLoginSchema = z.object({
 type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 const AdminLogin = () => {
-  const { user, signIn, loading } = useSupabaseAuth();
+  const { user, signIn, signOut, loading } = useSupabaseAuth();
   const [, setLocation] = useLocation();
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -30,8 +30,8 @@ const AdminLogin = () => {
       if (user.user_metadata?.role === 'admin') {
         setLocation('/admin-dashboard');
       } else if (user && !loading) {
-        // Only show error if user is logged in but not admin
-        setLoginError('আপনার অ্যাডমিন অ্যাক্সেস নেই। কেবল অ্যাডমিনরা এই পেজে প্রবেশ করতে পারেন।');
+        // User is logged in but not an admin - show clear message
+        setLoginError('আপনি একজন সাধারণ ব্যবহারকারী হিসেবে লগইন করেছেন। অ্যাডমিন অ্যাক্সেসের জন্য আপনাকে আগে লগআউট করতে হবে এবং অ্যাডমিন অ্যাকাউন্ট দিয়ে লগইন করতে হবে।');
       }
     }
   }, [loading, user, setLocation]);
@@ -49,11 +49,21 @@ const AdminLogin = () => {
       setLoginError(null);
       await signIn(values.email, values.password);
       
-      // Let the useEffect handle the redirect based on updated user state
-      // No need to check isAdmin here as it will be handled by the useEffect
+      // After successful login, check the user role in the next render cycle
+      // The useEffect will handle the proper redirection based on role
     } catch (error) {
       console.error('Admin login error:', error);
-      setLoginError('লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      setLoginError('লগইনে সমস্যা হয়েছে। দয়া করে আপনার অ্যাডমিন ইমেইল এবং পাসওয়ার্ড সঠিক কিনা যাচাই করুন।');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setLoginError(null);
+      setLocation('/admin-login');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
@@ -79,6 +89,19 @@ const AdminLogin = () => {
               {loginError && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertDescription>{loginError}</AlertDescription>
+                  {user && user.user_metadata?.role !== 'admin' && (
+                    <div className="mt-3">
+                      <Button 
+                        onClick={handleLogout} 
+                        variant="outline" 
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        লগআউট করুন
+                      </Button>
+                    </div>
+                  )}
                 </Alert>
               )}
               
