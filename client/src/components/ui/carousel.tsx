@@ -204,17 +204,36 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute  h-8 w-8 rounded-full",
+        /* Luke Wroblewski: 44px minimum touch targets */
+        "absolute h-11 w-11 rounded-full group",
+        /* Don Norman: Clear visual affordances with immediate feedback */
+        "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm",
+        "border border-gray-200 dark:border-gray-700",
+        "hover:bg-white dark:hover:bg-gray-900 hover:scale-110",
+        "shadow-lg hover:shadow-xl transition-all duration-300 ease-out",
+        /* Alan Cooper: Error prevention and forgiveness */
+        "disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed",
+        /* Farai Madzima: Accessible focus states */
+        "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         orientation === "horizontal"
-          ? "-left-12 top-1/2 -translate-y-1/2"
-          : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
+          ? "-left-5 top-1/2 -translate-y-1/2 hover:-left-6"
+          : "-top-5 left-1/2 -translate-x-1/2 rotate-90 hover:-top-6",
         className
       )}
       disabled={!canScrollPrev}
       onClick={scrollPrev}
+      aria-label="Previous slide"
       {...props}
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className={cn(
+        "h-5 w-5 transition-transform duration-200",
+        /* Aarron Walter: Emotional micro-interactions */
+        canScrollPrev ? "group-hover:-translate-x-0.5" : "",
+        /* Jonathan Ive: Purposeful color choices */
+        canScrollPrev 
+          ? "text-gray-700 dark:text-gray-300" 
+          : "text-gray-400 dark:text-gray-600"
+      )} />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -233,17 +252,36 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
+        /* Luke Wroblewski: 44px minimum touch targets */
+        "absolute h-11 w-11 rounded-full group",
+        /* Don Norman: Clear visual affordances with immediate feedback */
+        "bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm",
+        "border border-gray-200 dark:border-gray-700",
+        "hover:bg-white dark:hover:bg-gray-900 hover:scale-110",
+        "shadow-lg hover:shadow-xl transition-all duration-300 ease-out",
+        /* Alan Cooper: Error prevention and forgiveness */
+        "disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed",
+        /* Farai Madzima: Accessible focus states */
+        "focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         orientation === "horizontal"
-          ? "-right-12 top-1/2 -translate-y-1/2"
-          : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
+          ? "-right-5 top-1/2 -translate-y-1/2 hover:-right-6"
+          : "-bottom-5 left-1/2 -translate-x-1/2 rotate-90 hover:-bottom-6",
         className
       )}
       disabled={!canScrollNext}
       onClick={scrollNext}
+      aria-label="Next slide"
       {...props}
     >
-      <ArrowRight className="h-4 w-4" />
+      <ArrowRight className={cn(
+        "h-5 w-5 transition-transform duration-200",
+        /* Aarron Walter: Emotional micro-interactions */
+        canScrollNext ? "group-hover:translate-x-0.5" : "",
+        /* Jonathan Ive: Purposeful color choices */
+        canScrollNext 
+          ? "text-gray-700 dark:text-gray-300" 
+          : "text-gray-400 dark:text-gray-600"
+      )} />
       <span className="sr-only">Next slide</span>
     </Button>
   )

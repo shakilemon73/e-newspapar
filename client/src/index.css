@@ -304,31 +304,105 @@ h4 {
   --gold-secondary: 45 95% 55%;
 }
 
-/* Mobile-First Responsive Design */
+/* Luke Wroblewski: Mobile-First Responsive Design */
 .mobile-first-grid {
   @apply grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+  /* Julie Zhuo: Systematic spacing (8px grid) */
+  gap: 1rem; /* 16px = 2 * 8px */
 }
 
 .mobile-nav {
   @apply fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 md:hidden;
+  /* Don Norman: Clear mapping and signifiers */
+  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhanced Admin Interface */
+/* Dieter Rams: Minimal design with essential functionality */
+.design-system-button {
+  @apply inline-flex items-center justify-center;
+  /* Luke Wroblewski: Minimum 44px touch targets */
+  min-height: 44px;
+  min-width: 44px;
+  /* Don Norman: Clear affordances */
+  @apply rounded-lg transition-all duration-200 ease-out;
+  @apply hover:scale-105 active:scale-95;
+  /* Farai Madzima: High contrast accessibility */
+  @apply focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+/* Aarron Walter: Emotional micro-interactions */
+.micro-interaction {
+  @apply transition-all duration-300 ease-out;
+  @apply hover:scale-[1.02] hover:shadow-lg;
+  @apply active:scale-[0.98];
+}
+
+/* Susan Weinschenk: Attention and scanning patterns */
+.scannable-text {
+  @apply leading-relaxed;
+  /* Steve Krug: Maximum 15 words for scannability */
+  max-width: 15ch;
+}
+
+/* Alan Cooper: Error prevention and recovery */
+.error-prevention {
+  @apply border-2 border-transparent;
+  @apply focus:border-red-300 invalid:border-red-500;
+  @apply transition-colors duration-200;
+}
+
+/* Enhanced Admin Interface - Applied Design Philosophy */
+
+/* Don Norman's Discoverability & Feedback Principles */
 .admin-sidebar {
-  @apply bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-64 h-full fixed left-0 top-0 z-50;
-  @apply transform transition-transform duration-300 ease-in-out;
+  @apply bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 w-80 h-full fixed left-0 top-0 z-50;
+  @apply transform transition-all duration-300 ease-out shadow-lg;
+  /* Aarron Walter: Subtle emotional design */
+  background: linear-gradient(180deg, 
+    rgba(255, 255, 255, 1) 0%, 
+    rgba(249, 250, 251, 1) 100%);
+}
+
+.dark .admin-sidebar {
+  background: linear-gradient(180deg, 
+    rgb(17, 24, 39) 0%, 
+    rgb(31, 41, 55) 100%);
 }
 
 .admin-sidebar-item {
-  @apply flex items-center px-4 py-3 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors duration-200;
+  @apply flex items-center px-4 py-4 text-sm font-medium text-gray-700 dark:text-gray-300;
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-gray-100;
+  @apply transition-all duration-200 ease-out;
+  /* Luke Wroblewski: Minimum 44px touch targets */
+  min-height: 52px;
 }
 
 .admin-sidebar-item.active {
-  @apply bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground border-r-2 border-primary;
+  @apply bg-gradient-to-r from-primary/10 to-primary/5 text-primary dark:bg-gradient-to-r dark:from-primary/20 dark:to-primary/10;
+  @apply border-r-4 border-primary shadow-sm;
+  /* Susan Weinschenk: Recognition over recall */
+  position: relative;
+}
+
+.admin-sidebar-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, hsl(142, 76%, 36%) 0%, hsl(0, 84%, 60%) 100%);
 }
 
 .admin-header {
-  @apply sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-4 py-3;
+  @apply sticky top-0 z-40 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 px-6 py-4;
+  /* Jonathan Ive: Clean, purposeful design */
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.dark .admin-header {
+  background: rgba(17, 24, 39, 0.95);
 }
 
 .admin-main {
