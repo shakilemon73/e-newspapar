@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -120,13 +121,14 @@ const workspaces = [
   }
 ];
 
-// Recent activity mock data - in real implementation, this would come from API
-const recentActivity = [
-  { type: 'article', title: 'New article published', time: '2 minutes ago', user: 'Admin' },
-  { type: 'comment', title: '5 comments need moderation', time: '15 minutes ago', urgent: true },
-  { type: 'user', title: '12 new users registered', time: '1 hour ago' },
-  { type: 'system', title: 'Database backup completed', time: '2 hours ago' }
-];
+// Recent activity - fetched from API
+const useRecentActivity = () => {
+  return useQuery({
+    queryKey: ['/api/admin/recent-activities'],
+    queryFn: () => fetch('/api/admin/recent-activities?limit=5').then(res => res.json()),
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+};
 
 export function SimplifiedAdminLayout({ children }: AdminLayoutProps) {
   const [location] = useLocation();
@@ -161,8 +163,11 @@ export function SimplifiedAdminLayout({ children }: AdminLayoutProps) {
   const isDashboardRoute = location === '/admin-dashboard';
 
   // Smart Dashboard Content
-  const DashboardContent = () => (
-    <div className="space-y-6 p-6">
+  const DashboardContent = () => {
+    const { data: recentActivity = [], isLoading: activityLoading } = useRecentActivity();
+    
+    return (
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>

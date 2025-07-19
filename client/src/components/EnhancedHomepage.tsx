@@ -125,13 +125,11 @@ const PersonalizedRecommendationsWidget: React.FC = () => {
 
 // Trending Topics Widget
 const TrendingTopicsWidget: React.FC = () => {
-  const trendingTopics = [
-    { name: "নির্বাচন", count: 247, growth: 15 },
-    { name: "অর্থনীতি", count: 189, growth: 8 },
-    { name: "খেলাধুলা", count: 156, growth: 22 },
-    { name: "প্রযুক্তি", count: 134, growth: 12 },
-    { name: "বিনোদন", count: 98, growth: 5 }
-  ];
+  // Fetch trending topics from API
+  const { data: trendingTopics = [] } = useQuery({
+    queryKey: ['/api/trending-topics'],
+    queryFn: () => fetch('/api/trending-topics?limit=5').then(res => res.json()),
+  });
 
   return (
     <Card className="h-full">
@@ -143,7 +141,7 @@ const TrendingTopicsWidget: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {trendingTopics.map((topic, index) => (
+          {trendingTopics.map((topic: any, index: number) => (
             <Link key={topic.name} href={`/search?q=${topic.name}`}>
               <div className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-3">
@@ -174,15 +172,22 @@ const TrendingTopicsWidget: React.FC = () => {
 
 // Reading Progress Widget
 const ReadingProgressWidget: React.FC = () => {
-  const [todayProgress, setTodayProgress] = useState(65);
-  const [weeklyGoal, setWeeklyGoal] = useState(10);
-  const [articlesRead, setArticlesRead] = useState(7);
+  // Fetch user reading stats from API
+  const { data: userStats } = useQuery({
+    queryKey: ['/api/user-reading-stats'],
+    queryFn: () => fetch('/api/user-reading-stats').then(res => res.ok ? res.json() : null),
+    retry: false, // Don't retry if user not authenticated
+  });
+
+  const todayProgress = userStats?.today_progress || 0;
+  const weeklyGoal = userStats?.weekly_goal || 10;
+  const articlesRead = userStats?.articles_read || 0;
 
   const achievements = [
-    { id: 1, name: "নিয়মিত পাঠক", icon: BookOpen, earned: true },
-    { id: 2, name: "দ্রুত পাঠক", icon: Zap, earned: true },
-    { id: 3, name: "বিশেষজ্ঞ পাঠক", icon: Trophy, earned: false },
-    { id: 4, name: "সাপ্তাহিক চ্যাম্পিয়ন", icon: Award, earned: false }
+    { id: 1, name: "নিয়মিত পাঠক", icon: BookOpen, earned: articlesRead >= 10 },
+    { id: 2, name: "দ্রুত পাঠক", icon: Zap, earned: (userStats?.total_reading_time || 0) > 60 },
+    { id: 3, name: "বিশেষজ্ঞ পাঠক", icon: Trophy, earned: articlesRead >= 50 },
+    { id: 4, name: "সাপ্তাহিক চ্যাম্পিয়ন", icon: Award, earned: articlesRead >= weeklyGoal }
   ];
 
   return (
@@ -252,32 +257,12 @@ const ReadingProgressWidget: React.FC = () => {
 
 // Social Activity Widget
 const SocialActivityWidget: React.FC = () => {
-  const activities = [
-    {
-      id: 1,
-      type: 'like',
-      user: 'রহিম উদ্দিন',
-      article: 'বাংলাদেশের অর্থনৈতিক পরিস্থিতি',
-      time: '৫ মিনিট আগে',
-      avatar: '/api/placeholder/32/32'
-    },
-    {
-      id: 2,
-      type: 'comment',
-      user: 'ফাতেমা খাতুন',
-      article: 'শিক্ষা ব্যবস্থার উন্নতি',
-      time: '১০ মিনিট আগে',
-      avatar: '/api/placeholder/32/32'
-    },
-    {
-      id: 3,
-      type: 'share',
-      user: 'করিম আহমেদ',
-      article: 'প্রযুক্তির অগ্রগতি',
-      time: '১৫ মিনিট আগে',
-      avatar: '/api/placeholder/32/32'
-    }
-  ];
+  // Fetch user social activities from API
+  const { data: activities = [] } = useQuery({
+    queryKey: ['/api/user-social-activities'],
+    queryFn: () => fetch('/api/user-social-activities?limit=5').then(res => res.json()),
+    refetchInterval: 60000, // Refresh every minute
+  });
 
   const getActivityIcon = (type: string) => {
     switch (type) {

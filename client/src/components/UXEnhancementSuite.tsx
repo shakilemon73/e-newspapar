@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BookOpen, Clock, TrendingUp, Star, Heart, MessageCircle, Share2, Eye, Users, Calendar, Filter, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -146,19 +147,17 @@ export const EnhancedArticleCard: React.FC<EnhancedArticleCardProps> = ({
 export const ContentDiscoveryWidget: React.FC = () => {
   const [activeTab, setActiveTab] = useState('trending');
   
-  const trendingTopics = [
-    { name: 'নির্বাচন', count: 156, trend: 'up' },
-    { name: 'ক্রিকেট', count: 89, trend: 'up' },
-    { name: 'অর্থনীতি', count: 67, trend: 'down' },
-    { name: 'প্রযুক্তি', count: 45, trend: 'up' },
-    { name: 'আবহাওয়া', count: 34, trend: 'stable' },
-  ];
+  // Fetch trending topics from API
+  const { data: trendingTopics = [] } = useQuery({
+    queryKey: ['/api/trending-topics'],
+    queryFn: () => fetch('/api/trending-topics?limit=5').then(res => res.json()),
+  });
 
-  const popularAuthors = [
-    { name: 'রহিম উদ্দিন', articles: 45, followers: 1200 },
-    { name: 'ফাতেমা খাতুন', articles: 38, followers: 980 },
-    { name: 'করিম আহমেদ', articles: 32, followers: 756 },
-  ];
+  // Fetch popular authors from API
+  const { data: popularAuthors = [] } = useQuery({
+    queryKey: ['/api/popular-authors'],
+    queryFn: () => fetch('/api/popular-authors?limit=3').then(res => res.json()),
+  });
 
   return (
     <Card className="w-full">
@@ -177,7 +176,7 @@ export const ContentDiscoveryWidget: React.FC = () => {
           </TabsList>
           
           <TabsContent value="trending" className="space-y-3">
-            {trendingTopics.map((topic, index) => (
+            {trendingTopics.map((topic: any, index: number) => (
               <div key={index} className="flex items-center justify-between p-2 hover:bg-accent/10 rounded-lg transition-colors">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium">{topic.name}</span>
@@ -186,9 +185,9 @@ export const ContentDiscoveryWidget: React.FC = () => {
                   </Badge>
                 </div>
                 <div className="flex items-center">
-                  {topic.trend === 'up' && <TrendingUp className="w-4 h-4 text-green-500" />}
-                  {topic.trend === 'down' && <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
-                  {topic.trend === 'stable' && <div className="w-4 h-4 bg-gray-400 rounded-full" />}
+                  {topic.growth > 15 && <TrendingUp className="w-4 h-4 text-green-500" />}
+                  {topic.growth < 5 && <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
+                  {topic.growth >= 5 && topic.growth <= 15 && <div className="w-4 h-4 bg-gray-400 rounded-full" />}
                 </div>
               </div>
             ))}

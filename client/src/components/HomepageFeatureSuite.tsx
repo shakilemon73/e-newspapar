@@ -447,14 +447,17 @@ export const ReadingPreferencesWidget = () => {
     );
   }
 
-  const defaultPreferences = {
+  // Fetch user preferences from API
+  const { data: userPrefs } = useQuery({
+    queryKey: ['/api/user-preferences'],
+    queryFn: () => fetch('/api/user-preferences').then(res => res.ok ? res.json() : null),
+    retry: false,
+  }) || {
     favorite_categories: ['রাজনীতি', 'খেলা', 'আন্তর্জাতিক'],
     notification_enabled: true,
     auto_save_enabled: false,
     reading_mode: 'normal',
   };
-
-  const userPrefs = preferences || defaultPreferences;
 
   return (
     <Card className="h-full">

@@ -19,6 +19,7 @@ import { setupCompleteTableAPI, populateAllTables } from './complete-table-imple
 import { setupFixedAPI, requireAdmin } from './auth-fixes';
 import { weatherService } from './weather-service';
 import { weatherScheduler } from './weather-scheduler';
+import { addEnhancedApiEndpoints } from './enhanced-api-endpoints';
 
 
 // Validation schemas for Supabase
@@ -5332,6 +5333,9 @@ ON CONFLICT DO NOTHING;
 
   // Setup fixed authentication and API endpoints
   setupFixedAPI(app);
+  
+  // Add enhanced API endpoints for real data
+  addEnhancedApiEndpoints(app, '/api', requireAuth);
 
   const httpServer = createServer(app);
 

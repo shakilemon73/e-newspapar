@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, X, Clock, TrendingUp, Filter, ArrowRight } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -91,25 +92,15 @@ export const EnhancedSearchSystem: React.FC<EnhancedSearchSystemProps> = ({
     fetchCategories();
   }, []);
 
-  // Fetch trending searches
+  // Fetch trending searches from API
+  const { data: trendingSearchesData = [] } = useQuery({
+    queryKey: ['/api/trending-searches'],
+    queryFn: () => fetch('/api/trending-searches?limit=5').then(res => res.json()),
+  });
+
   useEffect(() => {
-    const fetchTrendingSearches = async () => {
-      try {
-        // Mock trending searches - in a real app, this would come from analytics
-        const mockTrending = [
-          { query: 'নির্বাচন', count: 1250 },
-          { query: 'ক্রিকেট', count: 980 },
-          { query: 'অর্থনীতি', count: 760 },
-          { query: 'শিক্ষা', count: 650 },
-          { query: 'আবহাওয়া', count: 540 },
-        ];
-        setTrendingSearches(mockTrending);
-      } catch (error) {
-        console.error('Error fetching trending searches:', error);
-      }
-    };
-    fetchTrendingSearches();
-  }, []);
+    setTrendingSearches(trendingSearchesData);
+  }, [trendingSearchesData]);
 
   // Fetch search suggestions
   const fetchSuggestions = useCallback(async (searchQuery: string) => {
