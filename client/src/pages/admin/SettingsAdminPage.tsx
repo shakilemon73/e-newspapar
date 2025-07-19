@@ -148,6 +148,10 @@ export default function SettingsAdminPage() {
       });
       setHasChanges(false);
       queryClient.invalidateQueries({ queryKey: ['/api/admin/settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      
+      // Trigger global site settings update
+      window.dispatchEvent(new CustomEvent('siteSettingsUpdated'));
     },
     onError: (error: any) => {
       toast({

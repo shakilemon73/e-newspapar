@@ -2,6 +2,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/use-supabase-auth";
+import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";
@@ -88,14 +89,16 @@ export default function UserApp() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <div className="flex flex-col min-h-screen bg-background">
-          <Header />
-          <main className="flex-grow">
-            <UserRouter />
-          </main>
-          <Footer />
-          <Toaster />
-        </div>
+        <SiteSettingsProvider>
+          <div className="flex flex-col min-h-screen bg-background">
+            <Header />
+            <main className="flex-grow">
+              <UserRouter />
+            </main>
+            <Footer />
+            <Toaster />
+          </div>
+        </SiteSettingsProvider>
       </AuthProvider>
     </ThemeProvider>
   );

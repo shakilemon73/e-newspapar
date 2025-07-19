@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 
 interface Category {
   id: number;
@@ -12,6 +13,7 @@ interface Category {
 export const Footer = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [email, setEmail] = useState<string>('');
+  const { settings: siteSettings } = useSiteSettings();
 
   useEffect(() => {
     // Fetch categories
@@ -42,7 +44,7 @@ export const Footer = () => {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <h4 className="text-xl font-bold mb-4 text-primary-foreground">প্রথম আলো</h4>
+            <h4 className="text-xl font-bold mb-4 text-primary-foreground">{siteSettings.siteName}</h4>
             <p className="text-primary-foreground/80 mb-4">দেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র, সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার</p>
             <div className="flex space-x-4 mb-4">
               <a href="https://facebook.com" className="text-primary-foreground hover:text-accent transition" target="_blank" rel="noopener noreferrer">
@@ -135,7 +137,7 @@ export const Footer = () => {
         </div>
         
         <div className="border-t border-gray-800 pt-4 text-center text-gray-400 text-sm">
-          <p>© {new Date().getFullYear()} প্রথম আলো। সর্বস্বত্ব সংরক্ষিত</p>
+          <p>© {new Date().getFullYear()} {siteSettings.siteName}। সর্বস্বত্ব সংরক্ষিত</p>
         </div>
       </div>
     </footer>

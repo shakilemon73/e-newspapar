@@ -2,6 +2,7 @@ import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { AuthProvider } from "@/hooks/use-supabase-auth";
 import { useSupabaseAuth } from "@/hooks/use-supabase-auth";
 import { useEffect } from "react";
@@ -279,12 +280,14 @@ export default function AdminApp() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <AuthProvider>
-          <div className="min-h-screen bg-background">
-            <AdminRouter />
-            <Toaster />
-          </div>
-        </AuthProvider>
+        <SiteSettingsProvider>
+          <AuthProvider>
+            <div className="min-h-screen bg-background">
+              <AdminRouter />
+              <Toaster />
+            </div>
+          </AuthProvider>
+        </SiteSettingsProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

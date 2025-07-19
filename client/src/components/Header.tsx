@@ -4,6 +4,7 @@ import { Search, Menu, User, LogOut, Home, Bookmark, Bell, X, ChevronDown } from
 import { ThemeToggle } from './ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { useSiteSettings } from '@/contexts/SiteSettingsContext';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -28,10 +29,9 @@ export const Header = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentDate, setCurrentDate] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [siteName, setSiteName] = useState<string>('প্রথম আলো');
-  const [logoUrl, setLogoUrl] = useState<string>('');
   const [location, setLocation] = useLocation();
   const { user, signOut, loading } = useSupabaseAuth();
+  const { settings: siteSettings } = useSiteSettings();
 
   useEffect(() => {
     // Get current date in Bengali
@@ -59,21 +59,7 @@ export const Header = () => {
       }
     };
     
-    const fetchSiteSettings = async () => {
-      try {
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-          const data = await response.json();
-          setSiteName(data.siteName || 'প্রথম আলো');
-          setLogoUrl(data.logoUrl || '');
-        }
-      } catch (error) {
-        console.error('Error fetching site settings:', error);
-      }
-    };
-    
     fetchCategories();
-    fetchSiteSettings();
     
     // Close mobile menu when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
@@ -212,10 +198,10 @@ export const Header = () => {
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200">
-                {logoUrl && (
+                {siteSettings.logoUrl && (
                   <img 
-                    src={logoUrl} 
-                    alt={siteName}
+                    src={siteSettings.logoUrl} 
+                    alt={siteSettings.siteName}
                     className="h-10 w-auto object-contain"
                     onError={(e) => {
                       // Hide logo if it fails to load
@@ -224,7 +210,7 @@ export const Header = () => {
                   />
                 )}
                 <span className="headline gradient-text">
-                  {siteName}
+                  {siteSettings.siteName}
                 </span>
               </Link>
             </div>
