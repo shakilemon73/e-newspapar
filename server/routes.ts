@@ -2603,18 +2603,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public Settings endpoint (for header, footer, etc.)
   app.get(`${apiPrefix}/settings`, async (req, res) => {
     try {
-      // Get default settings
+      // Always start with the updated site name
       let settings = {
-        siteName: 'প্রথম আলো',
-        siteDescription: 'বাংলাদেশের শীর্ষ বাংলা সংবাদপত্র',
+        siteName: 'Emon\'s Daily News',
+        siteDescription: 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র',
         logoUrl: '',
-        defaultLanguage: 'bn'
+        defaultLanguage: 'bn',
+        siteUrl: 'https://emonsdaily.com'
       };
       
       // Use global settings if available (set by admin)
       if (global.siteSettings) {
         Object.assign(settings, global.siteSettings);
         console.log('Using dynamic settings from admin:', Object.keys(global.siteSettings));
+      }
+      
+      // Also try to load from database as backup
+      try {
+        const { data: systemData, error: systemError } = await supabase
+          .from('system_settings')
+          .select('*');
+        
+        if (systemData && systemData.length > 0) {
+          systemData.forEach(setting => {
+            if (setting.setting_key && setting.setting_value) {
+              settings[setting.setting_key] = setting.setting_value;
+            }
+          });
+          console.log('Enhanced settings with database data');
+        }
+      } catch (error) {
+        console.log('Database fallback not available, using memory settings');
       }
       
       return res.json(settings);
