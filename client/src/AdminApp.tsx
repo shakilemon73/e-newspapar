@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
-import { AuthProvider } from "@/hooks/use-supabase-auth";
-import { useSupabaseAuth } from "@/hooks/use-supabase-auth";
+import { AdminSessionProvider } from "@/hooks/use-admin-session";
+import { useAdminSession } from "@/hooks/use-admin-session";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -54,16 +54,14 @@ function AdminNotFound() {
 
 // Admin Route Protection
 function AdminRouteGuard({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useSupabaseAuth();
+  const { isAuthenticated, loading } = useAdminSession();
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    if (!loading && !user) {
-      setLocation('/admin-login');
-    } else if (!loading && user && user.user_metadata?.role !== 'admin') {
+    if (!loading && !isAuthenticated) {
       setLocation('/admin-login');
     }
-  }, [loading, user, setLocation]);
+  }, [loading, isAuthenticated, setLocation]);
 
   if (loading) {
     return (
@@ -76,7 +74,7 @@ function AdminRouteGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user || user.user_metadata?.role !== 'admin') {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -281,12 +279,12 @@ export default function AdminApp() {
     <ThemeProvider>
       <LanguageProvider>
         <SiteSettingsProvider>
-          <AuthProvider>
+          <AdminSessionProvider>
             <div className="min-h-screen bg-background">
               <AdminRouter />
               <Toaster />
             </div>
-          </AuthProvider>
+          </AdminSessionProvider>
         </SiteSettingsProvider>
       </LanguageProvider>
     </ThemeProvider>

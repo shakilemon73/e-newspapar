@@ -19,6 +19,7 @@ import { setupCompleteTableAPI, populateAllTables } from './complete-table-imple
 import { setupFixedAPI } from './auth-fixes';
 import { weatherService } from './weather-service';
 import { weatherScheduler } from './weather-scheduler';
+import { adminLogin, adminLogout, requireAdminSession, checkAdminSession } from './admin-auth';
 
 
 // Validation schemas for Supabase
@@ -2427,35 +2428,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Simple admin login for testing (bypass Supabase auth temporarily)
-  app.post(`${apiPrefix}/admin/login`, async (req, res) => {
-    try {
-      const { username, password } = req.body;
-      
-      // Simple admin credentials for testing
-      if ((username === 'admin' && password === 'admin123') || 
-          (username === 'shakilemon73@gmail.com' && password === 'admin123')) {
-        return res.json({ 
-          success: true, 
-          token: 'admin-session-token',
-          user: { role: 'admin', email: username.includes('@') ? username : 'admin@site.com' }
-        });
-      } else {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-    } catch (error) {
-      console.error('Admin login error:', error);
-      return res.status(500).json({ error: 'Login failed' });
-    }
-  });
+  // New dedicated admin authentication system (completely separate from user auth)
+  app.post(`${apiPrefix}/admin/login`, adminLogin);
+  app.post(`${apiPrefix}/admin/logout`, adminLogout);
+  app.get(`${apiPrefix}/admin/session`, checkAdminSession);
 
-  // Updated admin settings POST with simplified auth
-  app.post(`${apiPrefix}/admin/settings`, async (req, res) => {
-    // Check for simple session token
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.includes('admin-session-token')) {
-      return res.status(401).json({ error: 'Admin authentication required' });
-    }
+  // Updated admin settings POST with session auth
+  app.post(`${apiPrefix}/admin/settings`, requireAdminSession, async (req, res) => {
     try {
       const settingsData = req.body;
       console.log('Saving settings:', Object.keys(settingsData));

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'wouter';
-import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { useAdminSession } from '@/hooks/use-admin-session';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,21 +20,16 @@ const adminLoginSchema = z.object({
 type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 const AdminLogin = () => {
-  const { user, signIn, signOut, loading } = useSupabaseAuth();
+  const { admin, login, logout, loading, isAuthenticated } = useAdminSession();
   const [, setLocation] = useLocation();
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // Redirect if already logged in as admin
   useEffect(() => {
-    if (!loading && user) {
-      if (user.user_metadata?.role === 'admin') {
-        setLocation('/admin-dashboard');
-      } else if (user && !loading) {
-        // User is logged in but not an admin - show clear message
-        setLoginError('আপনি একজন সাধারণ ব্যবহারকারী হিসেবে লগইন করেছেন। অ্যাডমিন অ্যাক্সেসের জন্য আপনাকে আগে লগআউট করতে হবে এবং অ্যাডমিন অ্যাকাউন্ট দিয়ে লগইন করতে হবে।');
-      }
+    if (!loading && isAuthenticated) {
+      setLocation('/admin-dashboard');
     }
-  }, [loading, user, setLocation]);
+  }, [loading, isAuthenticated, setLocation]);
 
   const form = useForm<AdminLoginFormValues>({
     resolver: zodResolver(adminLoginSchema),
@@ -47,19 +42,17 @@ const AdminLogin = () => {
   const onSubmit = async (values: AdminLoginFormValues) => {
     try {
       setLoginError(null);
-      await signIn(values.email, values.password);
-      
-      // After successful login, check the user role in the next render cycle
-      // The useEffect will handle the proper redirection based on role
+      await login(values.email, values.password);
+      // Redirect will be handled by useEffect when admin state updates
     } catch (error) {
       console.error('Admin login error:', error);
-      setLoginError('লগইনে সমস্যা হয়েছে। দয়া করে আপনার অ্যাডমিন ইমেইল এবং পাসওয়ার্ড সঠিক কিনা যাচাই করুন।');
+      setLoginError('লগইনে সমস্যা হয়েছে। দয়া করে আপনার অ্যাডমিন ইমেইল/ইউজারনেম এবং পাসওয়ার্ড সঠিক কিনা যাচাই করুন।');
     }
   };
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await logout();
       setLoginError(null);
       setLocation('/admin-login');
     } catch (error) {
@@ -89,7 +82,7 @@ const AdminLogin = () => {
               {loginError && (
                 <Alert variant="destructive" className="mb-4">
                   <AlertDescription>{loginError}</AlertDescription>
-                  {user && user.user_metadata?.role !== 'admin' && (
+                  {!isAuthenticated && (
                     <div className="mt-3">
                       <Button 
                         onClick={handleLogout} 
