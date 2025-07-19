@@ -41,26 +41,84 @@ export const EnhancedPersonalizedRecommendations = () => {
   const { user } = useSupabaseAuth();
 
   useEffect(() => {
-    if (user) {
+    if (user?.access_token) {
       fetchRecommendations();
       fetchUserPreferences();
+    } else {
+      // If user is not authenticated, show popular articles instead
+      fetchPopularArticles();
     }
   }, [user]);
+
+  const fetchPopularArticles = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/articles/popular?limit=12');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch popular articles');
+      }
+
+      const data = await response.json();
+      const transformedData = data.map((article: any) => ({
+        ...article,
+        recommendation_score: 0.8,
+        reason: 'জনপ্রিয় খবর',
+        category_name: article.category?.name || 'সাধারণ',
+        image_url: article.imageUrl || article.image_url
+      }));
+      
+      setRecommendations(transformedData);
+    } catch (err: any) {
+      setError('জনপ্রিয় খবর লোড করতে সমস্যা হয়েছে');
+      console.error('Error fetching popular articles:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchRecommendations = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/recommendations?limit=12');
+      setError(null);
+      
+      // Check if user is authenticated first
+      if (!user?.access_token) {
+        // Fallback to popular articles for non-authenticated users
+        await fetchPopularArticles();
+        return;
+      }
+      
+      const response = await fetch('/api/personalized-recommendations?limit=12', {
+        headers: {
+          'Authorization': `Bearer ${user.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.status === 401) {
+        setError('লগইন সেশন মেয়াদ শেষ। পুনরায় লগইন করুন।');
+        return;
+      }
       
       if (!response.ok) {
-        throw new Error('Failed to fetch recommendations');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch recommendations`);
       }
 
       const data = await response.json();
-      setRecommendations(data);
-    } catch (err) {
-      setError('ব্যক্তিগতকৃত সুপারিশ লোড করতে সমস্যা হয়েছে');
-      console.error('Error fetching recommendations:', err);
+      setRecommendations(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      const errorMessage = err.message || 'ব্যক্তিগতকৃত সুপারিশ লোড করতে সমস্যা হয়েছে';
+      setError(errorMessage);
+      console.error('Error fetching personalized recommendations:', {
+        message: err.message,
+        stack: err.stack,
+        name: err.name,
+        user: user ? 'authenticated' : 'not authenticated'
+      });
     } finally {
       setLoading(false);
     }
@@ -199,10 +257,10 @@ export const EnhancedPersonalizedRecommendations = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center space-x-2">
             <Star className="w-6 h-6 text-yellow-500" />
-            <span>আপনার জন্য বিশেষ সুপারিশ</span>
+            <span>{user?.access_token ? 'আপনার জন্য বিশেষ সুপারিশ' : 'জনপ্রিয় খবর'}</span>
           </h2>
           <p className="text-gray-600 mt-1">
-            আপনার পছন্দ অনুযায়ী বাছাই করা খবর
+            {user?.access_token ? 'আপনার পছন্দ অনুযায়ী বাছাই করা খবর' : 'সবচেয়ে পঠিত খবরগুলো'}
           </p>
         </div>
         <div className="text-sm text-gray-500">
