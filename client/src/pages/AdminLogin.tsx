@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
-import { useAdminAuth } from '@/hooks/use-admin-auth';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,16 +21,20 @@ type AdminLoginFormValues = z.infer<typeof adminLoginSchema>;
 
 const AdminLogin = () => {
   const { user, signIn, loading } = useSupabaseAuth();
-  const { isAdmin } = useAdminAuth();
   const [, setLocation] = useLocation();
   const [loginError, setLoginError] = useState<string | null>(null);
 
   // Redirect if already logged in as admin
   useEffect(() => {
-    if (user && isAdmin) {
-      setLocation('/admin-dashboard');
+    if (!loading && user) {
+      if (user.user_metadata?.role === 'admin') {
+        setLocation('/admin-dashboard');
+      } else if (user && !loading) {
+        // Only show error if user is logged in but not admin
+        setLoginError('আপনার অ্যাডমিন অ্যাক্সেস নেই। কেবল অ্যাডমিনরা এই পেজে প্রবেশ করতে পারেন।');
+      }
     }
-  }, [user, isAdmin, setLocation]);
+  }, [loading, user, setLocation]);
 
   const form = useForm<AdminLoginFormValues>({
     resolver: zodResolver(adminLoginSchema),
@@ -46,15 +49,8 @@ const AdminLogin = () => {
       setLoginError(null);
       await signIn(values.email, values.password);
       
-      // Check if user has admin role after login
-      // The useAdminAuth hook will update automatically
-      setTimeout(() => {
-        if (isAdmin) {
-          setLocation('/admin-dashboard');
-        } else {
-          setLoginError('আপনার অ্যাডমিন অ্যাক্সেস নেই। কেবল অ্যাডমিনরা এই পেজে প্রবেশ করতে পারেন।');
-        }
-      }, 1000);
+      // Let the useEffect handle the redirect based on updated user state
+      // No need to check isAdmin here as it will be handled by the useEffect
     } catch (error) {
       console.error('Admin login error:', error);
       setLoginError('লগইনে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
