@@ -43,7 +43,11 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings?_t=' + Date.now()); // Cache busting
+      const response = await fetch('/api/settings', {
+        headers: {
+          'Cache-Control': 'max-age=60'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched dynamic settings:', data);
@@ -91,7 +95,7 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
     // Set up periodic refresh to check for admin changes
     const intervalId = setInterval(() => {
       refreshSettings();
-    }, 10000); // Refresh every 10 seconds
+    }, 300000); // Refresh every 5 minutes instead of 10 seconds
 
     window.addEventListener('siteSettingsUpdated', handleSettingsUpdate);
     

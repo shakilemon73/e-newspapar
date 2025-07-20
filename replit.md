@@ -107,6 +107,11 @@ A comprehensive Bengali news portal with advanced admin dashboard functionality.
 - ✓ Analyzed all admin dashboard components and pages
 - ✓ Identified mock data usage patterns
 - ✓ Documented database configuration and fallback mechanisms
+- ✓ Fixed performance issues with excessive API polling:
+  - SiteSettingsContext: Reduced polling from 10 seconds to 5 minutes
+  - PopularNewsSection: Reduced polling from 30 seconds to 2 minutes
+  - Added proper HTTP caching headers (30-60 seconds)
+  - Removed aggressive cache-busting mechanisms
 
 ## User Preferences
 - Language: English

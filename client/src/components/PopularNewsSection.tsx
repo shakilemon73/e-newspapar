@@ -30,13 +30,10 @@ export const PopularNewsSection = () => {
     const fetchPopularArticles = async () => {
       try {
         setIsLoading(true);
-        // Add timestamp to prevent caching and get real-time data
-        const timestamp = new Date().getTime();
-        const response = await fetch(`/api/articles/popular?limit=5&timeRange=${timeRange}&_t=${timestamp}`, {
-          cache: 'no-cache',
+        // Allow 30 seconds of caching to reduce server load
+        const response = await fetch(`/api/articles/popular?limit=5&timeRange=${timeRange}`, {
           headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'max-age=30'
           }
         });
         
@@ -58,8 +55,8 @@ export const PopularNewsSection = () => {
 
     fetchPopularArticles();
     
-    // Auto-refresh every 30 seconds to show updated view counts
-    const interval = setInterval(fetchPopularArticles, 30000);
+    // Auto-refresh every 2 minutes to show updated view counts
+    const interval = setInterval(fetchPopularArticles, 120000);
     
     return () => clearInterval(interval);
   }, [timeRange]);
