@@ -85,7 +85,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
       if (!response.ok) {
         const errorData = await response.json();
         if (response.status === 409) {
-          setVotedPolls(prev => new Set([...prev, pollId]));
+          setVotedPolls(prev => new Set(Array.from(prev).concat(pollId)));
           toast({
             title: "ইতিমধ্যে ভোট দেওয়া",
             description: "আপনি এই পোলে ইতিমধ্যে ভোট দিয়েছেন।",
@@ -96,7 +96,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
         throw new Error(errorData.error || 'Failed to vote');
       }
 
-      setVotedPolls(prev => new Set([...prev, pollId]));
+      setVotedPolls(prev => new Set(Array.from(prev).concat(pollId)));
       toast({
         title: "সফল",
         description: "আপনার ভোট সফলভাবে রেকর্ড করা হয়েছে।"

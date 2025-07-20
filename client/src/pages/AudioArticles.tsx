@@ -109,9 +109,13 @@ export default function AudioArticles() {
                 <Link href={`/audio/${article.slug}`}>
                   <div className="relative">
                     <img
-                      src={article.image_url}
+                      src={article.image_url || 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=400&h=300&fit=crop&auto=format&q=80'}
                       alt={article.title}
                       className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=400&h=300&fit=crop&auto=format&q=80';
+                      }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                       <Volume2 className="h-12 w-12 text-white" />
