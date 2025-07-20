@@ -6,7 +6,7 @@ import {
   Users, 
   Settings, 
   BarChart3,
-  ImageIcon,
+
   Calendar,
   Bell,
   Tag,
@@ -54,7 +54,7 @@ const navigation = [
     children: [
       { name: 'Articles', href: '/admin/articles', icon: FileText },
       { name: 'Categories', href: '/admin/categories', icon: Tag },
-      { name: 'E-Papers', href: '/admin/epapers', icon: ImageIcon },
+      { name: 'E-Papers', href: '/admin/epapers', icon: Calendar },
       { name: 'Videos', href: '/admin/videos', icon: Video },
       { name: 'Audio Articles', href: '/admin/audio', icon: Headphones },
     ],

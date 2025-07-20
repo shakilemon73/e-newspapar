@@ -88,14 +88,12 @@ export const Header = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Search form submitted with query:', searchQuery);
     if (searchQuery.trim()) {
-      console.log('Navigating to search page with query:', searchQuery);
       setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery(''); // Clear search after submission
       setSearchOpen(false); // Close search on mobile
-    } else {
-      console.log('Empty search query, not navigating');
+      // Smooth scroll to top when navigating to prevent page jumping
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
   
@@ -103,6 +101,8 @@ export const Header = () => {
     try {
       await signOut();
       setLocation('/');
+      // Smooth scroll to top when navigating to prevent page jumping
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error('Error logging out:', error);
     }

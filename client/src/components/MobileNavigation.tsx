@@ -43,6 +43,8 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({ categories }
   const closeNavigation = () => {
     setIsOpen(false);
     setExpandedCategory(null);
+    // Smooth scroll to top when navigating to prevent page jumping
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const toggleCategory = (categorySlug: string) => {
