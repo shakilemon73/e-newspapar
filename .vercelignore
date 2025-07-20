@@ -1,15 +1,41 @@
-# Vercel ignore file
-node_modules
+# Vercel ignore file for Bengali News Portal
+
+# Development files
+.replit
 .env
 .env.local
-.env.*.local
+.env.development
+
+# Build artifacts (except dist/public which is our output)
+node_modules/
+dist/index.js
 *.log
+
+# Documentation
+docs/
+attached_assets/
+README.md
+
+# Development server files
+server/index.ts
+server/vite.ts
+
+# Database setup files (not needed in production)
+db/seed.ts
+db/setup-complete-ux-database.mjs
+
+# Replit specific files
+.upm/
+replit.nix
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
 .DS_Store
 Thumbs.db
-.vscode/
-.git/
-README.md
-docs/
-db/seed.ts
-create-tables-now.js
-scripts/
+
+# Temporary files
+*.tmp
+*.temp
