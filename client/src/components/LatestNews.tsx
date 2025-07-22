@@ -28,9 +28,22 @@ export const LatestNews = () => {
     const fetchLatestNews = async () => {
       try {
         setIsLoading(true);
-        const { getLatestArticles } = await import('../lib/supabase-api-direct');
-        const data = await getLatestArticles(4);
-        setLatestNews(data);
+        const response = await fetch('/api/articles/latest?limit=4');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Transform data to match expected format
+        const transformedData = data.map((article: any) => ({
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          imageUrl: article.image_url || article.imageUrl,
+          publishedAt: article.published_at || article.publishedAt,
+          category: article.category || { id: 0, name: 'সাধারণ', slug: 'general' }
+        }));
+        setLatestNews(transformedData);
         setError(null);
       } catch (err) {
         setError('সর্বশেষ খবর লোড করতে সমস্যা হয়েছে');

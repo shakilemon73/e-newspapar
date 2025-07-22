@@ -1,6 +1,57 @@
 // Direct Supabase API calls to replace Express endpoints
 import { supabase } from './supabase';
-import { Article, Category, EPaper, Weather, BreakingNews } from '../../shared/supabase-types';
+
+// Type definitions
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  created_at?: string;
+}
+
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt: string;
+  image_url: string;
+  imageUrl?: string;
+  view_count: number;
+  viewCount?: number;
+  published_at: string;
+  publishedAt?: string;
+  is_featured: boolean;
+  isFeatured?: boolean;
+  category_id: number;
+  categoryId?: number;
+  categories?: Category;
+  category?: Category;
+}
+
+interface BreakingNews {
+  id: number;
+  content: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface EPaper {
+  id: number;
+  title: string;
+  pdf_url: string;
+  thumbnail_url: string;
+  published_at: string;
+}
+
+interface Weather {
+  id: number;
+  city: string;
+  temperature: number;
+  description: string;
+  updated_at: string;
+}
 
 // Categories API
 export async function getCategories(): Promise<Category[]> {
@@ -118,55 +169,83 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 }
 
 export async function getPopularArticles(limit = 5): Promise<Article[]> {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      is_featured,
-      category_id,
-      categories(id, name, slug)
-    `)
-    .order('view_count', { ascending: false })
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        slug,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
+      `)
+      .order('view_count', { ascending: false })
+      .limit(limit);
 
-  if (error) {
-    console.error('Error fetching popular articles:', error);
+    if (error) {
+      console.error('Error fetching popular articles from Supabase:', error);
+      return [];
+    }
+
+    // Transform data to include both naming conventions
+    return (data || []).map(article => ({
+      ...article,
+      imageUrl: article.image_url,
+      viewCount: article.view_count,
+      publishedAt: article.published_at,
+      isFeatured: article.is_featured,
+      categoryId: article.category_id,
+      category: article.categories
+    }));
+  } catch (err) {
+    console.error('Failed to fetch popular articles:', err);
     return [];
   }
-
-  return data || [];
 }
 
 export async function getLatestArticles(limit = 10): Promise<Article[]> {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      is_featured,
-      category_id,
-      categories(id, name, slug)
-    `)
-    .order('published_at', { ascending: false })
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        slug,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
+      `)
+      .order('published_at', { ascending: false })
+      .limit(limit);
 
-  if (error) {
-    console.error('Error fetching latest articles:', error);
+    if (error) {
+      console.error('Error fetching latest articles from Supabase:', error);
+      return [];
+    }
+
+    // Transform data to include both naming conventions
+    return (data || []).map(article => ({
+      ...article,
+      imageUrl: article.image_url,
+      viewCount: article.view_count,
+      publishedAt: article.published_at,
+      isFeatured: article.is_featured,
+      categoryId: article.category_id,
+      category: article.categories
+    }));
+  } catch (err) {
+    console.error('Failed to fetch latest articles:', err);
     return [];
   }
-
-  return data || [];
 }
 
 export async function getFeaturedArticles(limit = 5): Promise<Article[]> {
@@ -228,18 +307,23 @@ export async function getWeatherByCity(city: string): Promise<Weather | null> {
 
 // Breaking News API
 export async function getBreakingNews(): Promise<BreakingNews[]> {
-  const { data, error } = await supabase
-    .from('breaking_news')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching breaking news:', error);
+  try {
+    const { data, error } = await supabase
+      .from('breaking_news')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching breaking news from Supabase:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch breaking news:', err);
     return [];
   }
-  
-  return data || [];
 }
 
 // E-Papers API
