@@ -12,6 +12,7 @@ import { LikeButton } from '@/components/LikeButton';
 import { ShareButton } from '@/components/ShareButton';
 import { CommentsSection } from '@/components/CommentsSection';
 import { TagsDisplay } from '@/components/TagsDisplay';
+import { BengaliVoiceHelper } from '@/components/BengaliVoiceHelper';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { PollsSection } from '@/components/PollsSection';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
@@ -806,57 +807,63 @@ const ArticleDetail = () => {
       utterance.pitch = speechPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
       
-      // Get available voices and select the best one
+      // Get available voices and select the best one for Bengali
       const voices = speechSynthesis.getVoices();
       console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
       
-      // Priority order: Bengali > Hindi > English with better detection
+      // Comprehensive Bengali voice search
       let selectedVoice = null;
-      
-      // First try to find Bengali voice with comprehensive search
-      selectedVoice = voices.find(voice => 
-        voice.lang.includes('bn') || 
+      const bengaliVoices = voices.filter(voice => 
+        voice.lang.startsWith('bn') || 
         voice.lang.includes('bengali') ||
         voice.name.toLowerCase().includes('bengali') ||
-        voice.name.toLowerCase().includes('bangla')
+        voice.name.toLowerCase().includes('bangla') ||
+        voice.name.toLowerCase().includes('bangladesh')
       );
       
-      if (!selectedVoice) {
-        // If no Bengali, try Hindi (closer to Bengali than English for Indian subcontinent)
-        selectedVoice = voices.find(voice => 
-          voice.lang.includes('hi') || 
-          voice.lang.includes('hindi') ||
-          voice.name.includes('हिन्दी') ||
-          voice.name.toLowerCase().includes('hindi')
-        );
-      }
+      console.log('Bengali voices found:', bengaliVoices.map(v => `${v.name} (${v.lang})`));
       
-      if (!selectedVoice) {
-        // Finally fallback to English voices
-        selectedVoice = voices.find(voice => 
-          voice.lang.includes('en-IN') || // Indian English preferred
-          voice.lang.includes('en-US') || 
-          voice.lang.includes('en-GB')
-        );
-      }
-      
-      if (selectedVoice) {
+      if (bengaliVoices.length > 0) {
+        selectedVoice = bengaliVoices[0]; // Use first Bengali voice
         utterance.voice = selectedVoice;
         utterance.lang = selectedVoice.lang;
-        console.log('Using voice:', selectedVoice.name, selectedVoice.lang);
+        console.log('✅ Using Bengali voice:', selectedVoice.name, selectedVoice.lang);
+        
+        toast({
+          title: "বাংলা অডিও",
+          description: `বাংলা কণ্ঠস্বর ব্যবহার করা হচ্ছে: ${selectedVoice.name}`,
+        });
       } else {
-        utterance.lang = 'bn-BD'; // Bengali fallback
-        console.log('No specific voice found, using Bengali fallback');
+        // Force Bengali language even without specific voice
+        utterance.lang = 'bn-BD';
+        console.log('⚠️ No Bengali voice found, forcing Bengali language (bn-BD)');
+        
+        // Check if any Indian voices available as fallback
+        const indianVoices = voices.filter(voice => 
+          voice.lang.includes('hi') || voice.lang.includes('en-IN')
+        );
+        
+        if (indianVoices.length > 0) {
+          selectedVoice = indianVoices.find(voice => voice.lang.includes('hi')) || indianVoices[0];
+          utterance.voice = selectedVoice;
+          console.log('Using Indian voice as fallback:', selectedVoice.name, selectedVoice.lang);
+        }
+        
+        toast({
+          title: "বাংলা কণ্ঠস্বর নেই",
+          description: "Chrome Settings > Languages > Speech থেকে Bengali voice ইন্সটল করুন। এখন Hindi ব্যবহার হচ্ছে।",
+          variant: "destructive"
+        });
       }
       
       // Set up event listeners
       utterance.onstart = () => {
-        console.log('Speech started');
+        console.log('Speech started with language:', utterance.lang);
         setIsAudioPlaying(true);
         setCurrentUtterance(utterance);
         toast({
           title: "অডিও শুরু হয়েছে",
-          description: "নিবন্ধটি পড়া হচ্ছে...",
+          description: `নিবন্ধটি বাংলায় পড়া হচ্ছে (${utterance.lang})`,
         });
       };
       
