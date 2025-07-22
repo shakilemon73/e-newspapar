@@ -96,13 +96,14 @@ interface Article {
   id: number;
   title: string;
   slug: string;
-  content: string;
+  content?: string;
   excerpt: string;
   image_url: string;
   imageUrl?: string;
   published_at: string;
   publishedAt?: string;
-  category: Category;
+  category?: Category;
+  categories?: Category | Category[];
   view_count: number;
   category_id: number;
   is_featured: boolean;
@@ -235,7 +236,14 @@ const ArticleDetail = () => {
   // Update related articles when fetched
   useEffect(() => {
     if (fetchedRelatedArticles) {
-      setRelatedArticles(fetchedRelatedArticles);
+      // Transform the data to match our interface
+      const transformedArticles = fetchedRelatedArticles.map((article: any) => ({
+        ...article,
+        content: article.content || '',
+        category: Array.isArray(article.categories) ? article.categories[0] : article.categories,
+        is_featured: article.is_featured || false
+      }));
+      setRelatedArticles(transformedArticles);
     }
   }, [fetchedRelatedArticles]);
 
@@ -949,7 +957,7 @@ const ArticleDetail = () => {
     const newPitch = value[0];
     setSpeechPitch(newPitch);
     // Note: Pitch changes require restarting speech synthesis
-    if (currentUtterance && isAudioPlaying && speechSynthesis && article) {
+    if (currentUtterance && isAudioPlaying && speechSynthesis && article && article.content) {
       speechSynthesis.cancel();
       const cleanContent = stripHtmlTags(article.content);
       const textToSpeak = `${article.title}. ${cleanContent}`;
@@ -977,7 +985,16 @@ const ArticleDetail = () => {
           setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
           return;
         }
-        setArticle(data);
+        
+        // Transform the data to match our interface
+        const transformedArticle: Article = {
+          ...data,
+          content: data.content || '',
+          category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
+          is_featured: data.is_featured || false
+        };
+        
+        setArticle(transformedArticle);
         
         // Track view count immediately after setting article data
         if (data.id && !viewTracked) {
@@ -1010,7 +1027,7 @@ const ArticleDetail = () => {
         }
         
         // Calculate estimated reading time
-        const wordCount = data.content.split(' ').length;
+        const wordCount = (data.content || '').split(' ').length;
         setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
         
         // Related articles are now fetched automatically via useQuery above
