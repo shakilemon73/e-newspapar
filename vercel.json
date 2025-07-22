@@ -1,18 +1,27 @@
 {
   "version": 2,
-  "buildCommand": "node build-static.js",
-  "outputDirectory": "dist-static",
-  "installCommand": "npm install",
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "buildCommand": "node build-static.js",
+        "outputDirectory": "dist-static"
+      }
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/((?!assets/|favicon|generated-icon|og-default).*)",
-      "destination": "/index-static.html"
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(favicon\\.ico|favicon\\.svg|generated-icon\\.png|og-default-image\\.svg)",
+      "dest": "/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index-static.html"
     }
   ],
   "headers": [
