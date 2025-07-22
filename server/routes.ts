@@ -5483,6 +5483,25 @@ ON CONFLICT DO NOTHING;
     }
   });
 
+  // Placeholder image endpoint for missing article images
+  app.get('/api/placeholder/:width/:height', (req: Request, res: Response) => {
+    const { width, height } = req.params;
+    const widthNum = parseInt(width) || 400;
+    const heightNum = parseInt(height) || 225;
+    
+    // Generate a simple SVG placeholder
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${widthNum}" height="${heightNum}" viewBox="0 0 ${widthNum} ${heightNum}">
+      <rect width="100%" height="100%" fill="#f3f4f6"/>
+      <text x="50%" y="50%" text-anchor="middle" dy=".3em" fill="#9ca3af" font-family="Arial, sans-serif" font-size="${Math.min(widthNum, heightNum) / 12}">
+        ${widthNum} × ${heightNum}
+      </text>
+    </svg>`;
+    
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.send(svg);
+  });
+
   // Register new table API routes
   handleNewTableRoutes(app);
 

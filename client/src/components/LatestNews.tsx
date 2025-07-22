@@ -107,9 +107,13 @@ export const LatestNews = () => {
             <div className="flex-shrink-0">
               <Link href={`/article/${news.slug}`} className="block">
                 <img 
-                  src={news.imageUrl} 
+                  src={news.imageUrl || '/api/placeholder/80/80'} 
                   alt={news.title} 
                   className="w-20 h-20 object-cover rounded"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/api/placeholder/80/80';
+                  }}
                 />
               </Link>
             </div>

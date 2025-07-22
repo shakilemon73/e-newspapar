@@ -49,8 +49,8 @@ export function transformArticleData(data: any[]): Article[] {
       : article.categories || article.category,
     // Ensure content exists
     content: article.content || '',
-    // Ensure proper image URL handling
-    image_url: article.image_url || article.imageUrl || '/placeholder-image.jpg'
+    // Ensure proper image URL handling with proper placeholder
+    image_url: article.image_url || article.imageUrl || '/api/placeholder/400/225'
   }));
 }
 

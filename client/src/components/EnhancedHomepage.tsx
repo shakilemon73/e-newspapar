@@ -97,9 +97,13 @@ const PersonalizedRecommendationsWidget: React.FC = () => {
             <Link key={article.id} href={`/article/${article.slug}`}>
               <div className="flex space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                 <img 
-                  src={article.image_url} 
+                  src={article.image_url || article.imageUrl || '/api/placeholder/64/64'} 
                   alt={article.title}
                   className="w-16 h-16 object-cover rounded"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/api/placeholder/64/64';
+                  }}
                 />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-semibold text-sm line-clamp-2 mb-1">

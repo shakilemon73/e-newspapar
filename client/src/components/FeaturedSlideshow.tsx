@@ -105,9 +105,13 @@ export const FeaturedSlideshow = () => {
               className={`slide fade relative ${index === currentSlide ? '' : 'hidden'}`}
             >
               <img 
-                src={article.imageUrl} 
+                src={article.imageUrl || article.image_url || '/api/placeholder/800/450'} 
                 alt={article.title} 
                 className="w-full aspect-[16/9] object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/api/placeholder/800/450';
+                }}
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
                 {article.category && (
@@ -151,9 +155,13 @@ export const FeaturedSlideshow = () => {
           <div key={article.id} className="bg-card dark:bg-card rounded shadow-sm overflow-hidden hover:shadow-md transition">
             <div className="relative">
               <img 
-                src={article.imageUrl} 
+                src={article.imageUrl || article.image_url || '/api/placeholder/300/176'} 
                 alt={article.title} 
                 className="w-full h-44 object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/api/placeholder/300/176';
+                }}
               />
               {article.category && (
                 <Link href={`/category/${article.category.slug}`} className="absolute top-2 left-2 bg-accent text-white text-xs px-2 py-1 rounded">
