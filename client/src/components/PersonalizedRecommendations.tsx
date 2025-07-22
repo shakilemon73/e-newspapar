@@ -37,11 +37,8 @@ export const PersonalizedRecommendations = () => {
         
         if (!user) {
           // If no user, fetch popular articles instead
-          const response = await fetch('/api/articles/popular?limit=6');
-          if (!response.ok) {
-            throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
-          }
-          const data = await response.json();
+          const { getPopularArticles } = await import('../lib/supabase-api-direct');
+          const data = await getPopularArticles(6);
           setArticles(data);
           return;
         }
@@ -50,11 +47,8 @@ export const PersonalizedRecommendations = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           // If no session, fetch popular articles instead
-          const response = await fetch('/api/articles/popular?limit=6');
-          if (!response.ok) {
-            throw new Error('জনপ্রিয় আর্টিকেল লোড করতে সমস্যা হয়েছে');
-          }
-          const data = await response.json();
+          const { getPopularArticles } = await import('../lib/supabase-api-direct');
+          const data = await getPopularArticles(6);
           setArticles(data);
           return;
         }
@@ -62,29 +56,25 @@ export const PersonalizedRecommendations = () => {
         const token = session.access_token;
         
         // Fetch personalized recommendations
-        const response = await fetch('/api/personalized-recommendations?limit=6', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('সুপারিশকৃত আর্টিকেল লোড করতে সমস্যা হয়েছে');
+        try {
+          const { getPersonalizedRecommendations } = await import('../lib/supabase-api-direct');
+          const data = await getPersonalizedRecommendations(user.id, 6);
+          setArticles(data);
+        } catch (error) {
+          // If personalized fails, fallback to popular articles
+          console.warn('Personalized recommendations failed, using popular articles');
+          const { getPopularArticles } = await import('../lib/supabase-api-direct');
+          const data = await getPopularArticles(6);
+          setArticles(data);
         }
         
-        const data = await response.json();
-        setArticles(data);
-        
         // Also fetch reading history to check which articles have been read
-        const historyResponse = await fetch('/api/reading-history', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (historyResponse.ok) {
-          const historyData = await historyResponse.json();
+        try {
+          const { getUserReadingHistory } = await import('../lib/supabase-api-direct');
+          const historyData = await getUserReadingHistory(user.id);
           setReadArticles(historyData.map((article: any) => article.slug));
+        } catch (historyError) {
+          console.warn('Failed to fetch reading history:', historyError);
         }
         
         setError(null);
@@ -94,11 +84,9 @@ export const PersonalizedRecommendations = () => {
         
         // Try to fetch popular articles as fallback
         try {
-          const response = await fetch('/api/articles/popular?limit=6');
-          if (response.ok) {
-            const data = await response.json();
-            setArticles(data);
-          }
+          const { getPopularArticles } = await import('../lib/supabase-api-direct');
+          const data = await getPopularArticles(6);
+          setArticles(data);
         } catch (fallbackErr) {
           console.error('Error fetching fallback articles:', fallbackErr);
         }

@@ -71,26 +71,17 @@ export const TrendingAnalyticsDashboard = () => {
       setLoading(true);
       setError(null);
 
-      const [trendingRes, topicsRes, popularRes] = await Promise.all([
-        fetch('/api/articles/trending-advanced?limit=10'),
-        fetch('/api/trending-topics?limit=10'),
-        fetch('/api/articles/popular-advanced?limit=10')
+      const { getPopularArticles, getTrendingTopics } = await import('../lib/supabase-api-direct');
+      
+      const [trendingData, topicsData, popularData] = await Promise.all([
+        getPopularArticles(10), // Use popular as trending fallback
+        getTrendingTopics ? getTrendingTopics(10) : Promise.resolve([]),
+        getPopularArticles(10)
       ]);
 
-      if (trendingRes.ok) {
-        const trendingData = await trendingRes.json();
-        setTrendingArticles(trendingData);
-      }
-
-      if (topicsRes.ok) {
-        const topicsData = await topicsRes.json();
-        setTrendingTopics(topicsData);
-      }
-
-      if (popularRes.ok) {
-        const popularData = await popularRes.json();
-        setPopularArticles(popularData);
-      }
+      setTrendingArticles(trendingData);
+      setTrendingTopics(topicsData);
+      setPopularArticles(popularData);
     } catch (err) {
       setError('ট্রেন্ডিং ডেটা লোড করতে সমস্যা হয়েছে');
       console.error('Error fetching trending data:', err);

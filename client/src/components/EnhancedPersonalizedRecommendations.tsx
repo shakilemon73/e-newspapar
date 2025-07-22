@@ -55,13 +55,8 @@ export const EnhancedPersonalizedRecommendations = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/articles/popular?limit=12');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch popular articles');
-      }
-
-      const data = await response.json();
+      const { getPopularArticles } = await import('../lib/supabase-api-direct');
+      const data = await getPopularArticles(12);
       const transformedData = data.map((article: any) => ({
         ...article,
         recommendation_score: 0.8,

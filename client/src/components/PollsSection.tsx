@@ -39,11 +39,9 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
   const loadPolls = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/polls');
-      if (response.ok) {
-        const data = await response.json();
-        setPolls(data);
-      }
+      const { getPolls } = await import('../lib/supabase-api-direct');
+      const data = await getPolls();
+      setPolls(data);
     } catch (error) {
       console.error('Error loading polls:', error);
     } finally {
@@ -71,35 +69,25 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
     }
 
     try {
-      const response = await fetch(`/api/polls/${pollId}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          optionId,
-          userId: user.id
-        })
-      });
+      const { voteOnPoll } = await import('../lib/supabase-api-direct');
+      const result = await voteOnPoll(pollId, optionId, user.id);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 409) {
+      if (!result.success) {
+        if (result.message.includes('ইতিমধ্যে')) {
           setVotedPolls(prev => new Set([...prev, pollId]));
-          toast({
-            title: "ইতিমধ্যে ভোট দেওয়া",
-            description: "আপনি এই পোলে ইতিমধ্যে ভোট দিয়েছেন।",
-            variant: "destructive"
-          });
-          return;
         }
-        throw new Error(errorData.error || 'Failed to vote');
+        toast({
+          title: result.success ? "সফল" : "ত্রুটি",
+          description: result.message,
+          variant: result.success ? "default" : "destructive"
+        });
+        return;
       }
 
       setVotedPolls(prev => new Set([...prev, pollId]));
       toast({
         title: "সফল",
-        description: "আপনার ভোট সফলভাবে রেকর্ড করা হয়েছে।"
+        description: result.message
       });
       
       // Reload polls to get updated vote counts

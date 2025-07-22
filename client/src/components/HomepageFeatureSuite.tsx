@@ -31,7 +31,7 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 // আবিষ্কার করুন (Discovery) Widget
 export const DiscoveryWidget = () => {
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['/api/categories'],
+    queryKey: ['categories'],
     queryFn: async () => {
       const { getCategories } = await import('../lib/supabase-api-direct');
       return getCategories();

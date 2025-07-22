@@ -454,17 +454,24 @@ export async function getSocialMediaPosts(): Promise<any[]> {
   return data || [];
 }
 
-// Trending Topics API
-export async function getTrendingTopics(): Promise<any[]> {
+// Trending Topics API with Enhanced Features
+export async function getTrendingTopics(limit: number = 10): Promise<any[]> {
   const { data, error } = await supabase
     .from('trending_topics')
     .select('*')
     .order('trending_score', { ascending: false })
-    .limit(10);
+    .limit(limit);
   
   if (error) {
     console.error('Error fetching trending topics:', error);
-    return [];
+    // Return Bengali trending topics as fallback
+    return [
+      { name: 'নির্বাচন', trending_score: 0.95, category: 'রাজনীতি' },
+      { name: 'ক্রিকেট', trending_score: 0.87, category: 'খেলাধুলা' },
+      { name: 'রাজনীতি', trending_score: 0.82, category: 'রাজনীতি' },
+      { name: 'অর্থনীতি', trending_score: 0.76, category: 'অর্থনীতি' },
+      { name: 'আবহাওয়া', trending_score: 0.71, category: 'সাধারণ' }
+    ].slice(0, limit);
   }
   
   return data || [];
@@ -1198,14 +1205,18 @@ export async function getRecentActivity(): Promise<any[]> {
   }
 }
 
-// Poll APIs
-export async function getPolls(): Promise<any[]> {
+// Poll APIs with Enhanced Features
+export async function getPolls(limit: number = 10): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from('polls')
-      .select('*')
+      .select(`
+        *,
+        poll_options:poll_options(*)
+      `)
       .eq('is_active', true)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) throw error;
     return data || [];
@@ -1230,6 +1241,45 @@ export async function voteInPoll(pollId: number, userId: string, selectedOption:
   } catch (error) {
     console.error('Error voting in poll:', error);
     throw error;
+  }
+}
+
+// Vote on Poll API compatible with PollsSection component
+export async function voteOnPoll(pollId: number, optionId: number, userId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // Check if user already voted
+    const { data: existingVote } = await supabase
+      .from('user_interactions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('content_type', 'poll')
+      .eq('content_id', pollId)
+      .single();
+      
+    if (existingVote) {
+      return { success: false, message: 'আপনি ইতিমধ্যে এই পোলে ভোট দিয়েছেন' };
+    }
+    
+    // Record the vote
+    const { error } = await supabase
+      .from('user_interactions')
+      .insert({
+        user_id: userId,
+        content_type: 'poll',
+        content_id: pollId,
+        interaction_type: 'vote',
+        metadata: { option_id: optionId }
+      });
+      
+    if (error) {
+      console.error('Error voting on poll:', error);
+      return { success: false, message: 'ভোট দিতে সমস্যা হয়েছে' };
+    }
+    
+    return { success: true, message: 'আপনার ভোট সফলভাবে রেকর্ড করা হয়েছে' };
+  } catch (error) {
+    console.error('Error in voteOnPoll:', error);
+    return { success: false, message: 'ভোট দিতে সমস্যা হয়েছে' };
   }
 }
 
@@ -1516,6 +1566,65 @@ export async function getAdminUserStats(period: string = 'all'): Promise<any> {
     return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
   }
 }
+
+// Personalized Recommendations API
+export async function getPersonalizedRecommendations(userId: string, limit: number = 6): Promise<any[]> {
+  try {
+    // Try to get user reading history for personalization
+    const { data: readingHistory } = await supabase
+      .from('user_reading_history')
+      .select('article_id')
+      .eq('user_id', userId)
+      .limit(10);
+      
+    // Get user category preferences if available  
+    let preferredCategories: number[] = [];
+    if (readingHistory && readingHistory.length > 0) {
+      const { data: categoryPrefs } = await supabase
+        .from('articles')
+        .select('category_id')
+        .in('id', readingHistory.map(h => h.article_id));
+        
+      if (categoryPrefs) {
+        preferredCategories = [...new Set(categoryPrefs.map(c => c.category_id))];
+      }
+    }
+    
+    // Fetch personalized articles based on preferences
+    let query = supabase
+      .from('articles')
+      .select(`
+        *,
+        categories(id, name, slug)
+      `)
+      .eq('is_published', true)
+      .order('published_at', { ascending: false })
+      .limit(limit);
+      
+    // If we have category preferences, prioritize those
+    if (preferredCategories.length > 0) {
+      query = query.in('category_id', preferredCategories);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching personalized recommendations:', error);
+      // Fallback to popular articles
+      return getPopularArticles(limit);
+    }
+    
+    return transformArticleData(data || []);
+  } catch (error) {
+    console.error('Error in getPersonalizedRecommendations:', error);
+    // Fallback to popular articles
+    return getPopularArticles(limit);
+  }
+}
+
+
+
+
 
 
 

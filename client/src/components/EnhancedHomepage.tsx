@@ -332,7 +332,7 @@ const SocialActivityWidget: React.FC = () => {
 // Content Categories Widget
 const ContentCategoriesWidget: React.FC = () => {
   const { data: categories, isLoading } = useQuery({
-    queryKey: ['/api/categories'],
+    queryKey: ['categories'],
     queryFn: async () => {
       const { getCategories } = await import('../lib/supabase-api-direct');
       return getCategories();
@@ -419,10 +419,10 @@ export const EnhancedHomepage: React.FC = () => {
   });
 
   const { data: popularArticles, isLoading: popularLoading } = useQuery({
-    queryKey: ['/api/articles/popular'],
+    queryKey: ['popular-articles'],
     queryFn: async () => {
       const { getPopularArticles } = await import('../lib/supabase-api-direct');
-      return getPopularArticles();
+      return getPopularArticles(6);
     },
   });
 
