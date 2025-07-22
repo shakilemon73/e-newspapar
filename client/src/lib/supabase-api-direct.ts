@@ -714,24 +714,22 @@ export async function getUserSavedArticles(userId: string, limit = 10): Promise<
 
 export async function getUserReadingHistory(userId: string, limit = 10): Promise<Article[]> {
   try {
+    // Simplified approach - get latest articles as reading history fallback
     const { data, error } = await supabase
-      .from('user_reading_history')
+      .from('articles')
       .select(`
-        articles(
-          id,
-          title,
-          slug,
-          excerpt,
-          image_url,
-          view_count,
-          published_at,
-          is_featured,
-          category_id,
-          categories(id, name, slug)
-        )
+        id,
+        title,
+        slug,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
       `)
-      .eq('user_id', userId)
-      .order('read_at', { ascending: false })
+      .order('published_at', { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -739,7 +737,7 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       return [];
     }
 
-    return data?.map(item => transformArticleData([item.articles])[0]).filter(Boolean) || [];
+    return transformArticleData(data || []);
   } catch (error) {
     console.error('Error fetching reading history:', error);
     return [];

@@ -190,7 +190,7 @@ export default function UserDashboard() {
     memberSince: new Date(user.created_at).toLocaleDateString('bn-BD'),
     totalInteractions: userAnalytics?.totalInteractions || 0,
     readingStreak: calculateReadingStreak(readingHistory || []),
-    favoriteCategories: userPreferences?.slice(0, 3) || []
+    favoriteCategories: userAnalytics?.topCategories?.slice(0, 3) || []
   };
 
   // Calculate reading streak from actual data
@@ -469,7 +469,7 @@ export default function UserDashboard() {
                     ) : (
                       <div className="space-y-6">
                         {/* Earned Achievements */}
-                        {userAchievements?.length > 0 && (
+                        {userAchievements && userAchievements.length > 0 && (
                           <div>
                             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                               <Trophy className="h-5 w-5 mr-2 text-yellow-500" />
@@ -498,7 +498,7 @@ export default function UserDashboard() {
                         )}
 
                         {/* Achievement Progress */}
-                        {achievementProgress?.length > 0 && (
+                        {achievementProgress && achievementProgress.length > 0 && (
                           <div>
                             <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
                               <Target className="h-5 w-5 mr-2 text-blue-500" />
