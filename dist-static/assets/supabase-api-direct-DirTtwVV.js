@@ -1,4 +1,4 @@
-import{s as n}from"./main-CnSgwJkI.js";console.log("Direct API client using: ANON KEY");async function _(){const{data:r,error:e}=await n.from("categories").select("*").order("name",{ascending:!0});return e?(console.error("Error fetching categories:",e),[]):r||[]}async function m(r){const{data:e,error:t}=await n.from("categories").select("*").eq("slug",r).single();return t?(console.error("Error fetching category:",t),null):e}async function y(r={}){let e=n.from("articles").select(`
+import{s as n}from"./main-ECqwX6Q8.js";console.log("Direct API client using: ANON KEY");async function _(){const{data:r,error:e}=await n.from("categories").select("*").order("name",{ascending:!0});return e?(console.error("Error fetching categories:",e),[]):r||[]}async function m(r){const{data:e,error:t}=await n.from("categories").select("*").eq("slug",r).single();return t?(console.error("Error fetching category:",t),null):e}async function y(r={}){let e=n.from("articles").select(`
       id,
       title,
       slug,

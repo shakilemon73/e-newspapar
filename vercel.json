@@ -1,14 +1,17 @@
 {
   "version": 2,
+  "buildCommand": "node build-static.js",
+  "outputDirectory": "dist-static",
+  "installCommand": "npm install",
   "builds": [
     {
-      "src": "dist-static/**",
-      "use": "@vercel/static"
+      "src": "package.json",
+      "use": "@vercel/static-build"
     }
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|favicon|generated-icon|og-default).*)",
       "destination": "/index-static.html"
     }
   ],
@@ -21,6 +24,20 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/(favicon\\.ico|favicon\\.svg|generated-icon\\.png|og-default-image\\.svg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
     }
-  ]
+  ],
+  "functions": {
+    "client/src/lib/supabase-api-direct.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
