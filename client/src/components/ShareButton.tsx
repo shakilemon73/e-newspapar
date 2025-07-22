@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Share2, Facebook, Twitter, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -21,12 +21,17 @@ interface ShareButtonProps {
 export function ShareButton({ 
   articleId, 
   title, 
-  url = window.location.href,
+  url,
   className = ''
 }: ShareButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
+  
+  // Create a stable URL to prevent infinite re-renders
+  const shareUrl = useMemo(() => {
+    return url || window.location.href;
+  }, [url]);
 
   const trackShare = async (platform: string) => {
     if (!user) return;
@@ -47,25 +52,25 @@ export function ShareButton({
     
     try {
       const encodedTitle = encodeURIComponent(title);
-      const encodedUrl = encodeURIComponent(url);
+      const encodedUrl = encodeURIComponent(shareUrl);
       
-      let shareUrl = '';
+      let platformShareUrl = '';
       
       switch (platform) {
         case 'facebook':
-          shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+          platformShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
           break;
         case 'twitter':
-          shareUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+          platformShareUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
           break;
         case 'whatsapp':
-          shareUrl = `https://api.whatsapp.com/send?text=${encodedTitle} ${encodedUrl}`;
+          platformShareUrl = `https://api.whatsapp.com/send?text=${encodedTitle} ${encodedUrl}`;
           break;
         case 'telegram':
-          shareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+          platformShareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
           break;
         case 'copy':
-          await navigator.clipboard.writeText(url);
+          await navigator.clipboard.writeText(shareUrl);
           toast({
             title: "সফল",
             description: "লিংক কপি করা হয়েছে।"
@@ -74,8 +79,8 @@ export function ShareButton({
           return;
       }
       
-      if (shareUrl) {
-        window.open(shareUrl, '_blank', 'width=600,height=400');
+      if (platformShareUrl) {
+        window.open(platformShareUrl, '_blank', 'width=600,height=400');
         await trackShare(platform);
         toast({
           title: "সফল",

@@ -1,0 +1,35 @@
+Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn&#x27;t have a dependency array, or one of the dependencies changes on every render.
+    at https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VKFLHBAB.js?v=48619820:1955:13
+    at https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dropdown-menu.js?v=48619820:146:13
+    at https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dropdown-menu.js?v=48619820:948:13
+    at Provider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7CHUOEIG.js?v=48619820:38:15)
+    at Provider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7CHUOEIG.js?v=48619820:38:15)
+    at Provider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7CHUOEIG.js?v=48619820:38:15)
+    at Popper (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VKFLHBAB.js?v=48619820:1947:11)
+    at Menu (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dropdown-menu.js?v=48619820:100:11)
+    at Provider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-7CHUOEIG.js?v=48619820:38:15)
+    at DropdownMenu (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-dropdown-menu.js?v=48619820:913:5)
+    at ShareButton (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/components/ShareButton.tsx:31:3)
+    at div
+    at div
+    at div
+    at _c9 (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at div
+    at div
+    at ArticleDetail (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/pages/ArticleDetail.tsx:88:22)
+    at Route (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=48619820:206:16)
+    at Switch (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=48619820:262:17)
+    at UserRouter
+    at main
+    at div
+    at SiteSettingsProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/contexts/SiteSettingsContext.tsx:36:40)
+    at AuthProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/hooks/use-supabase-auth.tsx:22:32)
+    at ThemeProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/components/ThemeProvider.tsx:20:33)
+    at UserApp
+    at App (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/App.tsx?v=ZU9AyshzcmihdL8gnDCj5:24:22)
+    at QueryClientProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=48619820:2934:3)

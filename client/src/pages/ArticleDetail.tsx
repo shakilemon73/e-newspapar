@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
@@ -124,6 +124,12 @@ const ArticleDetail = () => {
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
+  
+  // Create a stable share URL to prevent infinite re-renders
+  const shareUrl = useMemo(() => {
+    if (!article) return undefined;
+    return `${window.location.origin}/article/${createBengaliSlug(article.title)}`;
+  }, [article?.title]);
   
   // Note: View tracking is now handled directly in the fetchArticle function
   
@@ -1485,6 +1491,7 @@ const ArticleDetail = () => {
                       <ShareButton 
                         articleId={article.id}
                         title={article.title}
+                        url={shareUrl}
                         className="transition-all duration-300 hover:scale-105"
                       />
 
