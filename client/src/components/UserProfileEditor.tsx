@@ -14,30 +14,18 @@ import { useToast } from '@/hooks/use-toast';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 
 interface UserProfile {
+  id?: number;
   user_id: string;
-  full_name?: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string; // Computed field
   bio?: string;
   avatar_url?: string;
   location?: string;
-  phone?: string;
   website?: string;
-  date_of_birth?: string;
-  gender?: string;
-  occupation?: string;
-  favorite_categories?: string[];
-  reading_preferences?: {
-    language: string;
-    font_size: string;
-    dark_mode: boolean;
-    notifications: boolean;
-    email_digest: boolean;
-    auto_bookmark: boolean;
-  };
-  privacy_settings?: {
-    profile_visible: boolean;
-    activity_visible: boolean;
-    reading_history_visible: boolean;
-  };
+  social_links?: any;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface Category {
@@ -82,28 +70,21 @@ export const UserProfileEditor = () => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        throw error;
+        console.error('Error fetching user profile:', error);
+        // Don't throw error, just log it and create default profile
       }
 
       // If no profile exists, create default profile
       if (!data) {
+        // Create default profile using actual database schema
         const defaultProfile: Partial<UserProfile> = {
           user_id: user.id,
-          full_name: user.user_metadata?.full_name || '',
-          reading_preferences: {
-            language: 'bn',
-            font_size: 'medium',
-            dark_mode: false,
-            notifications: true,
-            email_digest: false,
-            auto_bookmark: false
-          },
-          privacy_settings: {
-            profile_visible: true,
-            activity_visible: true,
-            reading_history_visible: false
-          },
-          favorite_categories: []
+          first_name: user.user_metadata?.full_name?.split(' ')[0] || '',
+          last_name: user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+          bio: '',
+          location: '',
+          website: '',
+          social_links: {},
         };
 
         const { data: newProfile, error: createError } = await supabase
@@ -112,10 +93,22 @@ export const UserProfileEditor = () => {
           .select()
           .single();
 
-        if (createError) throw createError;
-        setProfile(newProfile);
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          // Set a local profile even if DB insert fails
+          setProfile(defaultProfile as UserProfile);
+        } else {
+          setProfile(newProfile);
+        }
       } else {
-        setProfile(data);
+        // Add computed full_name field
+        const profileWithFullName = {
+          ...data,
+          full_name: data.first_name && data.last_name 
+            ? `${data.first_name} ${data.last_name}` 
+            : data.first_name || data.last_name || ''
+        };
+        setProfile(profileWithFullName);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -151,16 +144,29 @@ export const UserProfileEditor = () => {
       const user = await getCurrentUser();
       if (!user) return;
 
+      // Only save fields that exist in the database
+      const profileToSave = {
+        user_id: profile.user_id,
+        first_name: profile.full_name?.split(' ')[0] || profile.first_name || '',
+        last_name: profile.full_name?.split(' ').slice(1).join(' ') || profile.last_name || '',
+        bio: profile.bio || '',
+        avatar_url: profile.avatar_url || '',
+        location: profile.location || '',
+        website: profile.website || '',
+        social_links: profile.social_links || {},
+        updated_at: new Date().toISOString()
+      };
+
       const { error } = await supabase
         .from('user_profiles')
-        .upsert({
-          ...profile,
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(profileToSave, {
           onConflict: 'user_id'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Profile save error details:', error);
+        throw error;
+      }
 
       toast({
         title: "সফল",
@@ -183,31 +189,9 @@ export const UserProfileEditor = () => {
     setProfile(prev => prev ? { ...prev, [field]: value } : null);
   };
 
-  // Update nested field
+  // Simplified update functions since we're removing complex features
   const updateNestedField = (parentField: string, field: string, value: any) => {
-    setProfile(prev => prev ? {
-      ...prev,
-      [parentField]: {
-        ...(prev[parentField as keyof UserProfile] as any || {}),
-        [field]: value
-      }
-    } : null);
-  };
-
-  // Toggle favorite category
-  const toggleFavoriteCategory = (categoryId: number) => {
-    setProfile(prev => {
-      if (!prev) return null;
-      
-      const currentFavorites = prev.favorite_categories || [];
-      const categoryIdStr = categoryId.toString();
-      
-      const newFavorites = currentFavorites.includes(categoryIdStr)
-        ? currentFavorites.filter(id => id !== categoryIdStr)
-        : [...currentFavorites, categoryIdStr];
-
-      return { ...prev, favorite_categories: newFavorites };
-    });
+    // Placeholder for future features
   };
 
   useEffect(() => {

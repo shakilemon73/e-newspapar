@@ -1,5 +1,5 @@
-import { UserProfileEditor } from '@/components/UserProfileEditor';
+import { SimpleUserProfile } from '@/components/SimpleUserProfile';
 
 export default function Profile() {
-  return <UserProfileEditor />;
+  return <SimpleUserProfile />;
 }
