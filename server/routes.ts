@@ -1610,6 +1610,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alternative endpoint for social media posts  
+  app.get(`${apiPrefix}/social-media-posts`, async (req, res) => {
+    try {
+      const platform = req.query.platform as string;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const platforms = platform ? [platform] : undefined;
+      
+      const posts = await storage.getSocialMediaPosts(limit, platforms);
+      res.json(posts);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Admin Social Media Posts Management
   app.post(`${apiPrefix}/social-media`, requireAdmin, async (req, res) => {
     try {

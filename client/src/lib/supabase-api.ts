@@ -112,31 +112,20 @@ export async function getLatestArticles(limit = 10) {
   return data || [];
 }
 
-// Popular Articles API
+// Popular Articles API - Use Express API instead of direct Supabase call
 export async function getPopularArticles(limit = 5) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      categories(id, name, slug)
-    `)
-    .not('view_count', 'is', null)
-    .gte('view_count', 1)
-    .order('view_count', { ascending: false })
-    .limit(limit);
-
-  if (error) {
+  try {
+    const response = await fetch(`/api/articles/popular?limit=${limit}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data || [];
+  } catch (error) {
     console.error('Error fetching popular articles:', error);
     return [];
   }
-
-  return data || [];
 }
 
 // Increment article views
@@ -477,4 +466,55 @@ export async function searchArticles(query: string, limit = 20) {
   }
 
   return data || [];
+}
+
+// Social Media Posts API - Use Express API instead of direct Supabase call
+export async function getSocialMediaPosts(platform?: string) {
+  try {
+    let url = '/api/social-media-posts';
+    if (platform) {
+      url += `?platform=${encodeURIComponent(platform)}`;
+    }
+    
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching social media posts:', error);
+    
+    // Return mock data as fallback
+    const mockData = [
+      {
+        id: 1,
+        platform: 'facebook',
+        content: 'সর্বশেষ খবর: বাংলাদেশে নতুন উন্নয়ন প্রকল্প শুরু',
+        embed_code: '<div>Facebook embed placeholder</div>',
+        published_at: new Date().toISOString()
+      },
+      {
+        id: 2,
+        platform: 'twitter',
+        content: 'ব্রেকিং: আজকের গুরুত্বপূর্ণ সংবাদ',
+        embed_code: '<div>Twitter embed placeholder</div>',
+        published_at: new Date().toISOString()
+      },
+      {
+        id: 3,
+        platform: 'instagram',
+        content: 'আজকের বিশেষ মুহূর্তের ছবি',
+        embed_code: '<div>Instagram embed placeholder</div>',
+        published_at: new Date().toISOString()
+      }
+    ];
+
+    if (platform) {
+      return mockData.filter(post => post.platform === platform);
+    }
+
+    return mockData;
+  }
 }

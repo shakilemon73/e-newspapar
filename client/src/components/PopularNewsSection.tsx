@@ -35,7 +35,19 @@ export const PopularNewsSection = () => {
         const { getPopularArticles } = await import('../lib/supabase-api');
         const data = await getPopularArticles(5);
         console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
-        setPopularArticles(data);
+        
+        // Transform data to match Article interface
+        const transformedData = data.map((article: any) => ({
+          id: article.id,
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt,
+          publishedAt: article.published_at || article.publishedAt,
+          category: article.categories?.[0] || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
+          viewCount: article.view_count || article.viewCount || 0
+        }));
+        
+        setPopularArticles(transformedData);
         setError(null);
       } catch (err) {
         setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
