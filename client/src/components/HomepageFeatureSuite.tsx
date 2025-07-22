@@ -32,12 +32,18 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 export const DiscoveryWidget = () => {
   const { data: categories, isLoading } = useQuery({
     queryKey: ['/api/categories'],
-    queryFn: () => fetch('/api/categories').then(res => res.json()),
+    queryFn: async () => {
+      const { getCategories } = await import('../lib/supabase-api-direct');
+      return getCategories();
+    },
   });
 
   const { data: trendingTopics } = useQuery({
     queryKey: ['/api/trending-topics'],
-    queryFn: () => fetch('/api/trending-topics?limit=5').then(res => res.json()),
+    queryFn: async () => {
+      const { getTrendingTopics } = await import('../lib/supabase-api-direct');
+      return getTrendingTopics();
+    },
   });
 
   if (isLoading) {

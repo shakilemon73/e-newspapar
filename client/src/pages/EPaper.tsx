@@ -26,7 +26,7 @@ const EPaper = () => {
       try {
         setIsLoading(true);
         
-        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api-final');
+        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api-direct');
         
         // Fetch latest e-paper
         const latestData = await getLatestEPaper();

@@ -31,7 +31,7 @@ export const FeaturedSlideshow = () => {
     const fetchFeaturedArticles = async () => {
       try {
         setIsLoading(true);
-        const { getArticles, getLatestArticles } = await import('../lib/supabase-api');
+        const { getArticles, getLatestArticles } = await import('../lib/supabase-api-direct');
         
         const data = await getArticles({ featured: true, limit: 3 });
         setFeaturedArticles(data);

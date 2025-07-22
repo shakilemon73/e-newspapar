@@ -43,7 +43,7 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
 
   const fetchSettings = async () => {
     try {
-      const { getSiteSettings } = await import('../lib/supabase-api');
+      const { getSiteSettings } = await import('../lib/supabase-api-direct');
       const data = await getSiteSettings();
       console.log('Fetched dynamic settings:', data);
       setSettings({

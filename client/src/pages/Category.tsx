@@ -75,7 +75,7 @@ const Category = () => {
       try {
         setIsLoading(true);
         
-        const { getCategoryBySlug, getCategories, getArticles, getPopularArticles } = await import('../lib/supabase-api-complete');
+        const { getCategoryBySlug, getCategories, getArticles, getPopularArticles } = await import('../lib/supabase-api-direct');
         
         // Fetch all categories for navigation
         const categoriesData = await getCategories();
@@ -127,7 +127,7 @@ const Category = () => {
       const nextPage = page + 1;
       const offset = page * limit;
       
-      const { getArticles, getPopularArticles } = await import('../lib/supabase-api-complete');
+      const { getArticles, getPopularArticles } = await import('../lib/supabase-api-direct');
       
       let newArticles;
       if (sortBy === 'popular') {

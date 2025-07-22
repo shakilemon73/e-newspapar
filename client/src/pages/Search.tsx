@@ -50,8 +50,8 @@ const Search = () => {
       
       try {
         setIsLoading(true);
-        const { searchArticles } = await import('../lib/supabase-api-complete');
-        const data = await searchArticles(query, limit, 0);
+        const { searchArticles } = await import('../lib/supabase-api-direct');
+        const data = await searchArticles(query, limit);
         setArticles(data);
         setHasMore(data.length === limit);
         setPage(1);
@@ -75,8 +75,8 @@ const Search = () => {
       const nextPage = page + 1;
       const offset = page * limit;
       
-      const { searchArticles } = await import('../lib/supabase-api-complete');
-      const newArticles = await searchArticles(query, limit, offset);
+      const { searchArticles } = await import('../lib/supabase-api-direct');
+      const newArticles = await searchArticles(query, limit);
       
       if (newArticles.length > 0) {
         setArticles([...articles, ...newArticles]);

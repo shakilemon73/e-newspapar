@@ -51,7 +51,10 @@ import { SiteName } from '@/hooks/use-global-site-name';
 const PersonalizedRecommendationsWidget: React.FC = () => {
   const { data: recommendations, isLoading } = useQuery({
     queryKey: ['/api/articles/featured'],
-    queryFn: () => fetch('/api/articles/featured').then(res => res.json()),
+    queryFn: async () => {
+      const { getFeaturedArticles } = await import('../lib/supabase-api-direct');
+      return getFeaturedArticles(5);
+    },
   });
 
   if (isLoading) {

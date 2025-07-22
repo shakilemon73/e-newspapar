@@ -29,8 +29,8 @@ export default function Videos() {
         setLoading(true);
         setError(null);
         
-        const { getVideos } = await import('../lib/supabase-api-final');
-        const data = await getVideos();
+        const { getVideoContent } = await import('../lib/supabase-api-direct');
+        const data = await getVideoContent();
         setVideos(data);
       } catch (err) {
         setError("ভিডিও লোড করতে সমস্যা হয়েছে");
