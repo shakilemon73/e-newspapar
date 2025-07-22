@@ -110,9 +110,11 @@ export const FeaturedSlideshow = () => {
                 className="w-full aspect-[16/9] object-cover"
               />
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
-                <Link href={`/category/${article.category.slug}`} className="bg-accent text-white text-xs px-2 py-1 rounded inline-block">
-                  {article.category.name}
-                </Link>
+                {article.category && (
+                  <Link href={`/category/${article.category.slug}`} className="bg-accent text-white text-xs px-2 py-1 rounded inline-block">
+                    {article.category.name}
+                  </Link>
+                )}
                 <h2 className="headline text-white mt-2 mb-2">
                   <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-white hover:text-gray-200 transition">
                     {article.title}
@@ -153,9 +155,11 @@ export const FeaturedSlideshow = () => {
                 alt={article.title} 
                 className="w-full h-44 object-cover"
               />
-              <Link href={`/category/${article.category.slug}`} className="absolute top-2 left-2 bg-accent text-white text-xs px-2 py-1 rounded">
-                {article.category.name}
-              </Link>
+              {article.category && (
+                <Link href={`/category/${article.category.slug}`} className="absolute top-2 left-2 bg-accent text-white text-xs px-2 py-1 rounded">
+                  {article.category.name}
+                </Link>
+              )}
             </div>
             <div className="p-3">
               <h3 className="news-title mb-1 line-clamp-2">

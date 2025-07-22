@@ -170,6 +170,8 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
 export async function getPopularArticles(limit = 5): Promise<Article[]> {
   try {
+    console.log(`[Supabase] Attempting to fetch ${limit} popular articles...`);
+    
     const { data, error } = await supabase
       .from('articles')
       .select(`
@@ -188,12 +190,25 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching popular articles from Supabase:', error);
+      console.error('[Supabase] Error fetching popular articles:', error);
+      console.error('[Supabase] Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      return [];
+    }
+
+    console.log(`[Supabase] Successfully fetched ${data?.length || 0} articles`);
+    
+    if (!data || data.length === 0) {
+      console.warn('[Supabase] No articles found in database');
       return [];
     }
 
     // Transform data to include both naming conventions
-    return (data || []).map((article: any) => ({
+    const transformedData = data.map((article: any) => ({
       ...article,
       imageUrl: article.image_url,
       viewCount: article.view_count,
@@ -202,8 +217,11 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
       categoryId: article.category_id,
       category: Array.isArray(article.categories) ? article.categories[0] : article.categories
     }));
+
+    console.log(`[Supabase] Transformed data sample:`, transformedData[0]);
+    return transformedData;
   } catch (err) {
-    console.error('Failed to fetch popular articles:', err);
+    console.error('[Supabase] Failed to fetch popular articles - unexpected error:', err);
     return [];
   }
 }

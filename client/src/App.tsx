@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import AdminApp from "./AdminApp";
 import UserApp from "./UserApp";
-import SetAdminRole from "@/pages/SetAdminRole";
+import SetAdminRole from "./pages/SetAdminRole";
 
 function App() {
   const [location] = useLocation();
