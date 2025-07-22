@@ -1,0 +1,76 @@
+hook.js:608 Error fetching social media posts: TypeError: getSocialMediaPosts is not a function
+    at fetchSocialPosts (SocialMediaFeed.tsx:26:47)
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/epapers?select=*&is_latest=eq.true:1  Failed to load resource: the server responded with a status of 406 ()
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/site_settings?select=*:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 Error fetching latest e-paper: Object
+overrideMethod @ hook.js:608
+hook.js:608 Error fetching site settings: Object
+overrideMethod @ hook.js:608
+SiteSettingsContext.tsx:48 Fetched dynamic settings: Object
+PopularNewsSection.tsx:37 [PopularNews] Fetched 0 popular articles for daily
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/epapers?select=*&order=publish_date.desc&limit=1:1  Failed to load resource: the server responded with a status of 406 ()
+WeatherWidget.tsx:45 [Location] User location: 25.7818624, 89.636864
+WeatherWidget.tsx:63 [Weather] Successfully fetched location weather for রংপুর
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/site_settings?select=*:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 Error fetching site settings: Object
+overrideMethod @ hook.js:608
+SiteSettingsContext.tsx:48 Fetched dynamic settings: Object
+@supabase_supabase-js.js?v=5fa56a63:3922  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/site_settings?select=* 404 (Not Found)
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3922
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3943
+fulfilled @ @supabase_supabase-js.js?v=5fa56a63:3895
+Promise.then
+step @ @supabase_supabase-js.js?v=5fa56a63:3908
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3910
+__awaiter6 @ @supabase_supabase-js.js?v=5fa56a63:3892
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3933
+then @ @supabase_supabase-js.js?v=5fa56a63:89
+supabase-api.ts:341 Error fetching site settings: {code: '42P01', details: null, hint: null, message: 'relation "public.site_settings" does not exist'}
+overrideMethod @ hook.js:608
+getSiteSettings @ supabase-api.ts:341
+await in getSiteSettings
+fetchSettings @ SiteSettingsContext.tsx:47
+await in fetchSettings
+refreshSettings @ SiteSettingsContext.tsx:70
+(anonymous) @ SiteSettingsContext.tsx:91
+SiteSettingsContext.tsx:48 Fetched dynamic settings: {siteName: "Emon's Daily News", siteDescription: 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র', logoUrl: '', defaultLanguage: 'bn', siteUrl: 'https://emonsdaily.com'}
+@supabase_supabase-js.js?v=5fa56a63:3922  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/site_settings?select=* 404 (Not Found)
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3922
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3943
+fulfilled @ @supabase_supabase-js.js?v=5fa56a63:3895
+Promise.then
+step @ @supabase_supabase-js.js?v=5fa56a63:3908
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3910
+__awaiter6 @ @supabase_supabase-js.js?v=5fa56a63:3892
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3933
+then @ @supabase_supabase-js.js?v=5fa56a63:89
+PopularNewsSection.tsx:37 [PopularNews] Fetched 0 popular articles for daily
+supabase-api.ts:341 Error fetching site settings: {code: '42P01', details: null, hint: null, message: 'relation "public.site_settings" does not exist'}
+overrideMethod @ hook.js:608
+getSiteSettings @ supabase-api.ts:341
+await in getSiteSettings
+fetchSettings @ SiteSettingsContext.tsx:47
+await in fetchSettings
+refreshSettings @ SiteSettingsContext.tsx:70
+(anonymous) @ SiteSettingsContext.tsx:91
+SiteSettingsContext.tsx:48 Fetched dynamic settings: {siteName: "Emon's Daily News", siteDescription: 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র', logoUrl: '', defaultLanguage: 'bn', siteUrl: 'https://emonsdaily.com'}
+@supabase_supabase-js.js?v=5fa56a63:3922  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/site_settings?select=* 404 (Not Found)
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3922
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3943
+fulfilled @ @supabase_supabase-js.js?v=5fa56a63:3895
+Promise.then
+step @ @supabase_supabase-js.js?v=5fa56a63:3908
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3910
+__awaiter6 @ @supabase_supabase-js.js?v=5fa56a63:3892
+(anonymous) @ @supabase_supabase-js.js?v=5fa56a63:3933
+then @ @supabase_supabase-js.js?v=5fa56a63:89
+supabase-api.ts:341 Error fetching site settings: {code: '42P01', details: null, hint: null, message: 'relation "public.site_settings" does not exist'}
+overrideMethod @ hook.js:608
+getSiteSettings @ supabase-api.ts:341
+await in getSiteSettings
+fetchSettings @ SiteSettingsContext.tsx:47
+await in fetchSettings
+refreshSettings @ SiteSettingsContext.tsx:70
+(anonymous) @ SiteSettingsContext.tsx:91
+SiteSettingsContext.tsx:48 Fetched dynamic settings: {siteName: "Emon's Daily News", siteDescription: 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র', logoUrl: '', defaultLanguage: 'bn', siteUrl: 'https://emonsdaily.com'}
