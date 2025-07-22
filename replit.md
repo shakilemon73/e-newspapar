@@ -4,9 +4,20 @@
 
 This is a comprehensive Bengali news website built with modern web technologies, featuring a full-stack architecture with React frontend, Express backend, and Supabase database integration. The platform provides a complete news reading experience with advanced features like personalized recommendations, user analytics, and multilingual support.
 
+**MIGRATION COMPLETED**: Successfully migrated from Replit Agent to standard Replit environment and converted Express.js server-based architecture to a static site with direct Supabase API calls for improved performance and CDN deployment capability.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (July 2025)
+
+### Migration Completed
+- ✅ **Replit Agent to Standard Replit**: Successfully migrated project to standard Replit environment
+- ✅ **Express to Static Site**: Converted Express.js server to static site using direct Supabase API calls
+- ✅ **Database Schema Fixes**: Fixed column naming mismatches (read_time vs view_count)
+- ✅ **Static Build Configuration**: Created vite.config.static.ts for static site generation
+- ✅ **Deployment Ready**: Configured for Vercel and Netlify deployment with proper CDN optimization
 
 ## System Architecture
 

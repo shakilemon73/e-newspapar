@@ -1,0 +1,57 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#F8F9FA"/>
+  
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E3F2FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Pattern -->
+    <pattern id="dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <circle cx="20" cy="20" r="2" fill="#E8F5E8" opacity="0.6"/>
+    </pattern>
+  </defs>
+  
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  <rect width="1200" height="630" fill="url(#dots)"/>
+  
+  <!-- Main Logo Area -->
+  <rect x="100" y="150" width="1000" height="330" rx="20" fill="#FFFFFF" stroke="#E0E7FF" stroke-width="2" opacity="0.9"/>
+  
+  <!-- Logo and Brand -->
+  <text x="600" y="240" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="#1F2937">
+    Bengali News
+  </text>
+  
+  <!-- Tagline -->
+  <text x="600" y="290" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#6B7280">
+    বাংলাদেশের শীর্ষস্থানীয় অনলাইন সংবাদপত্র
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="330" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#9CA3AF">
+    সর্বশেষ খবর • রাজনীতি • অর্থনীতি • খেলা • বিনোদন
+  </text>
+  
+  <!-- URL -->
+  <text x="600" y="380" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#4F46E5" font-weight="500">
+    prothomalo.com
+  </text>
+  
+  <!-- Decorative Elements -->
+  <circle cx="200" cy="220" r="8" fill="#10B981" opacity="0.7"/>
+  <circle cx="220" cy="240" r="6" fill="#059669" opacity="0.6"/>
+  <circle cx="180" cy="250" r="4" fill="#047857" opacity="0.5"/>
+  
+  <circle cx="1000" cy="220" r="8" fill="#3B82F6" opacity="0.7"/>
+  <circle cx="980" cy="240" r="6" fill="#2563EB" opacity="0.6"/>
+  <circle cx="1020" cy="250" r="4" fill="#1D4ED8" opacity="0.5"/>
+  
+  <!-- Footer -->
+  <text x="600" y="560" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#9CA3AF">
+    © ২০২৫ Bengali News • সর্বক্ষণ সত্য ও নিরপেক্ষ সংবাদ প্রকাশের অঙ্গীকার
+  </text>
+</svg>

@@ -32,7 +32,7 @@ export const AudioArticles = () => {
         setIsLoading(true);
         
         // Fetch audio articles from Supabase API
-        const { getAudioArticles } = await import('../lib/supabase-api');
+        const { getAudioArticles } = await import('../lib/supabase-api-corrected');
         const data: AudioArticle[] = await getAudioArticles();
         
         if (data && data.length > 0) {
