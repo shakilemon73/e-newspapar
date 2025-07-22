@@ -575,7 +575,7 @@ const ArticleDetail = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
     
-    const cleanContent = stripHtmlTags(article.content);
+    const cleanContent = stripHtmlTags(article.content || '');
     
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -754,10 +754,11 @@ const ArticleDetail = () => {
 
   // Share functionality
   const shareArticle = async () => {
+    if (!article) return;
     const cleanUrl = getCleanShareUrl(article.slug, article.title);
     const shareData = {
       title: article.title,
-      text: article.excerpt,
+      text: article.excerpt || '',
       url: cleanUrl,
     };
 
@@ -801,7 +802,7 @@ const ArticleDetail = () => {
       setAudioProgress(0);
     } else {
       // Clean text content by stripping HTML tags
-      const cleanContent = stripHtmlTags(article.content);
+      const cleanContent = stripHtmlTags(article.content || '');
       const textToSpeak = `${article.title}. ${cleanContent}`;
       console.log('Text to speak length:', textToSpeak.length);
       console.log('Text preview:', textToSpeak.substring(0, 100) + '...');
@@ -962,7 +963,7 @@ const ArticleDetail = () => {
     // Note: Rate changes require restarting speech synthesis
     if (currentUtterance && isAudioPlaying && speechSynthesis && article) {
       speechSynthesis.cancel();
-      const cleanContent = stripHtmlTags(article.content);
+      const cleanContent = stripHtmlTags(article.content || '');
       const textToSpeak = `${article.title}. ${cleanContent}`;
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = newRate;
@@ -980,7 +981,7 @@ const ArticleDetail = () => {
     // Note: Pitch changes require restarting speech synthesis
     if (currentUtterance && isAudioPlaying && speechSynthesis && article && article.content) {
       speechSynthesis.cancel();
-      const cleanContent = stripHtmlTags(article.content);
+      const cleanContent = stripHtmlTags(article.content || '');
       const textToSpeak = `${article.title}. ${cleanContent}`;
       const utterance = new SpeechSynthesisUtterance(textToSpeak);
       utterance.rate = speechRate;
@@ -993,11 +994,19 @@ const ArticleDetail = () => {
   };
 
   useEffect(() => {
+    if (!articleSlug) return;
+    
     const fetchArticle = async () => {
       try {
         setIsLoading(true);
         setError(null);
         startTimeRef.current = Date.now();
+        
+        // Reset states for new article
+        window.scrollTo(0, 0);
+        setReadingProgress(0);
+        setScrollDepth(0);
+        setTimeSpentReading(0);
         
         const { getArticleBySlug } = await import('../lib/supabase-api-direct');
         const data = await getArticleBySlug(articleSlug);
@@ -1015,44 +1024,26 @@ const ArticleDetail = () => {
           is_featured: data.is_featured || false
         };
         
-        // Track view count immediately after setting article data
-        if (data.id && !viewTracked) {
-          try {
-            const { incrementViewCount } = await import('../lib/supabase-api-direct');
-            const viewData = await incrementViewCount(data.id);
-            
-            if (viewData) {
-              console.log(`[View Tracking] Successfully tracked view for article ${data.id}, new count: ${viewData.viewCount}`);
-              
-              // Update the article data with new view count directly in the transformed article
-              transformedArticle.view_count = viewData.viewCount;
-              setViewTracked(true);
-            }
-          } catch (error) {
-            console.error('Error tracking article view:', error);
-          }
-        }
-        
-        // Set article once with all updates
-        setArticle(transformedArticle);
-        
-        // Update URL to show clean Bengali title
-        if (data.title) {
-          const cleanSlug = createBengaliSlug(data.title);
-          const cleanUrl = `/article/${cleanSlug}`;
-          const currentPath = window.location.pathname;
+        // Track view count for new article
+        try {
+          const { incrementViewCount } = await import('../lib/supabase-api-direct');
+          const viewData = await incrementViewCount(data.id);
           
-          // Fix URL if it contains encoded characters
-          if (currentPath.includes('%') || currentPath !== cleanUrl) {
-            updateDisplayUrl(cleanUrl);
+          if (viewData) {
+            console.log(`[View Tracking] Successfully tracked view for article ${data.id}, new count: ${viewData.viewCount}`);
+            transformedArticle.view_count = viewData.viewCount;
           }
+        } catch (error) {
+          console.error('Error incrementing view count:', error);
         }
         
         // Calculate estimated reading time
         const wordCount = (data.content || '').split(' ').length;
         setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
         
-        // Related articles are now fetched automatically via useQuery above
+        // Set article and mark as tracked
+        setArticle(transformedArticle);
+        setViewTracked(true);
         
       } catch (err) {
         setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
@@ -1063,13 +1054,21 @@ const ArticleDetail = () => {
     };
 
     fetchArticle();
-    // Reset states when article changes
-    window.scrollTo(0, 0);
-    setReadingProgress(0);
-    setScrollDepth(0);
-    setTimeSpentReading(0);
-    setViewTracked(false); // Reset view tracking for new article
   }, [articleSlug]);
+
+  // Handle URL updates separately to prevent infinite loops
+  useEffect(() => {
+    if (article && article.title) {
+      const cleanSlug = createBengaliSlug(article.title);
+      const cleanUrl = `/article/${cleanSlug}`;
+      const currentPath = window.location.pathname;
+      
+      // Only update URL if it contains encoded characters and avoid infinite loops
+      if (currentPath.includes('%') && currentPath !== cleanUrl) {
+        updateDisplayUrl(cleanUrl);
+      }
+    }
+  }, [article?.title]);
 
   // World-class loading state
   if (isLoading) {
@@ -1419,12 +1418,14 @@ const ArticleDetail = () => {
                   {/* Article Header */}
                   <div className="p-8 pb-6">
                     <div className="flex items-center gap-4 mb-6">
-                      <Link href={`/category/${article.category.slug}`}>
-                        <Badge className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl">
-                          <Tag className="w-4 h-4 mr-2" />
-                          {article.category.name}
-                        </Badge>
-                      </Link>
+                      {article.category && (
+                        <Link href={`/category/${article.category.slug}`}>
+                          <Badge className="px-4 py-2 text-sm font-medium bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary transition-all duration-300 shadow-lg hover:shadow-xl">
+                            <Tag className="w-4 h-4 mr-2" />
+                            {article.category.name}
+                          </Badge>
+                        </Link>
+                      )}
                       
                       {article.is_featured && (
                         <Badge variant="secondary" className="px-3 py-1 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-500/30">
@@ -1433,7 +1434,7 @@ const ArticleDetail = () => {
                         </Badge>
                       )}
                       
-                      <ReadingTimeIndicator content={article.content} />
+                      <ReadingTimeIndicator content={article.content || ''} />
                     </div>
                     
                     <h1 
@@ -1629,7 +1630,7 @@ const ArticleDetail = () => {
                   >
                     <div 
                       className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg"
-                      dangerouslySetInnerHTML={{ __html: article.content }}
+                      dangerouslySetInnerHTML={{ __html: article.content || '' }}
                       style={{ 
                         fontFamily: 'SolaimanLipi, Kalpurush, ApponaLohit, system-ui',
                         lineHeight: '1.8'
@@ -1638,7 +1639,7 @@ const ArticleDetail = () => {
 
                     {/* Article Summary */}
                     <div className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl">
-                      <ArticleSummary content={article.content} />
+                      <ArticleSummary content={article.content || ''} />
                     </div>
 
                     {/* Tags Display */}
