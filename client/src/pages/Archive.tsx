@@ -140,7 +140,7 @@ export default function Archive() {
             title: 'বাংলাদেশের অর্থনৈতিক প্রবৃদ্ধি ২০২৪',
             slug: 'bangladesh-economic-growth-2024',
             excerpt: 'গত বছর বাংলাদেশের অর্থনৈতিক প্রবৃদ্ধি ৬.৫% রেকর্ড করেছে...',
-            image_url: '/api/placeholder/400/250',
+            image_url: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=400&h=250&fit=crop',
             category: { id: 2, name: 'অর্থনীতি', slug: 'economy' },
             published_at: '2024-12-15T10:30:00Z',
             view_count: 15420
@@ -150,7 +150,7 @@ export default function Archive() {
             title: 'জাতীয় সংসদের নতুন আইন পাস',
             slug: 'national-parliament-new-law-passed',
             excerpt: 'জাতীয় সংসদে গুরুত্বপূর্ণ একটি আইন পাস হয়েছে...',
-            image_url: '/api/placeholder/400/250',
+            image_url: 'https://images.unsplash.com/photo-1577962917302-cd874c4e31d2?w=400&h=250&fit=crop',
             category: { id: 1, name: 'রাজনীতি', slug: 'politics' },
             published_at: '2024-12-10T14:20:00Z',
             view_count: 8750

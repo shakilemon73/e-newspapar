@@ -124,7 +124,7 @@ export const FeaturedSlideshow = () => {
                 <div className="flex items-center mt-2 text-sm">
                   <span>{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
                   <span className="mx-2">•</span>
-                  <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-accent hover:underline">
+                  <Link href={`/article/${article.slug}`} className="text-accent hover:underline">
                     বিস্তারিত পড়ুন
                   </Link>
                 </div>
