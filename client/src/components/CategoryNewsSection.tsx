@@ -55,20 +55,14 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         const categoryData = await measureApiCall(
           `fetch-category-${categorySlug}`,
           async () => {
-            const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
+            const { getCategoryBySlug } = await import('../lib/supabase-api-direct');
+            const categoryData = await getCategoryBySlug(categorySlug);
             
-            if (!categoryResponse.ok) {
-              const errorText = await categoryResponse.text();
-              console.error('Category fetch failed:', {
-                status: categoryResponse.status,
-                statusText: categoryResponse.statusText,
-                response: errorText,
-                url: `/api/categories/${categorySlug}`
-              });
-              throw new Error(`Failed to fetch category: ${categoryResponse.status} ${categoryResponse.statusText}`);
+            if (!categoryData) {
+              throw new Error(`Category not found: ${categorySlug}`);
             }
             
-            return categoryResponse.json();
+            return categoryData;
           },
           { categorySlug }
         );
@@ -85,22 +79,13 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
             articlesData = await measureApiCall(
               `fetch-articles-${categorySlug}`,
               async () => {
-                const articlesResponse = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}`);
+                const { getArticles } = await import('../lib/supabase-api-direct');
+                const articlesData = await getArticles({ 
+                  category: categorySlug, 
+                  limit: limit 
+                });
                 
-                if (!articlesResponse.ok) {
-                  const errorText = await articlesResponse.text();
-                  console.error('Articles fetch failed:', {
-                    status: articlesResponse.status,
-                    statusText: articlesResponse.statusText,
-                    response: errorText,
-                    url: `/api/articles?category=${categorySlug}&limit=${limit}`,
-                    attempt: retryCount + 1
-                  });
-                  
-                  throw new Error(`Failed to fetch category articles: ${articlesResponse.status} ${articlesResponse.statusText}`);
-                }
-                
-                return articlesResponse.json();
+                return articlesData;
               },
               { categorySlug, limit, attempt: retryCount + 1 }
             );

@@ -22,8 +22,8 @@ export const SocialMediaFeed = () => {
         setIsLoading(true);
         
         // Fetch social media posts from Supabase directly
-        const { getSocialMediaPosts } = await import('../lib/supabase-api');
-        const data: SocialMediaPost[] = await getSocialMediaPosts(selectedPlatform);
+        const { getSocialMediaPosts } = await import('../lib/supabase-api-direct');
+        const data: SocialMediaPost[] = await getSocialMediaPosts();
         
         // Filter by selected platform (additional client-side filtering)
         const filteredPosts = data.filter(post => post.platform === selectedPlatform);

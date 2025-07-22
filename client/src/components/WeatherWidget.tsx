@@ -96,13 +96,9 @@ export const WeatherWidget = () => {
   // Function to fetch default weather (Dhaka)
   const fetchDefaultWeather = async () => {
     try {
-      const dhakaResponse = await fetch('/api/weather/ঢাকা');
-      
-      if (!dhakaResponse.ok) {
-        throw new Error('Failed to fetch Dhaka weather');
-      }
-      
-      const dhakaWeather = await dhakaResponse.json();
+      // Fetch default weather for Dhaka using direct Supabase call
+      const { getWeatherByCity } = await import('../lib/supabase-api-direct');
+      const dhakaWeather = await getWeatherByCity('ঢাকা');
       
       if (typeof dhakaWeather.forecast === 'string') {
         dhakaWeather.forecast = JSON.parse(dhakaWeather.forecast);
@@ -138,14 +134,9 @@ export const WeatherWidget = () => {
           await fetchDefaultWeather();
         }
         
-        // Fetch all weather data for other cities
-        const allResponse = await fetch('/api/weather');
-        
-        if (!allResponse.ok) {
-          throw new Error('Failed to fetch all weather data');
-        }
-        
-        const allWeatherData = await allResponse.json();
+        // Fetch all weather data for other cities using direct Supabase call
+        const { getWeather } = await import('../lib/supabase-api-direct');
+        const allWeatherData = await getWeather();
         
         // Parse forecast for each city and filter out current weather city
         const otherCitiesData = allWeatherData

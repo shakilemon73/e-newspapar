@@ -28,7 +28,7 @@ export const LatestNews = () => {
     const fetchLatestNews = async () => {
       try {
         setIsLoading(true);
-        const { getLatestArticles } = await import('../lib/supabase-api');
+        const { getLatestArticles } = await import('../lib/supabase-api-direct');
         const data = await getLatestArticles(4);
         setLatestNews(data);
         setError(null);

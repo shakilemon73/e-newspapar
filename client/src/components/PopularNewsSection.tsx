@@ -32,7 +32,7 @@ export const PopularNewsSection = () => {
         setIsLoading(true);
         // Add timestamp to prevent caching and get real-time data
         const timestamp = new Date().getTime();
-        const { getPopularArticles } = await import('../lib/supabase-api');
+        const { getPopularArticles } = await import('../lib/supabase-api-direct');
         const data = await getPopularArticles(5);
         console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         

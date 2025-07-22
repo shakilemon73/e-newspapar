@@ -15,7 +15,7 @@ export const BreakingNewsTicker = () => {
     const fetchBreakingNews = async () => {
       try {
         setIsLoading(true);
-        const { getBreakingNews } = await import('../lib/supabase-api');
+        const { getBreakingNews } = await import('../lib/supabase-api-direct');
         const data = await getBreakingNews();
         setBreakingNews(data);
         setError(null);
