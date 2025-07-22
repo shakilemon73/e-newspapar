@@ -41,52 +41,25 @@ export function SavedArticleButton({
         throw new Error('No session found');
       }
 
+      const { toggleBookmark } = await import('../lib/supabase-api-direct');
+      const result = await toggleBookmark(articleId, session.user.id, !isSaved);
+      
       if (isSaved) {
-        // Remove from saved articles
-        const response = await fetch(`/api/saved-articles/${articleId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to remove from saved articles');
-        }
-
         setIsSaved(false);
         toast({
           title: "সফল",
           description: "আর্টিকেলটি সংরক্ষিত তালিকা থেকে সরানো হয়েছে।"
         });
       } else {
-        // Add to saved articles
-        const response = await fetch('/api/save-article', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            articleId,
-            folderName: 'default'
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          if (response.status === 409) {
-            setIsSaved(true);
-            toast({
-              title: "ইতিমধ্যে সংরক্ষিত",
-              description: "এই আর্টিকেলটি ইতিমধ্যে আপনার সংরক্ষিত তালিকায় রয়েছে।"
-            });
-            return;
-          }
-          throw new Error(errorData.error || 'Failed to save article');
+        if (result.alreadyExists) {
+          setIsSaved(true);
+          toast({
+            title: "ইতিমধ্যে সংরক্ষিত",
+            description: "এই আর্টিকেলটি ইতিমধ্যে আপনার সংরক্ষিত তালিকায় রয়েছে।"
+          });
+          return;
         }
-
+        
         setIsSaved(true);
         toast({
           title: "সফল",

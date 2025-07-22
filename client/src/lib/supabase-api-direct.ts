@@ -524,3 +524,224 @@ export async function getSiteSettings() {
     siteUrl: "https://emonsdaily.com"
   };
 }
+
+// Article Tags API
+export async function getArticleTags(articleId: number): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('article_tags')
+    .select(`
+      tags(id, name, slug, color)
+    `)
+    .eq('article_id', articleId);
+  
+  if (error) {
+    console.error('Error fetching article tags:', error);
+    return [];
+  }
+  
+  return data?.map(item => item.tags).filter(Boolean) || [];
+}
+
+// User Like Status API
+export async function getUserLikeStatus(articleId: number, userId: string): Promise<{ isLiked: boolean; likeCount: number }> {
+  try {
+    // Check if user has liked this article
+    const { data: userLike, error: likeError } = await supabase
+      .from('user_likes')
+      .select('id')
+      .eq('content_id', articleId)
+      .eq('content_type', 'article')
+      .eq('user_id', userId)
+      .single();
+
+    // Get total like count for this article
+    const { count, error: countError } = await supabase
+      .from('user_likes')
+      .select('*', { count: 'exact' })
+      .eq('content_id', articleId)
+      .eq('content_type', 'article');
+
+    if (likeError && likeError.code !== 'PGRST116') {
+      console.error('Error checking like status:', likeError);
+    }
+
+    if (countError) {
+      console.error('Error counting likes:', countError);
+    }
+
+    return {
+      isLiked: !!userLike,
+      likeCount: count || 0
+    };
+  } catch (error) {
+    console.error('Error getting user like status:', error);
+    return { isLiked: false, likeCount: 0 };
+  }
+}
+
+// Toggle Article Like API
+export async function toggleArticleLike(articleId: number, userId: string, shouldLike: boolean): Promise<{ success: boolean; alreadyExists?: boolean }> {
+  try {
+    if (shouldLike) {
+      // Add like
+      const { error } = await supabase
+        .from('user_likes')
+        .insert({
+          user_id: userId,
+          content_id: articleId,
+          content_type: 'article'
+        });
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          return { success: true, alreadyExists: true };
+        }
+        throw error;
+      }
+    } else {
+      // Remove like
+      const { error } = await supabase
+        .from('user_likes')
+        .delete()
+        .eq('user_id', userId)
+        .eq('content_id', articleId)
+        .eq('content_type', 'article');
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error toggling article like:', error);
+    throw error;
+  }
+}
+
+// Toggle Bookmark API
+export async function toggleBookmark(articleId: number, userId: string, shouldBookmark: boolean): Promise<{ success: boolean; alreadyExists?: boolean }> {
+  try {
+    if (shouldBookmark) {
+      // Add bookmark
+      const { error } = await supabase
+        .from('user_bookmarks')
+        .insert({
+          user_id: userId,
+          article_id: articleId,
+          folder_name: 'default'
+        });
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          return { success: true, alreadyExists: true };
+        }
+        throw error;
+      }
+    } else {
+      // Remove bookmark
+      const { error } = await supabase
+        .from('user_bookmarks')
+        .delete()
+        .eq('user_id', userId)
+        .eq('article_id', articleId);
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error toggling bookmark:', error);
+    throw error;
+  }
+}
+
+// Newsletter Subscription API
+export async function subscribeToNewsletter(email: string, preferences: any): Promise<{ success: boolean; alreadyExists?: boolean }> {
+  try {
+    const { error } = await supabase
+      .from('newsletters')
+      .insert({
+        email,
+        preferences,
+        is_active: true
+      });
+
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        return { success: true, alreadyExists: true };
+      }
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error subscribing to newsletter:', error);
+    throw error;
+  }
+}
+
+// Comments API
+export async function getArticleComments(articleId: number): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('article_comments')
+    .select('*')
+    .eq('article_id', articleId)
+    .eq('is_approved', true)
+    .order('created_at', { ascending: false });
+  
+  if (error) {
+    console.error('Error fetching article comments:', error);
+    return [];
+  }
+  
+  return data || [];
+}
+
+export async function addComment(articleId: number, userId: string, content: string): Promise<{ success: boolean }> {
+  try {
+    const { error } = await supabase
+      .from('article_comments')
+      .insert({
+        article_id: articleId,
+        user_id: userId,
+        content,
+        is_approved: false // Comments need approval
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+}
+
+// Share tracking API
+export async function trackArticleShare(articleId: number, userId: string, platform: string): Promise<{ success: boolean }> {
+  try {
+    const { error } = await supabase
+      .from('user_interactions')
+      .insert({
+        user_id: userId,
+        article_id: articleId,
+        interaction_type: 'share',
+        metadata: { platform }
+      });
+
+    if (error) {
+      console.error('Error tracking share, ignoring:', error);
+      // Don't throw error for tracking - it's not critical
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error tracking article share:', error);
+    return { success: true }; // Don't fail for tracking issues
+  }
+}

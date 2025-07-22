@@ -35,14 +35,8 @@ export function ShareButton({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      await fetch(`/api/articles/${articleId}/share`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ platform })
-      });
+      const { trackArticleShare } = await import('../lib/supabase-api-direct');
+      await trackArticleShare(articleId, session.user.id, platform);
     } catch (error) {
       console.error('Error tracking share:', error);
     }

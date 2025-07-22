@@ -32,11 +32,9 @@ export function TagsDisplay({
   const loadTags = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/articles/${articleId}/tags`);
-      if (response.ok) {
-        const data = await response.json();
-        setTags(data.slice(0, maxTags));
-      }
+      const { getArticleTags } = await import('../lib/supabase-api-direct');
+      const data = await getArticleTags(articleId);
+      setTags(data.slice(0, maxTags));
     } catch (error) {
       console.error('Error loading tags:', error);
     } finally {

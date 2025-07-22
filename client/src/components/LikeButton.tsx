@@ -33,18 +33,10 @@ export function LikeButton({
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const response = await fetch(`/api/articles/${articleId}/like-status`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setIsLiked(data.isLiked);
-          setLikeCount(data.likeCount || 0);
-        }
+        const { getUserLikeStatus } = await import('../lib/supabase-api-direct');
+        const data = await getUserLikeStatus(articleId, session.user.id);
+        setIsLiked(data.isLiked);
+        setLikeCount(data.likeCount || 0);
       } catch (error) {
         console.error('Error checking like status:', error);
       }
@@ -71,22 +63,12 @@ export function LikeButton({
         throw new Error('No session found');
       }
 
-      const method = isLiked ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/articles/${articleId}/like`, {
-        method,
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 409 && method === 'POST') {
-          setIsLiked(true);
-          return;
-        }
-        throw new Error(errorData.error || 'Failed to toggle like');
+      const { toggleArticleLike } = await import('../lib/supabase-api-direct');
+      const result = await toggleArticleLike(articleId, session.user.id, !isLiked);
+      
+      if (result.alreadyExists && !isLiked) {
+        setIsLiked(true);
+        return;
       }
 
       if (isLiked) {

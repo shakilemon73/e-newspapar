@@ -36,11 +36,9 @@ export function CommentsSection({ articleId, className = '' }: CommentsSectionPr
   const loadComments = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/articles/${articleId}/comments`);
-      if (response.ok) {
-        const data = await response.json();
-        setComments(data);
-      }
+      const { getArticleComments } = await import('../lib/supabase-api-direct');
+      const data = await getArticleComments(articleId);
+      setComments(data);
     } catch (error) {
       console.error('Error loading comments:', error);
     } finally {
@@ -74,20 +72,8 @@ export function CommentsSection({ articleId, className = '' }: CommentsSectionPr
         throw new Error('No session found');
       }
 
-      const response = await fetch(`/api/articles/${articleId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content: newComment
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to submit comment');
-      }
+      const { addComment } = await import('../lib/supabase-api-direct');
+      await addComment(articleId, session.user.id, newComment);
 
       setNewComment('');
       toast({

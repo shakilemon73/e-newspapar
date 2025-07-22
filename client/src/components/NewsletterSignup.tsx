@@ -29,32 +29,20 @@ export function NewsletterSignup({ className = '' }: NewsletterSignupProps) {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/newsletter/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          preferences: {
-            breaking_news: true,
-            daily_digest: true,
-            weekly_summary: true
-          }
-        })
+      const { subscribeToNewsletter } = await import('../lib/supabase-api-direct');
+      const result = await subscribeToNewsletter(email, {
+        breaking_news: true,
+        daily_digest: true,
+        weekly_summary: true
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 409) {
-          toast({
-            title: "ইতিমধ্যে সাবস্ক্রাইব করা",
-            description: "এই ইমেইল ঠিকানা ইতিমধ্যে নিউজলেটারে সাবস্ক্রাইব করা আছে।",
-            variant: "destructive"
-          });
-          return;
-        }
-        throw new Error(errorData.error || 'Failed to subscribe');
+      if (result.alreadyExists) {
+        toast({
+          title: "ইতিমধ্যে সাবস্ক্রাইব করা",
+          description: "এই ইমেইল ঠিকানা ইতিমধ্যে নিউজলেটারে সাবস্ক্রাইব করা আছে।",
+          variant: "destructive"
+        });
+        return;
       }
 
       setIsSubscribed(true);
