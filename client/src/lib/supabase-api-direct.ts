@@ -764,11 +764,29 @@ export async function getUserStats(userId: string): Promise<any> {
   try {
     console.log('[getUserStats] Fetching user statistics for user:', userId);
     
-    // Get reading history count - use correct table name 'reading_history'
-    const { count: readingCount, error: readingError } = await supabase
+    // Get reading history count - try both table names
+    let readingCount = 0;
+    let readingError = null;
+
+    // Try reading_history first
+    const { count: historyCount1, error: error1 } = await supabase
       .from('reading_history')
       .select('*', { count: 'exact' })
       .eq('user_id', userId);
+
+    if (error1 && error1.code === '42P01') {
+      // Table doesn't exist, try user_reading_history
+      const { count: historyCount2, error: error2 } = await supabase
+        .from('user_reading_history')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId);
+      
+      readingCount = historyCount2;
+      readingError = error2;
+    } else {
+      readingCount = historyCount1;
+      readingError = error1;
+    }
 
     if (readingError && readingError.code !== '42P01' && readingError.code !== 'PGRST116') {
       console.error('Error fetching reading history count:', readingError);
@@ -949,8 +967,11 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
   try {
     console.log('[getUserReadingHistory] Fetching reading history for user:', userId);
     
-    // Try to get actual reading history from reading_history table
-    const { data: historyData, error: historyError } = await supabase
+    // Try reading_history table first
+    let historyData = null;
+    let historyError = null;
+
+    const { data: data1, error: error1 } = await supabase
       .from('reading_history')
       .select(`
         article_id,
@@ -972,8 +993,42 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       .order('last_read_at', { ascending: false })
       .limit(limit);
 
-    if (historyError && historyError.code !== '42P01' && historyError.code !== 'PGRST116') {
+    if (error1 && error1.code === '42P01') {
+      // Try user_reading_history table instead
+      console.log('[getUserReadingHistory] reading_history not found, trying user_reading_history');
+      
+      const { data: data2, error: error2 } = await supabase
+        .from('user_reading_history')
+        .select(`
+          article_id,
+          last_read_at,
+          articles(
+            id,
+            title,
+            slug,
+            excerpt,
+            image_url,
+            view_count,
+            published_at,
+            is_featured,
+            category_id,
+            categories(id, name, slug)
+          )
+        `)
+        .eq('user_id', userId)
+        .order('last_read_at', { ascending: false })
+        .limit(limit);
+
+      historyData = data2;
+      historyError = error2;
+    } else {
+      historyData = data1;
+      historyError = error1;
+    }
+
+    if (historyError && historyError.code !== 'PGRST116') {
       console.error('Error fetching reading history:', historyError);
+      return [];
     }
 
     // If we have actual reading history data, return it
@@ -986,7 +1041,7 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       return transformArticleData(articles);
     }
 
-    // Fallback: If no reading history found, show sample data message
+    // Fallback: If no reading history found, return empty array with explanation
     console.log('[getUserReadingHistory] No reading history found, returning empty array');
     return [];
   } catch (error) {

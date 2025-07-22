@@ -183,15 +183,28 @@ export default function Dashboard() {
     return null;
   }
 
-  // Use userStats from API or calculate from local data
-  const finalUserStats = userStats || {
-    savedArticles: savedArticles?.length || 0,
-    readArticles: readingHistory?.length || 0,
-    memberSince: new Date(user.created_at).toLocaleDateString('bn-BD'),
-    totalInteractions: userAnalytics?.totalInteractions || 0,
+  // Enhanced stats calculation with better error handling
+  const finalUserStats = {
+    savedArticles: userStats?.totalBookmarks || savedArticles?.length || 0,
+    readArticles: userStats?.totalReadArticles || readingHistory?.length || 0,
+    totalLikes: userStats?.totalLikes || 0,
+    totalComments: userStats?.totalComments || 0,
+    memberSince: user ? new Date(user.created_at).toLocaleDateString('bn-BD') : 'N/A',
+    totalInteractions: userStats?.totalInteractions || userAnalytics?.totalInteractions || 0,
     readingStreak: calculateReadingStreak(readingHistory || []),
     favoriteCategories: userAnalytics?.topCategories?.slice(0, 3) || []
   };
+
+  // Debug logging
+  console.log('Dashboard Debug Info:', {
+    user: user?.id,
+    userStats,
+    savedArticles: savedArticles?.length,
+    readingHistory: readingHistory?.length,
+    statsError: statsError?.message,
+    savedError: savedError?.message,
+    historyError: historyError?.message
+  });
 
   // Calculate reading streak from actual data
   function calculateReadingStreak(history: any[]) {
@@ -313,6 +326,22 @@ export default function Dashboard() {
                       </p>
                       <p className="text-2xl font-bold text-foreground">
                         {finalUserStats.readArticles}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Activity className="h-8 w-8 text-purple-500" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-muted-foreground">
+                        পছন্দের সংখ্যা
+                      </p>
+                      <p className="text-2xl font-bold text-foreground">
+                        {finalUserStats.totalLikes}
                       </p>
                     </div>
                   </div>

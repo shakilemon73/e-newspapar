@@ -53,18 +53,27 @@ export const UserProfileEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
+  const [user, setUser] = useState<any>(null);
 
   // Get current user
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
     return user;
   };
+
+  useEffect(() => {
+    getCurrentUser();
+  }, []);
 
   // Fetch user profile
   const fetchUserProfile = async () => {
     try {
       const user = await getCurrentUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('user_profiles')
