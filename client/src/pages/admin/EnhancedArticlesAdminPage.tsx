@@ -106,9 +106,8 @@ export default function EnhancedArticlesAdminPage() {
   const { data: articles, isLoading: articlesLoading } = useQuery({
     queryKey: ['/api/articles'],
     queryFn: async () => {
-      const response = await fetch('/api/articles?limit=100'); // Get all articles for admin
-      if (!response.ok) throw new Error('Failed to fetch articles');
-      return response.json();
+      const { getArticles } = await import('../../lib/supabase-api-direct');
+      return await getArticles(100); // Get all articles for admin
     },
     refetchInterval: 30000
   });

@@ -65,19 +65,15 @@ const ProfilePage = () => {
   const onProfileSubmit = async (values: ProfileFormValues) => {
     setIsUpdating(true);
     try {
-      // Update user profile via Supabase
-      const { data, error } = await fetch('/api/update-profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: values.name,
-        }),
-      }).then(res => res.json());
+      // Update user profile via direct Supabase
+      const { updateUserProfile } = await import('../lib/supabase-api-direct');
+      const result = await updateUserProfile(user.id, {
+        name: values.name,
+        email: values.email
+      });
 
-      if (error) {
-        throw new Error(error);
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       toast({
@@ -98,20 +94,12 @@ const ProfilePage = () => {
   const onPasswordSubmit = async (values: PasswordFormValues) => {
     setIsUpdating(true);
     try {
-      // Update password via Supabase
-      const { data, error } = await fetch('/api/update-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        }),
-      }).then(res => res.json());
+      // Update password via direct Supabase
+      const { updateUserPassword } = await import('../lib/supabase-api-direct');
+      const result = await updateUserPassword(user.id, values.currentPassword, values.newPassword);
 
-      if (error) {
-        throw new Error(error);
+      if (!result.success) {
+        throw new Error(result.message);
       }
 
       toast({

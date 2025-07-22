@@ -133,9 +133,8 @@ export default function EPapersAdminPage() {
   const { data: epapers, isLoading, error } = useQuery({
     queryKey: ['/api/epapers'],
     queryFn: async () => {
-      const response = await fetch('/api/epapers');
-      if (!response.ok) throw new Error('Failed to fetch e-papers');
-      return response.json();
+      const { getEpapers } = await import('../../lib/supabase-api-direct');
+      return await getEpapers();
     },
   });
 

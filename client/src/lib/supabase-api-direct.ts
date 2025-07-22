@@ -536,6 +536,339 @@ export async function getArticleTags(articleId: number): Promise<any[]> {
   return data?.map(item => item.tags).filter(Boolean) || [];
 }
 
+// Search Articles API
+export async function searchArticles(query: string, category?: string, limit = 20, offset = 0): Promise<Article[]> {
+  let searchQuery = supabase
+    .from('articles')
+    .select(`
+      id,
+      title,
+      slug,
+      content,
+      excerpt,
+      image_url,
+      view_count,
+      published_at,
+      is_featured,
+      category_id,
+      categories(id, name, slug)
+    `)
+    .textSearch('title', query, { type: 'websearch' })
+    .order('published_at', { ascending: false });
+
+  if (category) {
+    const { data: categoryData } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', category)
+      .single();
+    
+    if (categoryData) {
+      searchQuery = searchQuery.eq('category_id', categoryData.id);
+    }
+  }
+
+  searchQuery = searchQuery.limit(limit);
+  
+  if (offset > 0) {
+    searchQuery = searchQuery.range(offset, offset + limit - 1);
+  }
+
+  const { data, error } = await searchQuery;
+  
+  if (error) {
+    console.error('Error searching articles:', error);
+    return [];
+  }
+
+  return transformArticleData(data || []);
+}
+
+
+
+// Newsletter subscription API
+export async function subscribeToNewsletter(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // Check if email already exists
+    const { data: existingSubscription } = await supabase
+      .from('newsletters')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (existingSubscription) {
+      return { success: false, message: 'এই ইমেইল ঠিকানা ইতিমধ্যে সাবস্ক্রাইব করা আছে' };
+    }
+
+    // Add new subscription
+    const { error } = await supabase
+      .from('newsletters')
+      .insert({
+        email: email,
+        is_active: true,
+        subscribed_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error subscribing to newsletter:', error);
+      return { success: false, message: 'সাবস্ক্রিপশনে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।' };
+    }
+
+    return { success: true, message: 'সফলভাবে নিউজলেটার সাবস্ক্রাইব হয়েছে!' };
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    return { success: false, message: 'সাবস্ক্রিপশনে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।' };
+  }
+}
+
+// User Dashboard APIs
+export async function getUserStats(userId: string): Promise<any> {
+  try {
+    // Get reading history count
+    const { count: readingCount } = await supabase
+      .from('user_reading_history')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Get bookmarks count
+    const { count: bookmarksCount } = await supabase
+      .from('user_bookmarks')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Get likes count
+    const { count: likesCount } = await supabase
+      .from('user_likes')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    // Get comments count
+    const { count: commentsCount } = await supabase
+      .from('article_comments')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
+
+    return {
+      totalReadArticles: readingCount || 0,
+      totalBookmarks: bookmarksCount || 0,
+      totalLikes: likesCount || 0,
+      totalComments: commentsCount || 0
+    };
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    return {
+      totalReadArticles: 0,
+      totalBookmarks: 0,
+      totalLikes: 0,
+      totalComments: 0
+    };
+  }
+}
+
+export async function getUserSavedArticles(userId: string, limit = 10): Promise<Article[]> {
+  try {
+    const { data, error } = await supabase
+      .from('user_bookmarks')
+      .select(`
+        articles(
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching saved articles:', error);
+      return [];
+    }
+
+    return data?.map(item => transformArticleData([item.articles])[0]).filter(Boolean) || [];
+  } catch (error) {
+    console.error('Error fetching saved articles:', error);
+    return [];
+  }
+}
+
+export async function getUserReadingHistory(userId: string, limit = 10): Promise<Article[]> {
+  try {
+    const { data, error } = await supabase
+      .from('user_reading_history')
+      .select(`
+        articles(
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('read_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching reading history:', error);
+      return [];
+    }
+
+    return data?.map(item => transformArticleData([item.articles])[0]).filter(Boolean) || [];
+  } catch (error) {
+    console.error('Error fetching reading history:', error);
+    return [];
+  }
+}
+
+// Profile Update APIs
+export async function updateUserProfile(userId: string, profileData: any): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('user_profiles')
+      .upsert({
+        user_id: userId,
+        full_name: profileData.fullName,
+        bio: profileData.bio,
+        location: profileData.location,
+        website: profileData.website,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, message: 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'প্রোফাইল সফলভাবে আপডেট হয়েছে' };
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return { success: false, message: 'প্রোফাইল আপডেট করতে সমস্যা হয়েছে' };
+  }
+}
+
+
+
+// Article save for offline
+export async function saveArticleForOffline(article: Article, userId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('user_bookmarks')
+      .insert({
+        user_id: userId,
+        article_id: article.id,
+        folder_name: 'offline_reading'
+      });
+
+    if (error) {
+      if (error.code === '23505') { // Unique constraint violation
+        return { success: false, message: 'এই নিবন্ধটি ইতিমধ্যে সংরক্ষিত আছে' };
+      }
+      console.error('Error saving article for offline:', error);
+      return { success: false, message: 'সংরক্ষণ করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'সংবাদটি অফলাইন পড়ার জন্য সংরক্ষিত হয়েছে' };
+  } catch (error) {
+    console.error('Error saving article for offline:', error);
+    return { success: false, message: 'সংরক্ষণ করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Article report
+export async function reportArticle(articleId: number, userId: string, reason: string, details?: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('user_feedback')
+      .insert({
+        user_id: userId,
+        feedback_type: 'article_report',
+        content: reason,
+        metadata: {
+          article_id: articleId,
+          details: details || '',
+          user_agent: navigator.userAgent
+        },
+        status: 'submitted'
+      });
+
+    if (error) {
+      console.error('Error reporting article:', error);
+      return { success: false, message: 'রিপোর্ট করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'আপনার রিপোর্ট সফলভাবে জমা দেওয়া হয়েছে' };
+  } catch (error) {
+    console.error('Error reporting article:', error);
+    return { success: false, message: 'রিপোর্ট করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Comments API
+export async function getArticleComments(articleId: number, limit = 10): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('article_comments')
+      .select(`
+        id,
+        content,
+        created_at,
+        user_profiles(full_name),
+        users(email)
+      `)
+      .eq('article_id', articleId)
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching comments:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    return [];
+  }
+}
+
+export async function addArticleComment(articleId: number, userId: string, content: string): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('article_comments')
+      .insert({
+        article_id: articleId,
+        user_id: userId,
+        content: content,
+        is_approved: false, // Comments need approval
+        created_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error adding comment:', error);
+      return { success: false, message: 'মন্তব্য যোগ করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'মন্তব্য সফলভাবে যোগ করা হয়েছে। অনুমোদনের পর প্রদর্শিত হবে।' };
+  } catch (error) {
+    console.error('Comment add error:', error);
+    return { success: false, message: 'মন্তব্য যোগ করতে সমস্যা হয়েছে' };
+  }
+}
+
 // User Like Status API
 export async function getUserLikeStatus(articleId: number, userId: string): Promise<{ isLiked: boolean; likeCount: number }> {
   try {
@@ -652,47 +985,7 @@ export async function toggleBookmark(articleId: number, userId: string, shouldBo
   }
 }
 
-// Newsletter Subscription API
-export async function subscribeToNewsletter(email: string, preferences: any): Promise<{ success: boolean; alreadyExists?: boolean }> {
-  try {
-    const { error } = await supabase
-      .from('newsletters')
-      .insert({
-        email,
-        preferences,
-        is_active: true
-      });
 
-    if (error) {
-      if (error.code === '23505') { // Unique constraint violation
-        return { success: true, alreadyExists: true };
-      }
-      throw error;
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error subscribing to newsletter:', error);
-    throw error;
-  }
-}
-
-// Comments API
-export async function getArticleComments(articleId: number): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('article_comments')
-    .select('*')
-    .eq('article_id', articleId)
-    .eq('is_approved', true)
-    .order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching article comments:', error);
-    return [];
-  }
-  
-  return data || [];
-}
 
 export async function addComment(articleId: number, userId: string, content: string): Promise<{ success: boolean }> {
   try {
@@ -740,67 +1033,7 @@ export async function trackArticleShare(articleId: number, userId: string, platf
   }
 }
 
-// User Dashboard APIs
-export async function getUserStats(userId: string): Promise<any> {
-  try {
-    // Get saved articles count
-    const { count: savedCount } = await supabase
-      .from('user_bookmarks')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId);
 
-    // Get reading history count
-    const { count: readCount } = await supabase
-      .from('user_reading_history')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId);
-
-    // Get user likes count
-    const { count: likesCount } = await supabase
-      .from('user_likes')
-      .select('*', { count: 'exact' })
-      .eq('user_id', userId);
-
-    // Get favorite categories
-    const { data: categoryData } = await supabase
-      .from('user_reading_history')
-      .select('article_id, articles(category_id, categories(name))')
-      .eq('user_id', userId)
-      .limit(50);
-
-    const categoryMap = new Map();
-    categoryData?.forEach(item => {
-      const category = item.articles?.categories?.name;
-      if (category) {
-        categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
-      }
-    });
-
-    const favoriteCategories = Array.from(categoryMap.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([name, count]) => ({ name, count }));
-
-    return {
-      savedArticles: savedCount || 0,
-      readArticles: readCount || 0,
-      readingStreak: 0, // Can be calculated based on reading history
-      totalInteractions: (likesCount || 0),
-      memberSince: new Date().toLocaleDateString('bn-BD'),
-      favoriteCategories
-    };
-  } catch (error) {
-    console.error('Error fetching user stats:', error);
-    return {
-      savedArticles: 0,
-      readArticles: 0,
-      readingStreak: 0,
-      totalInteractions: 0,
-      memberSince: new Date().toLocaleDateString('bn-BD'),
-      favoriteCategories: []
-    };
-  }
-}
 
 export async function getUserPreferences(userId: string): Promise<any> {
   try {
@@ -876,37 +1109,6 @@ export async function getUserBookmarks(userId: string): Promise<any[]> {
     return data || [];
   } catch (error) {
     console.error('Error fetching user bookmarks:', error);
-    return [];
-  }
-}
-
-export async function getUserReadingHistory(userId: string): Promise<any[]> {
-  try {
-    const { data, error } = await supabase
-      .from('user_reading_history')
-      .select(`
-        id,
-        read_at,
-        progress,
-        article_id,
-        articles(
-          id,
-          title,
-          slug,
-          excerpt,
-          image_url,
-          published_at,
-          categories(name, slug)
-        )
-      `)
-      .eq('user_id', userId)
-      .order('read_at', { ascending: false })
-      .limit(50);
-
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching reading history:', error);
     return [];
   }
 }
@@ -1052,47 +1254,7 @@ export async function submitUserFeedback(userId: string, type: string, content: 
   }
 }
 
-// Search API Functions (Enhanced Version)
-export async function searchArticles(query: string, categoryId?: string, limit = 20) {
-  try {
-    let queryBuilder = supabase
-      .from('articles')
-      .select(`
-        id,
-        title,
-        slug,
-        excerpt,
-        image_url,
-        view_count,
-        published_at,
-        category_id,
-        categories(id, name, slug)
-      `)
-      .textSearch('title', query)
-      .limit(limit);
 
-    if (categoryId) {
-      queryBuilder = queryBuilder.eq('category_id', categoryId);
-    }
-
-    const { data, error } = await queryBuilder;
-
-    if (error) {
-      console.error('Error searching articles:', error);
-      return [];
-    }
-
-    // Transform to match SearchResult interface
-    return (data || []).map((article: any) => ({
-      ...article,
-      category_name: article.categories?.name || '',
-      search_rank: 1
-    }));
-  } catch (err) {
-    console.error('Failed to search articles:', err);
-    return [];
-  }
-}
 
 export async function getUserSearchHistory(userId: string, limit = 5) {
   try {
@@ -1223,27 +1385,137 @@ export async function trackReadingHistory(articleId: number, userId: string) {
   }
 }
 
-// Report Article API
-export async function reportArticle(articleId: number, reason: string, description: string) {
+// Weather by Location API
+export async function getWeatherByLocation(lat: number, lon: number): Promise<any> {
   try {
-    const { data, error } = await supabase
-      .from('user_feedback')
-      .insert({
-        article_id: articleId,
-        feedback_type: 'report',
-        feedback_text: reason,
-        metadata: { description, user_agent: navigator.userAgent }
-      });
+    // Calculate distance to find nearest city
+    const { data: cities, error } = await supabase
+      .from('weather')
+      .select('*');
 
     if (error) {
-      console.error('Error reporting article:', error);
-      throw new Error('Failed to submit report');
+      console.error('Error fetching weather cities:', error);
+      return null;
     }
 
-    return true;
-  } catch (err) {
-    console.error('Failed to report article:', err);
-    throw err;
+    // Bangladesh city coordinates for distance calculation
+    const cityCoords: { [key: string]: { lat: number; lon: number } } = {
+      'ঢাকা': { lat: 23.8103, lon: 90.4125 },
+      'চট্টগ্রাম': { lat: 22.3569, lon: 91.7832 },
+      'খুলনা': { lat: 22.8456, lon: 89.5403 },
+      'রাজশাহী': { lat: 24.3636, lon: 88.6241 },
+      'সিলেট': { lat: 24.8949, lon: 91.8687 },
+      'বরিশাল': { lat: 22.7010, lon: 90.3535 },
+      'রংপুর': { lat: 25.7439, lon: 89.2752 },
+      'ময়মনসিংহ': { lat: 24.7471, lon: 90.4203 }
+    };
+
+    let closestCity = null;
+    let minDistance = Infinity;
+
+    // Find closest city using Haversine formula
+    for (const [cityName, coords] of Object.entries(cityCoords)) {
+      const distance = Math.sqrt(
+        Math.pow(lat - coords.lat, 2) + Math.pow(lon - coords.lon, 2)
+      );
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestCity = cityName;
+      }
+    }
+
+    // Get weather for closest city
+    if (closestCity) {
+      const cityWeather = cities?.find(w => w.city === closestCity);
+      if (cityWeather) {
+        return {
+          ...cityWeather,
+          isUserLocation: true,
+          coordinates: { lat, lon }
+        };
+      }
+    }
+
+    // Fallback to Dhaka
+    const dhakaWeather = cities?.find(w => w.city === 'ঢাকা');
+    return dhakaWeather || null;
+  } catch (error) {
+    console.error('Error getting weather by location:', error);
+    return null;
   }
 }
+
+// Password update function
+export async function updateUserPassword(userId: string, currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // For Supabase auth, we can use the updateUser method
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      console.error('Error updating password:', error);
+      return { success: false, message: 'পাসওয়ার্ড আপডেট করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'পাসওয়ার্ড সফলভাবে আপডেট হয়েছে' };
+  } catch (error) {
+    console.error('Password update error:', error);
+    return { success: false, message: 'পাসওয়ার্ড আপডেট করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Users API for Admin
+export async function getUsers(): Promise<any[]> {
+  try {
+    // Get users from auth.users (requires admin access)
+    const { data: { users }, error } = await supabase.auth.admin.listUsers();
+    
+    if (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
+    
+    return users || [];
+  } catch (error) {
+    console.error('Error accessing users:', error);
+    return [];
+  }
+}
+
+// Admin User Statistics API 
+export async function getAdminUserStats(period: string = 'all'): Promise<any> {
+  try {
+    const { data: users } = await supabase.auth.admin.listUsers();
+    
+    if (!users) return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
+    
+    const totalUsers = users.length;
+    const adminUsers = users.filter(u => u.user_metadata?.role === 'admin').length;
+    
+    // Calculate active users (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const activeUsers = users.filter(u => {
+      const lastSignIn = new Date(u.last_sign_in_at || u.created_at);
+      return lastSignIn > thirtyDaysAgo;
+    }).length;
+    
+    // Calculate new users (last 7 days)  
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const newUsers = users.filter(u => {
+      const createdAt = new Date(u.created_at);
+      return createdAt > sevenDaysAgo;
+    }).length;
+    
+    return { totalUsers, adminUsers, activeUsers, newUsers };
+  } catch (error) {
+    console.error('Error calculating user stats:', error);
+    return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
+  }
+}
+
+
 

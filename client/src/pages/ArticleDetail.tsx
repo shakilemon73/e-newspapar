@@ -426,13 +426,12 @@ const ArticleDetail = () => {
     
     try {
       const { reportArticle } = await import('../lib/supabase-api-direct');
-      await reportArticle(article.id, reason.trim(), 'User reported from article page');
+      const result = await reportArticle(article.id, 'anonymous', reason.trim(), 'User reported from article page');
       
-      // If we reach here, it was successful
-      if (true) {
+      if (result.success) {
         toast({
           title: "রিপোর্ট জমা দেওয়া হয়েছে",
-          description: "আপনার রিপোর্ট আমাদের কাছে পৌঁছেছে। পর্যালোচনার জন্য ধন্যবাদ।",
+          description: result.message,
         });
       } else {
         throw new Error('Failed to submit report');
@@ -452,18 +451,15 @@ const ArticleDetail = () => {
     if (!article) return;
     
     try {
-      const response = await fetch(`/api/articles/${article.id}/report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: type === 'helpful' ? 'helpful' : 'content_feedback',
-          description: type === 'helpful' ? 'User found article helpful' : 'User provided content feedback'
-        })
-      });
+      const { submitUserFeedback } = await import('../lib/supabase-api-direct');
+      const result = await submitUserFeedback(
+        'anonymous',
+        type === 'helpful' ? 'helpful' : 'content_feedback',
+        type === 'helpful' ? 'User found article helpful' : 'User provided content feedback',
+        { article_id: article.id }
+      );
 
-      if (response.ok) {
+      if (result.success) {
         toast({
           title: "ফিডব্যাক জমা দেওয়া হয়েছে",
           description: "আপনার মতামত আমাদের কাছে পৌঁছেছে। ধন্যবাদ।",
@@ -500,34 +496,20 @@ const ArticleDetail = () => {
         throw new Error('No session found');
       }
 
-      const response = await fetch(`/api/articles/${article.id}/save`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          folderName: 'offline_reading',
-          notes: 'Saved for offline reading'
-        })
-      });
+      const { saveArticleForOffline } = await import('../lib/supabase-api-direct');
+      const result = await saveArticleForOffline(article, session.user.id);
 
-      if (response.ok) {
+      if (result.success) {
         toast({
           title: "অফলাইন পড়ার জন্য সংরক্ষিত",
-          description: "নিবন্ধটি আপনার অফলাইন পড়ার তালিকায় যোগ করা হয়েছে।",
+          description: result.message,
         });
       } else {
-        const errorData = await response.json();
-        if (response.status === 409) {
-          toast({
-            title: "ইতিমধ্যে সংরক্ষিত",
-            description: "এই নিবন্ধটি ইতিমধ্যে আপনার অফলাইন পড়ার তালিকায় রয়েছে।",
-            variant: "destructive"
-          });
-        } else {
-          throw new Error(errorData.error || 'Failed to save article');
-        }
+        toast({
+          title: result.message.includes('ইতিমধ্যে') ? "ইতিমধ্যে সংরক্ষিত" : "সংরক্ষণ ব্যর্থ",
+          description: result.message,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error saving article for offline:', error);
@@ -988,31 +970,22 @@ const ArticleDetail = () => {
         setError(null);
         startTimeRef.current = Date.now();
         
-        const response = await fetch(`/api/articles/${articleSlug}`);
+        const { getArticleBySlug } = await import('../lib/supabase-api-direct');
+        const data = await getArticleBySlug(articleSlug);
         
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
-            return;
-          }
-          throw new Error('Failed to fetch article');
+        if (!data) {
+          setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
+          return;
         }
-        
-        const data = await response.json();
         setArticle(data);
         
         // Track view count immediately after setting article data
         if (data.id && !viewTracked) {
           try {
-            const viewResponse = await fetch(`/api/articles/${data.id}/view`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            });
+            const { incrementViewCount } = await import('../lib/supabase-api-direct');
+            const viewData = await incrementViewCount(data.id);
             
-            if (viewResponse.ok) {
-              const viewData = await viewResponse.json();
+            if (viewData) {
               console.log(`[View Tracking] Successfully tracked view for article ${data.id}, new count: ${viewData.viewCount}`);
               
               // Update the article data with new view count

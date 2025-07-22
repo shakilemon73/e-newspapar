@@ -124,9 +124,8 @@ export default function BreakingNewsAdminPage() {
   const { data: breakingNews, isLoading, error } = useQuery({
     queryKey: ['/api/breaking-news'],
     queryFn: async () => {
-      const response = await fetch('/api/breaking-news');
-      if (!response.ok) throw new Error('Failed to fetch breaking news');
-      return response.json();
+      const { getBreakingNews } = await import('../../lib/supabase-api-direct');
+      return await getBreakingNews();
     },
   });
 
@@ -134,9 +133,8 @@ export default function BreakingNewsAdminPage() {
   const { data: articles } = useQuery({
     queryKey: ['/api/articles'],
     queryFn: async () => {
-      const response = await fetch('/api/articles?limit=50');
-      if (!response.ok) throw new Error('Failed to fetch articles');
-      return response.json();
+      const { getArticles } = await import('../../lib/supabase-api-direct');
+      return await getArticles(50);
     },
     enabled: creationType === 'existing'
   });

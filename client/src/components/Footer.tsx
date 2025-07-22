@@ -19,11 +19,9 @@ export const Footer = () => {
     // Fetch categories
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
-        }
+        const { getCategories } = await import('../lib/supabase-api-direct');
+        const data = await getCategories();
+        setCategories(data);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }

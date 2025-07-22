@@ -106,9 +106,8 @@ export default function CategoriesAdminPage() {
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ['/api/categories'],
     queryFn: async () => {
-      const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      return response.json();
+      const { getCategories } = await import('../../lib/supabase-api-direct');
+      return await getCategories();
     },
   });
 
@@ -116,9 +115,8 @@ export default function CategoriesAdminPage() {
   const { data: articles } = useQuery({
     queryKey: ['/api/articles'],
     queryFn: async () => {
-      const response = await fetch('/api/articles');
-      if (!response.ok) throw new Error('Failed to fetch articles');
-      return response.json();
+      const { getArticles } = await import('../../lib/supabase-api-direct');
+      return await getArticles();
     },
   });
 

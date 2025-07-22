@@ -44,30 +44,15 @@ export const WeatherWidget = () => {
           const { latitude, longitude } = position.coords;
           console.log(`[Location] User location: ${latitude}, ${longitude}`);
           
-          // Fetch weather for user's location
-          const locationResponse = await fetch(`/api/weather/location/${latitude}/${longitude}`);
+          // Fetch weather for user's location using direct Supabase
+          const { getWeatherByLocation } = await import('../lib/supabase-api-direct');
+          const locationWeather = await getWeatherByLocation(latitude, longitude);
           
-          if (locationResponse.ok) {
-            const responseText = await locationResponse.text();
-            
-            try {
-              const locationWeather = JSON.parse(responseText);
-              
-              // Parse the forecast JSON if it's a string
-              if (typeof locationWeather.forecast === 'string') {
-                locationWeather.forecast = JSON.parse(locationWeather.forecast);
-              }
-              
-              setWeather(locationWeather);
-              setLocationPermission('granted');
-              console.log(`[Weather] Successfully fetched location weather for ${locationWeather.city}`);
-            } catch (jsonError) {
-              console.error('[Weather] Invalid JSON response:', responseText);
-              throw new Error('Invalid weather data format');
-            }
+          if (locationWeather) {
+            setWeather(locationWeather);
+            setLocationPermission('granted');
+            console.log(`[Weather] Successfully fetched location weather for ${locationWeather.city}`);
           } else {
-            const errorText = await locationResponse.text();
-            console.error(`[Weather] API error ${locationResponse.status}:`, errorText);
             throw new Error('Failed to fetch location weather');
           }
         } catch (error) {
@@ -228,7 +213,7 @@ export const WeatherWidget = () => {
         
         {/* Forecast Section */}
         <div className="grid grid-cols-3 gap-2 text-center bg-gray-50 dark:bg-gray-800 rounded p-3">
-          {weather.forecast.slice(0, 3).map((day, index) => (
+          {(weather.forecast || []).slice(0, 3).map((day, index) => (
             <div className="forecast-day" key={index}>
               <div className="text-xs font-medium mb-1">{day.day}</div>
               <i className={`${day.icon} ${day.icon.includes('sun') ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'} text-lg mb-1`}></i>

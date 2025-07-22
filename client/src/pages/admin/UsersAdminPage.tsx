@@ -99,6 +99,10 @@ export default function UsersAdminPage() {
   const { data: users, isLoading, error } = useQuery({
     queryKey: ['/api/admin/users'],
     retry: false,
+    queryFn: async () => {
+      const { getUsers } = await import('../../lib/supabase-api-direct');
+      return await getUsers();
+    },
   });
 
   // Get user statistics with fallback calculation
@@ -107,32 +111,31 @@ export default function UsersAdminPage() {
     retry: false,
     queryFn: async () => {
       try {
-        const response = await fetch('/api/admin/users/stats', {
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          // If stats endpoint fails, calculate from users data
-          if (users && Array.isArray(users)) {
-            const totalUsers = users.length;
-            const adminUsers = users.filter((u: any) => u.role === 'admin').length;
-            const activeUsers = users.filter((u: any) => {
-              const lastSignIn = new Date(u.last_sign_in_at);
-              const thirtyDaysAgo = new Date();
-              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-              return lastSignIn > thirtyDaysAgo;
-            }).length;
-            const newUsers = users.filter((u: any) => {
-              const createdAt = new Date(u.created_at);
-              const sevenDaysAgo = new Date();
-              sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-              return createdAt > sevenDaysAgo;
-            }).length;
-            
-            return { totalUsers, adminUsers, activeUsers, newUsers };
-          }
-          return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
+        const { getAdminUserStats } = await import('../../lib/supabase-api-direct');
+        const stats = await getAdminUserStats('all');
+        if (stats) {
+          return stats;
         }
-        return response.json();
+        // Fallback calculation if stats function fails
+        if (users && Array.isArray(users)) {
+          const totalUsers = users.length;
+          const adminUsers = users.filter((u: any) => u.role === 'admin').length;
+          const activeUsers = users.filter((u: any) => {
+            const lastSignIn = new Date(u.last_sign_in_at);
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            return lastSignIn > thirtyDaysAgo;
+          }).length;
+          const newUsers = users.filter((u: any) => {
+            const createdAt = new Date(u.created_at);
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            return createdAt > sevenDaysAgo;
+          }).length;
+          
+          return { totalUsers, adminUsers, activeUsers, newUsers };
+        }
+        return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
       } catch (error) {
         // Fallback calculation
         if (users && Array.isArray(users)) {
