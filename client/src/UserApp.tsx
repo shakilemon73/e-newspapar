@@ -30,7 +30,6 @@ import Register from "@/pages/Register";
 import AuthPage from "@/pages/auth-page";
 import Profile from "@/pages/Profile";
 import Dashboard from "@/pages/Dashboard";
-import UserDashboard from "@/pages/UserDashboard";
 import SavedArticles from "@/pages/SavedArticles";
 import ReadingHistory from "@/pages/ReadingHistory";
 
@@ -70,7 +69,6 @@ function UserRouter() {
       <Route path="/profile" component={Profile} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/dashboard/profile" component={Profile} />
-      <Route path="/user-dashboard" component={UserDashboard} />
       <Route path="/saved-articles" component={SavedArticles} />
       <Route path="/reading-history" component={ReadingHistory} />
       
