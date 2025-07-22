@@ -1,0 +1,21 @@
+Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn&#x27;t have a dependency array, or one of the dependencies changes on every render.
+    at ArticleDetail (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/pages/ArticleDetail.tsx:88:22)
+    at Route (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=48619820:206:16)
+    at Switch (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=48619820:262:17)
+    at UserRouter
+    at main
+    at div
+    at SiteSettingsProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/contexts/SiteSettingsContext.tsx:36:40)
+    at AuthProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/hooks/use-supabase-auth.tsx:22:32)
+    at ThemeProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/components/ThemeProvider.tsx:20:33)
+    at UserApp
+    at App (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/src/App.tsx?v=oXJdXL82RytSkiqxE7VOv:24:22)
+    at QueryClientProvider (https://9e10e56d-3dbb-4b0c-8b05-c37caf22a966-00-1a1yq8fzkr4ea.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=48619820:2934:3)
+Error incrementing view count: 
+Object {code: "PGRST116", details: "The result contains 0 rows", hint: null, message: "JSON object requested, multiple (or no) rows returned"}
+
+Error fetching comments: 
+Object {code: "PGRST200", details: "Searched for a foreign key relationship between 'article_comments' and 'user_profiles' in the…", hint: null, message: "Could not find a relationship between 'article_comments' and 'user_profiles' in the schema cache"}
+
+Error fetching polls: 
+Object {code: "PGRST200", details: "Searched for a foreign key relationship between 'polls' and 'poll_options' in the schema 'public',…", hint: null, message: "Could not find a relationship between 'polls' and 'poll_options' in the schema cache"}
