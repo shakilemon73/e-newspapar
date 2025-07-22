@@ -994,8 +994,6 @@ const ArticleDetail = () => {
           is_featured: data.is_featured || false
         };
         
-        setArticle(transformedArticle);
-        
         // Track view count immediately after setting article data
         if (data.id && !viewTracked) {
           try {
@@ -1005,14 +1003,17 @@ const ArticleDetail = () => {
             if (viewData) {
               console.log(`[View Tracking] Successfully tracked view for article ${data.id}, new count: ${viewData.viewCount}`);
               
-              // Update the article data with new view count
-              setArticle(prev => prev ? { ...prev, view_count: viewData.viewCount } : null);
+              // Update the article data with new view count directly in the transformed article
+              transformedArticle.view_count = viewData.viewCount;
               setViewTracked(true);
             }
           } catch (error) {
             console.error('Error tracking article view:', error);
           }
         }
+        
+        // Set article once with all updates
+        setArticle(transformedArticle);
         
         // Update URL to show clean Bengali title
         if (data.title) {

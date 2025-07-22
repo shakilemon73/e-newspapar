@@ -418,19 +418,14 @@ export async function getSiteSettings(): Promise<any> {
       .from('system_settings')
       .select('*')
       .limit(1)
-      .single();
+      .maybeSingle();
     
-    if (error) {
+    // If no data found (empty table) or error, return fallback
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching site settings:', error);
-      return {
-        siteName: 'Bengali News',
-        siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
-        logoUrl: '',
-        defaultLanguage: 'bn',
-        siteUrl: ''
-      };
     }
     
+    // Always return fallback settings since the table might be empty
     return {
       siteName: data?.site_name || 'Bengali News',
       siteDescription: data?.site_description || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
