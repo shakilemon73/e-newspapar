@@ -151,10 +151,10 @@ function ModernAdminDashboard() {
       color: 'purple'
     },
     {
-      title: t('stats.todayViews'),
-      value: dashboardStats?.todayViews?.toLocaleString() || '0',
-      change: '-5%',
-      changeType: 'negative' as const,
+      title: t('stats.publishedToday'),
+      value: dashboardStats?.publishedToday || 0,
+      change: '+3%',
+      changeType: 'positive' as const,
       icon: TrendingUp,
       color: 'orange'
     }
@@ -376,7 +376,7 @@ function ModernAdminDashboard() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {recentActivity?.slice(0, 6).map((activity: any, index: number) => (
+                  {recentActivity?.articles?.slice(0, 6).map((activity: any, index: number) => (
                     <div key={activity.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         index % 4 === 0 ? 'bg-blue-100 text-blue-600' :
@@ -446,7 +446,7 @@ function ModernAdminDashboard() {
                     </div>
                     <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl">
                       <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                        {dashboardStats?.activeUsers || 0}
+                        {dashboardStats?.recentUsers || 0}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {t('stats.activeUsers')}
@@ -469,7 +469,7 @@ function ModernAdminDashboard() {
                       <span className="text-gray-600 dark:text-gray-400">
                         {language === 'bn' ? 'ই-পেপার' : 'E-Papers'}
                       </span>
-                      <span className="font-semibold">{dashboardStats?.totalEPapers || 0}</span>
+                      <span className="font-semibold">{dashboardStats?.totalCategories || 0}</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div className="bg-green-600 h-2 rounded-full" style={{width: '60%'}}></div>
