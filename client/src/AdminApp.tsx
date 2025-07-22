@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react";
 // Admin Pages - Migrated to Direct Supabase API (Vercel Ready)
 import EnhancedAdminAccess from "@/pages/EnhancedAdminAccess";
 import AdminLogin from "@/pages/AdminLogin";
-import DashboardAdminPage from "@/pages/admin/DashboardAdminPage";
+import AdminDashboard from "@/pages/AdminDashboard";
 import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
@@ -22,7 +22,7 @@ import VideosAdminPage from "@/pages/admin/VideosAdminPage";
 import AudioArticlesAdminPage from "@/pages/admin/AudioArticlesAdminPage";
 import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
 import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
-import SettingsAdminPageMigrated from "@/pages/admin/SettingsAdminPageMigrated";
+import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
 import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
 import AdvancedAlgorithmsPage from "@/pages/admin/AdvancedAlgorithmsPage";
 import TrendingAnalyticsPage from "@/pages/admin/TrendingAnalyticsPage";
@@ -97,7 +97,7 @@ function AdminRouter() {
       {/* Protected Admin Routes */}
       <Route path="/admin-dashboard">
         <AdminRouteGuard>
-          <DashboardAdminPage />
+          <AdminDashboard />
         </AdminRouteGuard>
       </Route>
       
@@ -163,7 +163,7 @@ function AdminRouter() {
       
       <Route path="/admin/settings">
         <AdminRouteGuard>
-          <SettingsAdminPageMigrated />
+          <SettingsAdminPage />
         </AdminRouteGuard>
       </Route>
       
