@@ -16,13 +16,23 @@ export interface Article {
   excerpt: string;
   content: string;
   image_url?: string;
+  imageUrl?: string; // Compatibility field
+  author?: string;
   category_id: number;
+  categoryId?: number; // Compatibility field
   is_featured: boolean;
+  isFeatured?: boolean; // Compatibility field
   view_count: number;
+  viewCount?: number; // Compatibility field
+  read_time?: number;
   published_at: string;
+  publishedAt?: string; // Compatibility field
   created_at?: string;
+  createdAt?: string; // Compatibility field
   updated_at?: string;
+  updatedAt?: string; // Compatibility field
   category?: Category;
+  categories?: Category | Category[]; // Compatibility field
 }
 
 export interface EPaper {

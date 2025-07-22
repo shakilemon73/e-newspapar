@@ -1,23 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-
-
-interface Category {
-  id: number;
-  name: string;
-  slug: string;
-}
-
-interface Article {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string;
-  imageUrl: string;
-  publishedAt: string;
-  category: Category;
-}
+import { Article, Category } from '@shared/supabase-types';
 
 export const FeaturedSlideshow = () => {
   const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
