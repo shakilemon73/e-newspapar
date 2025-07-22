@@ -1,27 +1,35 @@
 {
   "version": 2,
-  "builds": [
+  "framework": null,
+  "buildCommand": "node build-static.js",
+  "outputDirectory": "dist-static",
+  "installCommand": "npm install",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "buildCommand": "node build-static.js",
-        "outputDirectory": "dist-static"
-      }
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(ico|svg|png))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(favicon\\.ico|favicon\\.svg|generated-icon\\.png|og-default-image\\.svg)",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index-static.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [

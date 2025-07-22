@@ -51,6 +51,12 @@ try {
     console.log('✅ Created favicon.svg');
   }
 
+  // Copy index-static.html to index.html for Vercel compatibility
+  if (fs.existsSync('dist-static/index-static.html')) {
+    fs.copyFileSync('dist-static/index-static.html', 'dist-static/index.html');
+    console.log('✅ Created index.html for Vercel compatibility');
+  }
+
   console.log('✅ Static build completed successfully!');
   console.log('📦 Output directory: dist-static/');
   

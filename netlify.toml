@@ -1,16 +1,12 @@
 [build]
+  command = "node build-static.js"
   publish = "dist-static"
-  command = "npm run build:static"
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/index-static.html"
   status = 200
+  force = false
 
 [build.environment]
-  NODE_VERSION = "18"
-
-[[headers]]
-  for = "/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+  NODE_VERSION = "20"
