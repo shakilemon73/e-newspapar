@@ -22,22 +22,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Get initial session with error handling
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          console.error('Error getting session:', error);
+          // Clear corrupted session data
+          localStorage.removeItem('supabase.auth.token');
+          setSession(null);
+          setUser(null);
+        } else {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Session retrieval failed:', error);
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    // Listen for auth changes with error handling
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      try {
+        console.log('Auth state changed:', event);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth state change error:', error);
+        setSession(null);
+        setUser(null);
+        setLoading(false);
+      }
     });
 
     return () => {
-      subscription.unsubscribe();
+      try {
+        subscription.unsubscribe();
+      } catch (error) {
+        console.error('Error unsubscribing from auth changes:', error);
+      }
     };
   }, []);
 

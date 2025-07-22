@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/use-supabase-auth";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
+import { AutoStorageCleanup } from "@/components/StorageCleanupButton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";
@@ -90,6 +91,7 @@ export default function UserApp() {
     <ThemeProvider>
       <AuthProvider>
         <SiteSettingsProvider>
+          <AutoStorageCleanup />
           <div className="flex flex-col min-h-screen bg-background">
             <Header />
             <main className="flex-grow">

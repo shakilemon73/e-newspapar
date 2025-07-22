@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { cleanupCorruptedStorage } from './storage-cleanup';
 
 // Supabase configuration using environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -12,6 +13,29 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Use anon key for frontend client - RLS policies should allow public read access
 const clientKey = supabaseAnonKey;
 
-export const supabase = createClient(supabaseUrl, clientKey);
+// Clean up any corrupted storage data that might cause JSON parsing errors
+if (typeof window !== 'undefined') {
+  try {
+    cleanupCorruptedStorage();
+  } catch (e) {
+    console.warn('Storage cleanup failed:', e);
+  }
+}
+
+export const supabase = createClient(supabaseUrl, clientKey, {
+  auth: {
+    storage: window.localStorage,
+    storageKey: 'supabase.auth.token',
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
+  }
+});
 
 export default supabase;
