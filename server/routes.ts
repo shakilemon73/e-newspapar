@@ -17,7 +17,7 @@ import { migrateToSupabase, getDatabaseStatus } from './supabase-migration';
 import { setupUserDashboardAPI } from './user-dashboard-api';
 import { setupCompleteTableAPI, populateAllTables } from './complete-table-implementation';
 import { setupFixedAPI, requireAdmin } from './auth-fixes';
-import { weatherService } from './weather-service';
+import { weatherService, getLocationFromIP } from './weather-service';
 import { weatherScheduler } from './weather-scheduler';
 
 
@@ -502,6 +502,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching public weather:', error);
       res.status(500).json({ error: 'Failed to fetch weather' });
+    }
+  });
+
+  // IP-based weather endpoint for enhanced privacy
+  app.get(`${apiPrefix}/public/weather/ip-location`, async (req, res) => {
+    try {
+      console.log('[Weather API] Getting weather based on IP location...');
+      
+      // Get user's IP address from request
+      const userIP = req.headers['x-forwarded-for'] as string || 
+                     req.headers['x-real-ip'] as string ||
+                     req.connection.remoteAddress ||
+                     req.socket.remoteAddress ||
+                     req.ip;
+      
+      console.log(`[Weather API] User IP: ${userIP}`);
+      
+      // Get location from IP
+      const locationData = await getLocationFromIP(userIP);
+      
+      if (!locationData) {
+        return res.status(500).json({ error: 'Could not determine location from IP' });
+      }
+      
+      console.log(`[Weather API] Location determined: ${locationData.city} (${locationData.latitude}, ${locationData.longitude})`);
+      
+      // Get weather for the determined location
+      const weatherData = await weatherService.getWeatherByLocation(
+        locationData.latitude, 
+        locationData.longitude
+      );
+      
+      res.json({
+        ...weatherData,
+        detectedCity: locationData.city,
+        ipBasedLocation: true,
+        coordinates: {
+          latitude: locationData.latitude,
+          longitude: locationData.longitude
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error fetching IP-based weather:', error);
+      res.status(500).json({ error: 'Failed to fetch weather for your location' });
     }
   });
   

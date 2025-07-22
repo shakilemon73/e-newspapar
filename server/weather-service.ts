@@ -1,5 +1,5 @@
 // Open-Meteo Weather Service for Bangladesh
-// Real-time weather data integration
+// Real-time weather data integration with IP-based location
 
 interface OpenMeteoResponse {
   latitude: number;
@@ -43,6 +43,16 @@ interface GeocodeResponse {
   }>;
 }
 
+interface IPLocationResponse {
+  ip: string;
+  city: string;
+  region: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+}
+
 // Weather code mapping to Bengali descriptions
 const WEATHER_CODES: { [key: number]: { condition: string; icon: string } } = {
   0: { condition: "পরিষ্কার আকাশ", icon: "sunny" },
@@ -67,6 +77,59 @@ const WEATHER_CODES: { [key: number]: { condition: string; icon: string } } = {
   96: { condition: "হালকা বজ্রঝড়", icon: "thunderstorm" },
   99: { condition: "ভারী বজ্রঝড়", icon: "thunderstorm" }
 };
+
+// IP-based location service for enhanced privacy
+async function getLocationFromIP(ip?: string): Promise<{ latitude: number; longitude: number; city: string } | null> {
+  try {
+    // Use ipapi.co for IP geolocation (free tier available)
+    const ipToCheck = ip || 'auto';
+    const response = await fetch(`https://ipapi.co/${ipToCheck}/json/`);
+    
+    if (!response.ok) {
+      console.warn('[WeatherService] IP geolocation failed, using default location');
+      return { latitude: 23.7104, longitude: 90.40744, city: 'ঢাকা' }; // Default to Dhaka
+    }
+    
+    const data: IPLocationResponse = await response.json();
+    
+    // Check if location is in Bangladesh or nearby region
+    if (data.country === 'BD' || data.country === 'Bangladesh') {
+      return {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        city: getBengaliCityName(data.city) || 'ঢাকা'
+      };
+    } else {
+      // For international users, default to Dhaka
+      console.log(`[WeatherService] International IP detected (${data.country}), showing Dhaka weather`);
+      return { latitude: 23.7104, longitude: 90.40744, city: 'ঢাকা' };
+    }
+  } catch (error) {
+    console.error('[WeatherService] IP location error:', error);
+    return { latitude: 23.7104, longitude: 90.40744, city: 'ঢাকা' }; // Fallback to Dhaka
+  }
+}
+
+// Helper function to map English city names to Bengali
+function getBengaliCityName(englishName: string): string | null {
+  const cityMap: { [key: string]: string } = {
+    'dhaka': 'ঢাকা',
+    'chittagong': 'চট্টগ্রাম', 
+    'khulna': 'খুলনা',
+    'rajshahi': 'রাজশাহী',
+    'sylhet': 'সিলেট',
+    'barisal': 'বরিশাল',
+    'rangpur': 'রংপুর',
+    'mymensingh': 'ময়মনসিংহ',
+    'comilla': 'কুমিল্লা',
+    'bogra': 'বগুড়া',
+    'jessore': 'যশোর',
+    'dinajpur': 'দিনাজপুর'
+  };
+  
+  const normalized = englishName.toLowerCase();
+  return cityMap[normalized] || null;
+}
 
 // Bengali cities with coordinates
 const BENGALI_CITIES: { [key: string]: { lat: number; lon: number; bengali: string } } = {
@@ -323,3 +386,4 @@ class WeatherService {
 }
 
 export const weatherService = new WeatherService();
+export { getLocationFromIP };

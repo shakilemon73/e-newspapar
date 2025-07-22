@@ -45,52 +45,41 @@ export const WeatherWidget = () => {
     }
   };
 
-  // Function to get user's location
-  const getUserLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationPermission('unavailable');
-      return;
-    }
-
+  // Function to get user's location via IP (no permissions needed)
+  const getUserLocation = async () => {
     setIsTrackingLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          console.log(`[Location] User location: ${latitude}, ${longitude}`);
-          
-          // Fetch weather for user's location using direct Supabase
-          const { getWeatherByLocation } = await import('../lib/supabase-api-direct');
-          const locationWeather = await getWeatherByLocation(latitude, longitude);
-          
-          if (locationWeather) {
-            setWeather(locationWeather);
-            setLocationPermission('granted');
-            console.log(`[Weather] Successfully fetched location weather for ${locationWeather.city}`);
-          } else {
-            throw new Error('Failed to fetch location weather');
-          }
-        } catch (error) {
-          console.error('Error fetching location weather:', error);
-          // Fall back to Dhaka weather
-          await fetchDefaultWeather();
-        } finally {
-          setIsTrackingLocation(false);
-        }
-      },
-      (error) => {
-        console.error('Location error:', error);
-        setLocationPermission('denied');
-        setIsTrackingLocation(false);
-        // Fall back to Dhaka weather
-        fetchDefaultWeather();
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minutes
+    
+    try {
+      console.log('[Weather] Getting location via IP address...');
+      
+      // Use IP-based location endpoint for enhanced privacy
+      const response = await fetch('/api/public/weather/ip-location');
+      
+      if (!response.ok) {
+        throw new Error('Failed to get IP-based weather');
       }
-    );
+      
+      const locationWeather = await response.json();
+      
+      if (locationWeather) {
+        setWeather({
+          ...locationWeather,
+          id: Date.now(), // Add temporary ID for state management
+          updatedAt: new Date().toISOString()
+        });
+        setLocationPermission('granted');
+        console.log(`[Weather] Successfully fetched IP-based weather for ${locationWeather.detectedCity}`);
+      } else {
+        throw new Error('No weather data received');
+      }
+    } catch (error) {
+      console.error('Error fetching IP-based weather:', error);
+      setLocationPermission('denied');
+      // Fall back to default Dhaka weather
+      await fetchDefaultWeather();
+    } finally {
+      setIsTrackingLocation(false);
+    }
   };
 
   // Function to fetch default weather (Dhaka)
@@ -135,12 +124,8 @@ export const WeatherWidget = () => {
       try {
         setIsLoading(true);
         
-        // Try to get user's location first
-        if (navigator.geolocation) {
-          getUserLocation();
-        } else {
-          await fetchDefaultWeather();
-        }
+        // Try to get user's location using IP (no permission needed)
+        await getUserLocation();
         
         // Fetch all weather data for other cities using direct Supabase call
         const { getWeather } = await import('../lib/supabase-api-direct');
