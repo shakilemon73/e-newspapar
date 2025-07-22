@@ -34,11 +34,8 @@ const Home = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/categories');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const categories = await response.json();
+        const { getCategories } = await import('../lib/supabase-api-direct');
+        const categories = await getCategories();
         setAvailableCategories(categories);
       } catch (error) {
         console.error('Error loading categories:', error);

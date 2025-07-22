@@ -28,11 +28,8 @@ export const LatestNews = () => {
     const fetchLatestNews = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/articles/latest?limit=4');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const { getLatestArticles } = await import('../lib/supabase-api-direct');
+        const data = await getLatestArticles(4);
         // Transform data to match expected format
         const transformedData = data.map((article: any) => ({
           id: article.id,
@@ -41,7 +38,7 @@ export const LatestNews = () => {
           excerpt: article.excerpt,
           imageUrl: article.image_url || article.imageUrl,
           publishedAt: article.published_at || article.publishedAt,
-          category: article.category || { id: 0, name: 'সাধারণ', slug: 'general' }
+          category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' }
         }));
         setLatestNews(transformedData);
         setError(null);

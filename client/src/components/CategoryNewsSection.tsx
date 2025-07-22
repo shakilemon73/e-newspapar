@@ -55,11 +55,14 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         const categoryData = await measureApiCall(
           `fetch-category-${categorySlug}`,
           async () => {
-            const response = await fetch(`/api/categories/${categorySlug}`);
-            if (!response.ok) {
+            const { getCategoryBySlug } = await import('../lib/supabase-api-direct');
+            const categoryData = await getCategoryBySlug(categorySlug);
+            
+            if (!categoryData) {
               throw new Error(`Category not found: ${categorySlug}`);
             }
-            return await response.json();
+            
+            return categoryData;
           },
           { categorySlug }
         );
@@ -76,11 +79,11 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
             articlesData = await measureApiCall(
               `fetch-articles-${categorySlug}`,
               async () => {
-                const response = await fetch(`/api/articles?category=${categorySlug}&limit=${limit}`);
-                if (!response.ok) {
-                  throw new Error(`Failed to fetch articles for ${categorySlug}`);
-                }
-                const fetchedArticles = await response.json();
+                const { getArticles } = await import('../lib/supabase-api-direct');
+                const fetchedArticles = await getArticles({ 
+                  category: categorySlug, 
+                  limit: limit 
+                });
                 
                 // Transform data to match expected format
                 return fetchedArticles.map((article: any) => ({
@@ -90,7 +93,7 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
                   excerpt: article.excerpt,
                   imageUrl: article.image_url || article.imageUrl,
                   publishedAt: article.published_at || article.publishedAt,
-                  category: article.category || { id: 0, name: 'সাধারণ', slug: 'general' }
+                  category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' }
                 }));
               },
               { categorySlug, limit, attempt: retryCount + 1 }

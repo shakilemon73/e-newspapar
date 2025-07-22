@@ -30,11 +30,8 @@ export const PopularNewsSection = () => {
     const fetchPopularArticles = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/articles/popular?limit=6');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const { getPopularArticles } = await import('../lib/supabase-api-direct');
+        const data = await getPopularArticles(6);
         console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         
         // Transform data to match Article interface
@@ -44,7 +41,7 @@ export const PopularNewsSection = () => {
           slug: article.slug,
           excerpt: article.excerpt,
           publishedAt: article.published_at || article.publishedAt,
-          category: article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
+          category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
           viewCount: article.view_count || article.viewCount || 0
         }));
         

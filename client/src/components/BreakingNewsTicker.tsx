@@ -15,11 +15,8 @@ export const BreakingNewsTicker = () => {
     const fetchBreakingNews = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/breaking-news');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const { getBreakingNews } = await import('../lib/supabase-api-direct');
+        const data = await getBreakingNews();
         setBreakingNews(data);
         setError(null);
       } catch (err) {

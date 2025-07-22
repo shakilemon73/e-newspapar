@@ -26,7 +26,7 @@ interface Article {
   isFeatured?: boolean;
   category_id: number;
   categoryId?: number;
-  categories?: Category;
+  categories?: Category | Category[];
   category?: Category;
 }
 
@@ -193,14 +193,14 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
     }
 
     // Transform data to include both naming conventions
-    return (data || []).map(article => ({
+    return (data || []).map((article: any) => ({
       ...article,
       imageUrl: article.image_url,
       viewCount: article.view_count,
       publishedAt: article.published_at,
       isFeatured: article.is_featured,
       categoryId: article.category_id,
-      category: article.categories
+      category: Array.isArray(article.categories) ? article.categories[0] : article.categories
     }));
   } catch (err) {
     console.error('Failed to fetch popular articles:', err);
@@ -233,14 +233,14 @@ export async function getLatestArticles(limit = 10): Promise<Article[]> {
     }
 
     // Transform data to include both naming conventions
-    return (data || []).map(article => ({
+    return (data || []).map((article: any) => ({
       ...article,
       imageUrl: article.image_url,
       viewCount: article.view_count,
       publishedAt: article.published_at,
       isFeatured: article.is_featured,
       categoryId: article.category_id,
-      category: article.categories
+      category: Array.isArray(article.categories) ? article.categories[0] : article.categories
     }));
   } catch (err) {
     console.error('Failed to fetch latest articles:', err);
