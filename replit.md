@@ -362,6 +362,14 @@ The system is built to handle Bengali content with proper font support and URL s
 - ✅ **Fixed transformArticleData**: Added missing data transformation function for reading history
 - ✅ **Migration Verification**: All systems operational with no security vulnerabilities or permission requirements
 
+### Bengali Text-to-Speech Enhancement (July 22, 2025 - COMPLETED)
+- ✅ **Bengali Language Fix**: Changed speech synthesis language from English to Bengali (bn-BD)
+- ✅ **Enhanced Voice Selection**: Improved voice detection to prioritize Bengali > Hindi > English voices
+- ✅ **Voice Helper Component**: Created BengaliVoiceHelper to guide users on installing Bengali voices
+- ✅ **User Feedback System**: Added toast notifications explaining voice language selection
+- ✅ **Performance Fix**: Resolved infinite loop in ArticleDetail useEffect that was causing "Maximum update depth exceeded" error
+- ✅ **Scroll Depth Optimization**: Fixed scroll tracking to use functional updates preventing re-render loops
+
 ### Complete Replit Migration (July 18, 2025 - Final)
 - ✅ **Migration Completed**: Successfully migrated Bengali news website from Replit Agent to standard Replit environment
 - ✅ **Admin Pages Fixed**: Resolved all admin page language rendering and loading issues

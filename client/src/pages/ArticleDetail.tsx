@@ -286,7 +286,7 @@ const ArticleDetail = () => {
       const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
       
       setReadingProgress(scrollPercent);
-      setScrollDepth(Math.max(scrollDepth, scrollPercent));
+      setScrollDepth(prev => Math.max(prev, scrollPercent));
       
       // Update reading time
       const currentTime = Date.now();
@@ -296,7 +296,7 @@ const ArticleDetail = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [scrollDepth]);
+  }, []); // Remove scrollDepth dependency to prevent infinite loop
 
   // Auto-scroll functionality
   useEffect(() => {
