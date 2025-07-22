@@ -357,11 +357,10 @@ export const storage = {
       .from('epapers')
       .select('*')
       .order('publish_date', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
     
-    if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    if (error) throw error;
+    return data?.[0] || null;
   },
 
   async createEPaper(data: any) {

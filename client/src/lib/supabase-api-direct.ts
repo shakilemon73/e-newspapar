@@ -360,18 +360,38 @@ export async function getEPapers(): Promise<EPaper[]> {
 }
 
 export async function getLatestEPaper(): Promise<EPaper | null> {
-  const { data, error } = await supabase
-    .from('epapers')
-    .select('*')
-    .eq('is_latest', true)
-    .single();
-  
-  if (error) {
-    console.error('Error fetching latest e-paper:', error);
+  try {
+    // First try to get e-papers marked as latest, order by publish_date descending
+    const { data, error } = await supabase
+      .from('epapers')
+      .select('*')
+      .eq('is_latest', true)
+      .order('publish_date', { ascending: false })
+      .limit(1);
+    
+    if (error) {
+      console.error('Error fetching latest e-paper (is_latest=true):', error);
+      
+      // Fallback: get the most recent e-paper by publish_date
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from('epapers')
+        .select('*')
+        .order('publish_date', { ascending: false })
+        .limit(1);
+      
+      if (fallbackError) {
+        console.error('Error fetching fallback latest e-paper:', fallbackError);
+        return null;
+      }
+      
+      return fallbackData?.[0] || null;
+    }
+    
+    return data?.[0] || null;
+  } catch (err) {
+    console.error('Error in getLatestEPaper:', err);
     return null;
   }
-  
-  return data;
 }
 
 // Video Content API
