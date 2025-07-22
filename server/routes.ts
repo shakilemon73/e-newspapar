@@ -5502,6 +5502,57 @@ ON CONFLICT DO NOTHING;
     res.send(svg);
   });
 
+  // Social Activity API endpoint
+  app.get('/api/social-activity/recent', async (req: Request, res: Response) => {
+    try {
+      const { limit = 6 } = req.query;
+      
+      // Fetch recent user interactions (likes, comments, shares) from database
+      const { data: interactions, error } = await supabase
+        .from('user_interactions')
+        .select(`
+          id,
+          action,
+          article_id,
+          user_id,
+          created_at
+        `)
+        .order('created_at', { ascending: false })
+        .limit(parseInt(limit as string));
+
+      if (error) {
+        console.log('User interactions table not available, using fallback data');
+        // Return fallback activities
+        res.json([
+          {
+            id: 1,
+            type: 'view',
+            user: 'পাঠক',
+            article: 'সাম্প্রতিক সংবাদ',
+            time: 'কিছুক্ষণ আগে',
+            avatar: '/api/placeholder/32/32'
+          }
+        ]);
+        return;
+      }
+
+      // Transform to match UI expectations
+      const activities = interactions?.map((interaction: any) => ({
+        id: interaction.id,
+        type: interaction.action,
+        user: 'পাঠক',
+        article: 'নিবন্ধ',
+        time: new Date(interaction.created_at).toLocaleDateString('bn-BD'),
+        avatar: '/api/placeholder/32/32'
+      })) || [];
+
+      res.json(activities);
+    } catch (error: any) {
+      console.error('Error fetching social activities:', error);
+      res.json([]);
+    }
+  });
+
   // Register new table API routes
   handleNewTableRoutes(app);
 
