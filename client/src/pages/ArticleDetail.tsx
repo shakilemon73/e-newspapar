@@ -810,25 +810,33 @@ const ArticleDetail = () => {
       const voices = speechSynthesis.getVoices();
       console.log('Available voices:', voices.map(v => `${v.name} (${v.lang})`));
       
-      // Priority order: Bengali > Hindi > English
+      // Priority order: Bengali > Hindi > English with better detection
       let selectedVoice = null;
       
-      // First try to find Bengali voice
+      // First try to find Bengali voice with comprehensive search
       selectedVoice = voices.find(voice => 
-        voice.lang.includes('bn') || voice.name.toLowerCase().includes('bengali')
+        voice.lang.includes('bn') || 
+        voice.lang.includes('bengali') ||
+        voice.name.toLowerCase().includes('bengali') ||
+        voice.name.toLowerCase().includes('bangla')
       );
       
       if (!selectedVoice) {
-        // If no Bengali, try Hindi (closer to Bengali than English)
+        // If no Bengali, try Hindi (closer to Bengali than English for Indian subcontinent)
         selectedVoice = voices.find(voice => 
-          voice.lang.includes('hi') || voice.name.includes('हिन्दी')
+          voice.lang.includes('hi') || 
+          voice.lang.includes('hindi') ||
+          voice.name.includes('हिन्दी') ||
+          voice.name.toLowerCase().includes('hindi')
         );
       }
       
       if (!selectedVoice) {
-        // Finally fallback to English
+        // Finally fallback to English voices
         selectedVoice = voices.find(voice => 
-          voice.lang.includes('en-US') || voice.lang.includes('en-GB')
+          voice.lang.includes('en-IN') || // Indian English preferred
+          voice.lang.includes('en-US') || 
+          voice.lang.includes('en-GB')
         );
       }
       
@@ -837,8 +845,8 @@ const ArticleDetail = () => {
         utterance.lang = selectedVoice.lang;
         console.log('Using voice:', selectedVoice.name, selectedVoice.lang);
       } else {
-        utterance.lang = 'en-US'; // Final fallback
-        console.log('No specific voice found, using default English');
+        utterance.lang = 'bn-BD'; // Bengali fallback
+        console.log('No specific voice found, using Bengali fallback');
       }
       
       // Set up event listeners
@@ -947,7 +955,7 @@ const ArticleDetail = () => {
       utterance.rate = newRate;
       utterance.pitch = speechPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'en-US';
+      utterance.lang = 'bn-BD';
       speechSynthesis.speak(utterance);
       setCurrentUtterance(utterance);
     }
@@ -965,7 +973,7 @@ const ArticleDetail = () => {
       utterance.rate = speechRate;
       utterance.pitch = newPitch;
       utterance.volume = isAudioMuted ? 0 : audioVolume;
-      utterance.lang = 'en-US';
+      utterance.lang = 'bn-BD';
       speechSynthesis.speak(utterance);
       setCurrentUtterance(utterance);
     }
