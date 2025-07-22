@@ -117,13 +117,7 @@ const navSections = [
         enLabel: 'Videos',
         bnLabel: 'ভিডিও'
       },
-      {
-        id: 'images',
-        href: '/admin/images',
-        icon: Image,
-        enLabel: 'Images',
-        bnLabel: 'ছবি'
-      },
+
       {
         id: 'epapers',
         href: '/admin/epapers',
@@ -133,7 +127,7 @@ const navSections = [
       },
       {
         id: 'audio-articles',
-        href: '/admin/audio-articles',
+        href: '/admin/audio',
         icon: AudioLines,
         enLabel: 'Audio Articles',
         bnLabel: 'অডিও নিবন্ধ'
@@ -231,7 +225,7 @@ const navSections = [
       },
       {
         id: 'advertising',
-        href: '/admin/advertising',
+        href: '/admin/advertisements',
         icon: DollarSign,
         enLabel: 'Advertising',
         bnLabel: 'বিজ্ঞাপন'

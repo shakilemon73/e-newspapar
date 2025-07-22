@@ -24,7 +24,7 @@ import {
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { getAdminAudioArticles, createAudioArticle, updateAudioArticle, deleteAudioArticle } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
-import { FileUploadField } from '@/components/admin/FileUploadField';
+// import { FileUploadField } from '@/components/admin/FileUploadField'; // Component not available
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AudioArticle {
