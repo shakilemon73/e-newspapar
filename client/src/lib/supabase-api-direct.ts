@@ -1,5 +1,14 @@
 // Direct Supabase API calls to replace Express endpoints
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create Supabase client with appropriate key based on environment
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const useServiceKey = import.meta.env.VITE_USE_SERVICE_KEY === 'true';
+const supabaseKey = useServiceKey 
+  ? import.meta.env.VITE_SUPABASE_SERVICE_KEY 
+  : import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Type definitions
 interface Category {
@@ -1587,7 +1596,7 @@ export async function getPersonalizedRecommendations(userId: string, limit: numb
         *,
         categories(id, name, slug)
       `)
-      .eq('is_published', true)
+
       .order('published_at', { ascending: false })
       .limit(limit);
       
