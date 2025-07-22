@@ -490,7 +490,7 @@ export const ReadingPreferencesWidget = () => {
             <h4 className="font-medium text-sm text-muted-foreground mb-2">প্রিয় বিভাগ</h4>
             <div className="flex flex-wrap gap-2">
               {userPrefs.favorite_categories?.map((category: string, index: number) => (
-                <Badge key={index} variant="secondary" className="text-xs">
+                <Badge key={`category-${category}-${index}`} variant="secondary" className="text-xs">
                   {category}
                 </Badge>
               ))}

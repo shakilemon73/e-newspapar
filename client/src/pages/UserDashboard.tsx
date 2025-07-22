@@ -508,8 +508,8 @@ export default function UserDashboard() {
                               {achievementProgress
                                 .filter((progress: any) => !progress.isEarned)
                                 .slice(0, 5)
-                                .map((progress: any) => (
-                                <div key={progress.id} className="p-4 border border-border rounded-lg bg-card">
+                                .map((progress: any, index: number) => (
+                                <div key={progress.id || `progress-${index}-${progress.name || index}`} className="p-4 border border-border rounded-lg bg-card">
                                   <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center">
                                       <div className="p-2 bg-muted rounded-full mr-3">
@@ -635,6 +635,25 @@ export default function UserDashboard() {
                 </Link>
               </CardContent>
             </Card>
+
+            {/* Favorite Categories */}
+            {finalUserStats.favoriteCategories && finalUserStats.favoriteCategories.length > 0 && (
+              <Card className="border-border bg-card">
+                <CardHeader>
+                  <CardTitle className="text-foreground">প্রিয় বিভাগ</CardTitle>
+                  <CardDescription>আপনার পছন্দের বিষয়</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {finalUserStats.favoriteCategories.map((category: any, index: number) => (
+                      <Badge key={`fav-category-${category.id || category.name || category}-${index}`} variant="secondary" className="text-xs">
+                        {category.name || category}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Reading Goals */}
             <Card className="border-border bg-card">
