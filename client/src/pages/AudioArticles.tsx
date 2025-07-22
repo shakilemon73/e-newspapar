@@ -28,12 +28,9 @@ export default function AudioArticles() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/audio-articles');
-        if (!response.ok) {
-          throw new Error('Failed to fetch audio articles');
-        }
-        
-        const data = await response.json();
+        // Use direct Supabase call instead of Express API
+        const { getAudioArticles } = await import('../lib/supabase-api-direct');
+        const data = await getAudioArticles();
         setArticles(data);
       } catch (err) {
         setError("অডিও আর্টিকেল লোড করতে সমস্যা হয়েছে");

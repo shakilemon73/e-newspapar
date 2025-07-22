@@ -25,25 +25,29 @@ const SetAdminRole = () => {
     setSuccess(false);
 
     try {
-      const response = await fetch('/api/admin/set-role', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: adminEmail.trim(),
-          role: 'admin'
-        }),
-      });
+      // Use direct Supabase admin update instead of Express API
+      const { supabase } = await import('@/lib/supabase');
+      
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserByEmail(adminEmail.trim());
+      
+      if (userError || !userData.user) {
+        setMessage('User not found with this email');
+        return;
+      }
 
-      const result = await response.json();
+      const { error: updateError } = await supabase.auth.admin.updateUserById(
+        userData.user.id,
+        {
+          user_metadata: { role: 'admin' }
+        }
+      );
 
-      if (response.ok) {
+      if (!updateError) {
         setSuccess(true);
         setMessage(`Successfully set ${adminEmail} as admin!`);
         setAdminEmail('');
       } else {
-        setMessage(result.error || 'Failed to set admin role');
+        setMessage(updateError.message || 'Failed to set admin role');
       }
     } catch (error) {
       console.error('Error setting admin role:', error);
