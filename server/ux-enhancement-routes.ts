@@ -58,7 +58,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
         // Check for new achievements after reading activity
         if (completed && user_id && user_id !== 'anonymous') {
           try {
-            const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+            const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system');
             const userStats = await calculateUserStatsForAchievements(user_id);
             await checkAndAwardAchievements(user_id, userStats);
           } catch (achievementError) {
@@ -82,7 +82,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
       const { limit = 20 } = req.query;
 
       // Use the advanced algorithms function which handles schema cache issues
-      const { getUserReadingHistory } = await import('./advanced-algorithms.js');
+      const { getUserReadingHistory } = await import('./advanced-algorithms');
       const history = await getUserReadingHistory(userId, parseInt(limit as string));
       
       res.json(history);
@@ -124,7 +124,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
       // Check for new achievements after saving article
       if (user_id && user_id !== 'anonymous') {
         try {
-          const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+          const { checkAndAwardAchievements, calculateUserStatsForAchievements } = await import('./achievements-system');
           const userStats = await calculateUserStatsForAchievements(user_id);
           await checkAndAwardAchievements(user_id, userStats);
         } catch (achievementError) {
@@ -147,7 +147,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
       const { limit = 20 } = req.query;
 
       // Use the advanced algorithms function which handles schema cache issues
-      const { getUserSavedArticles } = await import('./advanced-algorithms.js');
+      const { getUserSavedArticles } = await import('./advanced-algorithms');
       const savedArticles = await getUserSavedArticles(userId, parseInt(limit as string));
       
       res.json(savedArticles);
@@ -181,7 +181,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
   app.get('/api/user/:userId/achievements', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { getUserAchievements } = await import('./achievements-system.js');
+      const { getUserAchievements } = await import('./achievements-system');
       
       const achievements = await getUserAchievements(userId);
       res.json(achievements);
@@ -195,7 +195,7 @@ export const setupUXEnhancementRoutes = (app: Express) => {
   app.get('/api/user/:userId/achievement-progress', async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { getAchievementProgress, calculateUserStatsForAchievements } = await import('./achievements-system.js');
+      const { getAchievementProgress, calculateUserStatsForAchievements } = await import('./achievements-system');
       
       const userStats = await calculateUserStatsForAchievements(userId);
       const progress = await getAchievementProgress(userId, userStats);
