@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { createBengaliSlug } from '@/lib/utils/url-utils';
+
 
 interface Category {
   id: number;
@@ -116,7 +116,7 @@ export const FeaturedSlideshow = () => {
                   </Link>
                 )}
                 <h2 className="headline text-white mt-2 mb-2">
-                  <Link href={`/article/${createBengaliSlug(article.title)}`} className="text-white hover:text-gray-200 transition">
+                  <Link href={`/article/${article.slug}`} className="text-white hover:text-gray-200 transition">
                     {article.title}
                   </Link>
                 </h2>
@@ -163,7 +163,7 @@ export const FeaturedSlideshow = () => {
             </div>
             <div className="p-3">
               <h3 className="news-title mb-1 line-clamp-2">
-                <Link href={`/article/${createBengaliSlug(article.title)}`} className="hover:text-accent transition">
+                <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
                   {article.title}
                 </Link>
               </h3>

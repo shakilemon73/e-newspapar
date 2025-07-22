@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { createBengaliSlug } from '@/lib/utils/url-utils';
+
 
 interface Category {
   id: number;
@@ -105,7 +105,7 @@ export const LatestNews = () => {
         {latestNews.map((news) => (
           <div className="flex gap-3" key={news.id}>
             <div className="flex-shrink-0">
-              <Link href={`/article/${createBengaliSlug(news.title)}`} className="block">
+              <Link href={`/article/${news.slug}`} className="block">
                 <img 
                   src={news.imageUrl} 
                   alt={news.title} 
@@ -118,7 +118,7 @@ export const LatestNews = () => {
                 {news.category.name}
               </Link>
               <h4 className="text-base font-semibold text-foreground mb-1 leading-tight">
-                <Link href={`/article/${createBengaliSlug(news.title)}`} className="hover:text-primary transition-colors">
+                <Link href={`/article/${news.slug}`} className="hover:text-primary transition-colors">
                   {news.title}
                 </Link>
               </h4>
