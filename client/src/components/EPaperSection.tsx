@@ -23,7 +23,7 @@ export const EPaperSection = () => {
         setIsLoading(true);
         
         // Fetch latest e-paper
-        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api-corrected');
+        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api');
         
         const latestData = await getLatestEPaper();
         setLatestEPaper(latestData);

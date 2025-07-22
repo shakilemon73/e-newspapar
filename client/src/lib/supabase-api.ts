@@ -52,6 +52,7 @@ export async function getArticles(params: {
   
   if (error) {
     console.error('Error fetching articles:', error);
+    // Return empty array instead of throwing to prevent crashes
     return [];
   }
 
@@ -83,6 +84,59 @@ export async function getArticleById(id: number) {
   }
 
   return data;
+}
+
+// Get latest articles
+export async function getLatestArticles(limit = 10) {
+  const { data, error } = await supabase
+    .from('articles')
+    .select(`
+      id,
+      title,
+      slug,
+      excerpt,
+      image_url,
+      view_count,
+      published_at,
+      is_featured,
+      categories(id, name, slug)
+    `)
+    .order('published_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching latest articles:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// Popular Articles API
+export async function getPopularArticles(limit = 5) {
+  const { data, error } = await supabase
+    .from('articles')
+    .select(`
+      id,
+      title,
+      slug,
+      excerpt,
+      image_url,
+      view_count,
+      published_at,
+      categories(id, name, slug)
+    `)
+    .not('view_count', 'is', null)
+    .gte('view_count', 1)
+    .order('view_count', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching popular articles:', error);
+    return [];
+  }
+
+  return data || [];
 }
 
 // Increment article views
@@ -151,10 +205,10 @@ export async function getWeather() {
 
   if (error) {
     console.error('Error fetching weather:', error);
-    throw new Error('Failed to fetch weather data');
+    return [];
   }
 
-  return data;
+  return data || [];
 }
 
 // Get weather by location
@@ -168,7 +222,13 @@ export async function getWeatherByLocation(lat: number, lng: number) {
 
   if (error) {
     console.error('Error fetching location weather:', error);
-    throw new Error('Failed to fetch weather data');
+    // Return fallback weather data
+    return {
+      city: 'ঢাকা',
+      temperature: 25,
+      condition: 'পরিষ্কার',
+      icon: '☀️'
+    };
   }
 
   return data;
@@ -183,111 +243,51 @@ export async function getEPapers() {
 
   if (error) {
     console.error('Error fetching e-papers:', error);
-    throw new Error('Failed to fetch e-papers');
+    return [];
   }
 
-  return data;
+  return data || [];
 }
 
 // Get latest e-paper
 export async function getLatestEPaper() {
-  const { data, error } = await supabase
-    .from('epapers')
-    .select('*')
-    .eq('is_latest', true)
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from('epapers')
+      .select('*')
+      .eq('is_latest', true)
+      .single();
 
-  if (error) {
-    console.error('Error fetching latest e-paper:', error);
-    throw new Error('Failed to fetch latest e-paper');
-  }
-
-  return data;
-}
-
-// Popular Articles API
-export async function getPopularArticles(limit = 5) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      categories(id, name, slug)
-    `)
-    .not('view_count', 'is', null)
-    .gte('view_count', 1)
-    .order('view_count', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching popular articles:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-// Latest Articles API
-export async function getLatestArticles(limit = 10) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      categories(id, name, slug)
-    `)
-    .order('published_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    console.error('Error fetching latest articles:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-// Social Media API
-export async function getSocialMediaPosts(platform?: string) {
-  // Return mock data for now since social_media table doesn't exist
-  const mockData = [
-    {
-      id: 1,
-      platform: 'facebook',
-      content: 'সর্বশেষ সংবাদ এবং আপডেটের জন্য আমাদের ফেসবুক পেজ ফলো করুন।',
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 2, 
-      platform: 'twitter',
-      content: 'আজকের হেডলাইন: বাংলাদেশের সর্বশেষ সংবাদ',
-      created_at: new Date().toISOString()
+    if (error) {
+      console.error('Error fetching latest e-paper:', error);
+      // Try to get the most recent e-paper instead
+      const { data: latestData, error: latestError } = await supabase
+        .from('epapers')
+        .select('*')
+        .order('publish_date', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (latestError) {
+        return null;
+      }
+      return latestData;
     }
-  ];
 
-  if (platform) {
-    return mockData.filter(post => post.platform === platform);
+    return data;
+  } catch (err) {
+    console.error('Error in getLatestEPaper:', err);
+    return null;
   }
-
-  return mockData;
 }
 
 // Videos API
-export async function getVideos() {
+export async function getVideos(limit = 10) {
   const { data, error } = await supabase
     .from('video_content')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error('Error fetching videos:', error);
@@ -298,18 +298,19 @@ export async function getVideos() {
 }
 
 // Audio Articles API
-export async function getAudioArticles() {
+export async function getAudioArticles(limit = 10) {
   const { data, error } = await supabase
     .from('audio_articles')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(limit);
 
   if (error) {
     console.error('Error fetching audio articles:', error);
-    throw new Error('Failed to fetch audio articles');
+    return [];
   }
 
-  return data;
+  return data || [];
 }
 
 // Trending Topics API
@@ -322,64 +323,77 @@ export async function getTrendingTopics() {
 
   if (error) {
     console.error('Error fetching trending topics:', error);
-    throw new Error('Failed to fetch trending topics');
+    return [];
   }
 
-  return data;
+  return data || [];
 }
 
 // Site Settings API
 export async function getSiteSettings() {
-  // Return default settings for now since system_settings table schema needs updating
-  return {
-    siteName: 'Emon\'s Daily News',
-    siteDescription: 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র',
-    logoUrl: '',
-    defaultLanguage: 'bn',
-    siteUrl: 'https://emonsdaily.com'
-  };
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('*')
+      .single();
+
+    if (error) {
+      console.error('Error fetching site settings:', error);
+      // Return fallback settings when table doesn't exist or no data
+      return {
+        siteName: "Emon's Daily News",
+        siteDescription: "বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র",
+        logoUrl: "",
+        defaultLanguage: "bn",
+        siteUrl: "https://emonsdaily.com"
+      };
+    }
+
+    return {
+      siteName: data.site_name || "Emon's Daily News",
+      siteDescription: data.site_description || "বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র",
+      logoUrl: data.logo_url || "",
+      defaultLanguage: data.default_language || "bn",
+      siteUrl: data.site_url || "https://emonsdaily.com"
+    };
+  } catch (err) {
+    console.error('Error in getSiteSettings:', err);
+    return {
+      siteName: "Emon's Daily News",
+      siteDescription: "বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র",
+      logoUrl: "",
+      defaultLanguage: "bn",
+      siteUrl: "https://emonsdaily.com"
+    };
+  }
 }
 
-// Comments API
-export async function getArticleComments(articleId: number) {
+// Newsletter subscription
+export async function subscribeToNewsletter(email: string) {
   const { data, error } = await supabase
-    .from('article_comments')
-    .select(`
-      id,
-      content,
-      author_name,
-      created_at,
-      is_approved
-    `)
-    .eq('article_id', articleId)
-    .eq('is_approved', true)
-    .order('created_at', { ascending: false });
+    .from('newsletter_subscriptions')
+    .insert([{ email }])
+    .select()
+    .single();
 
   if (error) {
-    console.error('Error fetching comments:', error);
-    throw new Error('Failed to fetch comments');
+    console.error('Error subscribing to newsletter:', error);
+    throw new Error('Failed to subscribe to newsletter');
   }
 
   return data;
 }
 
-// Add comment (requires authentication)
+// Comments API
 export async function addComment(articleId: number, content: string, authorName: string) {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('Authentication required');
-  }
-
   const { data, error } = await supabase
-    .from('article_comments')
-    .insert({
+    .from('comments')
+    .insert([{
       article_id: articleId,
       content,
       author_name: authorName,
-      user_id: user.id,
-      is_approved: false // Comments need approval
-    })
+      is_approved: false
+    }])
     .select()
     .single();
 
@@ -391,87 +405,76 @@ export async function addComment(articleId: number, content: string, authorName:
   return data;
 }
 
-// User likes API
-export async function isArticleLiked(articleId: number) {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) return false;
-
-  const { data, error } = await supabase
-    .from('user_likes')
-    .select('id')
-    .eq('user_id', user.id)
-    .eq('content_type', 'article')
-    .eq('content_id', articleId)
-    .single();
-
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error checking like status:', error);
-  }
-
-  return !!data;
-}
-
+// Article likes API
 export async function toggleArticleLike(articleId: number) {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (!user) {
-    throw new Error('Authentication required');
+    throw new Error('User must be logged in to like articles');
   }
 
-  const isLiked = await isArticleLiked(articleId);
+  // Check if user already liked this article
+  const { data: existingLike } = await supabase
+    .from('user_likes')
+    .select('*')
+    .eq('article_id', articleId)
+    .eq('user_id', user.id)
+    .single();
 
-  if (isLiked) {
+  if (existingLike) {
     // Remove like
     const { error } = await supabase
       .from('user_likes')
       .delete()
-      .eq('user_id', user.id)
-      .eq('content_type', 'article')
-      .eq('content_id', articleId);
+      .eq('article_id', articleId)
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Error removing like:', error);
       throw new Error('Failed to remove like');
     }
+
+    return { liked: false };
   } else {
     // Add like
     const { error } = await supabase
       .from('user_likes')
-      .insert({
-        user_id: user.id,
-        content_type: 'article',
-        content_id: articleId
-      });
+      .insert([{
+        article_id: articleId,
+        user_id: user.id
+      }]);
 
     if (error) {
       console.error('Error adding like:', error);
       throw new Error('Failed to add like');
     }
-  }
 
-  return !isLiked;
+    return { liked: true };
+  }
 }
 
-// Newsletter subscription
-export async function subscribeToNewsletter(email: string) {
+// Search articles
+export async function searchArticles(query: string, limit = 20) {
   const { data, error } = await supabase
-    .from('newsletters')
-    .insert({
-      email,
-      is_subscribed: true
-    })
-    .select()
-    .single();
+    .from('articles')
+    .select(`
+      id,
+      title,
+      slug,
+      excerpt,
+      image_url,
+      view_count,
+      published_at,
+      categories(id, name, slug)
+    `)
+    .textSearch('title', query)
+    .order('published_at', { ascending: false })
+    .limit(limit);
 
   if (error) {
-    // Check if email already exists
-    if (error.code === '23505') {
-      throw new Error('Email already subscribed');
-    }
-    console.error('Error subscribing to newsletter:', error);
-    throw new Error('Failed to subscribe to newsletter');
+    console.error('Error searching articles:', error);
+    return [];
   }
 
-  return data;
+  return data || [];
 }

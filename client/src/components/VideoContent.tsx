@@ -27,7 +27,7 @@ export const VideoContent = () => {
         setIsLoading(true);
         
         // Fetch videos from Supabase API
-        const { getVideos } = await import('../lib/supabase-api-corrected');
+        const { getVideos } = await import('../lib/supabase-api');
         const data: any[] = await getVideos();
         
         if (data && data.length > 0) {
