@@ -56,7 +56,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { staticApiRequest, staticQueryClient } from '@/lib/static-queryClient-updated';
 import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
@@ -262,7 +262,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       form.reset();
       // setTags([]); // Removed tags functionality temporarily
       setImagePreview('');
-      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      staticQueryClient.invalidateQueries({ queryKey: ['/api/articles'] });
     },
     onError: (error: Error) => {
       console.error('Save mutation error:', error);

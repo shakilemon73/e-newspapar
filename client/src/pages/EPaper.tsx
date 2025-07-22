@@ -26,24 +26,14 @@ const EPaper = () => {
       try {
         setIsLoading(true);
         
+        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api-final');
+        
         // Fetch latest e-paper
-        const latestResponse = await fetch('/api/epapers/latest');
-        
-        if (!latestResponse.ok) {
-          throw new Error('Failed to fetch latest e-paper');
-        }
-        
-        const latestData = await latestResponse.json();
+        const latestData = await getLatestEPaper();
         setLatestEPaper(latestData);
         
-        // Fetch all e-papers (paginated)
-        const allResponse = await fetch(`/api/epapers?limit=${limit}&offset=0`);
-        
-        if (!allResponse.ok) {
-          throw new Error('Failed to fetch e-papers');
-        }
-        
-        const allData = await allResponse.json();
+        // Fetch all e-papers
+        const allData = await getEPapers();
         setEPapers(allData);
         setHasMore(allData.length === limit);
         setError(null);

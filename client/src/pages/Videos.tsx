@@ -29,12 +29,8 @@ export default function Videos() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/videos');
-        if (!response.ok) {
-          throw new Error('Failed to fetch videos');
-        }
-        
-        const data = await response.json();
+        const { getVideos } = await import('../lib/supabase-api-final');
+        const data = await getVideos();
         setVideos(data);
       } catch (err) {
         setError("ভিডিও লোড করতে সমস্যা হয়েছে");

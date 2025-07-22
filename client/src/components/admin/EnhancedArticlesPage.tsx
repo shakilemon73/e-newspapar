@@ -34,7 +34,7 @@ import {
   SortDesc
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { staticApiRequest, staticQueryClient } from '@/lib/static-queryClient-updated';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
 import {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
-import { apiRequest } from '@/lib/queryClient';
+import { staticApiRequest } from '@/lib/static-queryClient-updated';
 import { useToast } from '@/hooks/use-toast';
 import supabase from '@/lib/supabase';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';

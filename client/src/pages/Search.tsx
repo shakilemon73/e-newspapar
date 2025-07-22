@@ -50,13 +50,8 @@ const Search = () => {
       
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/articles/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=0`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to search articles');
-        }
-        
-        const data = await response.json();
+        const { searchArticles } = await import('../lib/supabase-api-complete');
+        const data = await searchArticles(query, limit, 0);
         setArticles(data);
         setHasMore(data.length === limit);
         setPage(1);
@@ -80,13 +75,8 @@ const Search = () => {
       const nextPage = page + 1;
       const offset = page * limit;
       
-      const response = await fetch(`/api/articles/search?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to load more search results');
-      }
-      
-      const newArticles = await response.json();
+      const { searchArticles } = await import('../lib/supabase-api-complete');
+      const newArticles = await searchArticles(query, limit, offset);
       
       if (newArticles.length > 0) {
         setArticles([...articles, ...newArticles]);

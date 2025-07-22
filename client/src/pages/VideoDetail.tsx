@@ -33,16 +33,12 @@ export default function VideoDetail() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`/api/videos/${slug}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError("ভিডিও পাওয়া যায়নি");
-            return;
-          }
-          throw new Error('Failed to fetch video');
+        const { getVideoBySlug } = await import('../lib/supabase-api-final');
+        const data = await getVideoBySlug(slug);
+        if (!data) {
+          setError("ভিডিও পাওয়া যায়নি");
+          return;
         }
-        
-        const data = await response.json();
         setVideo(data);
       } catch (err) {
         setError("ভিডিও লোড করতে সমস্যা হয়েছে");

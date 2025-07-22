@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Globe, Settings, Palette } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { staticApiRequest } from '@/lib/static-queryClient-updated';
 
 interface SiteSettings {
   siteName: string;

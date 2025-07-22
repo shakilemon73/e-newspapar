@@ -75,46 +75,35 @@ const Category = () => {
       try {
         setIsLoading(true);
         
+        const { getCategoryBySlug, getCategories, getArticles, getPopularArticles } = await import('../lib/supabase-api-complete');
+        
         // Fetch all categories for navigation
-        const categoriesResponse = await fetch('/api/categories');
-        if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json();
-          setAllCategories(categoriesData);
-        }
+        const categoriesData = await getCategories();
+        setAllCategories(categoriesData);
         
         // Fetch category details
-        const categoryResponse = await fetch(`/api/categories/${categorySlug}`);
-        
-        if (!categoryResponse.ok) {
-          if (categoryResponse.status === 404) {
-            setError('এই বিভাগটি খুঁজে পাওয়া যায়নি');
-            return;
-          }
-          throw new Error('Failed to fetch category');
+        const categoryData = await getCategoryBySlug(categorySlug);
+        if (!categoryData) {
+          setError('এই বিভাগটি খুঁজে পাওয়া যায়নি');
+          return;
         }
-        
-        const categoryData = await categoryResponse.json();
         setCategory(categoryData);
         
         // Fetch articles based on sort preference
-        let apiUrl = `/api/articles?category=${categorySlug}&limit=${limit}&offset=0`;
+        let articlesData;
         if (sortBy === 'popular') {
-          apiUrl = `/api/articles/popular?category=${categorySlug}&limit=${limit}`;
-        } else if (sortBy === 'trending') {
-          apiUrl = `/api/trending-articles?category=${categorySlug}&limit=${limit}`;
+          articlesData = await getPopularArticles(limit);
+          // Filter by category client-side for now
+          articlesData = articlesData.filter((article: any) => 
+            article.categories?.slug === categorySlug
+          );
+        } else {
+          articlesData = await getArticles({ 
+            category: categorySlug, 
+            limit: limit, 
+            offset: 0 
+          });
         }
-        
-        const articlesResponse = await fetch(apiUrl);
-        
-        if (!articlesResponse.ok) {
-          if (articlesResponse.status === 404) {
-            setError('এই বিভাগের কোন সংবাদ পাওয়া যায়নি');
-            return;
-          }
-          throw new Error('Failed to fetch category articles');
-        }
-        
-        const articlesData = await articlesResponse.json();
         setArticles(articlesData);
         setHasMore(articlesData.length === limit);
         setPage(1);
@@ -138,20 +127,22 @@ const Category = () => {
       const nextPage = page + 1;
       const offset = page * limit;
       
-      let apiUrl = `/api/articles?category=${categorySlug}&limit=${limit}&offset=${offset}`;
+      const { getArticles, getPopularArticles } = await import('../lib/supabase-api-complete');
+      
+      let newArticles;
       if (sortBy === 'popular') {
-        apiUrl = `/api/articles/popular?category=${categorySlug}&limit=${limit}&offset=${offset}`;
-      } else if (sortBy === 'trending') {
-        apiUrl = `/api/trending-articles?category=${categorySlug}&limit=${limit}&offset=${offset}`;
+        newArticles = await getPopularArticles(limit);
+        // Filter by category client-side for now
+        newArticles = newArticles.filter((article: any) => 
+          article.categories?.slug === categorySlug
+        );
+      } else {
+        newArticles = await getArticles({ 
+          category: categorySlug, 
+          limit: limit, 
+          offset: offset 
+        });
       }
-      
-      const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch more articles');
-      }
-      
-      const newArticles = await response.json();
       
       if (newArticles.length > 0) {
         setArticles([...articles, ...newArticles]);
