@@ -762,31 +762,49 @@ export async function subscribeToNewsletter(email: string): Promise<{ success: b
 // User Dashboard APIs
 export async function getUserStats(userId: string): Promise<any> {
   try {
-    // Get reading history count
-    const { count: readingCount } = await supabase
-      .from('user_reading_history')
+    console.log('[getUserStats] Fetching user statistics for user:', userId);
+    
+    // Get reading history count - use correct table name 'reading_history'
+    const { count: readingCount, error: readingError } = await supabase
+      .from('reading_history')
       .select('*', { count: 'exact' })
       .eq('user_id', userId);
 
+    if (readingError && readingError.code !== '42P01' && readingError.code !== 'PGRST116') {
+      console.error('Error fetching reading history count:', readingError);
+    }
+
     // Get bookmarks count
-    const { count: bookmarksCount } = await supabase
+    const { count: bookmarksCount, error: bookmarksError } = await supabase
       .from('user_bookmarks')
       .select('*', { count: 'exact' })
       .eq('user_id', userId);
 
+    if (bookmarksError && bookmarksError.code !== 'PGRST116') {
+      console.error('Error fetching bookmarks count:', bookmarksError);
+    }
+
     // Get likes count
-    const { count: likesCount } = await supabase
+    const { count: likesCount, error: likesError } = await supabase
       .from('user_likes')
       .select('*', { count: 'exact' })
       .eq('user_id', userId);
 
+    if (likesError && likesError.code !== 'PGRST116') {
+      console.error('Error fetching likes count:', likesError);
+    }
+
     // Get comments count
-    const { count: commentsCount } = await supabase
+    const { count: commentsCount, error: commentsError } = await supabase
       .from('article_comments')
       .select('*', { count: 'exact' })
       .eq('user_id', userId);
 
-    return {
+    if (commentsError && commentsError.code !== 'PGRST116') {
+      console.error('Error fetching comments count:', commentsError);
+    }
+
+    const stats = {
       totalReadArticles: readingCount || 0,
       totalBookmarks: bookmarksCount || 0,
       totalLikes: likesCount || 0,
@@ -794,6 +812,9 @@ export async function getUserStats(userId: string): Promise<any> {
       totalInteractions: (readingCount || 0) + (likesCount || 0) + (commentsCount || 0),
       favoriteCategories: []
     };
+
+    console.log('[getUserStats] Successfully fetched user statistics:', stats);
+    return stats;
   } catch (error) {
     console.error('Error fetching user stats:', error);
     return {
@@ -842,7 +863,48 @@ export async function getUserPreferences(userId: string): Promise<any> {
 
 // Get user bookmarks (alias for saved articles)
 export async function getUserBookmarks(userId: string, limit = 10): Promise<Article[]> {
-  return getUserSavedArticles(userId, limit);
+  try {
+    console.log('[getUserBookmarks] Fetching bookmarks for user:', userId);
+    
+    const { data, error } = await supabase
+      .from('user_bookmarks')
+      .select(`
+        id,
+        created_at,
+        article_id,
+        articles(
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching user bookmarks:', error);
+      return [];
+    }
+
+    // Transform the data to get articles from bookmarks
+    const articles = data
+      .map(bookmark => bookmark.articles)
+      .filter(article => article !== null);
+    
+    console.log(`[getUserBookmarks] Found ${articles.length} bookmarked articles`);
+    return transformArticleData(articles);
+  } catch (error) {
+    console.error('Error fetching user bookmarks:', error);
+    return [];
+  }
 }
 
 export async function getUserSavedArticles(userId: string, limit = 10): Promise<Article[]> {
@@ -885,30 +947,48 @@ export async function getUserSavedArticles(userId: string, limit = 10): Promise<
 
 export async function getUserReadingHistory(userId: string, limit = 10): Promise<Article[]> {
   try {
-    // Simplified approach - get latest articles as reading history fallback
-    const { data, error } = await supabase
-      .from('articles')
+    console.log('[getUserReadingHistory] Fetching reading history for user:', userId);
+    
+    // Try to get actual reading history from reading_history table
+    const { data: historyData, error: historyError } = await supabase
+      .from('reading_history')
       .select(`
-        id,
-        title,
-        slug,
-        excerpt,
-        image_url,
-        view_count,
-        published_at,
-        is_featured,
-        category_id,
-        categories(id, name, slug)
+        article_id,
+        last_read_at,
+        articles(
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        )
       `)
-      .order('published_at', { ascending: false })
+      .eq('user_id', userId)
+      .order('last_read_at', { ascending: false })
       .limit(limit);
 
-    if (error) {
-      console.error('Error fetching reading history:', error);
-      return [];
+    if (historyError && historyError.code !== '42P01' && historyError.code !== 'PGRST116') {
+      console.error('Error fetching reading history:', historyError);
     }
 
-    return transformArticleData(data || []);
+    // If we have actual reading history data, return it
+    if (historyData && historyData.length > 0) {
+      const articles = historyData
+        .map(item => item.articles)
+        .filter(article => article !== null);
+      
+      console.log(`[getUserReadingHistory] Found ${articles.length} articles in reading history`);
+      return transformArticleData(articles);
+    }
+
+    // Fallback: If no reading history found, show sample data message
+    console.log('[getUserReadingHistory] No reading history found, returning empty array');
+    return [];
   } catch (error) {
     console.error('Error fetching reading history:', error);
     return [];
