@@ -665,7 +665,9 @@ export async function getUserStats(userId: string): Promise<any> {
       totalReadArticles: readingCount || 0,
       totalBookmarks: bookmarksCount || 0,
       totalLikes: likesCount || 0,
-      totalComments: commentsCount || 0
+      totalComments: commentsCount || 0,
+      totalInteractions: (readingCount || 0) + (likesCount || 0) + (commentsCount || 0),
+      favoriteCategories: []
     };
   } catch (error) {
     console.error('Error fetching user stats:', error);
@@ -673,9 +675,49 @@ export async function getUserStats(userId: string): Promise<any> {
       totalReadArticles: 0,
       totalBookmarks: 0,
       totalLikes: 0,
-      totalComments: 0
+      totalComments: 0,
+      totalInteractions: 0,
+      favoriteCategories: []
     };
   }
+}
+
+// Get user preferences
+export async function getUserPreferences(userId: string): Promise<any> {
+  try {
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching user preferences:', error);
+    }
+
+    // Return default preferences if no data found
+    return data || {
+      theme: 'light',
+      language: 'bn',
+      notifications: true,
+      autoPlay: false,
+      fontSize: 'medium'
+    };
+  } catch (error) {
+    console.error('Error fetching user preferences:', error);
+    return {
+      theme: 'light',
+      language: 'bn',
+      notifications: true,
+      autoPlay: false,
+      fontSize: 'medium'
+    };
+  }
+}
+
+// Get user bookmarks (alias for saved articles)
+export async function getUserBookmarks(userId: string, limit = 10): Promise<Article[]> {
+  return getUserSavedArticles(userId, limit);
 }
 
 export async function getUserSavedArticles(userId: string, limit = 10): Promise<Article[]> {
@@ -1046,36 +1088,7 @@ export async function trackArticleShare(articleId: number, userId: string, platf
 
 
 
-export async function getUserPreferences(userId: string): Promise<any> {
-  try {
-    const { data, error } = await supabase
-      .from('user_settings')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
 
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-
-    return data || {
-      theme: 'light',
-      language: 'bn',
-      notifications: true,
-      autoPlay: false,
-      fontSize: 'medium'
-    };
-  } catch (error) {
-    console.error('Error fetching user preferences:', error);
-    return {
-      theme: 'light',
-      language: 'bn',
-      notifications: true,
-      autoPlay: false,
-      fontSize: 'medium'
-    };
-  }
-}
 
 export async function updateUserPreferences(userId: string, preferences: any): Promise<{ success: boolean }> {
   try {
@@ -1095,34 +1108,7 @@ export async function updateUserPreferences(userId: string, preferences: any): P
   }
 }
 
-export async function getUserBookmarks(userId: string): Promise<any[]> {
-  try {
-    const { data, error } = await supabase
-      .from('user_bookmarks')
-      .select(`
-        id,
-        created_at,
-        article_id,
-        articles(
-          id,
-          title,
-          slug,
-          excerpt,
-          image_url,
-          published_at,
-          categories(name, slug)
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error('Error fetching user bookmarks:', error);
-    return [];
-  }
-}
 
 // Admin APIs
 export async function getAdminStats(): Promise<any> {

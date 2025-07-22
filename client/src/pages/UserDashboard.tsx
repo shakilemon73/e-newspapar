@@ -575,7 +575,7 @@ export default function UserDashboard() {
                     ) : userInteractions?.length ? (
                       <div className="space-y-4">
                         {userInteractions.map((activity: any, index: number) => (
-                          <div key={index} className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+                          <div key={activity.id || `activity-${index}-${activity.createdAt || Date.now()}`} className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
                             {activity.interactionType === 'read' && <BookOpen className="h-5 w-5 text-blue-600" />}
                             {activity.interactionType === 'save' && <Heart className="h-5 w-5 text-green-600" />}
                             {activity.interactionType === 'like' && <Star className="h-5 w-5 text-yellow-600" />}
