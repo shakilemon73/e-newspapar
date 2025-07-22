@@ -56,7 +56,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { staticApiRequest, staticQueryClient } from '@/lib/static-queryClient-updated';
+import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
+import { staticQueryClient } from '@/lib/supabase-api-direct';
 import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
@@ -213,38 +214,38 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
     updateCompletedSteps();
   };
 
-  // Fetch categories
+  // Fetch categories using direct Supabase API
   const { data: categories } = useQuery({
-    queryKey: ['/api/categories'],
-    queryFn: async () => {
-      const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      return response.json();
-    },
+    queryKey: ['admin-categories'],
+    queryFn: () => getAdminCategories(),
   });
 
-  // Create/Update mutations
+  // Create/Update mutations using direct Supabase API
   const saveMutation = useMutation({
     mutationFn: async (data: ArticleFormValues) => {
-      const endpoint = mode === 'create' 
-        ? '/api/articles' 
-        : `/api/articles/${article.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
-      
       // Prepare the data (tags removed for now as column doesn't exist in database)
       const payload = {
-        ...data,
-        // tags: tags, // Removed temporarily - column doesn't exist in database
-        publishedAt: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString()
+        title: data.title,
+        content: data.content,
+        excerpt: data.excerpt,
+        category_id: data.categoryId,
+        image_url: data.imageUrl,
+        is_featured: data.isFeatured,
+        is_published: true, // Articles created through admin are published
+        slug: data.slug,
+        published_at: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString()
       };
       
       console.log('Submitting article data:', payload);
-      console.log('API endpoint:', method, endpoint);
+      console.log('Mode:', mode);
       
       try {
-        const res = await apiRequest(method, endpoint, payload);
-        console.log('API response status:', res.status);
-        const result = await res.json();
+        let result;
+        if (mode === 'create') {
+          result = await createArticle(payload);
+        } else {
+          result = await updateArticle(article.id, payload);
+        }
         console.log('API response data:', result);
         return result;
       } catch (error) {
@@ -262,7 +263,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       form.reset();
       // setTags([]); // Removed tags functionality temporarily
       setImagePreview('');
-      staticQueryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      staticQueryClient.invalidateQueries({ queryKey: ['admin-articles'] });
     },
     onError: (error: Error) => {
       console.error('Save mutation error:', error);
