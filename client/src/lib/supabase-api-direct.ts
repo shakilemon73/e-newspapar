@@ -33,6 +33,27 @@ interface Article {
   category?: Category;
 }
 
+// Transform article data to ensure both naming conventions work
+export function transformArticleData(data: any[]): Article[] {
+  return data.map((article: any) => ({
+    ...article,
+    // Add both field names for compatibility
+    imageUrl: article.image_url || article.imageUrl,
+    viewCount: article.view_count || article.viewCount || 0,
+    publishedAt: article.published_at || article.publishedAt,
+    isFeatured: article.is_featured || article.isFeatured || false,
+    categoryId: article.category_id || article.categoryId,
+    // Handle categories field properly
+    category: Array.isArray(article.categories) 
+      ? (article.categories.length > 0 ? article.categories[0] : null)
+      : article.categories || article.category,
+    // Ensure content exists
+    content: article.content || '',
+    // Ensure proper image URL handling
+    image_url: article.image_url || article.imageUrl || '/placeholder-image.jpg'
+  }));
+}
+
 interface BreakingNews {
   id: number;
   content: string;
@@ -151,30 +172,90 @@ export async function getArticles(params: {
 }
 
 export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      content,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      is_featured,
-      category_id,
-      categories(id, name, slug)
-    `)
-    .eq('slug', slug)
-    .single();
+  try {
+    console.log(`[getArticleBySlug] Searching for article with slug: "${slug}"`);
+    
+    // First try exact slug match
+    let { data, error } = await supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
+      `)
+      .eq('slug', slug)
+      .single();
 
-  if (error) {
-    console.error('Error fetching article by slug:', error);
+    // If exact match fails, try fuzzy matching by generating slug from title
+    if (error && error.code === 'PGRST116') {
+      console.log('[getArticleBySlug] Exact slug not found, trying title-based search...');
+      
+      const { data: allArticles, error: searchError } = await supabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        `);
+      
+      if (searchError) {
+        console.error('Error in fallback search:', searchError);
+        return null;
+      }
+      
+      // Try to match by generating slug from titles
+      for (const article of allArticles || []) {
+        const { generateBengaliSlug } = await import('../../../shared/slug-utils');
+        const generatedSlug = generateBengaliSlug(article.title);
+        
+        if (generatedSlug === slug || 
+            encodeURIComponent(generatedSlug) === slug ||
+            decodeURIComponent(slug) === generatedSlug ||
+            article.slug === decodeURIComponent(slug)) {
+          console.log(`[getArticleBySlug] Found match: "${article.title}" (ID: ${article.id})`);
+          data = article;
+          error = null;
+          break;
+        }
+      }
+    }
+
+    if (error) {
+      console.error('[getArticleBySlug] No article found for slug:', slug);
+      return null;
+    }
+
+    if (!data) {
+      console.error('[getArticleBySlug] No data returned');
+      return null;
+    }
+
+    // Transform and return the article data
+    const transformedData = transformArticleData([data])[0];
+    console.log(`[getArticleBySlug] Successfully found article: "${transformedData.title}"`);
+    
+    return transformedData;
+    
+  } catch (err) {
+    console.error('[getArticleBySlug] Error fetching article by slug:', err);
     return null;
   }
-
-  return data;
 }
 
 export async function getPopularArticles(limit = 5): Promise<Article[]> {
@@ -518,34 +599,58 @@ export async function getTrendingTopics(limit: number = 10): Promise<any[]> {
 // View tracking
 export async function incrementViewCount(articleId: number): Promise<{ viewCount: number } | null> {
   try {
+    console.log(`[View Tracking] Incrementing view count for article ${articleId}`);
+    
     // Get current view count
     const { data: article, error: fetchError } = await supabase
       .from('articles')
-      .select('view_count')
+      .select('view_count, title')
       .eq('id', articleId)
       .single();
 
     if (fetchError) {
-      console.error('Error fetching article for view count:', fetchError);
+      console.error('Error fetching current view count:', fetchError);
       return null;
     }
 
     const newViewCount = (article?.view_count || 0) + 1;
 
-    // Update view count
-    const { error: updateError } = await supabase
+    // Update the view count atomically
+    const { data, error } = await supabase
       .from('articles')
-      .update({ view_count: newViewCount })
-      .eq('id', articleId);
+      .update({ 
+        view_count: newViewCount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', articleId)
+      .select('view_count, title')
+      .single();
 
-    if (updateError) {
-      console.error('Error updating view count:', updateError);
+    if (error) {
+      console.error('Error incrementing view count:', error);
       return null;
     }
 
-    return { viewCount: newViewCount };
-  } catch (error) {
-    console.error('Error incrementing view count:', error);
+    console.log(`[View Tracking] Article "${data.title}" (ID: ${articleId}) view count updated to: ${data.view_count}`);
+    
+    // Track in page views for analytics
+    try {
+      await supabase
+        .from('page_views')
+        .insert({
+          url: `/article/${articleId}`,
+          page_type: 'article',
+          article_id: articleId,
+          created_at: new Date().toISOString()
+        });
+    } catch (trackingError) {
+      console.error('Error tracking page view:', trackingError);
+      // Don't fail the main operation if tracking fails
+    }
+
+    return { viewCount: data.view_count };
+  } catch (err) {
+    console.error('Error in incrementViewCount:', err);
     return null;
   }
 }
@@ -767,7 +872,11 @@ export async function getUserSavedArticles(userId: string, limit = 10): Promise<
       return [];
     }
 
-    return data?.map(item => transformArticleData([item.articles])[0]).filter(Boolean) || [];
+    return (data || [])
+      .map(item => item.articles)
+      .filter(Boolean)
+      .map(article => transformArticleData([article])[0])
+      .filter(Boolean);
   } catch (error) {
     console.error('Error fetching saved articles:', error);
     return [];
@@ -799,15 +908,7 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       return [];
     }
 
-    return (data || []).map(article => ({
-      ...article,
-      imageUrl: article.image_url,
-      viewCount: article.view_count,
-      publishedAt: article.published_at,
-      isFeatured: article.is_featured,
-      categoryId: article.category_id,
-      category: article.categories
-    }));
+    return transformArticleData(data || []);
   } catch (error) {
     console.error('Error fetching reading history:', error);
     return [];
