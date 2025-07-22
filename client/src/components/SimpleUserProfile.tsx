@@ -7,8 +7,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Book, Trophy, Activity } from 'lucide-react';
+import { getUserReadingHistory, getUserStats } from '@/lib/supabase-api-direct';
+import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 
 interface UserProfile {
   id?: number;
@@ -19,9 +22,25 @@ interface UserProfile {
   avatar_url?: string;
   location?: string;
   website?: string;
+  phone?: string;
+  occupation?: string;
+  gender?: string;
+  date_of_birth?: string;
   social_links?: any;
   created_at?: string;
   updated_at?: string;
+}
+
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  image_url?: string;
+  published_at: string;
+  view_count: number;
+  category_id?: number;
+  categories?: { name: string; slug: string };
 }
 
 export const SimpleUserProfile = () => {
@@ -30,6 +49,10 @@ export const SimpleUserProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [readingHistory, setReadingHistory] = useState<Article[]>([]);
+  const [userStats, setUserStats] = useState<any>(null);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   // Get current user
   const getCurrentUser = async () => {
@@ -114,16 +137,69 @@ export const SimpleUserProfile = () => {
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      console.log('Attempting to save profile:', profileToSave);
+      
+      // Try INSERT first, then UPDATE if it fails
+      let data, error;
+      
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from('user_profiles')
-        .upsert(profileToSave, {
-          onConflict: 'user_id'
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (existingProfile) {
+        // Update existing profile
+        const result = await supabase
+          .from('user_profiles')
+          .update({
+            first_name: profileToSave.first_name,
+            last_name: profileToSave.last_name,
+            bio: profileToSave.bio,
+            avatar_url: profileToSave.avatar_url,
+            location: profileToSave.location,
+            website: profileToSave.website,
+            phone: profile.phone || null,
+            occupation: profile.occupation || null,
+            gender: profile.gender || null,
+            date_of_birth: profile.date_of_birth || null,
+            social_links: profileToSave.social_links,
+            updated_at: profileToSave.updated_at
+          })
+          .eq('user_id', user.id)
+          .select();
+        
+        data = result.data;
+        error = result.error;
+      } else {
+        // Insert new profile with all fields
+        const result = await supabase
+          .from('user_profiles')
+          .insert({
+            ...profileToSave,
+            phone: profile.phone || null,
+            occupation: profile.occupation || null,
+            gender: profile.gender || null,
+            date_of_birth: profile.date_of_birth || null
+          })
+          .select();
+        
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) {
         console.error('Profile save error details:', error);
-        throw error;
+        toast({
+          title: "সংরক্ষণ ত্রুটি",
+          description: `প্রোফাইল সংরক্ষণে সমস্যা: ${error.message}`,
+          variant: "destructive"
+        });
+        return;
       }
+      
+      console.log('Profile saved successfully:', data);
 
       toast({
         title: "সফল",
@@ -146,15 +222,60 @@ export const SimpleUserProfile = () => {
     setProfile(prev => prev ? { ...prev, [field]: value } : null);
   };
 
+  // Fetch reading history
+  const fetchReadingHistory = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setHistoryLoading(true);
+      const history = await getUserReadingHistory(user.id, 10);
+      setReadingHistory(history);
+    } catch (error) {
+      console.error('Error fetching reading history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  // Fetch user statistics
+  const fetchUserStats = async () => {
+    if (!user?.id) return;
+    
+    try {
+      setStatsLoading(true);
+      const stats = await getUserStats(user.id);
+      setUserStats(stats);
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const initialize = async () => {
       setLoading(true);
       await fetchUserProfile();
       setLoading(false);
+      
+      // Fetch additional data after user is loaded
+      if (user?.id) {
+        await Promise.all([
+          fetchReadingHistory(),
+          fetchUserStats()
+        ]);
+      }
     };
 
     initialize();
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchReadingHistory();
+      fetchUserStats();
+    }
+  }, [user?.id]);
 
   if (loading) {
     return (
@@ -206,9 +327,9 @@ export const SimpleUserProfile = () => {
       <Tabs defaultValue="profile">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">ব্যক্তিগত তথ্য</TabsTrigger>
-          <TabsTrigger value="categories" disabled>পছন্দসই বিভাগ</TabsTrigger>
-          <TabsTrigger value="preferences" disabled>পঠন পছন্দসমূহ</TabsTrigger>
-          <TabsTrigger value="privacy" disabled>গোপনীয়তা</TabsTrigger>
+          <TabsTrigger value="history">পড়ার ইতিহাস</TabsTrigger>
+          <TabsTrigger value="achievements">অর্জনসমূহ</TabsTrigger>
+          <TabsTrigger value="activity">কার্যকলাপ</TabsTrigger>
         </TabsList>
 
         {/* Personal Information */}
@@ -279,6 +400,26 @@ export const SimpleUserProfile = () => {
                     placeholder="https://yourwebsite.com"
                   />
                 </div>
+
+                <div>
+                  <Label htmlFor="phone">ফোন নম্বর</Label>
+                  <Input
+                    id="phone"
+                    value={profile.phone || ''}
+                    onChange={(e) => updateProfile('phone', e.target.value)}
+                    placeholder="+880xxxxxxxxxx"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="occupation">পেশা</Label>
+                  <Input
+                    id="occupation"
+                    value={profile.occupation || ''}
+                    onChange={(e) => updateProfile('occupation', e.target.value)}
+                    placeholder="আপনার পেশা"
+                  />
+                </div>
               </div>
 
               {/* Email (read-only) */}
@@ -286,6 +427,35 @@ export const SimpleUserProfile = () => {
                 <Label>ইমেইল</Label>
                 <Input value={user.email || ''} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground mt-1">ইমেইল পরিবর্তন করা যাবে না</p>
+              </div>
+
+              {/* Bio */}
+              {/* Gender and Date of Birth */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="gender">লিঙ্গ</Label>
+                  <select 
+                    id="gender"
+                    value={profile.gender || ''} 
+                    onChange={(e) => updateProfile('gender', e.target.value)}
+                    className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="">নির্বাচন করুন</option>
+                    <option value="male">পুরুষ</option>
+                    <option value="female">মহিলা</option>
+                    <option value="other">অন্যান্য</option>
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="date-of-birth">জন্ম তারিখ</Label>
+                  <Input
+                    id="date-of-birth"
+                    type="date"
+                    value={profile.date_of_birth || ''}
+                    onChange={(e) => updateProfile('date_of_birth', e.target.value)}
+                  />
+                </div>
               </div>
 
               {/* Bio */}
@@ -313,50 +483,177 @@ export const SimpleUserProfile = () => {
           </Card>
         </TabsContent>
 
-        {/* Placeholder tabs */}
-        <TabsContent value="categories" className="mt-6">
+        {/* Reading History */}
+        <TabsContent value="history" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>পছন্দসই বিভাগসমূহ</CardTitle>
-              <CardDescription>এই ফিচারটি শীঘ্রই আসছে</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Book className="h-5 w-5" />
+                পড়ার ইতিহাস
+              </CardTitle>
+              <CardDescription>আপনি সাম্প্রতিক যে সংবাদগুলি পড়েছেন</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  পছন্দসই বিভাগ নির্বাচনের ফিচারটি শীঘ্রই যোগ করা হবে
-                </p>
-              </div>
+              {historyLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">পড়ার ইতিহাস লোড হচ্ছে...</span>
+                </div>
+              ) : readingHistory.length > 0 ? (
+                <div className="space-y-4">
+                  {readingHistory.map((article, index) => (
+                    <div key={article.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                      {article.image_url && (
+                        <img 
+                          src={article.image_url} 
+                          alt={article.title}
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm line-clamp-2">{article.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {article.categories?.name} • {getRelativeTimeInBengali(article.published_at)}
+                        </p>
+                        {article.excerpt && (
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                            {article.excerpt}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="text-xs">
+                        #{index + 1}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Book className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">এখনও কোনো সংবাদ পড়া হয়নি</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    সংবাদ পড়লে এখানে ইতিহাস দেখাবে
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="preferences" className="mt-6">
+        {/* Achievements */}
+        <TabsContent value="achievements" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>পঠন পছন্দসমূহ</CardTitle>
-              <CardDescription>এই ফিচারটি শীঘ্রই আসছে</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                অর্জনসমূহ
+              </CardTitle>
+              <CardDescription>আপনার পড়ার অগ্রগতি এবং অর্জনসমূহ</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  পড়ার পছন্দ সেটিংস শীঘ্রই যোগ করা হবে
-                </p>
-              </div>
+              {statsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span className="ml-2">অর্জনসমূহ লোড হচ্ছে...</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Book className="h-5 w-5 text-blue-500" />
+                      <h4 className="font-medium">পড়া সংবাদ</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-600">{userStats?.totalReadArticles || 0}</p>
+                    <p className="text-sm text-muted-foreground">মোট সংবাদ পড়েছেন</p>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Trophy className="h-5 w-5 text-yellow-500" />
+                      <h4 className="font-medium">লাইক দিয়েছেন</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-yellow-600">{userStats?.totalLikes || 0}</p>
+                    <p className="text-sm text-muted-foreground">সংবাদে লাইক</p>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="h-5 w-5 text-green-500" />
+                      <h4 className="font-medium">বুকমার্ক</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-green-600">{userStats?.totalBookmarks || 0}</p>
+                    <p className="text-sm text-muted-foreground">সংরক্ষিত সংবাদ</p>
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="h-5 w-5 text-purple-500" />
+                      <h4 className="font-medium">মন্তব্য</h4>
+                    </div>
+                    <p className="text-2xl font-bold text-purple-600">{userStats?.totalComments || 0}</p>
+                    <p className="text-sm text-muted-foreground">মন্তব্য করেছেন</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="privacy" className="mt-6">
+        {/* Activity */}
+        <TabsContent value="activity" className="mt-6">
           <Card>
             <CardHeader>
-              <CardTitle>গোপনীয়তা</CardTitle>
-              <CardDescription>এই ফিচারটি শীঘ্রই আসছে</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                কার্যকলাপ
+              </CardTitle>
+              <CardDescription>আপনার সাম্প্রতিক কার্যকলাপের তালিকা</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  গোপনীয়তা সেটিংস শীঘ্রই যোগ করা হবে
-                </p>
+              <div className="space-y-4">
+                {user && (
+                  <>
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Book className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">সদস্য হয়েছেন</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(user.created_at).toLocaleDateString('bn-BD')}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {readingHistory.length > 0 && (
+                      <div className="flex items-center gap-3 p-3 border rounded-lg">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <Activity className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">সর্বশেষ সংবাদ পড়েছেন</p>
+                          <p className="text-xs text-muted-foreground">
+                            "{readingHistory[0]?.title?.substring(0, 50)}..."
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {userStats?.totalInteractions > 0 && (
+                      <div className="flex items-center gap-3 p-3 border rounded-lg">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          <Trophy className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">মোট ইন্টারঅ্যাকশন</p>
+                          <p className="text-xs text-muted-foreground">
+                            {userStats.totalInteractions} বার সংবাদের সাথে যোগাযোগ করেছেন
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
