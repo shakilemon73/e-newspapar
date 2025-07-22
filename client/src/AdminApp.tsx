@@ -9,11 +9,11 @@ import { useSupabaseAdminAuth } from "@/hooks/use-supabase-admin-auth";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
-// Admin Pages
+// Admin Pages - Migrated to Direct Supabase API (Vercel Ready)
 import EnhancedAdminAccess from "@/pages/EnhancedAdminAccess";
 import AdminLogin from "@/pages/AdminLogin";
-import EnhancedAdminDashboard from "@/pages/EnhancedAdminDashboard";
-import EnhancedArticlesAdminPage from "@/pages/admin/EnhancedArticlesAdminPage";
+import DashboardAdminPage from "@/pages/admin/DashboardAdminPage";
+import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
 import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
 import BreakingNewsAdminPage from "@/pages/admin/BreakingNewsAdminPage";
@@ -22,7 +22,7 @@ import VideosAdminPage from "@/pages/admin/VideosAdminPage";
 import AudioArticlesAdminPage from "@/pages/admin/AudioArticlesAdminPage";
 import AnalyticsAdminPage from "@/pages/admin/AnalyticsAdminPage";
 import SocialMediaAdminPage from "@/pages/admin/SocialMediaAdminPage";
-import SettingsAdminPage from "@/pages/admin/SettingsAdminPage";
+import SettingsAdminPageMigrated from "@/pages/admin/SettingsAdminPageMigrated";
 import WeatherAdminPage from "@/pages/admin/WeatherAdminPage";
 import AdvancedAlgorithmsPage from "@/pages/admin/AdvancedAlgorithmsPage";
 import TrendingAnalyticsPage from "@/pages/admin/TrendingAnalyticsPage";
@@ -97,13 +97,13 @@ function AdminRouter() {
       {/* Protected Admin Routes */}
       <Route path="/admin-dashboard">
         <AdminRouteGuard>
-          <EnhancedAdminDashboard />
+          <DashboardAdminPage />
         </AdminRouteGuard>
       </Route>
       
       <Route path="/admin/articles">
         <AdminRouteGuard>
-          <EnhancedArticlesAdminPage />
+          <ArticlesAdminPage />
         </AdminRouteGuard>
       </Route>
       
@@ -163,7 +163,7 @@ function AdminRouter() {
       
       <Route path="/admin/settings">
         <AdminRouteGuard>
-          <SettingsAdminPage />
+          <SettingsAdminPageMigrated />
         </AdminRouteGuard>
       </Route>
       

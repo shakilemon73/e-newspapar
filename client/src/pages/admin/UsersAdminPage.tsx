@@ -148,12 +148,11 @@ export default function UsersAdminPage() {
     },
   });
 
-  // Update user role mutation
+  // Update user role mutation using direct Supabase API
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const res = await apiRequest('PUT', `/api/admin/users/${userId}/role`, { role });
-      if (!res.ok) throw new Error('Failed to update user role');
-      return res.json();
+      const { updateUserRole } = await import('../../lib/admin-api-direct');
+      return await updateUserRole(userId, role);
     },
     onSuccess: () => {
       toast({

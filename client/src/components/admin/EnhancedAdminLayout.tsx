@@ -42,7 +42,14 @@ import {
   Sun,
   Folder,
   Image,
-  Newspaper
+  Newspaper,
+  AudioLines,
+  Tv,
+  Send,
+  AlertTriangle,
+  Megaphone,
+  ShieldCheck,
+  Database as DatabaseIcon
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -123,6 +130,27 @@ const navSections = [
         icon: Newspaper,
         enLabel: 'E-Papers',
         bnLabel: 'ই-পেপার'
+      },
+      {
+        id: 'audio-articles',
+        href: '/admin/audio-articles',
+        icon: AudioLines,
+        enLabel: 'Audio Articles',
+        bnLabel: 'অডিও নিবন্ধ'
+      },
+      {
+        id: 'social-media',
+        href: '/admin/social-media',
+        icon: Share2,
+        enLabel: 'Social Media',
+        bnLabel: 'সোশ্যাল মিডিয়া'
+      },
+      {
+        id: 'footer-pages',
+        href: '/admin/footer-pages',
+        icon: FileText,
+        enLabel: 'Footer Pages',
+        bnLabel: 'ফুটার পেজ'
       }
     ]
   },
@@ -158,6 +186,90 @@ const navSections = [
         icon: Settings,
         enLabel: 'Settings',
         bnLabel: 'সেটিংস'
+      },
+      {
+        id: 'seo',
+        href: '/admin/seo',
+        icon: Globe,
+        enLabel: 'SEO',
+        bnLabel: 'এসইও'
+      },
+      {
+        id: 'database',
+        href: '/admin/database',
+        icon: DatabaseIcon,
+        enLabel: 'Database',
+        bnLabel: 'ডাটাবেস'
+      }
+    ]
+  },
+  {
+    id: 'advanced',
+    enTitle: 'Advanced',
+    bnTitle: 'উন্নত',
+    items: [
+      {
+        id: 'comments',
+        href: '/admin/comments',
+        icon: MessageSquare,
+        enLabel: 'Comments',
+        bnLabel: 'মন্তব্য'
+      },
+      {
+        id: 'trending-analytics',
+        href: '/admin/trending-analytics',
+        icon: TrendingUp,
+        enLabel: 'Trending Analytics',
+        bnLabel: 'ট্রেন্ডিং বিশ্লেষণ'
+      },
+      {
+        id: 'email-notifications',
+        href: '/admin/email-notifications',
+        icon: Mail,
+        enLabel: 'Email & Notifications',
+        bnLabel: 'ইমেইল ও নোটিফিকেশন'
+      },
+      {
+        id: 'advertising',
+        href: '/admin/advertising',
+        icon: DollarSign,
+        enLabel: 'Advertising',
+        bnLabel: 'বিজ্ঞাপন'
+      },
+      {
+        id: 'mobile-app',
+        href: '/admin/mobile-app',
+        icon: Smartphone,
+        enLabel: 'Mobile App',
+        bnLabel: 'মোবাইল অ্যাপ'
+      },
+      {
+        id: 'performance',
+        href: '/admin/performance',
+        icon: Activity,
+        enLabel: 'Performance',
+        bnLabel: 'পারফরম্যান্স'
+      },
+      {
+        id: 'security',
+        href: '/admin/security',
+        icon: ShieldCheck,
+        enLabel: 'Security',
+        bnLabel: 'নিরাপত্তা'
+      },
+      {
+        id: 'search',
+        href: '/admin/search',
+        icon: Search,
+        enLabel: 'Search Management',
+        bnLabel: 'অনুসন্ধান ব্যবস্থাপনা'
+      },
+      {
+        id: 'algorithms',
+        href: '/admin/algorithms',
+        icon: Bot,
+        enLabel: 'Advanced Algorithms',
+        bnLabel: 'উন্নত অ্যালগরিদম'
       }
     ]
   }
@@ -170,7 +282,7 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [notifications, setNotifications] = useState(3);
   const { t } = useLanguage();
-  const { user, logout } = useSupabaseAuth();
+  const { user, signOut } = useSupabaseAuth();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -184,7 +296,7 @@ export function EnhancedAdminLayout({ children }: AdminLayoutProps) {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
     } catch (error) {
       console.error('Logout error:', error);
     }

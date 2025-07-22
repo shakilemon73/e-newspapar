@@ -151,49 +151,47 @@ export default function ArticlesAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Fetch articles with authentication
-  const { data: articles, isLoading, error } = useQuery({
-    queryKey: ['/api/articles'],
+  // Fetch articles using direct Supabase API
+  const { data: articlesData, isLoading, error } = useQuery({
+    queryKey: ['admin-articles', searchQuery, selectedCategory, selectedStatus, sortBy, sortOrder],
     enabled: !!user && user.user_metadata?.role === 'admin',
-  });
-
-  // Get article statistics
-  const { data: stats } = useQuery({
-    queryKey: ['/api/admin/articles/stats'],
-    enabled: !!user && user.user_metadata?.role === 'admin' && !!articles,
     queryFn: async () => {
-      // Calculate stats from existing articles since we don't have a specific endpoint
-      const totalArticles = Array.isArray(articles) ? articles.length : 0;
-      const featuredArticles = Array.isArray(articles) ? articles.filter(a => a.isFeatured).length : 0;
-      const totalViews = Array.isArray(articles) ? articles.reduce((sum, a) => sum + (a.viewCount || 0), 0) : 0;
-      const publishedToday = Array.isArray(articles) ? articles.filter(a => {
-        const publishDate = new Date(a.publishedAt);
-        const today = new Date();
-        return publishDate.toDateString() === today.toDateString();
-      }).length : 0;
-      
-      return {
-        totalArticles,
-        featuredArticles,
-        totalViews,
-        publishedToday
-      };
+      const { getAdminArticles } = await import('../../lib/admin-api-direct');
+      return await getAdminArticles({
+        search: searchQuery || undefined,
+        category: selectedCategory !== 'all' ? selectedCategory : undefined,
+        status: selectedStatus !== 'all' ? selectedStatus as any : undefined,
+        sortBy,
+        sortOrder
+      });
     },
   });
 
-  // Delete article mutation
+  const articles = articlesData?.articles || [];
+
+  // Get dashboard statistics
+  const { data: stats } = useQuery({
+    queryKey: ['admin-dashboard-stats'],
+    enabled: !!user && user.user_metadata?.role === 'admin',
+    queryFn: async () => {
+      const { getDashboardStats } = await import('../../lib/admin-api-direct');
+      return await getDashboardStats();
+    },
+  });
+
+  // Delete article mutation using direct Supabase API
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/articles/${id}`);
-      if (!res.ok) throw new Error('Failed to delete article');
-      return res.json();
+      const { deleteArticle } = await import('../../lib/admin-api-direct');
+      return await deleteArticle(id);
     },
     onSuccess: () => {
       toast({
         title: 'Article deleted',
         description: 'The article has been successfully deleted.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       setDeleteDialogOpen(false);
       setArticleToDelete(null);
     },
@@ -206,19 +204,18 @@ export default function ArticlesAdminPage() {
     },
   });
 
-  // Feature toggle mutation
+  // Feature toggle mutation using direct Supabase API
   const toggleFeatureMutation = useMutation({
     mutationFn: async ({ id, isFeatured }: { id: number; isFeatured: boolean }) => {
-      const res = await apiRequest('PATCH', `/api/articles/${id}`, { isFeatured });
-      if (!res.ok) throw new Error('Failed to update article');
-      return res.json();
+      const { updateArticle } = await import('../../lib/admin-api-direct');
+      return await updateArticle(id, { is_featured: isFeatured });
     },
     onSuccess: () => {
       toast({
         title: 'Article updated',
         description: 'The article feature status has been updated.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
     },
     onError: (error: Error) => {
       toast({
@@ -253,7 +250,7 @@ export default function ArticlesAdminPage() {
   const handleToggleFeature = (article: any) => {
     toggleFeatureMutation.mutate({
       id: article.id,
-      isFeatured: !article.isFeatured
+      isFeatured: !article.is_featured
     });
   };
 
