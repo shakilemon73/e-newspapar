@@ -63,9 +63,10 @@ export default function AnalyticsAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Fetch analytics data from Supabase
+  // Fetch analytics data using direct Supabase API
   const { data: analyticsData, isLoading, error } = useQuery<AnalyticsData>({
-    queryKey: ['/api/admin/analytics', selectedTimeRange],
+    queryKey: ['admin-analytics', selectedTimeRange],
+    queryFn: () => import('@/lib/admin-api-direct').then(m => m.getAdminAnalytics(selectedTimeRange)),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

@@ -57,7 +57,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
-import { staticQueryClient } from '@/lib/supabase-api-direct';
+import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
@@ -263,7 +263,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       form.reset();
       // setTags([]); // Removed tags functionality temporarily
       setImagePreview('');
-      staticQueryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
     },
     onError: (error: Error) => {
       console.error('Save mutation error:', error);

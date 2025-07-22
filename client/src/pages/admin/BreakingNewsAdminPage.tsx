@@ -21,7 +21,7 @@ import {
   Radio
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getBreakingNews, createBreakingNews, updateBreakingNews, deleteBreakingNews } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -120,13 +120,10 @@ export default function BreakingNewsAdminPage() {
     },
   });
 
-  // Fetch breaking news
+  // Fetch breaking news using direct Supabase API
   const { data: breakingNews, isLoading, error } = useQuery({
-    queryKey: ['/api/breaking-news'],
-    queryFn: async () => {
-      const { getBreakingNews } = await import('../../lib/supabase-api-direct');
-      return await getBreakingNews();
-    },
+    queryKey: ['admin-breaking-news'],
+    queryFn: () => getBreakingNews(),
   });
 
   // Fetch articles for selection
@@ -139,20 +136,21 @@ export default function BreakingNewsAdminPage() {
     enabled: creationType === 'existing'
   });
 
-  // Create/Update mutation
+  // Create/Update mutation using direct Supabase API
   const saveMutation = useMutation({
     mutationFn: async (data: BreakingNewsFormValues) => {
-      const endpoint = mode === 'create' 
-        ? '/api/breaking-news' 
-        : `/api/breaking-news/${selectedNews.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
+      const payload = {
+        title: data.content, // Use content as title for breaking news
+        content: data.content,
+        priority: 'high' as const,
+        is_active: data.is_active
+      };
       
-      const res = await apiRequest(method, endpoint, data);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${mode} breaking news`);
+      if (mode === 'create') {
+        return await createBreakingNews(payload);
+      } else {
+        return await updateBreakingNews(selectedNews.id, payload);
       }
-      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -161,7 +159,7 @@ export default function BreakingNewsAdminPage() {
       });
       setDialogOpen(false);
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/breaking-news'] });
+      // Note: Using standard queryClient since we're in React context
     },
     onError: (error: Error) => {
       toast({
@@ -172,19 +170,14 @@ export default function BreakingNewsAdminPage() {
     },
   });
 
-  // Delete mutation
+  // Delete mutation using direct Supabase API
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/breaking-news/${id}`);
-      if (!res.ok) throw new Error('Failed to delete breaking news');
-      return res.json();
-    },
+    mutationFn: (id: number) => deleteBreakingNews(id),
     onSuccess: () => {
       toast({
         title: 'Breaking news deleted',
         description: 'The breaking news has been successfully deleted.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/breaking-news'] });
       setDeleteDialogOpen(false);
       setNewsToDelete(null);
     },
@@ -197,19 +190,15 @@ export default function BreakingNewsAdminPage() {
     },
   });
 
-  // Toggle active status mutation
+  // Toggle active status mutation using direct Supabase API
   const toggleActiveMutation = useMutation({
-    mutationFn: async ({ id, is_active }: { id: number; is_active: boolean }) => {
-      const res = await apiRequest('PATCH', `/api/breaking-news/${id}`, { is_active });
-      if (!res.ok) throw new Error('Failed to update breaking news status');
-      return res.json();
-    },
+    mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => 
+      updateBreakingNews(id, { is_active }),
     onSuccess: () => {
       toast({
         title: 'Status updated',
         description: 'The breaking news status has been updated.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/breaking-news'] });
     },
     onError: (error: Error) => {
       toast({

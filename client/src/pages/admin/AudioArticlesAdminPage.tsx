@@ -22,7 +22,7 @@ import {
   Headphones
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { apiRequest } from '@/lib/queryClient';
+import { getAdminAudioArticles, createAudioArticle, updateAudioArticle, deleteAudioArticle } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -61,17 +61,16 @@ export default function AudioArticlesAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Fetch audio articles from Supabase
+  // Fetch audio articles using direct Supabase API
   const { data: audioArticles, isLoading, error } = useQuery({
-    queryKey: ['/api/audio-articles'],
+    queryKey: ['admin-audio-articles'],
+    queryFn: () => getAdminAudioArticles(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  // Create audio article mutation
+  // Create audio article mutation using direct Supabase API
   const createAudioMutation = useMutation({
-    mutationFn: async (audioData: any) => {
-      return await apiRequest('POST', '/api/audio-articles', audioData);
-    },
+    mutationFn: (audioData: any) => createAudioArticle(audioData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
       toast({

@@ -27,7 +27,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { apiRequest } from '@/lib/queryClient';
+// Settings will use simplified direct Supabase approach
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 

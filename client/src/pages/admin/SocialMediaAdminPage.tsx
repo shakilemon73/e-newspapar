@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { apiRequest } from '@/lib/queryClient';
+import { getAdminSocialPosts, createSocialPost, updateSocialPost, deleteSocialPost } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
 
 interface SocialMediaPost {
@@ -70,9 +70,10 @@ export default function SocialMediaAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Fetch social media posts from Supabase
+  // Fetch social media posts using direct Supabase API
   const { data: socialPosts, isLoading, error } = useQuery({
-    queryKey: ['/api/social-media'],
+    queryKey: ['admin-social-posts'],
+    queryFn: () => getAdminSocialPosts(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

@@ -21,7 +21,7 @@ import {
   Users
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { apiRequest } from '@/lib/queryClient';
+import { getAdminVideos, createVideoContent, updateVideoContent, deleteVideoContent } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -60,19 +60,17 @@ export default function VideosAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Fetch videos from Supabase
+  // Fetch videos using direct Supabase API
   const { data: videos, isLoading, error } = useQuery({
-    queryKey: ['/api/videos'],
+    queryKey: ['admin-videos'],
+    queryFn: () => getAdminVideos(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  // Create video mutation
+  // Create video mutation using direct Supabase API
   const createVideoMutation = useMutation({
-    mutationFn: async (videoData: any) => {
-      return await apiRequest('POST', '/api/videos', videoData);
-    },
+    mutationFn: (videoData: any) => createVideoContent(videoData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
       toast({
         title: t('success', 'Success', 'সফল'),
         description: t('video_created_successfully', 'Video created successfully', 'ভিডিও সফলভাবে তৈরি হয়েছে'),
@@ -89,13 +87,10 @@ export default function VideosAdminPage() {
     },
   });
 
-  // Update video mutation
+  // Update video mutation using direct Supabase API
   const updateVideoMutation = useMutation({
-    mutationFn: async ({ id, ...videoData }: any) => {
-      return await apiRequest('PUT', `/api/videos/${id}`, videoData);
-    },
+    mutationFn: ({ id, ...videoData }: any) => updateVideoContent(id, videoData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
       toast({
         title: "Success",
         description: "Video updated successfully",

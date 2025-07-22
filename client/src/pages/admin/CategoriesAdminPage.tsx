@@ -18,7 +18,8 @@ import {
   Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getAdminCategories, createCategory, updateCategory, deleteCategory } from '@/lib/admin-api-direct';
+// Using useQueryClient hook for query invalidation
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Dialog,
@@ -102,13 +103,10 @@ export default function CategoriesAdminPage() {
     },
   });
 
-  // Fetch categories
+  // Fetch categories using direct Supabase API
   const { data: categories, isLoading, error } = useQuery({
-    queryKey: ['/api/categories'],
-    queryFn: async () => {
-      const { getCategories } = await import('../../lib/supabase-api-direct');
-      return await getCategories();
-    },
+    queryKey: ['admin-categories'],
+    queryFn: () => getAdminCategories(),
   });
 
   // Fetch articles to count per category
@@ -126,20 +124,14 @@ export default function CategoriesAdminPage() {
     articleCount: articles?.filter((article: any) => article.categoryId === category.id).length || 0
   })) || [];
 
-  // Create/Update mutation
+  // Create/Update mutation using direct Supabase API
   const saveMutation = useMutation({
     mutationFn: async (data: CategoryFormValues) => {
-      const endpoint = mode === 'create' 
-        ? '/api/categories' 
-        : `/api/categories/${selectedCategory.id}`;
-      const method = mode === 'create' ? 'POST' : 'PUT';
-      
-      const res = await apiRequest(method, endpoint, data);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || `Failed to ${mode} category`);
+      if (mode === 'create') {
+        return await createCategory(data);
+      } else {
+        return await updateCategory(selectedCategory.id, data);
       }
-      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -148,7 +140,6 @@ export default function CategoriesAdminPage() {
       });
       setDialogOpen(false);
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
     },
     onError: (error: Error) => {
       toast({
@@ -159,19 +150,14 @@ export default function CategoriesAdminPage() {
     },
   });
 
-  // Delete mutation
+  // Delete mutation using direct Supabase API
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await apiRequest('DELETE', `/api/categories/${id}`);
-      if (!res.ok) throw new Error('Failed to delete category');
-      return res.json();
-    },
+    mutationFn: (id: number) => deleteCategory(id),
     onSuccess: () => {
       toast({
         title: 'Category deleted',
         description: 'The category has been successfully deleted.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
       setDeleteDialogOpen(false);
       setCategoryToDelete(null);
     },

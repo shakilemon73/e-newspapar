@@ -599,6 +599,583 @@ export async function deleteBreakingNews(id: number) {
 }
 
 // ==============================================
+// VIDEOS MANAGEMENT
+// ==============================================
+
+export async function getAdminVideos() {
+  try {
+    const { data, error } = await supabase
+      .from('video_content')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin videos:', error);
+    return [];
+  }
+}
+
+export async function createVideoContent(videoData: {
+  title: string;
+  slug: string;
+  description?: string;
+  video_url: string;
+  thumbnail_url?: string;
+  duration?: string;
+  category_id?: number;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('video_content')
+      .insert({
+        ...videoData,
+        published_at: new Date().toISOString(),
+        is_published: true,
+        view_count: 0
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating video content:', error);
+    throw error;
+  }
+}
+
+export async function updateVideoContent(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('video_content')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating video content:', error);
+    throw error;
+  }
+}
+
+export async function deleteVideoContent(id: number) {
+  try {
+    const { error } = await supabase
+      .from('video_content')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting video content:', error);
+    throw error;
+  }
+}
+
+
+
+// ==============================================
+// AUDIO ARTICLES MANAGEMENT
+// ==============================================
+
+export async function getAdminAudioArticles() {
+  try {
+    const { data, error } = await supabase
+      .from('audio_articles')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin audio articles:', error);
+    return [];
+  }
+}
+
+export async function createAudioArticle(audioData: {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  audio_url: string;
+  image_url?: string;
+  duration?: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('audio_articles')
+      .insert({
+        ...audioData,
+        published_at: new Date().toISOString(),
+        is_published: true
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating audio article:', error);
+    throw error;
+  }
+}
+
+export async function updateAudioArticle(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('audio_articles')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating audio article:', error);
+    throw error;
+  }
+}
+
+export async function deleteAudioArticle(id: number) {
+  try {
+    const { error } = await supabase
+      .from('audio_articles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting audio article:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// E-PAPERS MANAGEMENT
+// ==============================================
+
+export async function getAdminEPapers() {
+  try {
+    const { data, error } = await supabase
+      .from('epapers')
+      .select('*')
+      .order('publish_date', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin e-papers:', error);
+    return [];
+  }
+}
+
+export async function createEPaper(epaperData: {
+  title: string;
+  image_url: string;
+  pdf_url: string;
+  publish_date: string;
+  is_latest?: boolean;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('epapers')
+      .insert({
+        ...epaperData,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating e-paper:', error);
+    throw error;
+  }
+}
+
+export async function updateEPaper(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('epapers')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating e-paper:', error);
+    throw error;
+  }
+}
+
+export async function deleteEPaper(id: number) {
+  try {
+    const { error } = await supabase
+      .from('epapers')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting e-paper:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// COMMENTS MANAGEMENT
+// ==============================================
+
+export async function getAdminComments() {
+  try {
+    const { data, error } = await supabase
+      .from('article_comments')
+      .select(`
+        *,
+        users:user_id(name, email),
+        articles:article_id(title, slug)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin comments:', error);
+    return [];
+  }
+}
+
+export async function updateCommentStatus(id: number, status: 'approved' | 'rejected' | 'pending') {
+  try {
+    const { data, error } = await supabase
+      .from('article_comments')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating comment status:', error);
+    throw error;
+  }
+}
+
+export async function deleteComment(id: number) {
+  try {
+    const { error } = await supabase
+      .from('article_comments')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// ADVERTISEMENTS MANAGEMENT
+// ==============================================
+
+export async function getAdminAdvertisements() {
+  try {
+    const { data, error } = await supabase
+      .from('advertisements')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin advertisements:', error);
+    return [];
+  }
+}
+
+export async function createAdvertisement(adData: {
+  title: string;
+  description?: string;
+  image_url: string;
+  target_url: string;
+  position: string;
+  status: 'active' | 'inactive';
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('advertisements')
+      .insert({
+        ...adData,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating advertisement:', error);
+    throw error;
+  }
+}
+
+export async function updateAdvertisement(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('advertisements')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating advertisement:', error);
+    throw error;
+  }
+}
+
+export async function deleteAdvertisement(id: number) {
+  try {
+    const { error } = await supabase
+      .from('advertisements')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting advertisement:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// EMAIL TEMPLATES MANAGEMENT
+// ==============================================
+
+export async function getAdminEmailTemplates() {
+  try {
+    const { data, error } = await supabase
+      .from('email_templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin email templates:', error);
+    return [];
+  }
+}
+
+export async function createEmailTemplate(templateData: {
+  name: string;
+  subject: string;
+  content: string;
+  type: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('email_templates')
+      .insert({
+        ...templateData,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating email template:', error);
+    throw error;
+  }
+}
+
+export async function updateEmailTemplate(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('email_templates')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating email template:', error);
+    throw error;
+  }
+}
+
+export async function deleteEmailTemplate(id: number) {
+  try {
+    const { error } = await supabase
+      .from('email_templates')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting email template:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// SOCIAL MEDIA MANAGEMENT
+// ==============================================
+
+export async function getAdminSocialPosts() {
+  try {
+    const { data, error } = await supabase
+      .from('social_media_feed')
+      .select('*')
+      .order('published_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin social posts:', error);
+    return [];
+  }
+}
+
+export async function createSocialPost(postData: {
+  platform: string;
+  content: string;
+  embed_code?: string;
+  post_url?: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('social_media_feed')
+      .insert({
+        ...postData,
+        published_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating social post:', error);
+    throw error;
+  }
+}
+
+export async function updateSocialPost(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('social_media_feed')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating social post:', error);
+    throw error;
+  }
+}
+
+export async function deleteSocialPost(id: number) {
+  try {
+    const { error } = await supabase
+      .from('social_media_feed')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting social post:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// SYSTEM SETTINGS MANAGEMENT
+// ==============================================
+
+export async function getAdminSettings() {
+  try {
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) throw error;
+    return data || {};
+  } catch (error) {
+    console.error('Error fetching admin settings:', error);
+    return {};
+  }
+}
+
+export async function updateAdminSettings(settingsData: any) {
+  try {
+    const { data, error } = await supabase
+      .from('system_settings')
+      .upsert({
+        ...settingsData,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating admin settings:', error);
+    throw error;
+  }
+}
+
+// ==============================================
 // ANALYTICS & REPORTS
 // ==============================================
 

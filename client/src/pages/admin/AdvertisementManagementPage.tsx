@@ -26,7 +26,7 @@ import {
   Play,
   Pause
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { getAdminAdvertisements, createAdvertisement, updateAdvertisement, deleteAdvertisement } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdvertisementManagementPage() {
@@ -43,9 +43,10 @@ export default function AdvertisementManagementPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Advertisements query
+  // Advertisements query using direct Supabase API
   const { data: advertisements, isLoading: adsLoading } = useQuery({
-    queryKey: ['/api/admin/advertisements'],
+    queryKey: ['admin-advertisements'],
+    queryFn: () => getAdminAdvertisements(),
   });
 
   // Advertisement analytics query

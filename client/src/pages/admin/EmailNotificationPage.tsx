@@ -24,7 +24,7 @@ import {
   Trash2,
   Copy
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { getAdminEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/lib/admin-api-direct';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EmailNotificationPage() {
@@ -39,9 +39,10 @@ export default function EmailNotificationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Email templates query
+  // Email templates query using direct Supabase API
   const { data: templates, isLoading: templatesLoading } = useQuery({
-    queryKey: ['/api/admin/email-templates'],
+    queryKey: ['admin-email-templates'],
+    queryFn: () => getAdminEmailTemplates(),
   });
 
   // Newsletter subscribers query
