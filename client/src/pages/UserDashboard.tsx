@@ -378,8 +378,8 @@ export default function UserDashboard() {
                       </div>
                     ) : savedArticles?.length ? (
                       <div className="space-y-4">
-                        {savedArticles.slice(0, 5).map((article: any) => (
-                          <div key={article.id} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card">
+                        {savedArticles.slice(0, 5).map((article: any, index: number) => (
+                          <div key={`saved-${article.id || index}`} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card">
                             <div className="flex-1">
                               <Link href={`/article/${article.slug}`}>
                                 <h3 className="font-medium text-foreground hover:text-primary cursor-pointer">
@@ -423,8 +423,8 @@ export default function UserDashboard() {
                       </div>
                     ) : readingHistory?.length ? (
                       <div className="space-y-4">
-                        {readingHistory.slice(0, 5).map((item: any) => (
-                          <div key={item.id} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card">
+                        {readingHistory.slice(0, 5).map((item: any, index: number) => (
+                          <div key={`history-${item.id || index}`} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card">
                             <div className="flex-1">
                               <Link href={`/article/${item.article?.slug}`}>
                                 <h3 className="font-medium text-foreground hover:text-primary cursor-pointer">

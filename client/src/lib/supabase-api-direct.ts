@@ -1,12 +1,8 @@
 // Direct Supabase API calls to replace Express endpoints
-import { createClient } from '@supabase/supabase-js';
-
-// Use anon key for public data access - RLS should be disabled for public tables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Use the centralized Supabase client to avoid multiple instances
+import { supabase } from './supabase';
 
 console.log('Direct API client using: ANON KEY');
-export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Type definitions
 interface Category {
@@ -769,7 +765,15 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       return [];
     }
 
-    return transformArticleData(data || []);
+    return (data || []).map(article => ({
+      ...article,
+      imageUrl: article.image_url,
+      viewCount: article.view_count,
+      publishedAt: article.published_at,
+      isFeatured: article.is_featured,
+      categoryId: article.category_id,
+      category: article.categories
+    }));
   } catch (error) {
     console.error('Error fetching reading history:', error);
     return [];
