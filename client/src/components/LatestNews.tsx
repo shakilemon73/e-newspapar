@@ -66,9 +66,23 @@ export const LatestNews = () => {
 
   if (error || latestNews.length === 0) {
     return (
-      <div className="lg:col-span-2 bg-card border border-border rounded shadow-sm p-4">
+      <div className="lg:col-span-2 bg-card border border-border rounded shadow-sm p-4 min-h-[300px]">
         <h3 className="text-lg font-semibold text-foreground mb-4 border-b border-border pb-2">সর্বশেষ খবর</h3>
-        <p className="text-center py-8 text-muted-foreground">{error || 'কোন সর্বশেষ খবর পাওয়া যায়নি'}</p>
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-muted-foreground">
+              {error || 'এই মুহূর্তে কোন সর্বশেষ খবর পাওয়া যায়নি'}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              পরে আবার দেখুন বা পৃষ্ঠা রিফ্রেশ করুন
+            </p>
+          </div>
+        </div>
       </div>
     );
   }

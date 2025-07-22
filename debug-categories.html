@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Categories</title>
+</head>
+<body>
+    <h1>Available Categories</h1>
+    <pre id="output">Loading...</pre>
+    
+    <script>
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/categories');
+                const categories = await response.json();
+                document.getElementById('output').textContent = JSON.stringify(categories, null, 2);
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+            }
+        }
+        loadCategories();
+    </script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { generateHomeMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import BreakingNewsTicker from '@/components/BreakingNewsTicker';
@@ -15,22 +16,47 @@ import AudioArticles from '@/components/AudioArticles';
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 
+interface Category {
+  id: number;
+  slug: string;
+  name: string;
+}
+
 const Home = () => {
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
   // Generate comprehensive social media meta tags for home page
   const socialMetaTags = generateHomeMetaTags();
   const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
 
-  // Each category is handled by the CategoryNewsSection component
-  const categories = [
-    { slug: 'politics', name: 'রাজনীতি' },
-    { slug: 'international', name: 'আন্তর্জাতিক' },
-    { slug: 'sports', name: 'খেলা' }
-  ];
+  // Fetch available categories from database
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { getCategories } = await import('../lib/supabase-api-direct');
+        const categories = await getCategories();
+        setAvailableCategories(categories);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        // Fallback to default categories if API fails
+        setAvailableCategories([
+          { id: 1, slug: 'economy', name: 'অর্থনীতি' },
+          { id: 2, slug: 'technology', name: 'প্রযুক্তি' },
+          { id: 3, slug: 'education', name: 'শিক্ষা' }
+        ]);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
 
-  const lifestyleCategories = [
-    { slug: 'lifestyle', name: 'লাইফস্টাইল' },
-    { slug: 'entertainment', name: 'বিনোদন' }
-  ];
+    fetchCategories();
+  }, []);
+
+  // Use first 3 categories for main sections
+  const mainCategories = availableCategories.slice(0, 3);
+  // Use remaining categories for lifestyle sections
+  const lifestyleCategories = availableCategories.slice(3, 5);
 
   return (
     <>
@@ -95,7 +121,7 @@ const Home = () => {
         {/* Category News Sections */}
         <section className="container-modern py-6">
           <div className="grid-news mb-8">
-            {categories.map((category, index) => (
+            {!categoriesLoading && mainCategories.length > 0 && mainCategories.map((category, index) => (
               <div 
                 key={category.slug} 
                 className="bounce-in"
@@ -107,6 +133,21 @@ const Home = () => {
                 />
               </div>
             ))}
+            
+            {categoriesLoading && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-card border border-border rounded shadow-sm p-4 h-80 animate-pulse">
+                    <div className="h-6 bg-muted rounded mb-4"></div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -126,22 +167,24 @@ const Home = () => {
         </section>
 
         {/* Lifestyle and Entertainment */}
-        <section className="container-modern py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {lifestyleCategories.map((category, index) => (
-              <div 
-                key={category.slug} 
-                className="rotate-in"
-                style={{ animationDelay: `${index * 0.2}s` }}
-              >
-                <CategoryNewsSection 
-                  categorySlug={category.slug} 
-                  limit={4}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+        {!categoriesLoading && lifestyleCategories.length > 0 && (
+          <section className="container-modern py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {lifestyleCategories.map((category, index) => (
+                <div 
+                  key={category.slug} 
+                  className="rotate-in"
+                  style={{ animationDelay: `${index * 0.2}s` }}
+                >
+                  <CategoryNewsSection 
+                    categorySlug={category.slug} 
+                    limit={4}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
         
         {/* Audio Articles Section */}
         <section className="container-modern py-6 slide-in-right">

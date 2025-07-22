@@ -70,7 +70,7 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         setCategory(categoryData);
         
         // Fetch articles for this category with retry logic
-        let articlesData = [];
+        let articlesData: Article[] = [];
         let retryCount = 0;
         const maxRetries = 2;
         
@@ -80,12 +80,12 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
               `fetch-articles-${categorySlug}`,
               async () => {
                 const { getArticles } = await import('../lib/supabase-api-direct');
-                const articlesData = await getArticles({ 
+                const fetchedArticles = await getArticles({ 
                   category: categorySlug, 
                   limit: limit 
                 });
                 
-                return articlesData;
+                return fetchedArticles;
               },
               { categorySlug, limit, attempt: retryCount + 1 }
             );
@@ -156,16 +156,26 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
     );
   }
 
+  // Don't render anything if category doesn't exist
+  // This prevents empty sections from taking up space in the layout
+  if (error && error.includes('Category not found')) {
+    return null;
+  }
+  
   if (error || !category || articles.length === 0) {
     return (
-      <div className="bg-card border border-border rounded shadow-sm p-4">
+      <div className="bg-card border border-border rounded shadow-sm p-4 min-h-[200px]">
         <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
           <h3 className="text-lg font-bold text-foreground">{category?.name || 'বিভাগ'}</h3>
-          <Link href={`/category/${categorySlug}`} className="text-accent text-sm hover:text-accent/80 transition-colors">
-            সবগুলো <i className="fas fa-angle-right ml-1"></i>
-          </Link>
+          {category && (
+            <Link href={`/category/${categorySlug}`} className="text-accent text-sm hover:text-accent/80 transition-colors">
+              সবগুলো <i className="fas fa-angle-right ml-1"></i>
+            </Link>
+          )}
         </div>
-        <p className="text-center py-8 text-muted-foreground">{error || 'এই বিভাগে কোন খবর পাওয়া যায়নি'}</p>
+        <p className="text-center py-8 text-muted-foreground">
+          {error && !error.includes('Category not found') ? error : 'এই বিভাগে কোন খবর পাওয়া যায়নি'}
+        </p>
       </div>
     );
   }

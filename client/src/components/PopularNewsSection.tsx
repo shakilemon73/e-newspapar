@@ -98,7 +98,7 @@ export const PopularNewsSection = () => {
 
   if (error || popularArticles.length === 0) {
     return (
-      <div className="bg-card border border-border rounded shadow-sm p-4 mb-8">
+      <div className="bg-card border border-border rounded shadow-sm p-4 mb-8 min-h-[300px]">
         <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
           <h3 className="text-lg font-bold text-foreground">সর্বাধিক পঠিত</h3>
           <div className="flex gap-2">
@@ -122,7 +122,21 @@ export const PopularNewsSection = () => {
             </button>
           </div>
         </div>
-        <p className="text-center py-8 text-muted-foreground">{error || 'কোন জনপ্রিয় সংবাদ পাওয়া যায়নি'}</p>
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+            </div>
+            <p className="text-muted-foreground">
+              {error || 'এই মুহূর্তে কোন জনপ্রিয় সংবাদ পাওয়া যায়নি'}
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              অন্য সময়সীমা চেষ্টা করুন অথবা পরে আবার দেখুন
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
