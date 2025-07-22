@@ -4,10 +4,17 @@ import path from 'path';
 
 // Static site build configuration for Supabase-only deployment
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxRuntime: 'automatic',
+      jsxImportSource: 'react'
+    })
+  ],
   root: 'client',
   build: {
     outDir: '../dist-static',
+    minify: 'esbuild',
+    sourcemap: false,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'client/index-static.html')
@@ -37,6 +44,13 @@ export default defineConfig({
     ]
   },
   define: {
-    'process.env.NODE_ENV': '"production"'
+    'process.env.NODE_ENV': '"production"',
+    '__DEV__': false
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxFactory: undefined,
+    jsxFragment: undefined,
+    jsxInject: undefined
   }
 });

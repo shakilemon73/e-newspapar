@@ -6,7 +6,12 @@ import App from './App';
 import './index.css';
 
 // Static site entry point - uses static query client with Supabase
-const root = createRoot(document.getElementById('root')!);
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
+
+const root = createRoot(rootElement);
 
 root.render(
   <StrictMode>
