@@ -404,9 +404,9 @@ export async function getAudioArticles(): Promise<any[]> {
 // Social Media API
 export async function getSocialMediaPosts(): Promise<any[]> {
   const { data, error } = await supabase
-    .from('social_media')
+    .from('social_media_posts')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('published_at', { ascending: false });
   
   if (error) {
     console.error('Error fetching social media posts:', error);
@@ -421,7 +421,7 @@ export async function getTrendingTopics(): Promise<any[]> {
   const { data, error } = await supabase
     .from('trending_topics')
     .select('*')
-    .order('trend_score', { ascending: false })
+    .order('trending_score', { ascending: false })
     .limit(10);
   
   if (error) {
