@@ -49,8 +49,14 @@ interface Weather {
   id: number;
   city: string;
   temperature: number;
-  description: string;
-  updated_at: string;
+  condition: string;
+  icon: string;
+  forecast: any; // JSON field for forecast data
+  humidity?: number;
+  windSpeed?: number;
+  windDirection?: number;
+  lastFetchTime?: string;
+  updated_at?: string;
 }
 
 // Categories API

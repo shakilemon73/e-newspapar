@@ -15,10 +15,11 @@ interface Weather {
   temperature: number;
   condition: string;
   icon: string;
-  forecast: Forecast[];
+  forecast: string | Forecast[]; // Can be JSON string or parsed array
   updatedAt: string;
   isUserLocation?: boolean;
   coordinates?: { lat: number; lon: number };
+  updated_at?: string;
 }
 
 export const WeatherWidget = () => {
@@ -29,6 +30,20 @@ export const WeatherWidget = () => {
   const [currentDate, setCurrentDate] = useState<string>('');
   const [locationPermission, setLocationPermission] = useState<'granted' | 'denied' | 'pending' | 'unavailable'>('pending');
   const [isTrackingLocation, setIsTrackingLocation] = useState<boolean>(false);
+
+  // Helper function to safely parse forecast data
+  const parseForecast = (forecastData: string | Forecast[]): Forecast[] => {
+    if (Array.isArray(forecastData)) {
+      return forecastData;
+    }
+    
+    try {
+      return JSON.parse(forecastData as string) || [];
+    } catch (error) {
+      console.error('Error parsing forecast data:', error);
+      return [];
+    }
+  };
 
   // Function to get user's location
   const getUserLocation = () => {
@@ -85,11 +100,19 @@ export const WeatherWidget = () => {
       const { getWeatherByCity } = await import('../lib/supabase-api-direct');
       const dhakaWeather = await getWeatherByCity('ঢাকা');
       
-      if (typeof dhakaWeather.forecast === 'string') {
-        dhakaWeather.forecast = JSON.parse(dhakaWeather.forecast);
+      if (dhakaWeather) {
+        // Transform the data to match our interface
+        const transformedWeather: Weather = {
+          id: dhakaWeather.id,
+          city: dhakaWeather.city,
+          temperature: dhakaWeather.temperature,
+          condition: dhakaWeather.condition || 'N/A',
+          icon: dhakaWeather.icon || 'fas fa-sun',
+          forecast: dhakaWeather.forecast || '[]',
+          updatedAt: dhakaWeather.updated_at || ''
+        };
+        setWeather(transformedWeather);
       }
-      
-      setWeather(dhakaWeather);
     } catch (error) {
       console.error('Error fetching default weather:', error);
       setError('আবহাওয়া তথ্য লোড করতে সমস্যা হয়েছে');
@@ -125,12 +148,10 @@ export const WeatherWidget = () => {
         
         // Parse forecast for each city and filter out current weather city
         const otherCitiesData = allWeatherData
-          .map((city: Weather) => {
-            if (typeof city.forecast === 'string') {
-              city.forecast = JSON.parse(city.forecast);
-            }
-            return city;
-          });
+          .map((city: any) => ({
+            ...city,
+            forecast: parseForecast(city.forecast)
+          }));
         
         setOtherCities(otherCitiesData);
         setError(null);
@@ -213,7 +234,7 @@ export const WeatherWidget = () => {
         
         {/* Forecast Section */}
         <div className="grid grid-cols-3 gap-2 text-center bg-gray-50 dark:bg-gray-800 rounded p-3">
-          {(weather.forecast || []).slice(0, 3).map((day, index) => (
+          {parseForecast(weather.forecast || []).slice(0, 3).map((day, index) => (
             <div className="forecast-day" key={index}>
               <div className="text-xs font-medium mb-1">{day.day}</div>
               <i className={`${day.icon} ${day.icon.includes('sun') ? 'text-yellow-500' : 'text-gray-500 dark:text-gray-400'} text-lg mb-1`}></i>
