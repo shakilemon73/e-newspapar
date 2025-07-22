@@ -52,23 +52,18 @@ export const WeatherWidget = () => {
     try {
       console.log('[Weather] Getting location via IP address...');
       
-      // Use IP-based location endpoint for enhanced privacy
-      const response = await fetch('/api/public/weather/ip-location');
-      
-      if (!response.ok) {
-        throw new Error('Failed to get IP-based weather');
-      }
-      
-      const locationWeather = await response.json();
+      // Use direct Supabase weather data (default to Dhaka)
+      const { getWeatherByCity } = await import('../lib/supabase-api-direct');
+      const locationWeather = await getWeatherByCity('ঢাকা');
       
       if (locationWeather) {
         setWeather({
           ...locationWeather,
-          id: Date.now(), // Add temporary ID for state management
-          updatedAt: new Date().toISOString()
+          id: locationWeather.id || Date.now(),
+          updatedAt: locationWeather.updated_at || new Date().toISOString()
         });
         setLocationPermission('granted');
-        console.log(`[Weather] Successfully fetched IP-based weather for ${locationWeather.detectedCity}`);
+        console.log(`[Weather] Successfully fetched weather for ${locationWeather.city}`);
       } else {
         throw new Error('No weather data received');
       }

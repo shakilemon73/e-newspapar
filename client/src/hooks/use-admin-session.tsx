@@ -23,17 +23,15 @@ export function AdminSessionProvider({ children }: { children: ReactNode }) {
 
   const checkSession = async () => {
     try {
-      const response = await fetch('/api/admin/session', {
-        credentials: 'include' // Important for cookies
-      });
+      // Use Supabase auth to check session instead of Express
+      const { useSupabaseAuth } = await import('@/hooks/use-supabase-auth');
+      const { user } = useSupabaseAuth();
       
-      if (response.ok) {
-        const data = await response.json();
-        if (data.authenticated) {
-          setAdmin(data.admin);
-        } else {
-          setAdmin(null);
-        }
+      if (user && user.user_metadata?.role === 'admin') {
+        setAdmin({ 
+          email: user.email || '',
+          role: 'admin'
+        });
       } else {
         setAdmin(null);
       }

@@ -179,23 +179,33 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
 export async function getPopularArticles(limit = 5): Promise<Article[]> {
   try {
-    console.log(`[API] Attempting to fetch ${limit} popular articles via backend...`);
+    console.log(`[Supabase] Fetching ${limit} popular articles directly from database...`);
     
-    const response = await fetch('/api/public/articles/popular');
-    console.log('[API] Response status:', response.status);
+    const { data, error } = await supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
+      `)
+      .order('view_count', { ascending: false })
+      .limit(limit);
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[API] Error response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    if (error) {
+      console.error('[Supabase] Error fetching popular articles:', error);
+      return [];
     }
     
-    const data = await response.json();
-    console.log('[API] Raw data received:', data);
-    console.log(`[API] Successfully fetched ${data?.length || 0} popular articles`);
-    
     if (!data || data.length === 0) {
-      console.warn('[API] No articles found in database');
+      console.warn('[Supabase] No articles found in database');
       return [];
     }
 
@@ -210,10 +220,10 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
       category: Array.isArray(article.categories) ? article.categories[0] : article.categories
     }));
 
-    console.log(`[API] Transformed data sample:`, transformedData[0]);
-    return transformedData.slice(0, limit); // Limit results as requested
+    console.log(`[Supabase] Successfully fetched ${transformedData.length} popular articles`);
+    return transformedData;
   } catch (err) {
-    console.error('[API] Failed to fetch popular articles - unexpected error:', err);
+    console.error('[Supabase] Failed to fetch popular articles:', err);
     return [];
   }
 }
@@ -401,6 +411,45 @@ export async function getVideoContent(): Promise<any[]> {
   return data || [];
 }
 
+// Site Settings API
+export async function getSiteSettings(): Promise<any> {
+  try {
+    const { data, error } = await supabase
+      .from('system_settings')
+      .select('*')
+      .limit(1)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching site settings:', error);
+      return {
+        siteName: 'Bengali News',
+        siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+        logoUrl: '',
+        defaultLanguage: 'bn',
+        siteUrl: ''
+      };
+    }
+    
+    return {
+      siteName: data?.site_name || 'Bengali News',
+      siteDescription: data?.site_description || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+      logoUrl: data?.logo_url || '',
+      defaultLanguage: data?.default_language || 'bn',
+      siteUrl: data?.site_url || ''
+    };
+  } catch (err) {
+    console.error('Error in getSiteSettings:', err);
+    return {
+      siteName: 'Bengali News',
+      siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+      logoUrl: '',
+      defaultLanguage: 'bn',
+      siteUrl: ''
+    };
+  }
+}
+
 export async function getVideoBySlug(slug: string): Promise<any | null> {
   const { data, error } = await supabase
     .from('video_content')
@@ -506,17 +555,7 @@ export async function incrementViewCount(articleId: number): Promise<{ viewCount
   }
 }
 
-// Site settings (fallback data)
-export async function getSiteSettings() {
-  // Since site_settings table doesn't exist, return fallback data
-  return {
-    siteName: "Emon's Daily News",
-    siteDescription: "বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র",
-    logoUrl: "",
-    defaultLanguage: "bn",
-    siteUrl: "https://emonsdaily.com"
-  };
-}
+
 
 // Article Tags API
 export async function getArticleTags(articleId: number): Promise<any[]> {
