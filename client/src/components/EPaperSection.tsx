@@ -23,24 +23,14 @@ export const EPaperSection = () => {
         setIsLoading(true);
         
         // Fetch latest e-paper
-        const latestResponse = await fetch('/api/epapers/latest');
+        const { getLatestEPaper, getEPapers } = await import('../lib/supabase-api');
         
-        if (!latestResponse.ok) {
-          throw new Error('Failed to fetch latest e-paper');
-        }
-        
-        const latestData = await latestResponse.json();
+        const latestData = await getLatestEPaper();
         setLatestEPaper(latestData);
         
         // Fetch all e-papers for archive
-        const allResponse = await fetch('/api/epapers?limit=5');
-        
-        if (!allResponse.ok) {
-          throw new Error('Failed to fetch e-papers');
-        }
-        
-        const allData = await allResponse.json();
-        setEPapers(allData);
+        const allData = await getEPapers();
+        setEPapers(allData.slice(0, 5));
         setError(null);
       } catch (err) {
         setError('ই-পেপার লোড করতে সমস্যা হয়েছে');

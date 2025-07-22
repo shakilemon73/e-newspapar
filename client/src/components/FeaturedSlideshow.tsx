@@ -31,23 +31,13 @@ export const FeaturedSlideshow = () => {
     const fetchFeaturedArticles = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/articles?featured=true&limit=3');
+        const { getArticles, getLatestArticles } = await import('../lib/supabase-api');
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch featured articles');
-        }
-        
-        const data = await response.json();
+        const data = await getArticles({ featured: true, limit: 3 });
         setFeaturedArticles(data);
         
         // Fetch side articles (latest non-featured)
-        const sideResponse = await fetch('/api/articles/latest?limit=2');
-        
-        if (!sideResponse.ok) {
-          throw new Error('Failed to fetch side articles');
-        }
-        
-        const sideData = await sideResponse.json();
+        const sideData = await getLatestArticles(5);
         setSideArticles(sideData.filter((article: Article) => 
           !data.some((featured: Article) => featured.id === article.id)
         ).slice(0, 2));

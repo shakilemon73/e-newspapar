@@ -28,13 +28,8 @@ export const LatestNews = () => {
     const fetchLatestNews = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('/api/articles/latest?limit=4');
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch latest news');
-        }
-        
-        const data = await response.json();
+        const { getLatestArticles } = await import('../lib/supabase-api');
+        const data = await getLatestArticles(4);
         setLatestNews(data);
         setError(null);
       } catch (err) {

@@ -32,12 +32,8 @@ export const AudioArticles = () => {
         setIsLoading(true);
         
         // Fetch audio articles from Supabase API
-        const response = await fetch('/api/audio-articles?limit=4');
-        if (!response.ok) {
-          throw new Error('Failed to fetch audio articles');
-        }
-        
-        const data: AudioArticle[] = await response.json();
+        const { getAudioArticles } = await import('../lib/supabase-api');
+        const data: AudioArticle[] = await getAudioArticles();
         
         if (data && data.length > 0) {
           setArticles(data);

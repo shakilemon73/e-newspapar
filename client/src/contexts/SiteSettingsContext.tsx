@@ -43,22 +43,20 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch('/api/settings?_t=' + Date.now()); // Cache busting
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched dynamic settings:', data);
-        setSettings({
-          siteName: data.siteName || defaultSettings.siteName,
-          logoUrl: data.logoUrl || defaultSettings.logoUrl,
-          siteDescription: data.siteDescription || defaultSettings.siteDescription,
-          siteUrl: data.siteUrl || defaultSettings.siteUrl,
-          defaultLanguage: data.defaultLanguage || defaultSettings.defaultLanguage,
-        });
-        
-        // Update global window object for immediate access
-        if (typeof window !== 'undefined') {
-          (window as any).globalSiteSettings = data;
-        }
+      const { getSiteSettings } = await import('../lib/supabase-api');
+      const data = await getSiteSettings();
+      console.log('Fetched dynamic settings:', data);
+      setSettings({
+        siteName: data.siteName || defaultSettings.siteName,
+        logoUrl: data.logoUrl || defaultSettings.logoUrl,
+        siteDescription: data.siteDescription || defaultSettings.siteDescription,
+        siteUrl: data.siteUrl || defaultSettings.siteUrl,
+        defaultLanguage: data.defaultLanguage || defaultSettings.defaultLanguage,
+      });
+      
+      // Update global window object for immediate access
+      if (typeof window !== 'undefined') {
+        (window as any).globalSiteSettings = data;
       }
     } catch (error) {
       console.error('Error fetching site settings:', error);

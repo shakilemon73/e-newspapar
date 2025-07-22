@@ -27,12 +27,8 @@ export const VideoContent = () => {
         setIsLoading(true);
         
         // Fetch videos from Supabase API
-        const response = await fetch('/api/videos?limit=5');
-        if (!response.ok) {
-          throw new Error('Failed to fetch videos');
-        }
-        
-        const data: any[] = await response.json();
+        const { getVideos } = await import('../lib/supabase-api');
+        const data: any[] = await getVideos();
         
         if (data && data.length > 0) {
           // Convert to VideoItem format for component compatibility

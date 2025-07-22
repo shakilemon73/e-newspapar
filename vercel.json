@@ -1,37 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/index.ts",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["**"]
-      }
-    },
-    {
-      "src": "client/**",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "../dist/public"
-      }
-    }
-  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "public": true,
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server/index.ts"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/client/$1"
+      "dest": "/index.html"
     }
-  ],
-  "functions": {
-    "server/index.ts": {
-      "runtime": "@vercel/node@20.x"
-    }
-  },
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }

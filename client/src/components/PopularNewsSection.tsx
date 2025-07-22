@@ -32,19 +32,8 @@ export const PopularNewsSection = () => {
         setIsLoading(true);
         // Add timestamp to prevent caching and get real-time data
         const timestamp = new Date().getTime();
-        const response = await fetch(`/api/articles/popular?limit=5&timeRange=${timeRange}&_t=${timestamp}`, {
-          cache: 'no-cache',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch popular articles');
-        }
-        
-        const data = await response.json();
+        const { getPopularArticles } = await import('../lib/supabase-api');
+        const data = await getPopularArticles(5);
         console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         setPopularArticles(data);
         setError(null);
