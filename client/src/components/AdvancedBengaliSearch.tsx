@@ -52,11 +52,9 @@ export const AdvancedBengaliSearch = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/categories');
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(data);
-      }
+      const { getCategories } = await import('../lib/supabase-api-direct');
+      const data = await getCategories();
+      setCategories(data);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
@@ -64,11 +62,10 @@ export const AdvancedBengaliSearch = () => {
 
   const fetchSearchHistory = async () => {
     try {
-      const response = await fetch('/api/user/search-history?limit=5');
-      if (response.ok) {
-        const data = await response.json();
-        setSearchHistory(data);
-      }
+      if (!user?.id) return;
+      const { getUserSearchHistory } = await import('../lib/supabase-api-direct');
+      const data = await getUserSearchHistory(user.id, 5);
+      setSearchHistory(data);
     } catch (err) {
       console.error('Error fetching search history:', err);
     }
@@ -84,14 +81,8 @@ export const AdvancedBengaliSearch = () => {
     setHasSearched(true);
 
     try {
-      const categoryParam = selectedCategory ? `&category=${selectedCategory}` : '';
-      const response = await fetch(`/api/search/advanced?q=${encodeURIComponent(query)}${categoryParam}&limit=20`);
-      
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-
-      const data = await response.json();
+      const { searchArticles } = await import('../lib/supabase-api-direct');
+      const data = await searchArticles(query, selectedCategory, 20);
       setSearchResults(data);
       
       // Save search to history if user is logged in
@@ -109,17 +100,9 @@ export const AdvancedBengaliSearch = () => {
 
   const saveSearchToHistory = async (searchQuery: string, resultCount: number) => {
     try {
-      await fetch('/api/user/search-history', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          search_query: searchQuery,
-          search_results_count: resultCount,
-          search_timestamp: new Date().toISOString()
-        })
-      });
+      if (!user?.id) return;
+      const { saveUserSearchHistory } = await import('../lib/supabase-api-direct');
+      await saveUserSearchHistory(user.id, searchQuery, resultCount);
     } catch (err) {
       console.error('Error saving search history:', err);
     }
@@ -147,21 +130,12 @@ export const AdvancedBengaliSearch = () => {
 
   const trackInteraction = async (articleId: number, interactionType: string) => {
     try {
-      await fetch('/api/interactions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          articleId,
-          interactionType,
-          duration: 0,
-          metadata: {
-            source: 'advanced_search',
-            search_query: query,
-            timestamp: new Date().toISOString()
-          }
-        })
+      if (!user?.id) return;
+      const { recordUserInteraction } = await import('../lib/supabase-api-direct');
+      await recordUserInteraction(user.id, articleId, interactionType, {
+        source: 'advanced_search',
+        search_query: query,
+        timestamp: new Date().toISOString()
       });
     } catch (err) {
       console.error('Error tracking interaction:', err);

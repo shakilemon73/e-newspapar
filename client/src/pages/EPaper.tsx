@@ -5,10 +5,14 @@ import { formatBengaliDate } from '@/lib/utils/dates';
 interface EPaper {
   id: number;
   title: string;
-  publishDate: string;
-  imageUrl: string;
-  pdfUrl: string;
-  isLatest: boolean;
+  publishDate?: string;
+  published_at?: string;
+  imageUrl?: string;
+  image_url?: string;
+  pdfUrl?: string;
+  pdf_url?: string;
+  isLatest?: boolean;
+  is_latest?: boolean;
 }
 
 const EPaper = () => {
@@ -30,11 +34,11 @@ const EPaper = () => {
         
         // Fetch latest e-paper
         const latestData = await getLatestEPaper();
-        setLatestEPaper(latestData);
+        setLatestEPaper(latestData as any);
         
         // Fetch all e-papers
         const allData = await getEPapers();
-        setEPapers(allData);
+        setEPapers(allData as any);
         setHasMore(allData.length === limit);
         setError(null);
       } catch (err) {
@@ -54,16 +58,11 @@ const EPaper = () => {
       const nextPage = page + 1;
       const offset = page * limit;
       
-      const response = await fetch(`/api/epapers?limit=${limit}&offset=${offset}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch more e-papers');
-      }
-      
-      const newEPapers = await response.json();
+      const { getEPapers } = await import('../lib/supabase-api-direct');
+      const newEPapers = await getEPapers(limit, offset);
       
       if (newEPapers.length > 0) {
-        setEPapers([...epapers, ...newEPapers]);
+        setEPapers([...epapers, ...newEPapers as any]);
         setPage(nextPage);
         setHasMore(newEPapers.length === limit);
       } else {

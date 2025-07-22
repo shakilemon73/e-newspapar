@@ -54,20 +54,23 @@ const useUserPreferences = (userId: string | null) => {
   const { toast } = useToast();
 
   const { data: preferences, isLoading } = useQuery({
-    queryKey: ['/api/user/preferences', userId],
-    queryFn: () => fetch(`/api/user/${userId}/preferences`).then(res => res.json()),
+    queryKey: ['user-preferences', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { getUserPreferences } = await import('@/lib/supabase-api-direct');
+      return await getUserPreferences(userId);
+    },
     enabled: !!userId,
   });
 
   const updatePreferencesMutation = useMutation({
-    mutationFn: (newPreferences: any) => 
-      fetch(`/api/user/${userId}/preferences`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPreferences),
-      }).then(res => res.json()),
+    mutationFn: async (newPreferences: any) => {
+      if (!userId) throw new Error('No user ID');
+      const { updateUserPreferences } = await import('@/lib/supabase-api-direct');
+      return await updateUserPreferences(userId, newPreferences);
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/preferences', userId] });
+      queryClient.invalidateQueries({ queryKey: ['user-preferences', userId] });
       toast({ title: 'পছন্দ আপডেট হয়েছে', description: 'আপনার পছন্দসমূহ সফলভাবে সংরক্ষিত হয়েছে' });
     },
     onError: () => {
@@ -81,14 +84,21 @@ const useUserPreferences = (userId: string | null) => {
 // Real Supabase Personalized Recommendations
 const PersonalizedRecommendationsWidget: React.FC<{ userId: string | null }> = ({ userId }) => {
   const { data: recommendations, isLoading } = useQuery({
-    queryKey: ['/api/user/recommendations', userId],
-    queryFn: () => fetch(`/api/user/${userId}/recommendations`).then(res => res.json()),
+    queryKey: ['user-recommendations', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { getPersonalizedRecommendations } = await import('@/lib/supabase-api-direct');
+      return await getPersonalizedRecommendations(userId);
+    },
     enabled: !!userId,
   });
 
   const { data: fallbackRecommendations, isLoading: fallbackLoading } = useQuery({
-    queryKey: ['/api/articles/featured'],
-    queryFn: () => fetch('/api/articles/featured').then(res => res.json()),
+    queryKey: ['featured-articles'],
+    queryFn: async () => {
+      const { getFeaturedArticles } = await import('@/lib/supabase-api-direct');
+      return await getFeaturedArticles();
+    },
     enabled: !userId,
   });
 
@@ -170,8 +180,11 @@ const PersonalizedRecommendationsWidget: React.FC<{ userId: string | null }> = (
 // Real Supabase Trending Topics
 const TrendingTopicsWidget: React.FC = () => {
   const { data: trendingTopics, isLoading } = useQuery({
-    queryKey: ['/api/trending-topics'],
-    queryFn: () => fetch('/api/trending-topics').then(res => res.json()),
+    queryKey: ['trending-topics'],
+    queryFn: async () => {
+      const { getTrendingTopics } = await import('@/lib/supabase-api-direct');
+      return await getTrendingTopics();
+    },
   });
 
   if (isLoading) {

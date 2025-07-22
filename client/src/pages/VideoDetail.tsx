@@ -34,7 +34,7 @@ export default function VideoDetail() {
         setError(null);
         
         const { getVideoBySlug } = await import('../lib/supabase-api-direct');
-        const data = await getVideoBySlug(slug);
+        const data = await getVideoBySlug(slug || '');
         if (!data) {
           setError("ভিডিও পাওয়া যায়নি");
           return;

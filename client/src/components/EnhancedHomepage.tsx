@@ -333,7 +333,10 @@ const SocialActivityWidget: React.FC = () => {
 const ContentCategoriesWidget: React.FC = () => {
   const { data: categories, isLoading } = useQuery({
     queryKey: ['/api/categories'],
-    queryFn: () => fetch('/api/categories').then(res => res.json()),
+    queryFn: async () => {
+      const { getCategories } = await import('../lib/supabase-api-direct');
+      return getCategories();
+    },
   });
 
   if (isLoading) {
@@ -401,17 +404,26 @@ export const EnhancedHomepage: React.FC = () => {
 
   const { data: featuredArticles, isLoading: featuredLoading } = useQuery({
     queryKey: ['/api/articles/featured'],
-    queryFn: () => fetch('/api/articles/featured').then(res => res.json()),
+    queryFn: async () => {
+      const { getFeaturedArticles } = await import('../lib/supabase-api-direct');
+      return getFeaturedArticles();
+    },
   });
 
   const { data: latestArticles, isLoading: latestLoading } = useQuery({
     queryKey: ['/api/articles/latest'],
-    queryFn: () => fetch('/api/articles/latest').then(res => res.json()),
+    queryFn: async () => {
+      const { getLatestArticles } = await import('../lib/supabase-api-direct');
+      return getLatestArticles();
+    },
   });
 
   const { data: popularArticles, isLoading: popularLoading } = useQuery({
     queryKey: ['/api/articles/popular'],
-    queryFn: () => fetch('/api/articles/popular').then(res => res.json()),
+    queryFn: async () => {
+      const { getPopularArticles } = await import('../lib/supabase-api-direct');
+      return getPopularArticles();
+    },
   });
 
   return (

@@ -14,10 +14,14 @@ interface Article {
   id: number;
   title: string;
   slug: string;
-  excerpt: string;
-  imageUrl: string;
-  publishedAt: string;
-  category: Category;
+  excerpt?: string;
+  image_url?: string;
+  imageUrl?: string;
+  published_at?: string;
+  publishedAt?: string;
+  view_count?: number;
+  category?: Category;
+  categories?: Category;
 }
 
 const Search = () => {
@@ -51,8 +55,8 @@ const Search = () => {
       try {
         setIsLoading(true);
         const { searchArticles } = await import('../lib/supabase-api-direct');
-        const data = await searchArticles(query, limit);
-        setArticles(data);
+        const data = await searchArticles(query, undefined, limit);
+        setArticles(data as any);
         setHasMore(data.length === limit);
         setPage(1);
         setError(null);
@@ -76,10 +80,10 @@ const Search = () => {
       const offset = page * limit;
       
       const { searchArticles } = await import('../lib/supabase-api-direct');
-      const newArticles = await searchArticles(query, limit);
+      const newArticles = await searchArticles(query, undefined, limit);
       
       if (newArticles.length > 0) {
-        setArticles([...articles, ...newArticles]);
+        setArticles([...articles, ...newArticles as any]);
         setPage(nextPage);
         setHasMore(newArticles.length === limit);
       } else {
@@ -166,9 +170,9 @@ const Search = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center mb-1">
-                      <Link href={`/category/${article.category.slug}`}>
+                      <Link href={`/category/${article.category?.slug || article.categories?.slug || 'general'}`}>
                         <span className="text-xs bg-light px-2 py-1 rounded mr-2 hover:bg-accent hover:text-white transition cursor-pointer">
-                          {article.category.name}
+                          {article.category?.name || article.categories?.name || 'সাধারণ'}
                         </span>
                       </Link>
                       <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.publishedAt)}</span>

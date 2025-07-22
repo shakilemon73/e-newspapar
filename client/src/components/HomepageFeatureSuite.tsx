@@ -122,8 +122,11 @@ export const DiscoveryWidget = () => {
 // ট্রেন্ডিং বিষয় (Trending Topics) Widget
 export const TrendingTopicsWidget = () => {
   const { data: trendingTopics, isLoading } = useQuery({
-    queryKey: ['/api/trending-topics'],
-    queryFn: () => fetch('/api/trending-topics?limit=8').then(res => res.json()),
+    queryKey: ['trending-topics-limited'],
+    queryFn: async () => {
+      const { getTrendingTopics } = await import('../lib/supabase-api-direct');
+      return getTrendingTopics(8);
+    },
   });
 
   if (isLoading) {
@@ -189,8 +192,12 @@ export const TrendingTopicsWidget = () => {
 export const ReadingStatsWidget = () => {
   const { user } = useSupabaseAuth();
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['/api/user/stats', user?.id],
-    queryFn: () => user ? fetch(`/api/user/${user.id}/stats`).then(res => res.json()) : null,
+    queryKey: ['user-stats', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { getUserStats } = await import('../lib/supabase-api-direct');
+      return await getUserStats(user.id);
+    },
     enabled: !!user,
   });
 
@@ -319,7 +326,10 @@ export const ReadingStatsWidget = () => {
 export const SocialActivitiesWidget = () => {
   const { data: socialPosts, isLoading } = useQuery({
     queryKey: ['/api/social-media'],
-    queryFn: () => fetch('/api/social-media?limit=5').then(res => res.json()),
+    queryFn: async () => {
+      const { getSocialMediaPosts } = await import('../lib/supabase-api-direct');
+      return getSocialMediaPosts();
+    },
   });
 
   if (isLoading) {
@@ -401,7 +411,11 @@ export const ReadingPreferencesWidget = () => {
   const { user } = useSupabaseAuth();
   const { data: preferences, isLoading } = useQuery({
     queryKey: ['/api/user/preferences', user?.id],
-    queryFn: () => user ? fetch(`/api/user/${user.id}/preferences`).then(res => res.json()) : null,
+    queryFn: async () => {
+      if (!user) return null;
+      const { getUserPreferences } = await import('../lib/supabase-api-direct');
+      return getUserPreferences(user.id);
+    },
     enabled: !!user,
   });
 

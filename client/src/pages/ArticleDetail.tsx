@@ -99,13 +99,16 @@ interface Article {
   content: string;
   excerpt: string;
   image_url: string;
+  imageUrl?: string;
   published_at: string;
+  publishedAt?: string;
   category: Category;
   view_count: number;
   category_id: number;
   is_featured: boolean;
   created_at?: string;
   updated_at?: string;
+  author?: string;
 }
 
 const ArticleDetail = () => {
@@ -128,10 +131,8 @@ const ArticleDetail = () => {
     queryFn: async () => {
       if (!article) return [];
       
-      const response = await fetch(`/api/articles/${article.id}/related?limit=3`);
-      if (!response.ok) return [];
-      
-      return response.json();
+      const { getRelatedArticles } = await import('../lib/supabase-api-direct');
+      return getRelatedArticles(article.id, 3);
     },
     enabled: !!article
   });
@@ -341,15 +342,9 @@ const ArticleDetail = () => {
         
         const token = session.access_token;
         
-        // Send reading history to server
-        await fetch('/api/track-reading', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ articleId: article.id })
-        });
+        // Track reading history directly via Supabase
+        const { trackReadingHistory } = await import('../lib/supabase-api-direct');
+        await trackReadingHistory(article.id, user.id);
         
         // Don't need to do anything with the response
       } catch (err) {
@@ -430,18 +425,11 @@ const ArticleDetail = () => {
     if (!reason) return;
     
     try {
-      const response = await fetch(`/api/articles/${article.id}/report`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: reason.trim(),
-          description: 'User reported from article page'
-        })
-      });
-
-      if (response.ok) {
+      const { reportArticle } = await import('../lib/supabase-api-direct');
+      await reportArticle(article.id, reason.trim(), 'User reported from article page');
+      
+      // If we reach here, it was successful
+      if (true) {
         toast({
           title: "রিপোর্ট জমা দেওয়া হয়েছে",
           description: "আপনার রিপোর্ট আমাদের কাছে পৌঁছেছে। পর্যালোচনার জন্য ধন্যবাদ।",

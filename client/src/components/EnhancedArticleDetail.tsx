@@ -242,8 +242,12 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
   currentId 
 }) => {
   const { data: relatedArticles } = useQuery({
-    queryKey: [`/api/articles/${currentId}/related`],
-    queryFn: () => fetch(`/api/articles/${currentId}/related?limit=3`).then(res => res.json()),
+    queryKey: ['related-articles', currentId],
+    queryFn: async () => {
+      if (!currentId) return [];
+      const { getRelatedArticles } = await import('../lib/supabase-api-direct');
+      return await getRelatedArticles(currentId, 3);
+    },
     enabled: !!currentId
   });
 
@@ -264,7 +268,7 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
             <div className="group cursor-pointer transition-all duration-300 hover:bg-muted/50 rounded-lg p-4">
               <div className="flex gap-4">
                 <img 
-                  src={article.imageUrl || article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80'} 
+                  src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=300&h=200&fit=crop&auto=format&q=80'} 
                   alt={article.title}
                   className="w-20 h-20 object-cover rounded-lg group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
@@ -280,7 +284,7 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
                     {article.excerpt}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {article.publishedAt || article.published_at ? getRelativeTimeInBengali(article.publishedAt || article.published_at) : 'কিছুক্ষণ আগে'}
+                    {article.published_at ? getRelativeTimeInBengali(article.published_at) : 'কিছুক্ষণ আগে'}
                   </p>
                 </div>
               </div>
@@ -295,12 +299,17 @@ const RelatedArticles: React.FC<{ categorySlug: string; currentId: number }> = (
 // Article Navigation Component
 const ArticleNavigation: React.FC<{ currentSlug: string }> = ({ currentSlug }) => {
   const { data: articles } = useQuery({
-    queryKey: ['/api/articles'],
+    queryKey: ['all-articles-for-navigation'],
+    queryFn: async () => {
+      const { getLatestArticles } = await import('../lib/supabase-api-direct');
+      return await getLatestArticles(100); // Get more articles for navigation
+    },
   });
 
-  const currentIndex = articles?.findIndex((article: Article) => article.slug === currentSlug);
-  const previousArticle = currentIndex > 0 ? articles[currentIndex - 1] : null;
-  const nextArticle = currentIndex < articles?.length - 1 ? articles[currentIndex + 1] : null;
+  const articlesArray = Array.isArray(articles) ? articles : [];
+  const currentIndex = articlesArray.findIndex((article: Article) => article.slug === currentSlug);
+  const previousArticle = currentIndex > 0 ? articlesArray[currentIndex - 1] : null;
+  const nextArticle = currentIndex < articlesArray.length - 1 ? articlesArray[currentIndex + 1] : null;
 
   return (
     <div className="flex items-center justify-between mt-12 pt-8 border-t border-border">
@@ -338,11 +347,13 @@ const ArticleNavigation: React.FC<{ currentSlug: string }> = ({ currentSlug }) =
 // Main Enhanced Article Detail Component
 export const EnhancedArticleDetail: React.FC<EnhancedArticleDetailProps> = ({ slug }) => {
   const { data: article, isLoading, error } = useQuery({
-    queryKey: [`/api/articles/${slug}`],
-    queryFn: () => fetch(`/api/articles/${slug}`).then(res => {
-      if (!res.ok) throw new Error('Article not found');
-      return res.json();
-    }),
+    queryKey: ['article-by-slug', slug],
+    queryFn: async () => {
+      if (!slug) return null;
+      const { getArticleBySlug } = await import('../lib/supabase-api-direct');
+      return await getArticleBySlug(slug);
+    },
+
   });
 
   const [readingProgress, setReadingProgress] = useState(0);

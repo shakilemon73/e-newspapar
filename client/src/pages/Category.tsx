@@ -39,18 +39,22 @@ interface Category {
   id: number;
   name: string;
   slug: string;
-  description: string;
+  description?: string;
 }
 
 interface Article {
   id: number;
   title: string;
   slug: string;
-  excerpt: string;
-  content: string;
-  imageUrl: string;
-  publishedAt: string;
-  category: Category;
+  excerpt?: string;
+  content?: string;
+  image_url?: string;
+  imageUrl?: string;
+  published_at?: string;
+  publishedAt?: string;
+  view_count?: number;
+  category?: Category;
+  categories?: Category;
 }
 
 const Category = () => {
@@ -104,7 +108,7 @@ const Category = () => {
             offset: 0 
           });
         }
-        setArticles(articlesData);
+        setArticles(articlesData as any);
         setHasMore(articlesData.length === limit);
         setPage(1);
         setError(null);
@@ -145,7 +149,7 @@ const Category = () => {
       }
       
       if (newArticles.length > 0) {
-        setArticles([...articles, ...newArticles]);
+        setArticles([...articles, ...newArticles as any]);
         setPage(nextPage);
         setHasMore(newArticles.length === limit);
       } else {
@@ -161,7 +165,7 @@ const Category = () => {
   // Filter articles based on search query
   const filteredArticles = articles.filter(article =>
     article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    article.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+    article.excerpt?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Category navigation component
