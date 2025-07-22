@@ -38,7 +38,7 @@ import {
   SortDesc
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getAdminArticles, createArticle, updateArticle, deleteArticle, getAdminCategories } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
 import {

@@ -29,7 +29,7 @@ import {
   Languages
 } from 'lucide-react';
 import { Link } from 'wouter';
-import { apiRequest } from '@/lib/queryClient';
+import { getDashboardStats, getAdminArticles, getAdminCategories } from '@/lib/admin-api-direct';
 
 // Modern Dashboard Component with Language Support
 function ModernAdminDashboard() {
@@ -39,21 +39,24 @@ function ModernAdminDashboard() {
   const [selectedTimeRange, setSelectedTimeRange] = useState<'today' | 'week' | 'month'>('today');
   const queryClient = useQueryClient();
 
-  // Real-time dashboard data with Supabase integration
+  // Real-time dashboard data with direct Supabase integration
   const { data: dashboardStats, isLoading: statsLoading, error: statsError } = useQuery({
-    queryKey: ['/api/admin/stats', selectedTimeRange],
+    queryKey: ['admin-dashboard-stats', selectedTimeRange],
+    queryFn: () => getDashboardStats(),
     enabled: !!user && user.user_metadata?.role === 'admin',
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
-    queryKey: ['/api/admin/recent-activity'],
+    queryKey: ['admin-recent-activity'],
+    queryFn: () => getAdminArticles({ limit: 5, sortBy: 'created_at', sortOrder: 'desc' }),
     enabled: !!user && user.user_metadata?.role === 'admin',
     refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
-    queryKey: ['/api/admin/analytics', selectedTimeRange],
+    queryKey: ['admin-analytics', selectedTimeRange],
+    queryFn: () => getDashboardStats(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

@@ -66,12 +66,12 @@ export async function getDashboardStats() {
     ]);
 
     // Calculate featured articles and published today
-    const { data: featuredData } = await supabase
+    const { count: featuredCount } = await supabase
       .from('articles')
       .select('id', { count: 'exact', head: true })
       .eq('is_featured', true);
 
-    const { data: todayData } = await supabase
+    const { count: todayCount } = await supabase
       .from('articles')
       .select('id', { count: 'exact', head: true })
       .gte('created_at', new Date().toISOString().split('T')[0]);
@@ -81,8 +81,8 @@ export async function getDashboardStats() {
       totalUsers: usersCount.count || 0,
       totalCategories: categoriesCount.count || 0,
       totalViews: todayViews,
-      featuredArticles: featuredData?.count || 0,
-      publishedToday: todayData?.count || 0,
+      featuredArticles: featuredCount || 0,
+      publishedToday: todayCount || 0,
       // Recent stats (last 7 days)
       recentArticles: await getRecentCount('articles', 7),
       recentUsers: await getRecentCount('user_profiles', 7),

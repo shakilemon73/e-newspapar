@@ -17,7 +17,8 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { getAdminUsers, updateUserRole } from '@/lib/admin-api-direct';
+import { queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -97,36 +98,36 @@ export default function UsersAdminPage() {
 
   // Fetch users from Supabase auth with proper error handling
   const { data: users, isLoading, error } = useQuery({
-    queryKey: ['/api/admin/users'],
+    queryKey: ['admin-users'],
     retry: false,
-    queryFn: async () => {
-      const { getUsers } = await import('../../lib/supabase-api-direct');
-      return await getUsers();
-    },
+    queryFn: () => getAdminUsers(),
   });
 
   // Get user statistics with fallback calculation
   const { data: stats } = useQuery({
-    queryKey: ['/api/admin/users/stats'],
+    queryKey: ['admin-users-stats'],
     retry: false,
     queryFn: async () => {
       try {
-        const { getAdminUserStats } = await import('../../lib/supabase-api-direct');
-        const stats = await getAdminUserStats('all');
-        if (stats) {
-          return stats;
+        const stats = await getAdminUsers();
+        if (stats && stats.users) {
+          const usersData = stats.users;
+          const totalUsers = usersData.length;
+          const adminUsers = usersData.filter((u: any) => u.role === 'admin').length;
+          return { totalUsers, adminUsers, activeUsers: totalUsers, newUsers: 0 };
         }
         // Fallback calculation if stats function fails
-        if (users && Array.isArray(users)) {
-          const totalUsers = users.length;
-          const adminUsers = users.filter((u: any) => u.role === 'admin').length;
-          const activeUsers = users.filter((u: any) => {
-            const lastSignIn = new Date(u.last_sign_in_at);
+        if (users && users.users && Array.isArray(users.users)) {
+          const usersData = users.users;
+          const totalUsers = usersData.length;
+          const adminUsers = usersData.filter((u: any) => u.role === 'admin').length;
+          const activeUsers = usersData.filter((u: any) => {
+            const lastSignIn = new Date(u.last_sign_in_at || u.created_at);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             return lastSignIn > thirtyDaysAgo;
           }).length;
-          const newUsers = users.filter((u: any) => {
+          const newUsers = usersData.filter((u: any) => {
             const createdAt = new Date(u.created_at);
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -138,9 +139,10 @@ export default function UsersAdminPage() {
         return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
       } catch (error) {
         // Fallback calculation
-        if (users && Array.isArray(users)) {
-          const totalUsers = users.length;
-          const adminUsers = users.filter((u: any) => u.role === 'admin').length;
+        if (users && users.users && Array.isArray(users.users)) {
+          const usersData = users.users;
+          const totalUsers = usersData.length;
+          const adminUsers = usersData.filter((u: any) => u.role === 'admin').length;
           return { totalUsers, adminUsers, activeUsers: 0, newUsers: 0 };
         }
         return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
@@ -150,16 +152,13 @@ export default function UsersAdminPage() {
 
   // Update user role mutation using direct Supabase API
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const { updateUserRole } = await import('../../lib/admin-api-direct');
-      return await updateUserRole(userId, role);
-    },
+    mutationFn: ({ userId, role }: { userId: string; role: string }) => updateUserRole(userId, role),
     onSuccess: () => {
       toast({
         title: 'User role updated',
         description: 'The user role has been successfully updated.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       setRoleChangeDialog(false);
       setSelectedUser(null);
     },
@@ -172,19 +171,18 @@ export default function UsersAdminPage() {
     },
   });
 
-  // Delete user mutation
+  // Delete user mutation (using direct Supabase API would go here)
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const res = await apiRequest('DELETE', `/api/admin/users/${userId}`);
-      if (!res.ok) throw new Error('Failed to delete user');
-      return res.json();
+      // Note: Direct user deletion should be handled carefully
+      throw new Error('User deletion not implemented in direct API');
     },
     onSuccess: () => {
       toast({
         title: 'User deleted',
         description: 'The user has been successfully deleted.',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
     },
     onError: (error: Error) => {
       toast({
