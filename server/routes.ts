@@ -408,6 +408,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log('[Server] Starting weather scheduler...');
   weatherScheduler.start();
   
+  // PUBLIC DATA BYPASS ROUTES - Use service key to bypass RLS for public data
+  app.get(`${apiPrefix}/public/articles/popular`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        `)
+        .order('view_count', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      console.log('Public popular articles fetched:', data?.length || 0);
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching public popular articles:', error);
+      res.status(500).json({ error: 'Failed to fetch popular articles' });
+    }
+  });
+  
+  app.get(`${apiPrefix}/public/articles`, async (req, res) => {
+    try {
+      const { limit = '10', offset = '0', category } = req.query;
+      
+      let query = supabase
+        .from('articles')
+        .select(`
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories(id, name, slug)
+        `)
+        .order('published_at', { ascending: false })
+        .limit(parseInt(limit as string))
+        .range(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string) - 1);
+      
+      if (category && category !== 'all') {
+        query = query.eq('category_id', parseInt(category as string));
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      console.log('Public articles fetched:', data?.length || 0);
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching public articles:', error);
+      res.status(500).json({ error: 'Failed to fetch articles' });
+    }
+  });
+  
+  app.get(`${apiPrefix}/public/categories`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      console.log('Public categories fetched:', data?.length || 0);
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching public categories:', error);
+      res.status(500).json({ error: 'Failed to fetch categories' });
+    }
+  });
+  
+  app.get(`${apiPrefix}/public/weather`, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('weather')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+      console.log('Public weather fetched:', data?.length || 0);
+      res.json(data || []);
+    } catch (error) {
+      console.error('Error fetching public weather:', error);
+      res.status(500).json({ error: 'Failed to fetch weather' });
+    }
+  });
+  
   // Supabase user routes
   app.post(`${apiPrefix}/update-profile`, requireAuth, async (req, res) => {
     try {

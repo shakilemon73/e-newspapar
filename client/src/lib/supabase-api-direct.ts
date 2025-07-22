@@ -1,13 +1,11 @@
 // Direct Supabase API calls to replace Express endpoints
 import { createClient } from '@supabase/supabase-js';
 
-// Create Supabase client with appropriate key based on environment
+// Use anon key for public data access - RLS should be disabled for public tables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const useServiceKey = import.meta.env.VITE_USE_SERVICE_KEY === 'true';
-const supabaseKey = useServiceKey 
-  ? import.meta.env.VITE_SUPABASE_SERVICE_KEY 
-  : import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+console.log('Direct API client using: ANON KEY');
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Type definitions
@@ -185,40 +183,23 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 
 export async function getPopularArticles(limit = 5): Promise<Article[]> {
   try {
-    console.log(`[Supabase] Attempting to fetch ${limit} popular articles...`);
+    console.log(`[API] Attempting to fetch ${limit} popular articles via backend...`);
     
-    const { data, error } = await supabase
-      .from('articles')
-      .select(`
-        id,
-        title,
-        slug,
-        excerpt,
-        image_url,
-        view_count,
-        published_at,
-        is_featured,
-        category_id,
-        categories(id, name, slug)
-      `)
-      .order('view_count', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error('[Supabase] Error fetching popular articles:', error);
-      console.error('[Supabase] Error details:', {
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
-      return [];
+    const response = await fetch('/api/public/articles/popular');
+    console.log('[API] Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[API] Error response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
-
-    console.log(`[Supabase] Successfully fetched ${data?.length || 0} articles`);
+    
+    const data = await response.json();
+    console.log('[API] Raw data received:', data);
+    console.log(`[API] Successfully fetched ${data?.length || 0} popular articles`);
     
     if (!data || data.length === 0) {
-      console.warn('[Supabase] No articles found in database');
+      console.warn('[API] No articles found in database');
       return [];
     }
 
@@ -233,10 +214,10 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
       category: Array.isArray(article.categories) ? article.categories[0] : article.categories
     }));
 
-    console.log(`[Supabase] Transformed data sample:`, transformedData[0]);
-    return transformedData;
+    console.log(`[API] Transformed data sample:`, transformedData[0]);
+    return transformedData.slice(0, limit); // Limit results as requested
   } catch (err) {
-    console.error('[Supabase] Failed to fetch popular articles - unexpected error:', err);
+    console.error('[API] Failed to fetch popular articles - unexpected error:', err);
     return [];
   }
 }

@@ -9,12 +9,8 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
 }
 
-// For static site deployment, use service key if available (for build time)
-// Otherwise use anon key (for runtime)
-const useServiceKey = import.meta.env.VITE_USE_SERVICE_KEY === 'true' || 
-                     (typeof window === 'undefined' && supabaseServiceKey); // Build time
-
-const clientKey = useServiceKey && supabaseServiceKey ? supabaseServiceKey : supabaseAnonKey;
+// Use anon key for frontend client - RLS policies should allow public read access
+const clientKey = supabaseAnonKey;
 
 export const supabase = createClient(supabaseUrl, clientKey);
 
