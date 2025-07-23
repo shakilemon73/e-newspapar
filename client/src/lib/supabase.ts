@@ -6,13 +6,15 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
 
-// Fallback for development - remove in production
-const defaultUrl = supabaseUrl || 'https://mrjukcqspvhketnfzmud.supabase.co';
-const defaultKey = supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yanVrY3FzcHZoa2V0bmZ6bXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MTExNTksImV4cCI6MjA2ODA4NzE1OX0.GEhC-77JHGe1Oshtjg3FOSFSlJe5sLeyp_wqNWk6f1s';
-
+// SECURITY: No hardcoded fallbacks - force environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Using development Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for production.');
+  throw new Error('🚨 SECURITY: Missing required environment variables VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
 }
+
+const defaultUrl = supabaseUrl;
+const defaultKey = supabaseAnonKey;
+
+// Removed duplicate validation - already handled above
 
 // SECURITY: Frontend client ALWAYS uses anonymous key
 // Service role key should NEVER be exposed to frontend
