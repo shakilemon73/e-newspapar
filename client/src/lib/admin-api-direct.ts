@@ -13,21 +13,25 @@ import { adminSupabase } from './admin-supabase';
 
 export async function checkAdminAuth(): Promise<boolean> {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const session = await getValidSession();
     if (!session?.user) return false;
     
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', session.user.id)
-      .single();
-    
-    return profile?.role === 'admin';
+    return await withAuthRetry(async () => {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      return profile?.role === 'admin';
+    });
   } catch (error) {
     console.error('Admin auth check failed:', error);
     return false;
   }
 }
+
+import { getValidSession, withAuthRetry } from './jwt-handler';
 
 export async function getAdminUser() {
   try {

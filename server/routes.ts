@@ -62,14 +62,15 @@ const breakingNewsInsertSchema = z.object({
   is_active: z.boolean().default(true)
 });
 
-import supabase from './supabase';
+import supabase, { getSupabaseClient } from './supabase';
 
 // New table API routes
 const handleNewTableRoutes = (app: Express) => {
-  // Tags API
+  // Tags API - Use public client (anon key)
   app.get('/api/tags', async (req: Request, res: Response) => {
     try {
-      const { data, error } = await supabase
+      const client = getSupabaseClient(false); // Use anon key for public data
+      const { data, error } = await client
         .from('tags')
         .select('*')
         .order('usage_count', { ascending: false });

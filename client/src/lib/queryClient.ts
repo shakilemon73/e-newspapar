@@ -8,20 +8,49 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Helper function to get auth headers
+// Helper function to get auth headers with JWT refresh handling
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  const { data } = await supabase.auth.getSession();
-  const accessToken = data?.session?.access_token;
-  
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  
-  if (accessToken) {
-    headers["Authorization"] = `Bearer ${accessToken}`;
+  try {
+    // First try to get current session
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    // If session is expired, try to refresh it
+    if (error || !session || isTokenExpired(session.access_token)) {
+      console.log('Token expired or invalid, refreshing...');
+      const { data: refreshedSession } = await supabase.auth.refreshSession();
+      
+      if (refreshedSession?.session?.access_token) {
+        return {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${refreshedSession.session.access_token}`
+        };
+      }
+    }
+    
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    
+    // Only add auth header if we have a valid session
+    if (session?.access_token && !isTokenExpired(session.access_token)) {
+      headers["Authorization"] = `Bearer ${session.access_token}`;
+    }
+    
+    return headers;
+  } catch (error) {
+    console.warn('Auth header generation failed, using anon key:', error);
+    return { "Content-Type": "application/json" };
   }
-  
-  return headers;
+}
+
+// Helper to check if token is expired
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
 }
 
 export async function apiRequest(

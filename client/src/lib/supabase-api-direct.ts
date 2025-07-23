@@ -1,8 +1,14 @@
 // Direct Supabase API calls to replace Express endpoints
 // Use the centralized Supabase client to avoid multiple instances
 import { supabase } from './supabase';
+import { getPublicSupabase, withAuthRetry } from './jwt-handler';
 
 console.log('Direct API client using: ANON KEY');
+
+// Helper to handle operations that should use anon key (no JWT required)
+function getPublicClient() {
+  return getPublicSupabase(); // Always uses anon key, no JWT needed for public operations
+}
 
 // Type definitions
 interface Category {

@@ -24,6 +24,8 @@ Preferred communication style: Simple, everyday language.
 ✓ **Authentication Fixes**: Improved token handling, session cleanup, and error recovery mechanisms
 ✓ **Application Running**: Express server running on port 5000 with weather scheduler and Bengali content
 ✓ **Security Enhancements**: Implemented best practices for JWT token management and session handling
+✓ **JWT Expiration Fix**: Added comprehensive JWT handler to prevent expired token errors during operations
+✓ **Key Separation**: Service role key only used on backend, anonymous key for all frontend operations
 ✓ **Development Ready**: Project is now fully compatible with Replit environment and ready for development
 
 ## Previous Changes (July 2025)
