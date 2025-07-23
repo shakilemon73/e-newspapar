@@ -86,15 +86,12 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
       refreshSettings();
     };
 
-    // Set up periodic refresh to check for admin changes
-    const intervalId = setInterval(() => {
-      refreshSettings();
-    }, 10000); // Refresh every 10 seconds
+    // Removed aggressive 10-second interval to prevent performance issues
+    // Settings will refresh on-demand when admin makes changes
 
     window.addEventListener('siteSettingsUpdated', handleSettingsUpdate);
     
     return () => {
-      clearInterval(intervalId);
       window.removeEventListener('siteSettingsUpdated', handleSettingsUpdate);
     };
   }, []);

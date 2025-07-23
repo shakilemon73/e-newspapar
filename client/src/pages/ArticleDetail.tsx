@@ -283,7 +283,7 @@ const ArticleDetail = () => {
     checkIfSaved();
   }, [user, article]);
 
-  // Enhanced reading progress and analytics
+  // Enhanced reading progress and analytics - FIXED FOR INFINITE LOOP
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset;
@@ -291,17 +291,34 @@ const ArticleDetail = () => {
       const scrollPercent = Math.min((scrollTop / docHeight) * 100, 100);
       
       setReadingProgress(scrollPercent);
-      setScrollDepth(prev => Math.max(prev, scrollPercent));
+      setScrollDepth(prevDepth => {
+        // Only update if significantly different to prevent excessive updates
+        const newDepth = Math.max(prevDepth, scrollPercent);
+        return Math.abs(newDepth - prevDepth) > 0.5 ? newDepth : prevDepth;
+      });
       
-      // Update reading time
+      // Update reading time with throttling
       const currentTime = Date.now();
       const timeSpent = Math.floor((currentTime - startTimeRef.current) / 1000);
-      setTimeSpentReading(timeSpent);
+      setTimeSpentReading(prevTime => {
+        // Only update every second to prevent excessive renders
+        return timeSpent !== prevTime ? timeSpent : prevTime;
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // Remove scrollDepth dependency to prevent infinite loop
+    // Throttle scroll events to prevent excessive updates
+    let scrollTimeout: NodeJS.Timeout;
+    const throttledScroll = () => {
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(handleScroll, 16); // ~60fps
+    };
+
+    window.addEventListener('scroll', throttledScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', throttledScroll);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+    };
+  }, []); // No dependencies to prevent infinite loop
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -992,72 +1009,84 @@ const ArticleDetail = () => {
     }
   };
 
-  // Memoize fetchArticle to prevent infinite loops
-  const fetchArticle = useCallback(async () => {
+  // Article fetch effect - FIXED TO PREVENT INFINITE LOOPS
+  useEffect(() => {
     if (!articleSlug) return;
     
-    try {
-      setIsLoading(true);
-      setError(null);
-      startTimeRef.current = Date.now();
+    let isMounted = true; // Cleanup flag
+    
+    const fetchArticleData = async () => {
+      if (!isMounted) return;
       
-      // Reset states for new article
-      window.scrollTo(0, 0);
-      setReadingProgress(0);
-      setScrollDepth(0);
-      setTimeSpentReading(0);
-      
-      const { articlesAPI } = await import('../lib/supabase-direct-api');
-      const data = await articlesAPI.getBySlug(articleSlug);
-      
-      if (!data) {
-        setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
-        return;
-      }
-      
-      // Transform the data to match our interface
-      const transformedArticle: Article = {
-        ...data,
-        content: data.content || '',
-        category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
-        is_featured: data.is_featured || false
-      };
-      
-      // Track view count for new article
       try {
-        const { articlesAPI } = await import('../lib/supabase-direct-api');
-        const viewResult = await articlesAPI.trackView(data.id);
+        setIsLoading(true);
+        setError(null);
+        startTimeRef.current = Date.now();
         
-        if (viewResult.success) {
-          console.log(`[View Tracking] Incrementing view count for article ${data.id}`);
-          transformedArticle.view_count = (data.view_count || 0) + 1;
-        } else {
-          transformedArticle.view_count = data.view_count || 0;
+        // Reset states for new article
+        window.scrollTo(0, 0);
+        setReadingProgress(0);
+        setScrollDepth(0);
+        setTimeSpentReading(0);
+        
+        const { articlesAPI } = await import('../lib/supabase-direct-api');
+        const data = await articlesAPI.getBySlug(articleSlug);
+        
+        if (!isMounted) return; // Check if component still mounted
+        
+        if (!data) {
+          setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
+          return;
         }
-      } catch (error) {
-        console.error('Error incrementing view count:', error);
-        transformedArticle.view_count = data.view_count || 0;
+        
+        // Transform the data to match our interface
+        const transformedArticle: Article = {
+          ...data,
+          content: data.content || '',
+          category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
+          is_featured: data.is_featured || false,
+          view_count: data.view_count || 0
+        };
+        
+        // Track view count for new article (non-blocking)
+        articlesAPI.trackView(data.id).then((viewResult) => {
+          if (isMounted && viewResult.success) {
+            console.log(`[View Tracking] Incrementing view count for article ${data.id}`);
+            setArticle(prev => prev ? { ...prev, view_count: (prev.view_count || 0) + 1 } : prev);
+          }
+        }).catch(error => {
+          console.error('Error incrementing view count:', error);
+        });
+        
+        // Calculate estimated reading time
+        const wordCount = (data.content || '').split(' ').length;
+        setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
+        
+        // Set article and mark as tracked
+        if (isMounted) {
+          setArticle(transformedArticle);
+          setViewTracked(true);
+        }
+        
+      } catch (err) {
+        if (isMounted) {
+          setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
+          console.error('Error fetching article:', err);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-      
-      // Calculate estimated reading time
-      const wordCount = (data.content || '').split(' ').length;
-      setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
-      
-      // Set article and mark as tracked
-      setArticle(transformedArticle);
-      setViewTracked(true);
-      
-    } catch (err) {
-      setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
-      console.error('Error fetching article:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [articleSlug]); // Only depend on articleSlug
-
-  useEffect(() => {
-    fetchArticle();
-  }, [fetchArticle]); // Depend on memoized function
+    };
+    
+    fetchArticleData();
+    
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [articleSlug]); // Only depend on articleSlug - CRITICAL FIX
 
   // Handle URL updates separately to prevent infinite loops
   useEffect(() => {

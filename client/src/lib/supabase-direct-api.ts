@@ -177,15 +177,22 @@ export const articlesAPI = {
       
       if (error) {
         console.error('Error incrementing view count:', error);
-        // Fallback: try direct update
-        const { error: updateError } = await supabase
+        // Fallback: try direct update with raw SQL
+        const { data: currentData, error: fetchError } = await supabase
           .from('articles')
-          .update({ view_count: supabase.sql`view_count + 1` })
-          .eq('id', articleId);
+          .select('view_count')
+          .eq('id', articleId)
+          .single();
         
-        if (updateError) {
-          console.error('Fallback update also failed:', updateError);
-          return { success: false, viewCount: 0 };
+        if (!fetchError && currentData) {
+          const { error: updateError } = await supabase
+            .from('articles')
+            .update({ view_count: (currentData.view_count || 0) + 1 })
+            .eq('id', articleId);
+            
+          if (!updateError) {
+            return { success: true, viewCount: (currentData.view_count || 0) + 1 };
+          }
         }
       }
       
