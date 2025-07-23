@@ -151,59 +151,32 @@ export async function getAdminArticles(options: {
   sortOrder?: 'asc' | 'desc';
 } = {}) {
   try {
-    const {
-      page = 1,
-      limit = 20,
-      search,
-      category,
-      status,
-      sortBy = 'created_at',
-      sortOrder = 'desc'
-    } = options;
+    // Use Express server endpoint instead of direct Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw new Error('Not authenticated');
 
-    let query = supabase
-      .from('articles')
-      .select(`
-        *,
-        categories(id, name, slug),
-        user_profiles(id, name)
-      `);
+    const searchParams = new URLSearchParams();
+    
+    if (options.page) searchParams.append('page', options.page.toString());
+    if (options.limit) searchParams.append('limit', options.limit.toString());
+    if (options.search) searchParams.append('search', options.search);
+    if (options.category) searchParams.append('category', options.category);
+    if (options.status) searchParams.append('status', options.status);
+    if (options.sortBy) searchParams.append('sortBy', options.sortBy);
+    if (options.sortOrder) searchParams.append('sortOrder', options.sortOrder);
 
-    // Apply filters
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
-    }
-    
-    if (category && category !== 'all') {
-      query = query.eq('category_id', category);
-    }
-    
-    if (status) {
-      if (status === 'published') {
-        query = query.eq('is_published', true);
-      } else if (status === 'draft') {
-        query = query.eq('is_published', false);
+    const response = await fetch(`/api/admin/articles?${searchParams.toString()}`, {
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`
       }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch articles');
     }
 
-    // Apply sorting
-    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
-
-    // Apply pagination
-    const from = (page - 1) * limit;
-    const to = from + limit - 1;
-    query = query.range(from, to);
-
-    const { data, error, count } = await query;
-
-    if (error) throw error;
-
-    return {
-      articles: data || [],
-      totalCount: count || 0,
-      currentPage: page,
-      totalPages: Math.ceil((count || 0) / limit)
-    };
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching admin articles:', error);
     return { articles: [], totalCount: 0, currentPage: 1, totalPages: 0 };
@@ -218,37 +191,45 @@ export async function createArticle(articleData: {
   image_url?: string;
   is_featured?: boolean;
   is_published?: boolean;
-  tags?: string[];
+  slug?: string;
+  published_at?: string;
 }) {
   try {
+    // Instead of direct Supabase calls, use the Express server endpoints
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error('Not authenticated');
 
-    const slug = articleData.title
+    const slug = articleData.slug || articleData.title
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .slice(0, 100);
 
-    const { data, error } = await supabase
-      .from('articles')
-      .insert({
-        ...articleData,
-        slug,
-        author_id: session.user.id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+    // Call Express server endpoint instead of direct Supabase
+    const response = await fetch('/api/articles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        title: articleData.title,
+        content: articleData.content,
+        excerpt: articleData.excerpt,
+        categoryId: articleData.category_id,
+        imageUrl: articleData.image_url,
+        isFeatured: articleData.is_featured,
+        publishedAt: articleData.published_at,
+        slug: slug
       })
-      .select()
-      .single();
+    });
 
-    if (error) throw error;
-
-    // Add tags if provided
-    if (articleData.tags && articleData.tags.length > 0) {
-      await addTagsToArticle(data.id, articleData.tags);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create article');
     }
 
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating article:', error);
@@ -258,17 +239,34 @@ export async function createArticle(articleData: {
 
 export async function updateArticle(id: number, updates: any) {
   try {
-    const { data, error } = await supabase
-      .from('articles')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    // Use Express server endpoint instead of direct Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw new Error('Not authenticated');
 
-    if (error) throw error;
+    const response = await fetch(`/api/articles/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        title: updates.title,
+        content: updates.content,
+        excerpt: updates.excerpt,
+        categoryId: updates.category_id,
+        imageUrl: updates.image_url,
+        isFeatured: updates.is_featured,
+        publishedAt: updates.published_at,
+        slug: updates.slug
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update article');
+    }
+
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error updating article:', error);
@@ -278,19 +276,22 @@ export async function updateArticle(id: number, updates: any) {
 
 export async function deleteArticle(id: number) {
   try {
-    // Delete related data first
-    await Promise.all([
-      supabase.from('article_tags').delete().eq('article_id', id),
-      supabase.from('article_comments').delete().eq('article_id', id),
-      supabase.from('user_bookmarks').delete().eq('article_id', id)
-    ]);
+    // Use Express server endpoint instead of direct Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('articles')
-      .delete()
-      .eq('id', id);
+    const response = await fetch(`/api/articles/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`
+      }
+    });
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete article');
+    }
+
     return true;
   } catch (error) {
     console.error('Error deleting article:', error);
@@ -304,15 +305,14 @@ export async function deleteArticle(id: number) {
 
 export async function getAdminCategories() {
   try {
-    const { data, error } = await supabase
-      .from('categories')
-      .select(`
-        *,
-        articles(count)
-      `)
-      .order('name');
+    // Use Express server endpoint instead of direct Supabase
+    const response = await fetch('/api/categories');
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch categories');
+    }
 
-    if (error) throw error;
+    const data = await response.json();
     return data || [];
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -326,22 +326,25 @@ export async function createCategory(categoryData: {
   color?: string;
 }) {
   try {
-    const slug = categoryData.name
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-');
+    // Use Express server endpoint instead of direct Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('categories')
-      .insert({
-        ...categoryData,
-        slug,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
+    const response = await fetch('/api/categories', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(categoryData)
+    });
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create category');
+    }
+
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating category:', error);

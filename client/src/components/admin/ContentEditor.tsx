@@ -67,7 +67,7 @@ const articleFormSchema = z.object({
   excerpt: z.string().max(500, 'Excerpt cannot exceed 500 characters').optional(),
   imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
   categoryId: z.coerce.number().min(1, 'Please select a category'),
-  isFeatured: z.boolean().default(false),
+  isFeatured: z.boolean().optional().default(false),
   publishedAt: z.string().optional()
   // tags: z.array(z.string()).optional(), // Removed - column doesn't exist in database
 });
@@ -138,9 +138,8 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       excerpt: article?.excerpt || '',
       imageUrl: article?.imageUrl || '',
       categoryId: article?.categoryId || 1,
-      isFeatured: article?.isFeatured || false,
-      publishedAt: article?.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      tags: article?.tags || [],
+      isFeatured: article?.isFeatured ?? false,
+      publishedAt: article?.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     },
   });
 
@@ -276,7 +275,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   });
 
   const onSubmit = (data: ArticleFormValues) => {
-    saveMutation.mutate(data); // Removed tags parameter
+    saveMutation.mutate(data);
   };
 
   const generateSlug = (title: string) => {
