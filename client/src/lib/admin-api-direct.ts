@@ -219,6 +219,7 @@ export async function createArticle(articleData: {
   title: string;
   content: string;
   excerpt?: string;
+  author?: string;
   category_id: number;
   image_url?: string;
   is_featured?: boolean;
@@ -249,7 +250,7 @@ export async function createArticle(articleData: {
         is_featured: articleData.is_featured || false,
         is_published: articleData.is_published !== false,
         published_at: articleData.published_at || new Date().toISOString(),
-        author: session.user.user_metadata?.name || session.user.email || 'Admin',
+        author: articleData.author || session.user.user_metadata?.name || session.user.email || 'Admin',
         read_time: Math.ceil(articleData.content.length / 200) || 5,
         view_count: 0
       })
@@ -281,6 +282,7 @@ export async function updateArticle(id: number, updates: any) {
         slug: updates.slug,
         content: updates.content,
         excerpt: updates.excerpt,
+        author: updates.author,
         image_url: updates.image_url,
         category_id: updates.category_id,
         is_featured: updates.is_featured,

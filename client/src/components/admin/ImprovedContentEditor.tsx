@@ -57,6 +57,7 @@ const articleFormSchema = z.object({
   slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
   content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
   excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
+  author: z.string().min(2, 'লেখকের নাম অবশ্যই ২টি অক্ষরের বেশি হতে হবে').max(100, 'লেখকের নাম ১০০ অক্ষরের বেশি হতে পারবে না'),
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
   is_featured: z.boolean().optional().default(false),
@@ -86,6 +87,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
       slug: article?.slug || '',
       content: article?.content || '',
       excerpt: article?.excerpt || '',
+      author: article?.author || '',
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
@@ -166,6 +168,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
         title: values.title,
         content: values.content,
         excerpt: values.excerpt,
+        author: values.author,
         category_id: values.category_id,
         image_url: values.image_url,
         is_featured: values.is_featured,
@@ -181,6 +184,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
           slug: values.slug,
           content: values.content,
           excerpt: values.excerpt,
+          author: values.author,
           image_url: values.image_url,
           category_id: values.category_id,
           is_featured: values.is_featured,
@@ -205,6 +209,8 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
       contentPlaceholder: 'আপনার নিবন্ধের বিষয়বস্তু লিখুন...',
       excerpt: 'সারাংশ',
       excerptPlaceholder: 'নিবন্ধের সংক্ষিপ্ত সারাংশ...',
+      author: 'লেখক',
+      authorPlaceholder: 'লেখকের নাম লিখুন...',
       featuredImage: 'ফিচার ছবি',
       imagePlaceholder: 'ছবির URL লিখুন...',
       category: 'বিভাগ',
@@ -230,6 +236,8 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
       contentPlaceholder: 'Write your article content...',
       excerpt: 'Excerpt',
       excerptPlaceholder: 'Brief summary of the article...',
+      author: 'Author',
+      authorPlaceholder: 'Enter author name...',
       featuredImage: 'Featured Image',
       imagePlaceholder: 'Enter image URL...',
       category: 'Category',
@@ -359,6 +367,27 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
                             {...field}
                             rows={3}
                             className="resize-none"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          {currentLanguage === 'bn' ? 'লেখক' : 'Author'}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={currentLanguage === 'bn' ? 'লেখকের নাম লিখুন...' : 'Enter author name...'}
+                            {...field}
+                            className="border-2 focus:border-blue-500"
                           />
                         </FormControl>
                         <FormMessage />
