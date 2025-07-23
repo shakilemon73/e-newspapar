@@ -61,15 +61,14 @@ import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters').max(200, 'Title cannot exceed 200 characters'),
-  slug: z.string().min(5, 'Slug must be at least 5 characters').max(100, 'Slug cannot exceed 100 characters'),
-  content: z.string().min(20, 'Content must be at least 20 characters'),
-  excerpt: z.string().max(500, 'Excerpt cannot exceed 500 characters').optional(),
-  imageUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-  categoryId: z.coerce.number().min(1, 'Please select a category'),
-  isFeatured: z.boolean().optional().default(false),
-  publishedAt: z.string().optional()
-  // tags: z.array(z.string()).optional(), // Removed - column doesn't exist in database
+  title: z.string().min(5, 'শিরোনাম অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(200, 'শিরোনাম ২০০ অক্ষরের বেশি হতে পারবে না'),
+  slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
+  content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
+  excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
+  image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
+  category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
+  is_featured: z.boolean().optional().default(false),
+  published_at: z.string().optional()
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -136,10 +135,10 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       slug: article?.slug || '',
       content: article?.content || '',
       excerpt: article?.excerpt || '',
-      imageUrl: article?.imageUrl || '',
-      categoryId: article?.categoryId || 1,
-      isFeatured: article?.isFeatured ?? false,
-      publishedAt: article?.publishedAt ? new Date(article.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      image_url: article?.image_url || '',
+      category_id: article?.category_id || 1,
+      is_featured: article?.is_featured ?? false,
+      published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     },
   });
 

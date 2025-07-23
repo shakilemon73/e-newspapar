@@ -187,8 +187,9 @@ export async function getAdminArticles(options: {
       }
     }
 
-    // Apply sorting
-    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+    // Apply sorting - fix column name mismatch
+    const dbSortBy = sortBy === 'publishedAt' ? 'published_at' : sortBy;
+    query = query.order(dbSortBy, { ascending: sortOrder === 'asc' });
 
     // Apply pagination
     const from = (page - 1) * limit;

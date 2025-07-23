@@ -3,8 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { DataTable } from '@/components/admin/DataTable';
-import { ContentEditor } from '@/components/admin/ContentEditor';
+import { ImprovedContentEditor } from '@/components/admin/ImprovedContentEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,30 +14,23 @@ import {
   Loader2, 
   Search,
   Filter,
-  TrendingUp, 
   Eye, 
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
   Edit,
   Trash2,
   Star,
   Calendar,
-  BarChart3,
-  Users,
-  Globe,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
-  Download,
-  Upload,
   MoreHorizontal,
-  SortAsc,
-  SortDesc
+  RefreshCw,
+  BookOpen,
+  Users,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminArticles, createArticle, updateArticle, deleteArticle, getAdminCategories } from '@/lib/admin-api-direct';
+import { getAdminArticles, deleteArticle, getAdminCategories } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
 import {
@@ -68,428 +60,519 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const articleColumns = [
-  { key: 'id', label: 'ID', sortable: true },
-  { 
-    key: 'title', 
-    label: 'Title', 
-    sortable: true,
-    render: (value: string) => (
-      <div className="max-w-[300px] truncate font-medium">{value}</div>
-    )
-  },
-  { 
-    key: 'category', 
-    label: 'Category',
-    render: (value: any) => (
-      <Badge variant="outline">{value?.name || 'Uncategorized'}</Badge>
-    )
-  },
-  { 
-    key: 'isFeatured', 
-    label: 'Featured', 
-    sortable: true,
-    render: (value: boolean) => (
-      <Badge variant={value ? 'default' : 'secondary'}>
-        {value ? 'Featured' : 'Normal'}
-      </Badge>
-    )
-  },
-  { 
-    key: 'publishedAt', 
-    label: 'Published', 
-    sortable: true,
-    render: (value: string) => <DateFormatter date={value} type="relative" />
-  },
-  { 
-    key: 'viewCount', 
-    label: 'Views', 
-    sortable: true,
-    render: (value: number) => (
-      <div className="flex items-center gap-1">
-        <Eye className="h-3 w-3 text-muted-foreground" />
-        {value || 0}
-      </div>
-    )
-  },
-  {
-    key: 'status',
-    label: 'Status',
-    render: (value: any, row: any) => {
-      const isPublished = new Date(row.publishedAt) <= new Date();
-      return (
-        <Badge variant={isPublished ? 'default' : 'secondary'}>
-          {isPublished ? 'Published' : 'Scheduled'}
-        </Badge>
-      );
-    }
-  }
-];
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt?: string;
+  image_url?: string;
+  category_id: number;
+  is_featured: boolean;
+  is_published: boolean;
+  view_count: number;
+  published_at: string;
+  created_at: string;
+  updated_at: string;
+  categories?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+}
 
 export default function ArticlesAdminPage() {
-  const { user, loading: authLoading } = useSupabaseAuth();
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [selectedArticle, setSelectedArticle] = useState<any>(null);
+  const [, setLocation] = useLocation();
+  
+  // State management
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [articleToDelete, setArticleToDelete] = useState<any>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [sortBy, setSortBy] = useState('publishedAt');
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState<'bn' | 'en'>('bn');
+  
+  // Filter and search state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState('published_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(20);
 
-  // Check authentication and admin role
-  useEffect(() => {
-    if (!authLoading && !user) {
-      setLocation('/admin-login');
-    } else if (!authLoading && user && user.user_metadata?.role !== 'admin') {
-      setLocation('/admin-login');
-    }
-  }, [authLoading, user, setLocation]);
-
-  // Fetch articles using direct Supabase API
-  const { data: articlesData, isLoading, error } = useQuery({
-    queryKey: ['admin-articles', searchQuery, selectedCategory, selectedStatus, sortBy, sortOrder],
-    enabled: !!user && user.user_metadata?.role === 'admin',
-    queryFn: async () => {
-      const { getAdminArticles } = await import('../../lib/admin-api-direct');
-      return await getAdminArticles({
-        search: searchQuery || undefined,
-        category: selectedCategory !== 'all' ? selectedCategory : undefined,
-        status: selectedStatus !== 'all' ? selectedStatus as any : undefined,
-        sortBy,
-        sortOrder
-      });
-    },
+  // Fetch categories for filter
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin-categories'],
+    queryFn: getAdminCategories,
   });
 
-  const articles = articlesData?.articles || [];
-
-  // Get dashboard statistics
-  const { data: stats } = useQuery({
-    queryKey: ['admin-dashboard-stats'],
-    enabled: !!user && user.user_metadata?.role === 'admin',
-    queryFn: async () => {
-      const { getDashboardStats } = await import('../../lib/admin-api-direct');
-      return await getDashboardStats();
-    },
+  // Fetch articles with filters
+  const { 
+    data: articlesData, 
+    isLoading, 
+    error,
+    refetch 
+  } = useQuery({
+    queryKey: ['admin-articles', {
+      page: currentPage,
+      limit: pageSize,
+      search: searchTerm,
+      category: selectedCategory,
+      status: selectedStatus,
+      sortBy,
+      sortOrder
+    }],
+    queryFn: () => getAdminArticles({
+      page: currentPage,
+      limit: pageSize,
+      search: searchTerm,
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      status: selectedStatus === 'all' ? undefined : selectedStatus as any,
+      sortBy,
+      sortOrder
+    }),
+    keepPreviousData: true,
   });
 
-  // Delete article mutation using direct Supabase API
+  // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const { deleteArticle } = await import('../../lib/admin-api-direct');
-      return await deleteArticle(id);
-    },
+    mutationFn: deleteArticle,
     onSuccess: () => {
       toast({
-        title: 'Article deleted',
-        description: 'The article has been successfully deleted.',
+        title: currentLanguage === 'bn' ? "নিবন্ধ মুছে ফেলা হয়েছে" : "Article Deleted",
+        description: currentLanguage === 'bn' ? "নিবন্ধটি সফলভাবে মুছে ফেলা হয়েছে" : "The article has been successfully deleted",
       });
       queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       setDeleteDialogOpen(false);
       setArticleToDelete(null);
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
+        title: currentLanguage === 'bn' ? "ত্রুটি" : "Error",
+        description: currentLanguage === 'bn' ? "নিবন্ধ মুছে ফেলতে ব্যর্থ" : "Failed to delete article",
+        variant: "destructive",
       });
     },
   });
 
-  // Feature toggle mutation using direct Supabase API
-  const toggleFeatureMutation = useMutation({
-    mutationFn: async ({ id, isFeatured }: { id: number; isFeatured: boolean }) => {
-      const { updateArticle } = await import('../../lib/admin-api-direct');
-      return await updateArticle(id, { is_featured: isFeatured });
+  // Language texts
+  const texts = {
+    bn: {
+      title: "নিবন্ধ ব্যবস্থাপনা",
+      subtitle: "আপনার সাইটের সকল নিবন্ধ পরিচালনা করুন",
+      createNew: "নতুন নিবন্ধ",
+      searchPlaceholder: "নিবন্ধ অনুসন্ধান...",
+      allCategories: "সকল বিভাগ",
+      allStatus: "সকল অবস্থা",
+      published: "প্রকাশিত",
+      draft: "খসড়া",
+      featured: "বৈশিষ্ট্যযুক্ত",
+      normal: "সাধারণ",
+      edit: "সম্পাদনা",
+      delete: "মুছুন",
+      confirmDelete: "নিশ্চিত করুন",
+      confirmDeleteDesc: "আপনি কি নিশ্চিত যে এই নিবন্ধটি মুছে ফেলতে চান?",
+      cancel: "বাতিল",
+      loading: "লোড হচ্ছে...",
+      noArticles: "কোন নিবন্ধ পাওয়া যায়নি",
+      totalArticles: "মোট নিবন্ধ",
+      publishedArticles: "প্রকাশিত নিবন্ধ",
+      draftArticles: "খসড়া নিবন্ধ",
+      featuredArticles: "বৈশিষ্ট্যযুক্ত নিবন্ধ",
+      title_col: "শিরোনাম",
+      category_col: "বিভাগ",
+      status_col: "অবস্থা",
+      published_col: "প্রকাশের তারিখ",
+      views_col: "দর্শন",
+      actions_col: "কর্ম"
     },
-    onSuccess: () => {
-      toast({
-        title: 'Article updated',
-        description: 'The article feature status has been updated.',
-      });
-      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+    en: {
+      title: "Articles Management",
+      subtitle: "Manage all articles on your site",
+      createNew: "Create New Article",
+      searchPlaceholder: "Search articles...",
+      allCategories: "All Categories",
+      allStatus: "All Status",
+      published: "Published",
+      draft: "Draft",
+      featured: "Featured",
+      normal: "Normal",
+      edit: "Edit",
+      delete: "Delete",
+      confirmDelete: "Confirm Delete",
+      confirmDeleteDesc: "Are you sure you want to delete this article?",
+      cancel: "Cancel",
+      loading: "Loading...",
+      noArticles: "No articles found",
+      totalArticles: "Total Articles",
+      publishedArticles: "Published Articles",
+      draftArticles: "Draft Articles",
+      featuredArticles: "Featured Articles",
+      title_col: "Title",
+      category_col: "Category",
+      status_col: "Status",
+      published_col: "Published",
+      views_col: "Views",
+      actions_col: "Actions"
+    }
+  };
 
-  const handleCreateArticle = () => {
-    setSelectedArticle(null);
+  const t = texts[currentLanguage];
+
+  // Event handlers
+  const handleCreateNew = () => {
+    setEditingArticle(null);
     setEditorMode('create');
-    setEditorOpen(true);
+    setIsEditorOpen(true);
   };
 
-  const handleEditArticle = (article: any) => {
-    setSelectedArticle(article);
+  const handleEdit = (article: Article) => {
+    setEditingArticle(article);
     setEditorMode('edit');
-    setEditorOpen(true);
+    setIsEditorOpen(true);
   };
 
-  const handleDeleteArticle = (article: any) => {
+  const handleDelete = (article: Article) => {
     setArticleToDelete(article);
     setDeleteDialogOpen(true);
   };
 
-  const handleViewArticle = (article: any) => {
-    window.open(`/article/${article.slug}`, '_blank');
+  const confirmDelete = () => {
+    if (articleToDelete) {
+      deleteMutation.mutate(articleToDelete.id);
+    }
   };
 
-  const handleToggleFeature = (article: any) => {
-    toggleFeatureMutation.mutate({
-      id: article.id,
-      isFeatured: !article.is_featured
-    });
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
-  if (error) {
-    return (
-      <EnhancedAdminLayout>
-        <div className="flex items-center justify-center py-8">
-          <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              Error Loading Articles
-            </h3>
-            <p className="text-gray-500 dark:text-gray-400">
-              {error.message || 'An error occurred while loading articles'}
-            </p>
-          </div>
-        </div>
-      </EnhancedAdminLayout>
-    );
-  }
+  const handleFilterChange = (type: 'category' | 'status', value: string) => {
+    if (type === 'category') {
+      setSelectedCategory(value);
+    } else {
+      setSelectedStatus(value);
+    }
+    setCurrentPage(1); // Reset to first page when filtering
+  };
+
+  // Statistics calculation
+  const stats = articlesData?.articles ? {
+    total: articlesData.totalCount,
+    published: articlesData.articles.filter(a => a.is_published).length,
+    drafts: articlesData.articles.filter(a => !a.is_published).length,
+    featured: articlesData.articles.filter(a => a.is_featured).length
+  } : { total: 0, published: 0, drafts: 0, featured: 0 };
 
   return (
     <EnhancedAdminLayout>
-      <div className="space-y-6 p-6">
-        {/* Enhanced Header Section with Bangladesh Cultural Design */}
-        <div className="cultural-gradient rounded-2xl p-8 text-white shadow-2xl card-shadow">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-4xl font-bold mb-3 tracking-tight bangla-text">
-                Article Management
-              </h1>
-              <p className="text-green-100 text-lg leading-relaxed scannable-text">
-                Create, manage, and optimize your Bengali news articles with enhanced UX design
-              </p>
-              <div className="flex items-center mt-4 space-x-4">
-                <Badge className="bg-white/20 text-white border-white/30">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  {stats?.totalArticles || 0} Articles
-                </Badge>
-                <Badge className="bg-white/20 text-white border-white/30">
-                  <Eye className="h-3 w-3 mr-1" />
-                  {stats?.totalViews?.toLocaleString() || 0} Views
-                </Badge>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 touch-target interactive-element accessible-focus"
-                onClick={() => window.location.reload()}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-              <Button
-                onClick={handleCreateArticle}
-                className="bg-white text-green-600 hover:bg-gray-100 touch-target interactive-element accessible-focus"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Article
-              </Button>
-            </div>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">{t.title}</h1>
+            <p className="text-muted-foreground">{t.subtitle}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Select value={currentLanguage} onValueChange={(value: 'bn' | 'en') => setCurrentLanguage(value)}>
+              <SelectTrigger className="w-24">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bn">বাংলা</SelectItem>
+                <SelectItem value="en">English</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={handleCreateNew} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Plus className="mr-2 h-4 w-4" />
+              {t.createNew}
+            </Button>
           </div>
         </div>
 
-        {/* Enhanced Filters Section with UX Principles */}
-        <Card className="border-0 shadow-lg card-shadow minimal-card">
+        {/* Statistics Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">{t.totalArticles}</CardTitle>
+              <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{stats.total}</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">{t.publishedArticles}</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.published}</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 border-orange-200 dark:border-orange-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">{t.draftArticles}</CardTitle>
+              <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-900 dark:text-orange-100">{stats.drafts}</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">{t.featuredArticles}</CardTitle>
+              <Star className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">{stats.featured}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center bangla-text">
-              <Filter className="h-5 w-5 mr-2" />
-              Filter & Search Articles
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              {currentLanguage === 'bn' ? 'অনুসন্ধান ও ফিল্টার' : 'Search & Filters'}
             </CardTitle>
-            <CardDescription className="scannable-text">
-              Use advanced filters to find and manage your articles efficiently
-            </CardDescription>
           </CardHeader>
-          <CardContent className="system-spacing">
-            <div className="mobile-first-grid">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <CardContent>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
-                  placeholder="Search articles..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 touch-target accessible-focus"
+                  placeholder={t.searchPlaceholder}
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
                 />
               </div>
               
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="touch-target accessible-focus">
-                  <SelectValue placeholder="Select category" />
+              <Select value={selectedCategory} onValueChange={(value) => handleFilterChange('category', value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder={t.allCategories} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="politics" className="bangla-text">রাজনীতি</SelectItem>
-                  <SelectItem value="sports" className="bangla-text">খেলা</SelectItem>
-                  <SelectItem value="economy" className="bangla-text">অর্থনীতি</SelectItem>
-                  <SelectItem value="international" className="bangla-text">আন্তর্জাতিক</SelectItem>
+                  <SelectItem value="all">{t.allCategories}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="min-h-[44px]">
-                  <SelectValue placeholder="Select status" />
+              
+              <Select value={selectedStatus} onValueChange={(value) => handleFilterChange('status', value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder={t.allStatus} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="scheduled">Scheduled</SelectItem>
-                  <SelectItem value="featured">Featured</SelectItem>
+                  <SelectItem value="all">{t.allStatus}</SelectItem>
+                  <SelectItem value="published">{t.published}</SelectItem>
+                  <SelectItem value="draft">{t.draft}</SelectItem>
                 </SelectContent>
               </Select>
-
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" className="min-h-[44px]">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-                <Button variant="outline" size="sm" className="min-h-[44px]">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import
-                </Button>
-              </div>
+              
+              <Button onClick={() => refetch()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {currentLanguage === 'bn' ? 'রিফ্রেশ' : 'Refresh'}
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Articles</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalArticles || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Published articles
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Featured Articles</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.featuredArticles || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Currently featured
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
-              <Eye className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.totalViews?.toLocaleString() || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Article page views
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Published Today</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats?.publishedToday || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Articles published today
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Articles Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Articles</CardTitle>
+            <CardTitle>{currentLanguage === 'bn' ? 'নিবন্ধ তালিকা' : 'Articles List'}</CardTitle>
             <CardDescription>
-              Manage and monitor your published articles
+              {articlesData?.totalCount || 0} {currentLanguage === 'bn' ? 'টি নিবন্ধ পাওয়া গেছে' : 'articles found'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">{t.loading}</span>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center py-8 text-red-500">
+                <AlertCircle className="h-8 w-8 mr-2" />
+                {currentLanguage === 'bn' ? 'নিবন্ধ লোড করতে ব্যর্থ' : 'Failed to load articles'}
+              </div>
+            ) : !articlesData?.articles?.length ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <BookOpen className="h-8 w-8 mr-2" />
+                {t.noArticles}
               </div>
             ) : (
-              <DataTable
-                data={articles || []}
-                columns={articleColumns}
-                searchPlaceholder="Search articles..."
-                onEdit={handleEditArticle}
-                onDelete={handleDeleteArticle}
-                onView={handleViewArticle}
-                loading={isLoading}
-              />
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[300px]">{t.title_col}</TableHead>
+                      <TableHead>{t.category_col}</TableHead>
+                      <TableHead>{t.status_col}</TableHead>
+                      <TableHead>{t.published_col}</TableHead>
+                      <TableHead className="text-center">{t.views_col}</TableHead>
+                      <TableHead className="text-center">{t.actions_col}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {articlesData.articles.map((article) => (
+                      <TableRow key={article.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium line-clamp-2">{article.title}</div>
+                            {article.excerpt && (
+                              <div className="text-sm text-muted-foreground line-clamp-1">
+                                {article.excerpt}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              {article.is_featured && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  {t.featured}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {article.categories?.name || 'Uncategorized'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={article.is_published ? "default" : "secondary"}
+                            className={cn(
+                              article.is_published 
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                                : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                            )}
+                          >
+                            {article.is_published ? t.published : t.draft}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DateFormatter date={article.published_at} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            {article.view_count || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>{t.actions_col}</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEdit(article)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t.edit}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDelete(article)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t.delete}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Content Editor Modal */}
-        <ContentEditor
-          isOpen={editorOpen}
-          onClose={() => setEditorOpen(false)}
-          article={selectedArticle}
-          mode={editorMode}
-        />
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the article
-                "{articleToDelete?.title}" and remove it from the website.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => articleToDelete && deleteMutation.mutate(articleToDelete.id)}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Delete Article
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* Pagination */}
+        {articlesData?.totalPages && articlesData.totalPages > 1 && (
+          <div className="flex justify-center gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            >
+              {currentLanguage === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
+            </Button>
+            <span className="flex items-center px-4">
+              {currentPage} / {articlesData.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              disabled={currentPage === articlesData.totalPages}
+              onClick={() => setCurrentPage(prev => Math.min(articlesData.totalPages || 1, prev + 1))}
+            >
+              {currentLanguage === 'bn' ? 'পরবর্তী' : 'Next'}
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* Content Editor Modal */}
+      <ImprovedContentEditor
+        isOpen={isEditorOpen}
+        onClose={() => {
+          setIsEditorOpen(false);
+          setEditingArticle(null);
+        }}
+        article={editingArticle}
+        mode={editorMode}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.confirmDelete}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.confirmDeleteDesc}
+              {articleToDelete && (
+                <div className="mt-2 p-2 bg-muted rounded">
+                  <strong>{articleToDelete.title}</strong>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deleteMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="mr-2 h-4 w-4" />
+              )}
+              {t.delete}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </EnhancedAdminLayout>
   );
 }
