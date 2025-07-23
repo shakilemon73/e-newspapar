@@ -83,34 +83,70 @@ interface Weather {
   updated_at?: string;
 }
 
+// Helper function to handle JWT refresh
+async function handleJWTError(error: any, retryFn: () => Promise<any>) {
+  if (error.code === 'PGRST301' && error.message === 'JWT expired') {
+    console.log('[Supabase] JWT expired, refreshing session...');
+    const { error: refreshError } = await supabase.auth.refreshSession();
+    if (!refreshError) {
+      console.log('[Supabase] Session refreshed successfully, retrying...');
+      return await retryFn();
+    }
+  }
+  throw error;
+}
+
 // Categories API
 export async function getCategories(): Promise<Category[]> {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('name', { ascending: true });
-  
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name', { ascending: true });
+    
+    if (error) {
+      return await handleJWTError(error, async () => {
+        const { data: retryData, error: retryError } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name', { ascending: true });
+        if (retryError) throw retryError;
+        return retryData || [];
+      });
+    }
+    
+    return data || [];
+  } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
   }
-  
-  return data || [];
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('slug', slug)
-    .single();
-  
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+    
+    if (error) {
+      return await handleJWTError(error, async () => {
+        const { data: retryData, error: retryError } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('slug', slug)
+          .single();
+        if (retryError) throw retryError;
+        return retryData;
+      });
+    }
+    
+    return data;
+  } catch (error) {
     console.error('Error fetching category:', error);
     return null;
   }
-  
-  return data;
 }
 
 // Articles API

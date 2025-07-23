@@ -33,11 +33,17 @@ export const supabase = createClient(defaultUrl, defaultKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    debug: false
   },
   realtime: {
     params: {
       eventsPerSecond: 10
+    }
+  },
+  global: {
+    headers: {
+      'apikey': defaultKey
     }
   }
 });
