@@ -60,6 +60,7 @@ const articleFormSchema = z.object({
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
   is_featured: z.boolean().optional().default(false),
+  is_published: z.boolean().optional().default(true),
   published_at: z.string().optional()
 });
 
@@ -88,6 +89,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
+      is_published: article?.is_published ?? true,
       published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     },
   });
@@ -167,7 +169,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
         category_id: values.category_id,
         image_url: values.image_url,
         is_featured: values.is_featured,
-        is_published: true,
+        is_published: values.is_published,
         published_at: values.published_at,
         slug: values.slug
       });
@@ -182,6 +184,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
           image_url: values.image_url,
           category_id: values.category_id,
           is_featured: values.is_featured,
+          is_published: values.is_published,
           published_at: values.published_at
         }
       });
@@ -446,6 +449,32 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
                           </FormLabel>
                           <FormDescription>
                             {t.featuredDesc}
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="is_published"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="font-medium">
+                            {currentLanguage === 'bn' ? 'প্রকাশিত নিবন্ধ' : 'Published Article'}
+                          </FormLabel>
+                          <FormDescription>
+                            {currentLanguage === 'bn' 
+                              ? 'এই নিবন্ধটি সাইটে প্রকাশিত হবে'
+                              : 'This article will be published on the site'
+                            }
                           </FormDescription>
                         </div>
                       </FormItem>

@@ -171,15 +171,15 @@ export async function getAdminArticles(options: {
       `, { count: 'exact' });
 
     // Apply filters
-    if (search) {
-      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    if (search && search.trim()) {
+      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%,author.ilike.%${search}%`);
     }
     
     if (category && category !== 'all') {
-      query = query.eq('category_id', category);
+      query = query.eq('category_id', parseInt(category));
     }
     
-    if (status) {
+    if (status && status !== 'all') {
       if (status === 'published') {
         query = query.eq('is_published', true);
       } else if (status === 'draft') {
@@ -249,7 +249,7 @@ export async function createArticle(articleData: {
         is_featured: articleData.is_featured || false,
         is_published: articleData.is_published !== false,
         published_at: articleData.published_at || new Date().toISOString(),
-        author: 'Admin',
+        author: session.user.user_metadata?.name || session.user.email || 'Admin',
         read_time: Math.ceil(articleData.content.length / 200) || 5,
         view_count: 0
       })
@@ -284,6 +284,7 @@ export async function updateArticle(id: number, updates: any) {
         image_url: updates.image_url,
         category_id: updates.category_id,
         is_featured: updates.is_featured,
+        is_published: updates.is_published !== false,
         published_at: updates.published_at,
         updated_at: new Date().toISOString()
       })
