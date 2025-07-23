@@ -57,7 +57,7 @@ const articleFormSchema = z.object({
   slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
   content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
   excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
-  author: z.string().min(2, 'লেখকের নাম অবশ্যই ২টি অক্ষরের বেশি হতে হবে').max(100, 'লেখকের নাম ১০০ অক্ষরের বেশি হতে পারবে না'),
+  author: z.string().min(2, 'লেখকের নাম অবশ্যই ২টি অক্ষরের বেশি হতে হবে').max(100, 'লেখকের নাম ১০০ অক্ষরের বেশি হতে পারবে না').optional(),
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
   is_featured: z.boolean().optional().default(false),
@@ -87,7 +87,7 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
       slug: article?.slug || '',
       content: article?.content || '',
       excerpt: article?.excerpt || '',
-      author: article?.author || '',
+      author: article?.author || 'Admin',
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
@@ -381,15 +381,22 @@ export function ImprovedContentEditor({ isOpen, onClose, article, mode }: Improv
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <FileText className="h-4 w-4" />
-                          {currentLanguage === 'bn' ? 'লেখক' : 'Author'}
+                          {currentLanguage === 'bn' ? 'লেখক (শীঘ্রই আসছে)' : 'Author (Coming Soon)'}
                         </FormLabel>
                         <FormControl>
                           <Input
                             placeholder={currentLanguage === 'bn' ? 'লেখকের নাম লিখুন...' : 'Enter author name...'}
                             {...field}
-                            className="border-2 focus:border-blue-500"
+                            disabled
+                            className="border-2 focus:border-blue-500 bg-gray-100"
                           />
                         </FormControl>
+                        <FormDescription>
+                          {currentLanguage === 'bn' 
+                            ? 'ডাটাবেস আপডেটের পর এই ফিল্ডটি ব্যবহার করা যাবে'
+                            : 'This field will be available after database update'
+                          }
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -250,7 +250,7 @@ export async function createArticle(articleData: {
         is_featured: articleData.is_featured || false,
         is_published: articleData.is_published !== false,
         published_at: articleData.published_at || new Date().toISOString(),
-        author: articleData.author || session.user.user_metadata?.name || session.user.email || 'Admin',
+        // Remove author field temporarily since column doesn't exist in database
         read_time: Math.ceil(articleData.content.length / 200) || 5,
         view_count: 0
       })
@@ -282,12 +282,13 @@ export async function updateArticle(id: number, updates: any) {
         slug: updates.slug,
         content: updates.content,
         excerpt: updates.excerpt,
-        author: updates.author,
+        // author: updates.author, // Column doesn't exist in database yet
         image_url: updates.image_url,
         category_id: updates.category_id,
         is_featured: updates.is_featured,
         is_published: updates.is_published !== false,
         published_at: updates.published_at,
+        // Remove author field temporarily since column doesn't exist in database
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
