@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet';
@@ -131,18 +131,17 @@ const ArticleDetail = () => {
     return `${window.location.origin}/article/${createBengaliSlug(article.title)}`;
   }, [article?.title]);
   
-  // Note: View tracking is now handled directly in the fetchArticle function
-  
-  // Fetch related articles using the new API endpoint
+  // Fetch related articles using the new direct API
   const { data: fetchedRelatedArticles = [] } = useQuery({
-    queryKey: ['/api/articles', article?.id, 'related'],
+    queryKey: ['related-articles', article?.id],
     queryFn: async () => {
       if (!article) return [];
       
-      const { getRelatedArticles } = await import('../lib/supabase-api-direct');
+      const { getRelatedArticles } = await import('../lib/supabase-direct-api');
       return getRelatedArticles(article.id, 3);
     },
-    enabled: !!article
+    enabled: !!article,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -993,68 +992,72 @@ const ArticleDetail = () => {
     }
   };
 
-  useEffect(() => {
+  // Stable reference to prevent infinite loops
+  const fetchArticleCallback = useCallback(async () => {
     if (!articleSlug) return;
     
-    const fetchArticle = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        startTimeRef.current = Date.now();
-        
-        // Reset states for new article
-        window.scrollTo(0, 0);
-        setReadingProgress(0);
-        setScrollDepth(0);
-        setTimeSpentReading(0);
-        
-        const { getArticleBySlug } = await import('../lib/supabase-api-direct');
-        const data = await getArticleBySlug(articleSlug);
-        
-        if (!data) {
-          setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
-          return;
-        }
-        
-        // Transform the data to match our interface
-        const transformedArticle: Article = {
-          ...data,
-          content: data.content || '',
-          category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
-          is_featured: data.is_featured || false
-        };
-        
-        // Track view count for new article
-        try {
-          const { incrementViewCount } = await import('../lib/supabase-api-direct');
-          const viewData = await incrementViewCount(data.id);
-          
-          if (viewData) {
-            console.log(`[View Tracking] Successfully tracked view for article ${data.id}, new count: ${viewData.viewCount}`);
-            transformedArticle.view_count = viewData.viewCount;
-          }
-        } catch (error) {
-          console.error('Error incrementing view count:', error);
-        }
-        
-        // Calculate estimated reading time
-        const wordCount = (data.content || '').split(' ').length;
-        setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
-        
-        // Set article and mark as tracked
-        setArticle(transformedArticle);
-        setViewTracked(true);
-        
-      } catch (err) {
-        setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
-        console.error('Error fetching article:', err);
-      } finally {
-        setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setError(null);
+      startTimeRef.current = Date.now();
+      
+      // Reset states for new article
+      window.scrollTo(0, 0);
+      setReadingProgress(0);
+      setScrollDepth(0);
+      setTimeSpentReading(0);
+      
+      const { getArticleBySlug } = await import('../lib/supabase-api-direct');
+      const data = await getArticleBySlug(articleSlug);
+      
+      if (!data) {
+        setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
+        return;
       }
-    };
-
-    fetchArticle();
+      
+      // Transform the data to match our interface
+      const transformedArticle: Article = {
+        ...data,
+        content: data.content || '',
+        category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
+        is_featured: data.is_featured || false
+      };
+      
+      // Track view count for new article
+      try {
+        const { trackView } = await import('../lib/supabase-direct-api');
+        const viewResult = await trackView(data.id);
+        
+        if (viewResult.success) {
+          console.log(`[View Tracking] Incrementing view count for article ${data.id}`);
+          transformedArticle.view_count = (data.view_count || 0) + 1;
+        } else {
+          transformedArticle.view_count = data.view_count || 0;
+        }
+      } catch (error) {
+        console.error('Error incrementing view count:', error);
+        transformedArticle.view_count = data.view_count || 0;
+      }
+      
+      // Calculate estimated reading time
+      const wordCount = (data.content || '').split(' ').length;
+      setReadingTime(Math.ceil(wordCount / 200)); // Average 200 words per minute
+      
+      // Set article and mark as tracked
+      setArticle(transformedArticle);
+      setViewTracked(true);
+      
+    } catch (err) {
+      setError('নিবন্ধ লোড করতে সমস্যা হয়েছে');
+      console.error('Error fetching article:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, [articleSlug]);
+
+  useEffect(() => {
+    fetchArticleCallback();
+  }, [fetchArticleCallback]);
 
   // Handle URL updates separately to prevent infinite loops
   useEffect(() => {

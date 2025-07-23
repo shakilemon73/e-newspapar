@@ -171,27 +171,28 @@ export const articlesAPI = {
   // Track article view
   async trackView(articleId: number) {
     try {
-      // First get current view count
-      const { data: article, error: fetchError } = await supabase
-        .from('articles')
-        .select('view_count')
-        .eq('id', articleId)
-        .single();
+      // Use RPC function to atomically increment view count
+      const { data, error } = await supabase
+        .rpc('increment_view_count', { article_id: articleId });
       
-      if (fetchError) throw fetchError;
+      if (error) {
+        console.error('Error incrementing view count:', error);
+        // Fallback: try direct update
+        const { error: updateError } = await supabase
+          .from('articles')
+          .update({ view_count: supabase.sql`view_count + 1` })
+          .eq('id', articleId);
+        
+        if (updateError) {
+          console.error('Fallback update also failed:', updateError);
+          return { success: false, viewCount: 0 };
+        }
+      }
       
-      // Increment view count
-      const newViewCount = (article.view_count || 0) + 1;
-      const { error: updateError } = await supabase
-        .from('articles')
-        .update({ view_count: newViewCount })
-        .eq('id', articleId);
-      
-      if (updateError) throw updateError;
-      return { success: true, viewCount: newViewCount };
+      return { success: true, viewCount: data || 0 };
     } catch (error) {
       console.error('Error tracking article view:', error);
-      throw error;
+      return { success: false, viewCount: 0 };
     }
   },
 };
