@@ -4,6 +4,7 @@
  * Ready for Vercel deployment without Express server
  */
 import supabase from '@/lib/supabase';
+import { adminSupabase } from './admin-supabase';
 // Types will be inferred from Supabase responses
 
 // ==============================================
@@ -151,32 +152,62 @@ export async function getAdminArticles(options: {
   sortOrder?: 'asc' | 'desc';
 } = {}) {
   try {
-    // Use Express server endpoint instead of direct Supabase
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) throw new Error('Not authenticated');
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      category,
+      status,
+      sortBy = 'created_at',
+      sortOrder = 'desc'
+    } = options;
 
-    const searchParams = new URLSearchParams();
+    // Use admin Supabase client for Vercel deployment (removed problematic join)
+    let query = adminSupabase
+      .from('articles')
+      .select(`
+        *,
+        categories(id, name, slug)
+      `, { count: 'exact' });
+
+    // Apply filters
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
+    }
     
-    if (options.page) searchParams.append('page', options.page.toString());
-    if (options.limit) searchParams.append('limit', options.limit.toString());
-    if (options.search) searchParams.append('search', options.search);
-    if (options.category) searchParams.append('category', options.category);
-    if (options.status) searchParams.append('status', options.status);
-    if (options.sortBy) searchParams.append('sortBy', options.sortBy);
-    if (options.sortOrder) searchParams.append('sortOrder', options.sortOrder);
-
-    const response = await fetch(`/api/admin/articles?${searchParams.toString()}`, {
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`
+    if (category && category !== 'all') {
+      query = query.eq('category_id', category);
+    }
+    
+    if (status) {
+      if (status === 'published') {
+        query = query.eq('is_published', true);
+      } else if (status === 'draft') {
+        query = query.eq('is_published', false);
       }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch articles');
     }
 
-    const data = await response.json();
-    return data;
+    // Apply sorting
+    query = query.order(sortBy, { ascending: sortOrder === 'asc' });
+
+    // Apply pagination
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
+
+    const { data, error, count } = await query;
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to fetch articles');
+    }
+
+    return {
+      articles: data || [],
+      totalCount: count || 0,
+      currentPage: page,
+      totalPages: Math.ceil((count || 0) / limit)
+    };
   } catch (error) {
     console.error('Error fetching admin articles:', error);
     return { articles: [], totalCount: 0, currentPage: 1, totalPages: 0 };
@@ -195,7 +226,6 @@ export async function createArticle(articleData: {
   published_at?: string;
 }) {
   try {
-    // Instead of direct Supabase calls, use the Express server endpoints
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error('Not authenticated');
 
@@ -205,31 +235,31 @@ export async function createArticle(articleData: {
       .replace(/\s+/g, '-')
       .slice(0, 100);
 
-    // Call Express server endpoint instead of direct Supabase
-    const response = await fetch('/api/articles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({
+    // Use admin Supabase client with service key for Vercel deployment
+    const { data, error } = await adminSupabase
+      .from('articles')
+      .insert({
         title: articleData.title,
+        slug: slug,
         content: articleData.content,
         excerpt: articleData.excerpt,
-        categoryId: articleData.category_id,
-        imageUrl: articleData.image_url,
-        isFeatured: articleData.is_featured,
-        publishedAt: articleData.published_at,
-        slug: slug
+        image_url: articleData.image_url,
+        category_id: articleData.category_id,
+        is_featured: articleData.is_featured || false,
+        is_published: articleData.is_published !== false,
+        published_at: articleData.published_at || new Date().toISOString(),
+        author: 'Admin',
+        read_time: Math.ceil(articleData.content.length / 200) || 5,
+        view_count: 0
       })
-    });
+      .select()
+      .single();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create article');
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to create article');
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating article:', error);
@@ -239,34 +269,32 @@ export async function createArticle(articleData: {
 
 export async function updateArticle(id: number, updates: any) {
   try {
-    // Use Express server endpoint instead of direct Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error('Not authenticated');
 
-    const response = await fetch(`/api/articles/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify({
+    // Use admin Supabase client with service key for Vercel deployment
+    const { data, error } = await adminSupabase
+      .from('articles')
+      .update({
         title: updates.title,
+        slug: updates.slug,
         content: updates.content,
         excerpt: updates.excerpt,
-        categoryId: updates.category_id,
-        imageUrl: updates.image_url,
-        isFeatured: updates.is_featured,
-        publishedAt: updates.published_at,
-        slug: updates.slug
+        image_url: updates.image_url,
+        category_id: updates.category_id,
+        is_featured: updates.is_featured,
+        published_at: updates.published_at,
+        updated_at: new Date().toISOString()
       })
-    });
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to update article');
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to update article');
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error updating article:', error);
@@ -276,20 +304,18 @@ export async function updateArticle(id: number, updates: any) {
 
 export async function deleteArticle(id: number) {
   try {
-    // Use Express server endpoint instead of direct Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error('Not authenticated');
 
-    const response = await fetch(`/api/articles/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${session.access_token}`
-      }
-    });
+    // Use admin Supabase client with service key for Vercel deployment
+    const { error } = await adminSupabase
+      .from('articles')
+      .delete()
+      .eq('id', id);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete article');
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to delete article');
     }
 
     return true;
@@ -305,14 +331,17 @@ export async function deleteArticle(id: number) {
 
 export async function getAdminCategories() {
   try {
-    // Use Express server endpoint instead of direct Supabase
-    const response = await fetch('/api/categories');
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch categories');
+    // Use admin Supabase client for Vercel deployment
+    const { data, error } = await adminSupabase
+      .from('categories')
+      .select('*')
+      .order('name');
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to fetch categories');
     }
 
-    const data = await response.json();
     return data || [];
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -326,25 +355,32 @@ export async function createCategory(categoryData: {
   color?: string;
 }) {
   try {
-    // Use Express server endpoint instead of direct Supabase
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) throw new Error('Not authenticated');
 
-    const response = await fetch('/api/categories', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`
-      },
-      body: JSON.stringify(categoryData)
-    });
+    const slug = categoryData.name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-');
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create category');
+    // Use admin Supabase client for Vercel deployment
+    const { data, error } = await adminSupabase
+      .from('categories')
+      .insert({
+        name: categoryData.name,
+        slug: slug,
+        description: categoryData.description,
+        color: categoryData.color,
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      throw new Error(error.message || 'Failed to create category');
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error('Error creating category:', error);
