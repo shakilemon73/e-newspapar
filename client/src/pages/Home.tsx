@@ -30,12 +30,12 @@ const Home = () => {
   const socialMetaTags = generateHomeMetaTags();
   const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
 
-  // Fetch available categories from database
+  // Fetch available categories from database (Direct Supabase)
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const { getCategories } = await import('../lib/supabase-api-direct');
-        const categories = await getCategories();
+        const { categoriesApiDirect } = await import('../lib/queryClient-direct');
+        const categories = await categoriesApiDirect.getAll();
         setAvailableCategories(categories);
       } catch (error) {
         console.error('Error loading categories:', error);

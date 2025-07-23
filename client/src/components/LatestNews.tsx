@@ -28,8 +28,8 @@ export const LatestNews = () => {
     const fetchLatestNews = async () => {
       try {
         setIsLoading(true);
-        const { getLatestArticles } = await import('../lib/supabase-api-direct');
-        const data = await getLatestArticles(4);
+        const { articlesApiDirect } = await import('../lib/queryClient-direct');
+        const data = await articlesApiDirect.getLatest(4);
         // Transform data to match expected format
         const transformedData = data.map((article: any) => ({
           id: article.id,

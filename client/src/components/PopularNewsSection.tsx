@@ -30,8 +30,8 @@ export const PopularNewsSection = () => {
     const fetchPopularArticles = async () => {
       try {
         setIsLoading(true);
-        const { getPopularArticles } = await import('../lib/supabase-api-direct');
-        const data = await getPopularArticles(6);
+        const { articlesApiDirect } = await import('../lib/queryClient-direct');
+        const data = await articlesApiDirect.getPopular(6);
         console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         
         // Transform data to match Article interface

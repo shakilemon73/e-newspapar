@@ -2,11 +2,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { staticQueryClient } from "./lib/static-queryClient-updated";
-import { uxEnhancer } from "./lib/ux-enhancer";
+import { directQueryClient } from "./lib/queryClient-direct";
 
 createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={staticQueryClient}>
+  <QueryClientProvider client={directQueryClient}>
     <App />
   </QueryClientProvider>
 );
