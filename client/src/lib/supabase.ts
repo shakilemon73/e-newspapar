@@ -35,6 +35,8 @@ export const supabase = createClient(defaultUrl, defaultKey, {
     detectSessionInUrl: true,
     flowType: 'pkce',
     debug: false
+    // Note: JWT tokens are automatically refreshed by Supabase client
+    // Token cleanup is handled in auth state change events
   },
   realtime: {
     params: {

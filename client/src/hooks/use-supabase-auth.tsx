@@ -27,8 +27,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(({ data: { session }, error }) => {
         if (error) {
           console.error('Error getting session:', error);
-          // Clear corrupted session data
+          // Clear corrupted session data and any old tokens
           localStorage.removeItem('supabase.auth.token');
+          localStorage.removeItem('sb-mrjukcqspvhketnfzmud-auth-token');
           setSession(null);
           setUser(null);
         } else {
@@ -48,6 +49,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       try {
         console.log('Auth state changed:', event);
+        
+        // Handle token refresh and expiry
+        if (event === 'TOKEN_REFRESHED') {
+          console.log('JWT token refreshed successfully');
+        } else if (event === 'SIGNED_OUT') {
+          // Clear all stored tokens on logout
+          localStorage.removeItem('supabase.auth.token');
+          localStorage.removeItem('sb-mrjukcqspvhketnfzmud-auth-token');
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
