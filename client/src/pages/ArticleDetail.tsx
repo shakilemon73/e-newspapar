@@ -135,12 +135,12 @@ const ArticleDetail = () => {
   const { data: fetchedRelatedArticles = [] } = useQuery({
     queryKey: ['related-articles', article?.id],
     queryFn: async () => {
-      if (!article) return [];
+      if (!article?.category_id) return [];
       
-      const { getRelatedArticles } = await import('../lib/supabase-direct-api');
-      return getRelatedArticles(article.id, 3);
+      const { articlesAPI } = await import('../lib/supabase-direct-api');
+      return articlesAPI.getAll(3, 0);
     },
-    enabled: !!article,
+    enabled: !!article?.category_id,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -992,8 +992,8 @@ const ArticleDetail = () => {
     }
   };
 
-  // Stable reference to prevent infinite loops
-  const fetchArticleCallback = useCallback(async () => {
+  // Memoize fetchArticle to prevent infinite loops
+  const fetchArticle = useCallback(async () => {
     if (!articleSlug) return;
     
     try {
@@ -1007,8 +1007,8 @@ const ArticleDetail = () => {
       setScrollDepth(0);
       setTimeSpentReading(0);
       
-      const { getArticleBySlug } = await import('../lib/supabase-api-direct');
-      const data = await getArticleBySlug(articleSlug);
+      const { articlesAPI } = await import('../lib/supabase-direct-api');
+      const data = await articlesAPI.getBySlug(articleSlug);
       
       if (!data) {
         setError('এই সংবাদটি খুঁজে পাওয়া যায়নি');
@@ -1025,8 +1025,8 @@ const ArticleDetail = () => {
       
       // Track view count for new article
       try {
-        const { trackView } = await import('../lib/supabase-direct-api');
-        const viewResult = await trackView(data.id);
+        const { articlesAPI } = await import('../lib/supabase-direct-api');
+        const viewResult = await articlesAPI.trackView(data.id);
         
         if (viewResult.success) {
           console.log(`[View Tracking] Incrementing view count for article ${data.id}`);
@@ -1053,11 +1053,11 @@ const ArticleDetail = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [articleSlug]);
+  }, [articleSlug]); // Only depend on articleSlug
 
   useEffect(() => {
-    fetchArticleCallback();
-  }, [fetchArticleCallback]);
+    fetchArticle();
+  }, [fetchArticle]); // Depend on memoized function
 
   // Handle URL updates separately to prevent infinite loops
   useEffect(() => {
