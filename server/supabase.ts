@@ -9,10 +9,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.');
 }
 
-// Use service role key for backend operations if available, otherwise use anon key
-const supabaseKey = supabaseServiceKey || supabaseAnonKey;
+// Public client using anonymous key (for public operations with RLS)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Create a single supabase client for interacting with the database
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Admin client using service role key (BACKEND ONLY - bypasses RLS)
+export const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
+// Default export is public client
 export default supabase;
+
+// Helper function to get appropriate client based on operation type
+export function getSupabaseClient(requireAdmin = false) {
+  if (requireAdmin && supabaseServiceKey) {
+    console.log('🔐 Using SERVICE ROLE key for admin operations');
+    return adminSupabase;
+  }
+  console.log('🔓 Using ANON key for public operations');
+  return supabase;
+}

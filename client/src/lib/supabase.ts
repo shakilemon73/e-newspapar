@@ -14,7 +14,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('⚠️ Using development Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for production.');
 }
 
-// Use anon key for frontend client - RLS policies should allow public read access
+// SECURITY: Frontend client ALWAYS uses anonymous key
+// Service role key should NEVER be exposed to frontend
+console.log('Direct API client using: ANON KEY');
 const clientKey = supabaseAnonKey;
 
 // Clean up any corrupted storage data that might cause JSON parsing errors
