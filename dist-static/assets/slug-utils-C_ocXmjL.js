@@ -1,0 +1,1 @@
+function u(e){return e.trim().toLowerCase().replace(/[^\u0980-\u09FF\u0020\u002D\u005F\u0041-\u005A\u0061-\u007A\u0030-\u0039]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").replace(/^-+|-+$/g,"")}export{u as generateBengaliSlug};

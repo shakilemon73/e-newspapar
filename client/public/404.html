@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/generated-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bengali News - পেজটি খুঁজে পাওয়া যায়নি</title>
+    
+    <!-- Bengali Font Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+      body {
+        font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .container {
+        text-align: center;
+        padding: 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        max-width: 500px;
+      }
+      
+      .error-code {
+        font-size: 4rem;
+        font-weight: bold;
+        color: #dc2626;
+        margin-bottom: 1rem;
+      }
+      
+      .error-message {
+        font-size: 1.5rem;
+        color: #374151;
+        margin-bottom: 1rem;
+      }
+      
+      .error-description {
+        color: #6b7280;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+      
+      .redirect-message {
+        color: #059669;
+        font-weight: 500;
+        margin-top: 1rem;
+      }
+      
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid #e5e7eb;
+        border-top: 3px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 8px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="error-code">404</div>
+      <div class="error-message">পেজটি খুঁজে পাওয়া যায়নি</div>
+      <div class="error-description">
+        আপনি যে পেজটি খুঁজছেন সেটি বিদ্যমান নেই বা সরানো হয়েছে।
+      </div>
+      <div class="redirect-message">
+        <div class="spinner"></div>
+        স্বয়ংক্রিয়ভাবে হোম পেজে নিয়ে যাওয়া হচ্ছে...
+      </div>
+    </div>
+
+    <script>
+      // Redirect to home page after 3 seconds or handle client-side routing
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 3000);
+      
+      // If this is a client-side route, try to handle it
+      if (window.history && window.history.pushState) {
+        // This will work if the app is already loaded
+        const currentPath = window.location.pathname;
+        if (currentPath.startsWith('/admin') || currentPath.startsWith('/dashboard') || 
+            currentPath.startsWith('/article') || currentPath.startsWith('/category')) {
+          // Redirect immediately for known routes
+          window.location.href = '/';
+        }
+      }
+    </script>
+  </body>
+</html>

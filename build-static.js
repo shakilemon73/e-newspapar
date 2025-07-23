@@ -57,6 +57,12 @@ try {
     console.log('✅ Created index.html for Vercel compatibility');
   }
 
+  // Copy 404.html for proper client-side routing fallback
+  if (fs.existsSync('client/public/404.html')) {
+    fs.copyFileSync('client/public/404.html', 'dist-static/404.html');
+    console.log('✅ Created 404.html for client-side routing');
+  }
+
   console.log('✅ Static build completed successfully!');
   console.log('📦 Output directory: dist-static/');
   
