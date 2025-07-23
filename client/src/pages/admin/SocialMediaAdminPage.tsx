@@ -79,11 +79,9 @@ export default function SocialMediaAdminPage() {
 
   // Create social media post mutation
   const createPostMutation = useMutation({
-    mutationFn: async (postData: any) => {
-      return await apiRequest('POST', '/api/social-media', postData);
-    },
+    mutationFn: (postData: any) => createSocialPost(postData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/social-media'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
       toast({
         title: "Success",
         description: "Social media post created successfully",
@@ -102,11 +100,9 @@ export default function SocialMediaAdminPage() {
 
   // Update social media post mutation
   const updatePostMutation = useMutation({
-    mutationFn: async ({ id, ...postData }: any) => {
-      return await apiRequest('PUT', `/api/social-media/${id}`, postData);
-    },
+    mutationFn: ({ id, ...postData }: any) => updateSocialPost(id, postData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/social-media'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
       toast({
         title: "Success",
         description: "Social media post updated successfully",
@@ -125,11 +121,9 @@ export default function SocialMediaAdminPage() {
 
   // Delete social media post mutation
   const deletePostMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/social-media/${id}`);
-    },
+    mutationFn: (id: number) => deleteSocialPost(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/social-media'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
       toast({
         title: "Success",
         description: "Social media post deleted successfully",

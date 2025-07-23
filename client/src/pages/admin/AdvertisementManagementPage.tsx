@@ -50,34 +50,45 @@ export default function AdvertisementManagementPage() {
   });
 
   // Advertisement analytics - simplified for direct API
-  const adAnalytics = { impressions: 0, clicks: 0, revenue: 0 };
-  const advertisers = [];
+  const adAnalytics = { 
+    impressions: 0, 
+    clicks: 0, 
+    revenue: 0,
+    total_impressions: 0,
+    impressions_today: 0,
+    click_rate: 0,
+    total_clicks: 0,
+    clicks_today: 0,
+    ctr_today: 0,
+    revenue_today: 0
+  };
+  const advertisers: any[] = [];
 
   // Revenue data query
-  const { data: revenueData, isLoading: revenueLoading } = useQuery({
-    queryKey: ['/api/admin/ad-revenue'],
+  const { data: revenueData = {
+    total_revenue: 0,
+    revenue_this_month: 0,
+    revenue_last_month: 0,
+    growth_rate: 0,
+    revenue_sources: []
+  }, isLoading: revenueLoading } = useQuery({
+    queryKey: ['admin-ad-revenue'],
   });
 
   // Create/Update advertisement mutation
   const adMutation = useMutation({
     mutationFn: (data: any) => {
       if (selectedAd) {
-        return apiRequest(`/api/admin/advertisements/${selectedAd.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(data),
-        });
+        return updateAdvertisement(selectedAd.id, data);
       }
-      return apiRequest('/api/admin/advertisements', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return createAdvertisement(data);
     },
     onSuccess: () => {
       toast({
         title: "বিজ্ঞাপন সংরক্ষিত",
         description: "বিজ্ঞাপন সফলভাবে সংরক্ষিত হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-advertisements'] });
       setSelectedAd(null);
       setAdForm({
         title: '',
@@ -92,27 +103,24 @@ export default function AdvertisementManagementPage() {
 
   // Delete advertisement mutation
   const deleteAdMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/admin/advertisements/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: number) => deleteAdvertisement(id),
     onSuccess: () => {
       toast({
         title: "বিজ্ঞাপন মুছে ফেলা হয়েছে",
         description: "বিজ্ঞাপন সফলভাবে মুছে ফেলা হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-advertisements'] });
     },
   });
 
   // Toggle advertisement status mutation
   const toggleAdStatusMutation = useMutation({
-    mutationFn: (ad: any) => apiRequest(`/api/admin/advertisements/${ad.id}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        ...ad,
-        status: ad.status === 'active' ? 'inactive' : 'active'
-      }),
+    mutationFn: (ad: any) => updateAdvertisement(ad.id, {
+      ...ad,
+      status: ad.status === 'active' ? 'inactive' : 'active'
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/advertisements'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-advertisements'] });
     },
   });
 
@@ -154,9 +162,9 @@ export default function AdvertisementManagementPage() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">৳{revenueData?.total_revenue || 0}</div>
+              <div className="text-2xl font-bold">৳{(revenueData as any)?.total_revenue || 0}</div>
               <p className="text-xs text-muted-foreground">
-                +৳{revenueData?.revenue_this_month || 0} এই মাসে
+                +৳{(revenueData as any)?.revenue_this_month || 0} এই মাসে
               </p>
             </CardContent>
           </Card>
@@ -465,17 +473,17 @@ export default function AdvertisementManagementPage() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">এই মাসের রেভিনিউ</span>
-                      <span className="text-sm font-bold">৳{revenueData?.revenue_this_month || 0}</span>
+                      <span className="text-sm font-bold">৳{(revenueData as any)?.revenue_this_month || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">গত মাসের রেভিনিউ</span>
-                      <span className="text-sm font-bold">৳{revenueData?.revenue_last_month || 0}</span>
+                      <span className="text-sm font-bold">৳{(revenueData as any)?.revenue_last_month || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">বৃদ্ধির হার</span>
                       <span className="text-sm font-bold flex items-center gap-1">
                         <TrendingUp className="h-4 w-4 text-green-500" />
-                        {revenueData?.growth_rate || 0}%
+                        {(revenueData as any)?.growth_rate || 0}%
                       </span>
                     </div>
                   </div>
@@ -488,7 +496,7 @@ export default function AdvertisementManagementPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {revenueData?.revenue_sources?.map((source: any) => (
+                    {(revenueData as any)?.revenue_sources?.map((source: any) => (
                       <div key={source.type} className="flex justify-between items-center">
                         <span className="text-sm font-medium">{source.type}</span>
                         <div className="text-right">

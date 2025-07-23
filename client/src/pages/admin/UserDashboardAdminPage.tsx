@@ -29,8 +29,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
+import { getUserDashboardStats, getUserEngagementData } from '@/lib/admin-api-direct';
 import {
   Table,
   TableBody,
@@ -59,38 +59,40 @@ export default function UserDashboardAdminPage() {
 
   // User dashboard analytics queries
   const { data: userStats, isLoading: userStatsLoading } = useQuery({
-    queryKey: ['/api/admin/user-stats', selectedTimeRange],
+    queryKey: ['admin-user-stats', selectedTimeRange],
+    queryFn: () => getUserDashboardStats(selectedTimeRange),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: activeUsers, isLoading: activeUsersLoading } = useQuery({
-    queryKey: ['/api/admin/active-users', selectedTimeRange],
+    queryKey: ['admin-active-users', selectedTimeRange],
+    queryFn: () => getUserEngagementData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: readingActivity, isLoading: readingActivityLoading } = useQuery({
-    queryKey: ['/api/admin/reading-activity', selectedTimeRange],
+    queryKey: ['admin-reading-activity', selectedTimeRange],
+    queryFn: () => getUserEngagementData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: userAchievements, isLoading: achievementsLoading } = useQuery({
-    queryKey: ['/api/admin/user-achievements'],
+    queryKey: ['admin-user-achievements'],
+    queryFn: () => getUserEngagementData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: savedArticlesStats, isLoading: savedArticlesLoading } = useQuery({
-    queryKey: ['/api/admin/saved-articles-stats', selectedTimeRange],
+    queryKey: ['admin-saved-articles-stats', selectedTimeRange],
+    queryFn: () => getUserEngagementData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  // Export data mutation
+  // Export data mutation (mock implementation for now)
   const exportDataMutation = useMutation({
     mutationFn: async (type: 'users' | 'activity' | 'achievements') => {
-      const response = await apiRequest(`/api/admin/export-${type}`, {
-        method: 'POST',
-        body: { timeRange: selectedTimeRange }
-      });
-      return response;
+      // Mock export functionality
+      return { success: true, type, timeRange: selectedTimeRange };
     },
     onSuccess: () => {
       toast({

@@ -22,8 +22,8 @@ import {
   Pause,
   Loader2
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { getMobileAppConfig, updateMobileAppConfig, sendPushNotification, getMobileAppAnalytics, getPushNotificationHistory } from '@/lib/admin-api-direct';
 
 export default function MobileAppManagementPage() {
   const [activeTab, setActiveTab] = useState('config');
@@ -37,58 +37,56 @@ export default function MobileAppManagementPage() {
 
   // Mobile app configuration query
   const { data: appConfig, isLoading: configLoading } = useQuery({
-    queryKey: ['/api/admin/mobile-app-config'],
+    queryKey: ['admin-mobile-app-config'],
+    queryFn: () => getMobileAppConfig(),
   });
 
   // Mobile app analytics query
   const { data: appAnalytics, isLoading: analyticsLoading } = useQuery({
-    queryKey: ['/api/admin/mobile-app-analytics'],
+    queryKey: ['admin-mobile-app-analytics'],
+    queryFn: () => getMobileAppAnalytics(),
   });
 
   // Push notification history query
   const { data: notificationHistory, isLoading: historyLoading } = useQuery({
-    queryKey: ['/api/admin/push-notifications'],
+    queryKey: ['admin-push-notifications'],
+    queryFn: () => getPushNotificationHistory(),
   });
 
   // App update mutation
   const updateConfigMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/admin/mobile-app-config', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => updateMobileAppConfig(data),
     onSuccess: () => {
       toast({
         title: "কনফিগারেশন আপডেট হয়েছে",
         description: "মোবাইল অ্যাপ কনফিগারেশন সফলভাবে আপডেট হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/mobile-app-config'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-mobile-app-config'] });
     },
   });
 
   // Send push notification mutation
   const sendPushMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/admin/send-push-notification', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => sendPushNotification(data),
     onSuccess: () => {
       toast({
         title: "পুশ নোটিফিকেশন পাঠানো হয়েছে",
         description: "সফলভাবে পুশ নোটিফিকেশন পাঠানো হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/push-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-push-notifications'] });
       setPushNotificationForm({ title: '', message: '', target: 'all' });
     },
   });
 
   // Force app update mutation
   const forceUpdateMutation = useMutation({
-    mutationFn: () => apiRequest('/api/admin/force-app-update', { method: 'POST' }),
+    mutationFn: () => updateMobileAppConfig({ force_update_enabled: true }),
     onSuccess: () => {
       toast({
         title: "আপডেট বাধ্যতামূলক করা হয়েছে",
         description: "ব্যবহারকারীরা অ্যাপ আপডেট করতে বাধ্য হবেন",
       });
+      queryClient.invalidateQueries({ queryKey: ['admin-mobile-app-config'] });
     },
   });
 

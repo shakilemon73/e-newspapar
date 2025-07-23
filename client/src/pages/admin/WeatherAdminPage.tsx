@@ -24,8 +24,8 @@ import {
   MapPin
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { getAdminWeatherData, createWeatherData, updateWeatherData, deleteWeatherData } from '@/lib/admin-api-direct';
 
 interface Weather {
   id: number;
@@ -72,17 +72,16 @@ export default function WeatherAdminPage() {
 
   // Fetch weather data from Supabase
   const { data: weatherData, isLoading, error } = useQuery({
-    queryKey: ['/api/weather'],
+    queryKey: ['admin-weather-data'],
+    queryFn: () => getAdminWeatherData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Create weather mutation
   const createWeatherMutation = useMutation({
-    mutationFn: async (weatherData: any) => {
-      return await apiRequest('POST', '/api/weather', weatherData);
-    },
+    mutationFn: (weatherData: any) => createWeatherData(weatherData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/weather'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-weather-data'] });
       toast({
         title: "Success",
         description: "Weather data created successfully",
@@ -101,11 +100,9 @@ export default function WeatherAdminPage() {
 
   // Update weather mutation
   const updateWeatherMutation = useMutation({
-    mutationFn: async ({ city, ...weatherData }: any) => {
-      return await apiRequest('PUT', `/api/weather/${city}`, weatherData);
-    },
+    mutationFn: ({ id, ...weatherData }: any) => updateWeatherData(id, weatherData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/weather'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-weather-data'] });
       toast({
         title: "Success",
         description: "Weather data updated successfully",

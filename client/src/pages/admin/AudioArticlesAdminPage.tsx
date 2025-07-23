@@ -92,7 +92,7 @@ export default function AudioArticlesAdminPage() {
   // Update audio article mutation
   const updateAudioMutation = useMutation({
     mutationFn: async ({ id, ...audioData }: any) => {
-      return await apiRequest('PUT', `/api/audio-articles/${id}`, audioData);
+      return await updateAudioArticle(id, audioData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
@@ -115,7 +115,7 @@ export default function AudioArticlesAdminPage() {
   // Delete audio article mutation
   const deleteAudioMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/audio-articles/${id}`);
+      return await deleteAudioArticle(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
@@ -388,23 +388,25 @@ export default function AudioArticlesAdminPage() {
                       defaultValue={editingAudio?.excerpt || ''}
                     />
                   </div>
-                  <FileUploadField
-                    label="Audio File"
-                    description="Upload audio file or provide URL"
-                    mediaType="audio"
-                    value={audioUrl}
-                    onChange={setAudioUrl}
-                    placeholder="https://example.com/audio.mp3"
-                    required
-                  />
-                  <FileUploadField
-                    label="Cover Image"
-                    description="Upload cover image or provide URL"
-                    mediaType="images"
-                    value={imageUrl}
-                    onChange={setImageUrl}
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  <div>
+                    <Label htmlFor="audioUrl">Audio URL</Label>
+                    <Input 
+                      id="audioUrl" 
+                      value={audioUrl}
+                      onChange={(e) => setAudioUrl(e.target.value)}
+                      placeholder="https://example.com/audio.mp3"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="imageUrl">Cover Image URL</Label>
+                    <Input 
+                      id="imageUrl"
+                      value={imageUrl}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                      placeholder="https://example.com/image.jpg"
+                    />
+                  </div>
                   <div>
                     <Label htmlFor="duration">Duration (MM:SS)</Label>
                     <Input 

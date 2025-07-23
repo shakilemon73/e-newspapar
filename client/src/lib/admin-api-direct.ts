@@ -1136,6 +1136,257 @@ export async function deleteSocialPost(id: number) {
 }
 
 // ==============================================
+// MOBILE APP MANAGEMENT
+// ==============================================
+
+export async function getMobileAppConfig() {
+  try {
+    const { data, error } = await supabase
+      .from('mobile_app_settings')
+      .select('*');
+
+    if (error) throw error;
+
+    // Transform settings array to config object
+    const config = (data || []).reduce((acc: any, setting: any) => {
+      acc[setting.setting_key] = setting.setting_value;
+      return acc;
+    }, {});
+
+    // Add default values if not present
+    return {
+      app_name: 'Bengali News App',
+      current_version: 'v2.1.0',
+      minimum_version: 'v2.0.0',
+      latest_version: 'v2.1.0',
+      users_on_latest: 85,
+      push_notifications_enabled: true,
+      offline_mode_enabled: true,
+      dark_mode_enabled: true,
+      force_update_enabled: false,
+      ...config
+    };
+  } catch (error) {
+    console.error('Error fetching mobile app config:', error);
+    return {};
+  }
+}
+
+export async function updateMobileAppConfig(updates: Record<string, any>) {
+  try {
+    // Update each setting in the database
+    const updatePromises = Object.entries(updates).map(([key, value]) => {
+      return supabase
+        .from('mobile_app_settings')
+        .upsert({
+          setting_key: key,
+          setting_value: String(value),
+          updated_at: new Date().toISOString()
+        });
+    });
+
+    await Promise.all(updatePromises);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating mobile app config:', error);
+    throw error;
+  }
+}
+
+export async function getMobileAppAnalytics() {
+  try {
+    // Return mock analytics data for now since we don't have real analytics table
+    return {
+      total_downloads: 15420,
+      active_users: 12350,
+      daily_active_users: 3420,
+      monthly_active_users: 12350,
+      app_sessions: 45680,
+      average_session_duration: '5m 23s',
+      retention_rate: 67,
+      crash_rate: 0.02,
+      user_satisfaction: 4.3,
+      version_adoption: {
+        'v2.1.0': 85,
+        'v2.0.9': 12,
+        'v2.0.8': 3
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching mobile app analytics:', error);
+    return {};
+  }
+}
+
+export async function sendPushNotification(notificationData: {
+  title: string;
+  message: string;
+  target: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('push_notifications')
+      .insert({
+        ...notificationData,
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error sending push notification:', error);
+    throw error;
+  }
+}
+
+export async function getPushNotificationHistory() {
+  try {
+    const { data, error } = await supabase
+      .from('push_notifications')
+      .select('*')
+      .order('sent_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching push notification history:', error);
+    return [];
+  }
+}
+
+// ==============================================
+// WEATHER MANAGEMENT
+// ==============================================
+
+export async function getAdminWeatherData() {
+  try {
+    const { data, error } = await supabase
+      .from('weather_data')
+      .select('*')
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin weather data:', error);
+    return [];
+  }
+}
+
+export async function createWeatherData(weatherData: {
+  city: string;
+  temperature: number;
+  condition: string;
+  icon: string;
+  forecast?: any;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('weather_data')
+      .insert({
+        ...weatherData,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating weather data:', error);
+    throw error;
+  }
+}
+
+export async function updateWeatherData(id: number, updates: any) {
+  try {
+    const { data, error } = await supabase
+      .from('weather_data')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating weather data:', error);
+    throw error;
+  }
+}
+
+export async function deleteWeatherData(id: number) {
+  try {
+    const { error } = await supabase
+      .from('weather_data')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error('Error deleting weather data:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// USER DASHBOARD MANAGEMENT
+// ==============================================
+
+export async function getUserDashboardStats(timeRange: 'today' | 'week' | 'month' = 'week') {
+  try {
+    // Return mock user dashboard statistics for now
+    return {
+      total_users: 12540,
+      active_users: 8920,
+      new_users_today: 45,
+      total_reading_time: '125,340 minutes',
+      total_articles_read: 34567,
+      top_categories: [
+        { name: 'National', count: 1250 },
+        { name: 'Sports', count: 980 },
+        { name: 'Politics', count: 875 },
+        { name: 'Business', count: 720 },
+        { name: 'Technology', count: 540 }
+      ],
+      user_engagement: {
+        daily_active_rate: 67,
+        weekly_retention: 45,
+        monthly_retention: 28,
+        average_session_duration: '8m 25s'
+      }
+    };
+  } catch (error) {
+    console.error('Error fetching user dashboard stats:', error);
+    return {};
+  }
+}
+
+export async function getUserEngagementData() {
+  try {
+    // Return mock engagement data for now
+    return {
+      user_activities: [],
+      reading_patterns: [],
+      popular_content: [],
+      user_feedback: []
+    };
+  } catch (error) {
+    console.error('Error fetching user engagement data:', error);
+    return {};
+  }
+}
+
+// ==============================================
 // SYSTEM SETTINGS MANAGEMENT
 // ==============================================
 

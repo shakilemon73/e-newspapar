@@ -109,11 +109,9 @@ export default function VideosAdminPage() {
 
   // Delete video mutation
   const deleteVideoMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest('DELETE', `/api/videos/${id}`);
-    },
+    mutationFn: (id: number) => deleteVideoContent(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/videos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
       toast({
         title: "Success",
         description: "Video deleted successfully",
