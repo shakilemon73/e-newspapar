@@ -88,20 +88,31 @@
     </div>
 
     <script>
-      // Redirect to home page after 3 seconds or handle client-side routing
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 3000);
+      // Handle client-side routing for SPA
+      const currentPath = window.location.pathname;
       
-      // If this is a client-side route, try to handle it
-      if (window.history && window.history.pushState) {
-        // This will work if the app is already loaded
-        const currentPath = window.location.pathname;
-        if (currentPath.startsWith('/admin') || currentPath.startsWith('/dashboard') || 
-            currentPath.startsWith('/article') || currentPath.startsWith('/category')) {
-          // Redirect immediately for known routes
+      // Check if this is a valid client-side route that should be handled by the React app
+      const validRoutes = [
+        '/admin-login', '/admin-access', '/admin-dashboard', '/admin/',
+        '/dashboard', '/article/', '/category/', '/videos', '/epaper',
+        '/login', '/register', '/about', '/contact', '/profile',
+        '/saved-articles', '/reading-history', '/search'
+      ];
+      
+      const isValidRoute = validRoutes.some(route => 
+        currentPath === route || 
+        (route.endsWith('/') && currentPath.startsWith(route)) ||
+        currentPath.startsWith(route)
+      );
+      
+      if (isValidRoute) {
+        // This is a valid SPA route, redirect to index.html to let React handle it
+        window.location.replace('/');
+      } else {
+        // This is truly a 404, redirect to home after delay
+        setTimeout(() => {
           window.location.href = '/';
-        }
+        }, 3000);
       }
     </script>
   </body>

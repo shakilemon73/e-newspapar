@@ -274,22 +274,38 @@ function AdminRouter() {
   );
 }
 
-// Main Admin App
-export default function AdminApp() {
+// Error Boundary for Admin App
+function AdminErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <SiteSettingsProvider>
-          <SupabaseAuthProvider>
-            <SupabaseAdminAuthProvider>
-              <div className="min-h-screen bg-background">
-                <AdminRouter />
-                <Toaster />
-              </div>
-            </SupabaseAdminAuthProvider>
-          </SupabaseAuthProvider>
-        </SiteSettingsProvider>
-      </LanguageProvider>
-    </ThemeProvider>
+    <div className="min-h-screen bg-background">
+      {children}
+    </div>
+  );
+}
+
+// Main Admin App with Enhanced Error Handling
+export default function AdminApp() {
+  // Add debug logging for admin app initialization
+  useEffect(() => {
+    console.log('🔧 AdminApp initializing on route:', window.location.pathname);
+  }, []);
+
+  return (
+    <AdminErrorBoundary>
+      <ThemeProvider>
+        <LanguageProvider>
+          <SiteSettingsProvider>
+            <SupabaseAuthProvider>
+              <SupabaseAdminAuthProvider>
+                <div className="min-h-screen bg-background">
+                  <AdminRouter />
+                  <Toaster />
+                </div>
+              </SupabaseAdminAuthProvider>
+            </SupabaseAuthProvider>
+          </SiteSettingsProvider>
+        </LanguageProvider>
+      </ThemeProvider>
+    </AdminErrorBoundary>
   );
 }
