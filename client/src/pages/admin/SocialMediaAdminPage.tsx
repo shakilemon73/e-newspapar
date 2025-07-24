@@ -78,7 +78,7 @@ export default function SocialMediaAdminPage() {
   });
 
   // Extract social posts array from the response
-  const socialPosts = socialData?.socialPosts || [];
+  const socialPosts = socialData?.posts || [];
 
   // Create social media post mutation
   const createPostMutation = useMutation({

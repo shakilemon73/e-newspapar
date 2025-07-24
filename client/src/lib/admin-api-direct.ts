@@ -1228,16 +1228,18 @@ export async function getAdminEmailTemplates() {
 
     if (error) throw error;
     return {
-      emailTemplates: data || [],
+      templates: data || [],
       totalCount: data?.length || 0,
       currentPage: 1,
       totalPages: 1
     };
   } catch (error) {
     console.error('Error fetching email templates:', error);
-    return { emailTemplates: [], totalCount: 0, currentPage: 1, totalPages: 0 };
+    return { templates: [], totalCount: 0, currentPage: 1, totalPages: 0 };
   }
 }
+
+
 
 export async function updateEmailTemplate(id: number, updates: any) {
   try {

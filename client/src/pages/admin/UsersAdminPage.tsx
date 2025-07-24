@@ -120,17 +120,17 @@ export default function UsersAdminPage() {
           return { totalUsers, adminUsers, activeUsers: totalUsers, newUsers: 0 };
         }
         // Fallback calculation if stats function fails
-        if (users && users.users && Array.isArray(users.users)) {
-          const usersData = users.users;
-          const totalUsers = usersData.length;
-          const adminUsers = usersData.filter((u: any) => u.role === 'admin').length;
-          const activeUsers = usersData.filter((u: any) => {
+        if (usersData && usersData.users && Array.isArray(usersData.users)) {
+          const usersDataArray = usersData.users;
+          const totalUsers = usersDataArray.length;
+          const adminUsers = usersDataArray.filter((u: any) => u.role === 'admin').length;
+          const activeUsers = usersDataArray.filter((u: any) => {
             const lastSignIn = new Date(u.last_sign_in_at || u.created_at);
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
             return lastSignIn > thirtyDaysAgo;
           }).length;
-          const newUsers = usersData.filter((u: any) => {
+          const newUsers = usersDataArray.filter((u: any) => {
             const createdAt = new Date(u.created_at);
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

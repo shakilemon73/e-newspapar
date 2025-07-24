@@ -109,7 +109,7 @@ export default function CommentManagementPage() {
   const { data: reportedComments, isLoading: reportedLoading } = useQuery({
     queryKey: ['admin-reported-comments'],
     queryFn: () => getAdminComments().then(comments => 
-      comments.filter(c => c.is_reported)
+      comments.comments?.filter(c => c.is_reported) || []
     ),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
@@ -150,11 +150,7 @@ export default function CommentManagementPage() {
   });
 
   const deleteCommentMutation = useMutation({
-    mutationFn: async (commentId: string) => {
-      return await apiRequest(`/api/admin/comments/${commentId}`, {
-        method: 'DELETE'
-      });
-    },
+    mutationFn: (commentId: string) => deleteComment(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/comments'] });
       setDeleteConfirmId(null);
@@ -173,12 +169,8 @@ export default function CommentManagementPage() {
   });
 
   const replyToCommentMutation = useMutation({
-    mutationFn: async ({ commentId, content }: { commentId: string; content: string }) => {
-      return await apiRequest(`/api/admin/comments/${commentId}/reply`, {
-        method: 'POST',
-        body: { content }
-      });
-    },
+    mutationFn: ({ commentId, content }: { commentId: string; content: string }) => 
+      replyToComment(commentId, content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/comments'] });
       setShowReplyDialog(false);
