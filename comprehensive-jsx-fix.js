@@ -1,4 +1,105 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+/**
+ * Comprehensive JSX Runtime Fix for Vercel Deployment
+ * Fixes all JSX and ES module issues by replacing them with working alternatives
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function fixAllJSXRuntimeIssues() {
+  console.log('🔧 Applying comprehensive JSX runtime fixes...');
+  
+  const distDir = path.join(__dirname, 'dist-static');
+  if (!fs.existsSync(distDir)) {
+    console.error('❌ dist-static directory not found');
+    return;
+  }
+  
+  // Find all JavaScript files
+  const jsFiles = fs.readdirSync(path.join(distDir, 'assets'))
+    .filter(file => file.endsWith('.js'))
+    .map(file => path.join(distDir, 'assets', file));
+  
+  jsFiles.forEach(filePath => {
+    try {
+      let content = fs.readFileSync(filePath, 'utf8');
+      let hasChanges = false;
+      
+      // Replace all JSX runtime imports and exports
+      const fixes = [
+        // Fix jsx imports
+        {
+          pattern: /import\s*{\s*jsx\s*,?\s*jsxs?\s*,?\s*Fragment?\s*}\s*from\s*['"][^'"]*jsx-runtime['"];?/g,
+          replacement: '// JSX runtime handled by global polyfill'
+        },
+        {
+          pattern: /import\s*{\s*jsxDEV\s*}\s*from\s*['"][^'"]*jsx-dev-runtime['"];?/g,
+          replacement: '// JSX dev runtime handled by global polyfill'
+        },
+        // Fix jsx calls - replace with global window functions
+        {
+          pattern: /\bjsx\s*\(/g,
+          replacement: '(window.jsx||globalThis.jsx)('
+        },
+        {
+          pattern: /\bjsxs\s*\(/g,
+          replacement: '(window.jsxs||globalThis.jsxs)('
+        },
+        {
+          pattern: /\bjsxDEV\s*\(/g,
+          replacement: '(window.jsxDEV||globalThis.jsxDEV)('
+        },
+        // Fix React imports that might be problematic
+        {
+          pattern: /import\s+\*\s+as\s+React\s+from\s*['"]react['"];?/g,
+          replacement: 'const React = window.React || globalThis.React;'
+        },
+        {
+          pattern: /import\s+React\s+from\s*['"]react['"];?/g,
+          replacement: 'const React = window.React || globalThis.React;'
+        },
+        // Fix Fragment references
+        {
+          pattern: /React\.Fragment/g,
+          replacement: '(React.Fragment || "div")'
+        },
+        // Fix export statements that might cause issues
+        {
+          pattern: /export\s*{\s*[^}]*jsx[^}]*\s*}\s*;?/g,
+          replacement: '// Exports handled by global polyfill'
+        }
+      ];
+      
+      fixes.forEach(fix => {
+        const originalContent = content;
+        content = content.replace(fix.pattern, fix.replacement);
+        if (content !== originalContent) {
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        fs.writeFileSync(filePath, content);
+        console.log(`✅ Fixed JSX runtime in ${path.basename(filePath)}`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Error fixing ${filePath}:`, error.message);
+    }
+  });
+  
+  // Create enhanced index.html with bulletproof JSX polyfill
+  const indexPath = path.join(distDir, 'index.html');
+  createEnhancedIndexHTML(indexPath);
+}
+
+function createEnhancedIndexHTML(indexPath) {
+  const enhancedHTML = `<!DOCTYPE html>
 <html lang="bn" dir="ltr">
   <head>
     <meta charset="UTF-8" />
@@ -197,4 +298,11 @@
     </div>
     <script type="module" src="/src/main-static.tsx"></script>
   </body>
-</html>
+</html>`;
+
+  fs.writeFileSync(indexPath, enhancedHTML);
+  console.log('✅ Created enhanced index.html with bulletproof JSX polyfill');
+}
+
+// Run the comprehensive fix
+fixAllJSXRuntimeIssues();

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSX Runtime Test</title>
+</head>
+<body>
+    <div id="test-root"></div>
+    
+    <!-- Load React UMD -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <script>
+      // Ultimate JSX Runtime Polyfill Test
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        console.error('Runtime Error:', msg);
+        return false;
+      };
+      
+      function initializeJSXPolyfill() {
+        if (typeof React !== 'undefined' && React.createElement) {
+          window.jsx = function(type, props, key) {
+            if (key !== undefined) {
+              props = props || {};
+              props.key = key;
+            }
+            if (props && typeof props.children !== 'undefined') {
+              const { children, ...rest } = props;
+              return React.createElement(type, rest, children);
+            }
+            return React.createElement(type, props);
+          };
+          
+          window.jsxs = window.jsx;
+          window.jsxDEV = window.jsx;
+          window.Fragment = React.Fragment || 'div';
+          
+          if (typeof globalThis !== 'undefined') {
+            globalThis.jsx = window.jsx;
+            globalThis.jsxs = window.jsxs;
+            globalThis.jsxDEV = window.jsxDEV;
+            globalThis.Fragment = window.Fragment;
+          }
+          
+          console.log('✅ JSX polyfill initialized');
+          return true;
+        }
+        return false;
+      }
+      
+      // Initialize JSX polyfill
+      if (!initializeJSXPolyfill()) {
+        let retries = 0;
+        const waitForReact = setInterval(() => {
+          if (initializeJSXPolyfill() || retries++ > 50) {
+            clearInterval(waitForReact);
+            testJSXFunctions();
+          }
+        }, 100);
+      } else {
+        testJSXFunctions();
+      }
+      
+      function testJSXFunctions() {
+        try {
+          // Test jsx function
+          const testElement = jsx('div', { children: 'JSX Test Works!' });
+          console.log('✅ jsx() function test passed:', testElement);
+          
+          // Test jsxs function
+          const testElement2 = jsxs('p', { children: 'jsxs Test Works!' });
+          console.log('✅ jsxs() function test passed:', testElement2);
+          
+          // Test with React DOM
+          if (typeof ReactDOM !== 'undefined' && ReactDOM.render) {
+            const container = document.getElementById('test-root');
+            ReactDOM.render(testElement, container);
+            console.log('✅ ReactDOM render test passed');
+          }
+          
+          document.body.innerHTML += '<h1 style="color: green;">✅ All JSX Runtime Tests Passed!</h1>';
+          
+        } catch (error) {
+          console.error('❌ JSX function test failed:', error);
+          document.body.innerHTML += '<h1 style="color: red;">❌ JSX Runtime Test Failed: ' + error.message + '</h1>';
+        }
+      }
+    </script>
+</body>
+</html>
