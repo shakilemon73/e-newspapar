@@ -71,11 +71,14 @@ export default function WeatherAdminPage() {
   }, [authLoading, user, setLocation]);
 
   // Fetch weather data from Supabase
-  const { data: weatherData, isLoading, error } = useQuery({
+  const { data: weatherDataRaw, isLoading, error } = useQuery({
     queryKey: ['admin-weather-data'],
     queryFn: () => getAdminWeatherData(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
+
+  // Extract weather data array from the response
+  const weatherData = weatherDataRaw?.weatherData || [];
 
   // Create weather mutation
   const createWeatherMutation = useMutation({

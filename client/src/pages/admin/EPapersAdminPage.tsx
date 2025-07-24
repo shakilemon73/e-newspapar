@@ -47,10 +47,13 @@ export default function EPapersAdminPage() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Fetch e-papers using direct admin API
-  const { data: epapers, isLoading, error } = useQuery({
+  const { data: epapersData, isLoading, error } = useQuery({
     queryKey: ['admin-epapers'],
     queryFn: () => getAdminEPapers(),
   });
+
+  // Extract e-papers array from the response
+  const epapers = epapersData?.epapers || [];
 
   // Create/Update mutation using direct admin API
   const saveMutation = useMutation({

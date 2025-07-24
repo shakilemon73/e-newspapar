@@ -97,11 +97,14 @@ export default function UsersAdminPage() {
   const [newRole, setNewRole] = useState<string>('');
 
   // Fetch users from Supabase auth with proper error handling
-  const { data: users, isLoading, error } = useQuery({
+  const { data: usersData, isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     retry: false,
     queryFn: () => getAdminUsers(),
   });
+
+  // Extract users array from the response
+  const users = usersData?.users || [];
 
   // Get user statistics with fallback calculation
   const { data: stats } = useQuery({

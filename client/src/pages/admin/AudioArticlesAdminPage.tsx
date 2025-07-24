@@ -62,11 +62,14 @@ export default function AudioArticlesAdminPage() {
   }, [authLoading, user, setLocation]);
 
   // Fetch audio articles using direct Supabase API
-  const { data: audioArticles, isLoading, error } = useQuery({
+  const { data: audioData, isLoading, error } = useQuery({
     queryKey: ['admin-audio-articles'],
     queryFn: () => getAdminAudioArticles(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
+
+  // Extract audio articles array from the response
+  const audioArticles = audioData?.audioArticles || [];
 
   // Create audio article mutation using direct Supabase API
   const createAudioMutation = useMutation({
@@ -214,7 +217,7 @@ export default function AudioArticlesAdminPage() {
                 <Radio className="h-8 w-8 text-blue-600" />
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Audio Articles</p>
-                  <p className="text-2xl font-bold">{audioArticles?.length || 0}</p>
+                  <p className="text-2xl font-bold">{audioArticles.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -226,11 +229,8 @@ export default function AudioArticlesAdminPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Duration</p>
                   <p className="text-2xl font-bold">
-                    {audioArticles?.reduce((sum: number, audio: AudioArticle) => {
-                      const duration = audio.duration.split(':').reduce((acc, time) => (60 * acc) + +time, 0);
-                      return sum + duration;
-                    }, 0) ? Math.round(audioArticles.reduce((sum: number, audio: AudioArticle) => {
-                      const duration = audio.duration.split(':').reduce((acc, time) => (60 * acc) + +time, 0);
+                    {audioArticles.length ? Math.round(audioArticles.reduce((sum: number, audio: AudioArticle) => {
+                      const duration = audio.duration?.split(':').reduce((acc, time) => (60 * acc) + +time, 0) || 0;
                       return sum + duration;
                     }, 0) / 60) : 0}m
                   </p>
@@ -245,9 +245,9 @@ export default function AudioArticlesAdminPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Published Today</p>
                   <p className="text-2xl font-bold">
-                    {audioArticles?.filter((audio: AudioArticle) => 
+                    {audioArticles.filter((audio: AudioArticle) => 
                       new Date(audio.publishedAt).toDateString() === new Date().toDateString()
-                    ).length || 0}
+                    ).length}
                   </p>
                 </div>
               </div>

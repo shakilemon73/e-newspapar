@@ -40,10 +40,13 @@ export default function EmailNotificationPage() {
   const queryClient = useQueryClient();
 
   // Email templates query using direct Supabase API
-  const { data: templates, isLoading: templatesLoading } = useQuery({
+  const { data: templatesData, isLoading: templatesLoading } = useQuery({
     queryKey: ['admin-email-templates'],
     queryFn: () => getAdminEmailTemplates(),
   });
+
+  // Extract templates array from the response
+  const templates = templatesData?.templates || [];
 
   // Newsletter subscribers query
   const { data: subscribers, isLoading: subscribersLoading } = useQuery({

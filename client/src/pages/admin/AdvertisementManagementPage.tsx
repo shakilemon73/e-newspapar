@@ -44,10 +44,13 @@ export default function AdvertisementManagementPage() {
   const queryClient = useQueryClient();
 
   // Advertisements query using direct Supabase API
-  const { data: advertisements, isLoading: adsLoading } = useQuery({
+  const { data: advertisementsData, isLoading: adsLoading } = useQuery({
     queryKey: ['admin-advertisements'],
     queryFn: () => getAdminAdvertisements(),
   });
+
+  // Extract advertisements array from the response
+  const advertisements = advertisementsData?.advertisements || [];
 
   // Advertisement analytics - simplified for direct API
   const adAnalytics = { 

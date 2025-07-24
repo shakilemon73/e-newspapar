@@ -71,11 +71,14 @@ export default function SocialMediaAdminPage() {
   }, [authLoading, user, setLocation]);
 
   // Fetch social media posts using direct Supabase API
-  const { data: socialPosts, isLoading, error } = useQuery({
+  const { data: socialData, isLoading, error } = useQuery({
     queryKey: ['admin-social-posts'],
     queryFn: () => getAdminSocialPosts(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
+
+  // Extract social posts array from the response
+  const socialPosts = socialData?.socialPosts || [];
 
   // Create social media post mutation
   const createPostMutation = useMutation({

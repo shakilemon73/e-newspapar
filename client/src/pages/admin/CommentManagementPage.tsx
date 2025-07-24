@@ -86,11 +86,14 @@ export default function CommentManagementPage() {
   }, [authLoading, user, setLocation]);
 
   // Comments queries using direct Supabase API
-  const { data: comments, isLoading: commentsLoading } = useQuery({
+  const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ['admin-comments', filterStatus, searchTerm],
     queryFn: () => getAdminComments(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
+
+  // Extract comments array from the response
+  const comments = commentsData?.comments || [];
 
   const { data: commentStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-comment-stats'],
