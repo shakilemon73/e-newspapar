@@ -1,12 +1,11 @@
-# Vercel JSX Runtime Fix - Complete Solution
+# Vercel JSX Runtime Fix - FINAL SOLUTION
 
-## Problem Description
-When deploying React applications to Vercel, you may encounter the error:
-```
-Uncaught ReferenceError: jsx is not defined
-```
+## Problem Solved
+✅ **Fixed**: "Uncaught ReferenceError: jsx is not defined"
+✅ **Fixed**: "Uncaught TypeError: window.jsx is not a function"
 
-This happens because the JSX transformation in production builds doesn't properly reference the JSX runtime functions, causing them to be undefined in the browser environment.
+## Root Cause
+Vite transforms JSX to jsx() and jsxs() function calls, but in production builds these functions aren't properly available in the browser scope, causing runtime errors.
 
 ## Root Cause Analysis
 1. **Build Process**: Vite/esbuild transforms JSX to function calls like `jsx()` and `jsxs()`
@@ -15,9 +14,9 @@ This happens because the JSX transformation in production builds doesn't properl
 
 ## Complete Solution Implementation
 
-### 1. Enhanced JSX Runtime Fix Script (`jsx-runtime-fix.js`)
+### 1. Simplified JSX Runtime Fix Script (`jsx-runtime-fix.js`)
 ```javascript
-// Comprehensive pattern matching for all JSX runtime issues
+// Simple but effective pattern fixes for JSX runtime issues
 const fixes = [
   // Fix jsxDEV function calls (most common issue)
   { from: /e\.jsxDEV/g, to: 'jsx' },
@@ -28,23 +27,17 @@ const fixes = [
   { from: /\be\.jsx\b/g, to: 'jsx' },
   { from: /\be\.jsxs\b/g, to: 'jsxs' },
   
-  // Fix undefined jsx references - key fix for Vercel
-  { from: /(?<![\w$.])\bjsx\(/g, to: 'window.jsx(' },
-  { from: /(?<![\w$.])\bjsxs\(/g, to: 'window.jsxs(' },
-  
   // Fix potential development vs production JSX runtime issues
   { from: /\.jsxDEV\b/g, to: '.jsx' },
   { from: /\bjsxDEV\b/g, to: 'jsx' },
-  
-  // Fix module scope issues in production builds
-  { from: /\bconst jsx\s*=/g, to: 'window.jsx = window.jsx ||' },
-  { from: /\bconst jsxs\s*=/g, to: 'window.jsxs = window.jsxs ||' },
 ];
+
+// No complex runtime injection needed - HTML polyfill handles everything
 ```
 
-### 2. HTML Import Map and Global Runtime (`index-static.html`)
+### 2. Simplified JSX Runtime Solution (`index-static.html`)
 ```html
-<!-- Import map for proper module resolution in browsers -->
+<!-- Import map for module resolution -->
 <script type="importmap">
 {
   "imports": {
@@ -56,18 +49,22 @@ const fixes = [
 }
 </script>
 
-<!-- JSX Runtime Polyfill for Vercel Production -->
-<script type="module">
-  // Ensure JSX runtime is available globally
-  if (typeof window !== 'undefined') {
-    import('https://esm.sh/react@18.3.1/jsx-runtime').then(({ jsx, jsxs, Fragment }) => {
-      window.jsx = jsx;
-      window.jsxs = jsxs;
-      window.Fragment = Fragment;
-      console.log('✅ JSX runtime initialized globally');
-    }).catch(error => {
-      console.error('❌ Failed to initialize JSX runtime:', error);
-    });
+<!-- JSX Runtime Polyfill - Load React UMD and create jsx functions -->
+<script src="https://esm.sh/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://esm.sh/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+  // Create jsx and jsxs functions using React.createElement
+  if (typeof window !== 'undefined' && window.React) {
+    window.jsx = function(type, props, key) {
+      return window.React.createElement(type, props && key ? {...props, key} : props);
+    };
+    
+    window.jsxs = function(type, props, key) {
+      return window.React.createElement(type, props && key ? {...props, key} : props);
+    };
+    
+    window.Fragment = window.React.Fragment;
+    console.log('✅ JSX runtime initialized with React.createElement');
   }
 </script>
 ```

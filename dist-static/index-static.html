@@ -31,6 +31,24 @@
 
     
     <!-- JSX Runtime Polyfill for Vercel Production -->
+    <script src="https://esm.sh/react@18.3.1/umd/react.production.min.js"></script>
+    <script src="https://esm.sh/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script>
+      // Ensure JSX runtime functions are available globally
+      if (typeof window !== 'undefined' && window.React) {
+        // Create jsx and jsxs functions that work with React.createElement
+        window.jsx = function(type, props, key) {
+          return window.React.createElement(type, props && key ? {...props, key} : props);
+        };
+        
+        window.jsxs = function(type, props, key) {
+          return window.React.createElement(type, props && key ? {...props, key} : props);
+        };
+        
+        window.Fragment = window.React.Fragment;
+        console.log('✅ JSX runtime initialized with React.createElement');
+      }
+    </script>
     
     <style>
       /* Critical CSS for Bengali fonts and loading state */
@@ -76,7 +94,7 @@
       }
     }
     </script>
-    <script type="module" crossorigin src="/assets/main-Dp9VOJ-r.js"></script>
+    <script type="module" crossorigin src="/assets/main-CWzqXgy2.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/main-BZOrmsXw.css">
   </head>
   <body>
