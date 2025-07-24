@@ -36,9 +36,13 @@ export function fixJSXRuntime(distPath) {
         { from: /\be\.jsx\b/g, to: 'jsx' },
         { from: /\be\.jsxs\b/g, to: 'jsxs' },
         
-        // Fix React import issues
+        // Fix React import issues - remove duplicate imports
         { from: /import\s*\{\s*jsx,\s*jsxs\s*\}\s*from\s*["']react\/jsx-runtime["'];?/g, to: '' },
         { from: /import\s*\{\s*jsx\s*\}\s*from\s*["']react\/jsx-runtime["'];?/g, to: '' },
+        
+        // Fix potential development vs production JSX runtime issues
+        { from: /\.jsxDEV\b/g, to: '.jsx' },
+        { from: /\bjsxDEV\b/g, to: 'jsx' },
       ];
 
       fixes.forEach(({ from, to }) => {
@@ -48,10 +52,8 @@ export function fixJSXRuntime(distPath) {
         }
       });
 
-      // Add proper React import at the beginning
-      if (modified && !content.includes('import React')) {
-        content = 'import React from "react";\nimport{jsx,jsxs}from"react/jsx-runtime";\n' + content;
-      }
+      // Skip adding imports since Vite bundles everything properly
+      // The import map in HTML will handle any bare module specifiers
 
       if (modified) {
         fs.writeFileSync(filePath, content);
