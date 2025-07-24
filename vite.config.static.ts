@@ -13,7 +13,9 @@ export default defineConfig({
         presets: [
           ['@babel/preset-react', {
             runtime: 'automatic',
-            importSource: 'react'
+            importSource: 'react',
+            development: false,
+            useBuiltIns: false
           }]
         ]
       }
@@ -60,6 +62,7 @@ export default defineConfig({
     jsx: 'automatic',
     jsxFactory: undefined,
     jsxFragment: undefined,
-    jsxInject: undefined
+    jsxInject: undefined,
+    jsxDev: false
   }
 });

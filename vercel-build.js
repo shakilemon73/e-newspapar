@@ -25,7 +25,8 @@ try {
     presets: [
       ['@babel/preset-react', {
         runtime: 'automatic',
-        importSource: 'react'
+        importSource: 'react',
+        development: false
       }]
     ]
   };
@@ -94,30 +95,9 @@ try {
     console.log('✅ Created 404.html for client-side routing');
   }
 
-  // Fix any remaining JSX runtime issues in built files
-  console.log('🔧 Fixing JSX runtime references in built files...');
-  const distFiles = fs.readdirSync('dist-static/assets', { withFileTypes: true })
-    .filter(dirent => dirent.isFile() && dirent.name.endsWith('.js'))
-    .map(dirent => path.join('dist-static/assets', dirent.name));
-
-  distFiles.forEach(filePath => {
-    try {
-      let content = fs.readFileSync(filePath, 'utf8');
-      
-      // Fix jsxDEV function calls
-      content = content.replace(/e\.jsxDEV/g, 'React.createElement');
-      content = content.replace(/\.jsxDEV\(/g, '(React.createElement,');
-      
-      // Ensure React import
-      if (!content.includes('import React') && content.includes('React.createElement')) {
-        content = 'import React from "react";\n' + content;
-      }
-      
-      fs.writeFileSync(filePath, content);
-    } catch (error) {
-      console.warn(`⚠️ Could not process ${filePath}: ${error.message}`);
-    }
-  });
+  // Apply comprehensive JSX runtime fixes
+  const { fixJSXRuntime } = await import('./jsx-runtime-fix.js');
+  fixJSXRuntime('dist-static');
 
   console.log('✅ Enhanced Vercel build completed successfully!');
   console.log('📦 Output directory: dist-static/');
