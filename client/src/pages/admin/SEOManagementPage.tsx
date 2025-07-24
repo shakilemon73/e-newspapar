@@ -26,7 +26,10 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { 
+  getSiteSettings,
+  updateSiteSettings 
+} from '@/lib/admin-supabase-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,
@@ -66,9 +69,10 @@ export default function SEOManagementPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // SEO data queries
+  // SEO data queries using direct Supabase
   const { data: seoData, isLoading: seoLoading } = useQuery({
-    queryKey: ['/api/admin/seo-settings'],
+    queryKey: ['admin-seo-settings'],
+    queryFn: () => getSiteSettings(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

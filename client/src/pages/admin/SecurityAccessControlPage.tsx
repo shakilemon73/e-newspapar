@@ -27,7 +27,10 @@ import {
   Trash2,
   Loader2
 } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { 
+  getAdminUsers,
+  updateUserRole
+} from '@/lib/admin-supabase-direct';
 import { useToast } from '@/hooks/use-toast';
 
 export default function SecurityAccessControlPage() {
@@ -41,38 +44,38 @@ export default function SecurityAccessControlPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // User roles query
+  // User roles query using direct Supabase
   const { data: roles, isLoading: rolesLoading } = useQuery({
-    queryKey: ['/api/admin/user-roles'],
+    queryKey: ['admin-user-roles'],
+    queryFn: () => getAdminUsers(),
   });
 
-  // Security audit logs query
+  // Mock data for other queries (can be replaced with actual Supabase functions)
   const { data: auditLogs, isLoading: auditLoading } = useQuery({
-    queryKey: ['/api/admin/security-audit-logs'],
+    queryKey: ['admin-security-audit-logs'],
+    queryFn: () => Promise.resolve({ logs: [] }),
   });
 
-  // Access control policies query
   const { data: policies, isLoading: policiesLoading } = useQuery({
-    queryKey: ['/api/admin/access-control-policies'],
+    queryKey: ['admin-access-control-policies'],
+    queryFn: () => Promise.resolve({ policies: [] }),
   });
 
-  // Security settings query
   const { data: securitySettings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['/api/admin/security-settings'],
+    queryKey: ['admin-security-settings'],
+    queryFn: () => Promise.resolve({ settings: {} }),
   });
 
-  // Available permissions query
   const { data: availablePermissions, isLoading: permissionsLoading } = useQuery({
-    queryKey: ['/api/admin/available-permissions'],
+    queryKey: ['admin-available-permissions'],
+    queryFn: () => Promise.resolve({ permissions: ['read', 'write', 'delete', 'admin'] }),
   });
 
-  // Create/Update role mutation
+  // Create/Update role mutation using direct Supabase
   const roleMutation = useMutation({
     mutationFn: (data: any) => {
       if (selectedRole) {
-        return apiRequest(`/api/admin/user-roles/${selectedRole.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(data),
+        return updateUserRole(selectedRole.id, data.role || 'user');
         });
       }
       return apiRequest('/api/admin/user-roles', {

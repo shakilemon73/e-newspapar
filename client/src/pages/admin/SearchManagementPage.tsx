@@ -27,7 +27,10 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { 
+  getSiteSettings,
+  updateSiteSettings
+} from '@/lib/admin-supabase-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,
@@ -66,9 +69,10 @@ export default function SearchManagementPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Search data queries
+  // Search data queries using direct Supabase
   const { data: searchStats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/admin/search-stats'],
+    queryKey: ['admin-search-stats'],
+    queryFn: () => getSiteSettings(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
