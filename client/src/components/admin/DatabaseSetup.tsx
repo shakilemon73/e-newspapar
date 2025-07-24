@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, Database, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import adminSupabase from '@/lib/admin-supabase-direct';
+import { getSiteSettings } from '@/lib/admin-supabase-direct';
 
 export function DatabaseSetup() {
   const [isLoading, setIsLoading] = useState(false);
