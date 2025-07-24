@@ -687,4 +687,140 @@ export async function getAdminCategoriesDirect() {
   }
 }
 
+// ==============================================
+// SITE SETTINGS MANAGEMENT (Admin Service Role)
+// ==============================================
+
+export async function getSiteSettings() {
+  try {
+    console.log('Fetching site settings with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('system_settings')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Site settings fetch error:', error);
+      return {
+        siteName: "Bengali News",
+        siteDescription: "বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম",
+        logoUrl: "",
+        defaultLanguage: "bn",
+        siteUrl: ""
+      };
+    }
+
+    // Transform settings array to object
+    const settings: any = {};
+    data?.forEach((setting: any) => {
+      settings[setting.key] = setting.value;
+    });
+
+    return {
+      siteName: settings.siteName || "Bengali News",
+      siteDescription: settings.siteDescription || "বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম",
+      logoUrl: settings.logoUrl || "",
+      defaultLanguage: settings.defaultLanguage || "bn",
+      siteUrl: settings.siteUrl || ""
+    };
+  } catch (error) {
+    console.error('Error fetching site settings:', error);
+    return {
+      siteName: "Bengali News",
+      siteDescription: "বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম",
+      logoUrl: "",
+      defaultLanguage: "bn",
+      siteUrl: ""
+    };
+  }
+}
+
+export async function updateSiteSettings(settings: any) {
+  try {
+    console.log('Updating site settings with service role key...');
+    
+    // Update each setting individually
+    const updates = Object.entries(settings).map(([key, value]) =>
+      adminSupabase
+        .from('system_settings')
+        .upsert({ key, value: String(value) }, { onConflict: 'key' })
+    );
+
+    const results = await Promise.all(updates);
+    
+    // Check for errors
+    const errors = results.filter(result => result.error);
+    if (errors.length > 0) {
+      console.error('Site settings update errors:', errors);
+      throw new Error('Failed to update some settings');
+    }
+
+    console.log('✅ Site settings updated successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating site settings:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// USER MANAGEMENT (Admin Service Role)
+// ==============================================
+
+export async function getAdminUsers() {
+  try {
+    console.log('Fetching admin users with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('user_profiles')
+      .select(`
+        id,
+        user_id,
+        full_name,
+        email,
+        role,
+        is_active,
+        created_at,
+        updated_at
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Admin users fetch error:', error);
+      return { users: [] };
+    }
+
+    console.log('✅ Admin users fetched successfully');
+    return { users: data || [] };
+  } catch (error) {
+    console.error('Error fetching admin users:', error);
+    return { users: [] };
+  }
+}
+
+export async function updateUserRole(userId: string, role: string) {
+  try {
+    console.log('Updating user role with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('user_profiles')
+      .update({ role })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('User role update error:', error);
+      throw new Error(error.message || 'Failed to update user role');
+    }
+
+    console.log('✅ User role updated successfully');
+    return data;
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    throw error;
+  }
+}
+
 export default adminSupabase;
