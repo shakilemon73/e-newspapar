@@ -15,15 +15,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    },
-    {
-      "source": "/(favicon|generated-icon|og-default-image|placeholder-).*",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
     }
   ],
   "rewrites": [
@@ -40,7 +31,59 @@
       "destination": "/index.html"
     },
     {
-      "source": "/admin/(.*)",
+      "source": "/admin/articles",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/categories",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/users",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/settings",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/videos",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/epapers",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/breaking-news",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/analytics",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/comments",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/audio-articles",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/trending",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/algorithms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/email",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/advertisement",
       "destination": "/index.html"
     },
     {

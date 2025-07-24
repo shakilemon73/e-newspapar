@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Vercel Admin Test</title>
+  <meta charset="utf-8">
+</head>
+<body>
+  <h1>Admin Routes Test</h1>
+  <p>If you can see this page, admin routing is working!</p>
+  <h2>Test these admin routes:</h2>
+  <ul>
+    <li><a href="/admin-login">/admin-login</a></li><li><a href="/admin-dashboard">/admin-dashboard</a></li><li><a href="/admin-access">/admin-access</a></li><li><a href="/admin/articles">/admin/articles</a></li><li><a href="/admin/categories">/admin/categories</a></li><li><a href="/admin/users">/admin/users</a></li><li><a href="/admin/settings">/admin/settings</a></li><li><a href="/admin/videos">/admin/videos</a></li><li><a href="/admin/epapers">/admin/epapers</a></li><li><a href="/admin/breaking-news">/admin/breaking-news</a></li><li><a href="/admin/analytics">/admin/analytics</a></li><li><a href="/admin/comments">/admin/comments</a></li><li><a href="/admin/audio-articles">/admin/audio-articles</a></li><li><a href="/admin/trending">/admin/trending</a></li><li><a href="/admin/algorithms">/admin/algorithms</a></li><li><a href="/admin/email">/admin/email</a></li><li><a href="/admin/advertisement">/admin/advertisement</a></li>
+  </ul>
+  <script>
+    console.log('Admin test page loaded successfully');
+    // Test routing
+    const currentPath = window.location.pathname;
+    console.log('Current path:', currentPath);
+    
+    if (currentPath.includes('/admin')) {
+      console.log('✅ Admin route detected');
+    }
+  </script>
+</body>
+</html>
