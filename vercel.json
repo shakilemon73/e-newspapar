@@ -18,9 +18,11 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/admin-login", "destination": "/admin-login.html" },
+    { "source": "/admin-dashboard", "destination": "/admin-dashboard.html" },
+    { "source": "/admin/(.*)", "destination": "/admin-dashboard.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
