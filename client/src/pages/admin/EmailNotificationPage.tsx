@@ -24,7 +24,17 @@ import {
   Trash2,
   Copy
 } from 'lucide-react';
-import { getAdminEmailTemplates, createEmailTemplate, updateEmailTemplate, deleteEmailTemplate } from '@/lib/admin-api-direct';
+import { 
+  getAdminEmailTemplates, 
+  createEmailTemplate, 
+  updateEmailTemplate, 
+  deleteEmailTemplate,
+  getNewsletterSubscribers,
+  getEmailSettings,
+  getEmailStats,
+  sendNewsletter,
+  updateEmailSettings
+} from '@/lib/admin-supabase-direct';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EmailNotificationPage() {
@@ -39,7 +49,7 @@ export default function EmailNotificationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Email templates query using direct Supabase API
+  // Email templates query using direct Supabase API with admin service role
   const { data: templatesData, isLoading: templatesLoading } = useQuery({
     queryKey: ['admin-email-templates'],
     queryFn: () => getAdminEmailTemplates(),
@@ -48,64 +58,58 @@ export default function EmailNotificationPage() {
   // Extract templates array from the response
   const templates = templatesData?.templates || [];
 
-  // Newsletter subscribers query
+  // Newsletter subscribers query using direct Supabase API
   const { data: subscribers, isLoading: subscribersLoading } = useQuery({
-    queryKey: ['/api/admin/newsletter-subscribers'],
+    queryKey: ['admin-newsletter-subscribers'],
+    queryFn: () => getNewsletterSubscribers(),
   });
 
-  // Email settings query
+  // Email settings query using direct Supabase API
   const { data: emailSettings, isLoading: settingsLoading } = useQuery({
-    queryKey: ['/api/admin/email-settings'],
+    queryKey: ['admin-email-settings'],
+    queryFn: () => getEmailSettings(),
   });
 
-  // Email stats query
+  // Email stats query using direct Supabase API
   const { data: emailStats, isLoading: statsLoading } = useQuery({
-    queryKey: ['/api/admin/email-stats'],
+    queryKey: ['admin-email-stats'],
+    queryFn: () => getEmailStats(),
   });
 
-  // Create/Update template mutation
+  // Create/Update template mutation using direct Supabase API
   const templateMutation = useMutation({
     mutationFn: (data: any) => {
       if (selectedTemplate) {
-        return apiRequest(`/api/admin/email-templates/${selectedTemplate.id}`, {
-          method: 'PUT',
-          body: JSON.stringify(data),
-        });
+        return updateEmailTemplate(selectedTemplate.id, data);
       }
-      return apiRequest('/api/admin/email-templates', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return createEmailTemplate(data);
     },
     onSuccess: () => {
       toast({
         title: "টেমপ্লেট সংরক্ষিত",
         description: "ইমেইল টেমপ্লেট সফলভাবে সংরক্ষিত হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-email-templates'] });
       setSelectedTemplate(null);
       setTemplateForm({ name: '', subject: '', content: '', type: 'newsletter' });
     },
   });
 
-  // Delete template mutation
+  // Delete template mutation using direct Supabase API
   const deleteTemplateMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/admin/email-templates/${id}`, { method: 'DELETE' }),
+    mutationFn: (id: string) => deleteEmailTemplate(id),
     onSuccess: () => {
       toast({
         title: "টেমপ্লেট মুছে ফেলা হয়েছে",
         description: "ইমেইল টেমপ্লেট সফলভাবে মুছে ফেলা হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-email-templates'] });
     },
   });
 
-  // Send newsletter mutation
+  // Send newsletter mutation using direct Supabase API
   const sendNewsletterMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/admin/send-newsletter', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => sendNewsletter(data),
     onSuccess: () => {
       toast({
         title: "নিউজলেটার পাঠানো হয়েছে",
@@ -114,18 +118,15 @@ export default function EmailNotificationPage() {
     },
   });
 
-  // Update settings mutation
+  // Update settings mutation using direct Supabase API
   const updateSettingsMutation = useMutation({
-    mutationFn: (data: any) => apiRequest('/api/admin/email-settings', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
+    mutationFn: (data: any) => updateEmailSettings(data),
     onSuccess: () => {
       toast({
         title: "সেটিংস আপডেট হয়েছে",
         description: "ইমেইল সেটিংস সফলভাবে আপডেট হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-email-settings'] });
     },
   });
 

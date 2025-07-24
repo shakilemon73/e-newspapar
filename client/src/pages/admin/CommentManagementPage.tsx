@@ -27,7 +27,12 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminComments, updateCommentStatus, deleteComment } from '@/lib/admin-api-direct';
+import { 
+  getAdminComments, 
+  updateCommentStatus, 
+  deleteCommentAdmin, 
+  replyToComment 
+} from '@/lib/admin-supabase-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,
@@ -72,7 +77,7 @@ export default function CommentManagementPage() {
   const [selectedComment, setSelectedComment] = useState<any>(null);
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -85,7 +90,7 @@ export default function CommentManagementPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Comments queries using direct Supabase API
+  // Comments queries using direct Supabase API with admin service role
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ['admin-comments', filterStatus, searchTerm],
     queryFn: () => getAdminComments(),
@@ -101,7 +106,8 @@ export default function CommentManagementPage() {
       total: 245,
       pending: 12,
       approved: 220,
-      rejected: 13
+      rejected: 13,
+      reported: 5
     }),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
@@ -150,14 +156,14 @@ export default function CommentManagementPage() {
   });
 
   const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: string) => deleteComment(commentId),
+    mutationFn: (commentId: number) => deleteCommentAdmin(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/comments'] });
-      setDeleteConfirmId(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
       toast({
         title: "মন্তব্য মুছে ফেলা হয়েছে",
-        description: "মন্তব্য স্থায়ীভাবে মুছে ফেলা হয়েছে।",
+        description: "মন্তব্য সফলভাবে মুছে ফেলা হয়েছে।",
       });
+      setDeleteConfirmId(null);
     },
     onError: () => {
       toast({
@@ -168,23 +174,23 @@ export default function CommentManagementPage() {
     }
   });
 
-  const replyToCommentMutation = useMutation({
-    mutationFn: ({ commentId, content }: { commentId: string; content: string }) => 
-      replyToComment(commentId, content),
+  const replyCommentMutation = useMutation({
+    mutationFn: ({ commentId, content }: { commentId: number; content: string }) => 
+      replyToComment(commentId, content, user?.id || ''),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/comments'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
+      toast({
+        title: "উত্তর পাঠানো হয়েছে",
+        description: "মন্তব্যের উত্তর সফলভাবে পাঠানো হয়েছে।",
+      });
       setShowReplyDialog(false);
       setReplyContent('');
       setSelectedComment(null);
-      toast({
-        title: "জবাব পাঠানো হয়েছে",
-        description: "আপনার জবাব সফলভাবে পাঠানো হয়েছে।",
-      });
     },
     onError: () => {
       toast({
-        title: "জবাব পাঠানো ব্যর্থ",
-        description: "জবাব পাঠাতে সমস্যা হয়েছে।",
+        title: "উত্তর পাঠানো ব্যর্থ",
+        description: "মন্তব্যের উত্তর পাঠাতে সমস্যা হয়েছে।",
         variant: "destructive",
       });
     }
@@ -227,7 +233,7 @@ export default function CommentManagementPage() {
 
   const handleSendReply = () => {
     if (selectedComment && replyContent.trim()) {
-      replyToCommentMutation.mutate({
+      replyCommentMutation.mutate({
         commentId: selectedComment.id,
         content: replyContent.trim()
       });
@@ -473,9 +479,9 @@ export default function CommentManagementPage() {
               </Button>
               <Button 
                 onClick={handleSendReply}
-                disabled={!replyContent.trim() || replyToCommentMutation.isPending}
+                disabled={!replyContent.trim() || replyCommentMutation.isPending}
               >
-                {replyToCommentMutation.isPending ? (
+                {replyCommentMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : null}
                 জবাব পাঠান
@@ -496,7 +502,7 @@ export default function CommentManagementPage() {
             <AlertDialogFooter>
               <AlertDialogCancel>বাতিল</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => deleteConfirmId && deleteCommentMutation.mutate(deleteConfirmId)}
+                onClick={() => deleteConfirmId && deleteCommentMutation.mutate(Number(deleteConfirmId))}
                 className="bg-red-600 hover:bg-red-700"
               >
                 মুছে ফেলুন

@@ -24,6 +24,316 @@ const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
 console.log('🔐 Admin Supabase client using SERVICE ROLE key');
 
 // ==============================================
+// COMMENTS MANAGEMENT (Admin Service Role)
+// ==============================================
+
+export async function getAdminComments() {
+  try {
+    const { data, error } = await adminSupabase
+      .from('article_comments')
+      .select(`
+        id,
+        article_id,
+        user_id,
+        content,
+        author_name,
+        status,
+        is_reported,
+        created_at,
+        updated_at,
+        articles(title)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Admin comments fetch error:', error);
+      return { comments: [] };
+    }
+
+    return { comments: data || [] };
+  } catch (error) {
+    console.error('Error fetching admin comments:', error);
+    return { comments: [] };
+  }
+}
+
+export async function updateCommentStatus(commentId: number, status: 'approved' | 'rejected' | 'pending') {
+  try {
+    const { data, error } = await adminSupabase
+      .from('article_comments')
+      .update({ status })
+      .eq('id', commentId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin comment status update error:', error);
+      throw new Error(error.message || 'Failed to update comment status');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating comment status:', error);
+    throw error;
+  }
+}
+
+export async function deleteCommentAdmin(commentId: number) {
+  try {
+    const { error } = await adminSupabase
+      .from('article_comments')
+      .delete()
+      .eq('id', commentId);
+
+    if (error) {
+      console.error('Admin comment delete error:', error);
+      throw new Error(error.message || 'Failed to delete comment');
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+}
+
+export async function replyToComment(commentId: number, replyContent: string, adminUserId: string) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('comment_replies')
+      .insert({
+        comment_id: commentId,
+        user_id: adminUserId,
+        content: replyContent,
+        author_name: 'Admin'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin comment reply error:', error);
+      throw new Error(error.message || 'Failed to reply to comment');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error replying to comment:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// EMAIL NOTIFICATIONS MANAGEMENT (Admin Service Role)
+// ==============================================
+
+export async function getAdminEmailTemplates() {
+  try {
+    const { data, error } = await adminSupabase
+      .from('email_templates')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Admin email templates fetch error:', error);
+      return { templates: [] };
+    }
+
+    return { templates: data || [] };
+  } catch (error) {
+    console.error('Error fetching email templates:', error);
+    return { templates: [] };
+  }
+}
+
+export async function createEmailTemplate(templateData: {
+  name: string;
+  subject: string;
+  content: string;
+  type: string;
+}) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('email_templates')
+      .insert(templateData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin email template create error:', error);
+      throw new Error(error.message || 'Failed to create email template');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error creating email template:', error);
+    throw error;
+  }
+}
+
+export async function updateEmailTemplate(templateId: string, templateData: {
+  name: string;
+  subject: string;
+  content: string;
+  type: string;
+}) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('email_templates')
+      .update(templateData)
+      .eq('id', templateId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin email template update error:', error);
+      throw new Error(error.message || 'Failed to update email template');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error updating email template:', error);
+    throw error;
+  }
+}
+
+export async function deleteEmailTemplate(templateId: string) {
+  try {
+    const { error } = await adminSupabase
+      .from('email_templates')
+      .delete()
+      .eq('id', templateId);
+
+    if (error) {
+      console.error('Admin email template delete error:', error);
+      throw new Error(error.message || 'Failed to delete email template');
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting email template:', error);
+    throw error;
+  }
+}
+
+export async function getNewsletterSubscribers() {
+  try {
+    const { data, error } = await adminSupabase
+      .from('newsletter_subscribers')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Admin newsletter subscribers fetch error:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching newsletter subscribers:', error);
+    return [];
+  }
+}
+
+export async function getEmailSettings() {
+  try {
+    const { data, error } = await adminSupabase
+      .from('system_settings')
+      .select('*')
+      .eq('category', 'email')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Admin email settings fetch error:', error);
+      return {};
+    }
+
+    // Convert array of settings to key-value object
+    const settings: { [key: string]: any } = {};
+    data?.forEach(setting => {
+      settings[setting.key] = setting.value;
+    });
+
+    return settings;
+  } catch (error) {
+    console.error('Error fetching email settings:', error);
+    return {};
+  }
+}
+
+export async function updateEmailSettings(settingsData: any) {
+  try {
+    // Update each setting individually
+    const promises = Object.entries(settingsData).map(([key, value]) =>
+      adminSupabase
+        .from('system_settings')
+        .upsert({
+          category: 'email',
+          key,
+          value: value as string
+        })
+    );
+
+    await Promise.all(promises);
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating email settings:', error);
+    throw error;
+  }
+}
+
+export async function getEmailStats() {
+  try {
+    // Mock data for now - can be replaced with actual stats queries
+    return {
+      sent_today: 45,
+      opened_today: 32,
+      clicked_today: 12,
+      bounced_today: 2,
+      total_subscribers: 1247,
+      delivery_rate: 96.2,
+      open_rate: 71.1,
+      click_rate: 37.5,
+      new_subscribers_today: 12,
+      emails_sent: 45
+    };
+  } catch (error) {
+    console.error('Error fetching email stats:', error);
+    return {};
+  }
+}
+
+export async function sendNewsletter(newsletterData: {
+  template_id: string;
+  subject: string;
+  content: string;
+}) {
+  try {
+    // Insert newsletter send record
+    const { data, error } = await adminSupabase
+      .from('newsletter_sends')
+      .insert({
+        template_id: newsletterData.template_id,
+        subject: newsletterData.subject,
+        content: newsletterData.content,
+        sent_at: new Date().toISOString(),
+        status: 'sent'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin newsletter send error:', error);
+      throw new Error(error.message || 'Failed to send newsletter');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error sending newsletter:', error);
+    throw error;
+  }
+}
+
+// ==============================================
 // ARTICLES MANAGEMENT (Direct Supabase)
 // ==============================================
 
