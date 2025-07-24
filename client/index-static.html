@@ -27,7 +27,47 @@
     
     <title>Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র</title>
     
-    <!-- Import map for proper module resolution in browsers -->
+    <!-- Storage Cleanup Script - Fix JSON parse errors FIRST -->
+    <script>
+      // Fix storage cleanup to prevent JSON parse errors
+      function cleanupCorruptedStorage() {
+        console.log('🧹 Starting storage cleanup...');
+        
+        const keysToCheck = [
+          'supabase.auth.token', 'sb-auth-token', 'userSettings', 'theme', 'language',
+          ...Object.keys(localStorage).filter(key => key.startsWith('sb-'))
+        ];
+
+        let cleanedCount = 0;
+        keysToCheck.forEach(key => {
+          try {
+            const value = localStorage.getItem(key);
+            if (value && value !== 'null' && value !== 'undefined') {
+              JSON.parse(value);
+            }
+          } catch (error) {
+            console.warn('🗑️ Removing corrupted localStorage key: ' + key, error);
+            try {
+              localStorage.removeItem(key);
+              cleanedCount++;
+            } catch (removeError) {
+              console.error('Failed to remove corrupted key ' + key + ':', removeError);
+            }
+          }
+        });
+
+        if (cleanedCount > 0) {
+          console.log('✅ Cleaned up ' + cleanedCount + ' corrupted storage entries');
+        } else {
+          console.log('✅ No corrupted storage entries found');
+        }
+      }
+      
+      // Run storage cleanup immediately
+      cleanupCorruptedStorage();
+    </script>
+
+    <!-- Import map for proper module resolution -->
     <script type="importmap">
     {
       "imports": {
@@ -39,7 +79,7 @@
     }
     </script>
     
-    <!-- JSX Runtime Polyfill for Vercel Production -->
+    <!-- JSX Runtime Polyfill - Load React UMD and create jsx functions -->
     <script src="https://esm.sh/react@18.3.1/umd/react.production.min.js"></script>
     <script src="https://esm.sh/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
     <script>

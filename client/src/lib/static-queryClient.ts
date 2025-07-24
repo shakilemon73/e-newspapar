@@ -70,7 +70,7 @@ export const getStaticQueryFn: QueryFunction = async ({ queryKey }) => {
     const limit = parseInt(urlParams.get('limit') || '10');
     const offset = parseInt(urlParams.get('offset') || '0');
     
-    return await getArticles({ featured, category, limit, offset });
+    return await getArticles({ featured, category: category || undefined, limit, offset });
   }
   
   // If no handler found, throw error
