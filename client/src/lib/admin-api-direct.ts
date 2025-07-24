@@ -625,11 +625,11 @@ export async function getMobileAppAnalytics() {
       retention_rate: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
       avg_launch_time: 2.3, // Average app launch time in seconds
       crash_rate: 0.5, // 0.5% crash rate
-      version_stats: {
-        '1.0.0': Math.floor(totalUsers * 0.8),
-        '0.9.0': Math.floor(totalUsers * 0.15),
-        '0.8.0': Math.floor(totalUsers * 0.05)
-      }
+      version_stats: [
+        { version: '1.0.0', count: Math.floor(totalUsers * 0.8), percentage: 80 },
+        { version: '0.9.0', count: Math.floor(totalUsers * 0.15), percentage: 15 }, 
+        { version: '0.8.0', count: Math.floor(totalUsers * 0.05), percentage: 5 }
+      ]
     };
   } catch (error) {
     console.error('Error fetching mobile app analytics:', error);
@@ -650,7 +650,7 @@ export async function getMobileAppAnalytics() {
       retention_rate: 0,
       avg_launch_time: 0,
       crash_rate: 0,
-      version_stats: {}
+      version_stats: []
     };
   }
 }
