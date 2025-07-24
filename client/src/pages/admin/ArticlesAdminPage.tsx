@@ -30,7 +30,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminArticles, deleteArticle, getAdminCategories } from '@/lib/admin-api-direct';
+import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin-supabase-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
 import {
@@ -106,7 +106,7 @@ export default function ArticlesAdminPage() {
   // Fetch categories for filter
   const { data: categories = [] } = useQuery({
     queryKey: ['admin-categories'],
-    queryFn: getAdminCategories,
+    queryFn: getAdminCategoriesDirect,
   });
 
   // Fetch articles with filters
@@ -125,21 +125,23 @@ export default function ArticlesAdminPage() {
       sortBy,
       sortOrder
     }],
-    queryFn: () => getAdminArticles({
+    queryFn: () => getAdminArticlesDirect({
       page: currentPage,
       limit: pageSize,
       search: searchTerm,
       category: selectedCategory === 'all' ? undefined : selectedCategory,
-      status: selectedStatus === 'all' ? undefined : selectedStatus as any,
       sortBy,
       sortOrder
     }),
-    keepPreviousData: true,
+
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteArticle,
+    mutationFn: async (id: number) => {
+      const { deleteArticleDirect } = await import('@/lib/admin-supabase-direct');
+      return deleteArticleDirect(id);
+    },
     onSuccess: () => {
       toast({
         title: currentLanguage === 'bn' ? "নিবন্ধ মুছে ফেলা হয়েছে" : "Article Deleted",
@@ -261,11 +263,11 @@ export default function ArticlesAdminPage() {
   };
 
   // Statistics calculation
-  const stats = articlesData?.articles ? {
-    total: articlesData.totalCount,
-    published: articlesData.articles.filter(a => a.is_published).length,
-    drafts: articlesData.articles.filter(a => !a.is_published).length,
-    featured: articlesData.articles.filter(a => a.is_featured).length
+  const stats = (articlesData as any)?.articles ? {
+    total: (articlesData as any).totalCount,
+    published: (articlesData as any).articles.filter((a: any) => a.is_published).length,
+    drafts: (articlesData as any).articles.filter((a: any) => !a.is_published).length,
+    featured: (articlesData as any).articles.filter((a: any) => a.is_featured).length
   } : { total: 0, published: 0, drafts: 0, featured: 0 };
 
   return (
@@ -395,7 +397,7 @@ export default function ArticlesAdminPage() {
           <CardHeader>
             <CardTitle>{currentLanguage === 'bn' ? 'নিবন্ধ তালিকা' : 'Articles List'}</CardTitle>
             <CardDescription>
-              {articlesData?.totalCount || 0} {currentLanguage === 'bn' ? 'টি নিবন্ধ পাওয়া গেছে' : 'articles found'}
+              {(articlesData as any)?.totalCount || 0} {currentLanguage === 'bn' ? 'টি নিবন্ধ পাওয়া গেছে' : 'articles found'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -409,7 +411,7 @@ export default function ArticlesAdminPage() {
                 <AlertCircle className="h-8 w-8 mr-2" />
                 {currentLanguage === 'bn' ? 'নিবন্ধ লোড করতে ব্যর্থ' : 'Failed to load articles'}
               </div>
-            ) : !articlesData?.articles?.length ? (
+            ) : !(articlesData as any)?.articles?.length ? (
               <div className="flex items-center justify-center py-8 text-muted-foreground">
                 <BookOpen className="h-8 w-8 mr-2" />
                 {t.noArticles}
@@ -428,7 +430,7 @@ export default function ArticlesAdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {articlesData.articles.map((article) => (
+                    {(articlesData as any).articles.map((article: any) => (
                       <TableRow key={article.id} className="hover:bg-muted/50">
                         <TableCell>
                           <div className="space-y-1">
@@ -508,7 +510,7 @@ export default function ArticlesAdminPage() {
         </Card>
 
         {/* Pagination */}
-        {articlesData?.totalPages && articlesData.totalPages > 1 && (
+        {(articlesData as any)?.totalPages && (articlesData as any).totalPages > 1 && (
           <div className="flex justify-center gap-2">
             <Button
               variant="outline"
@@ -518,12 +520,12 @@ export default function ArticlesAdminPage() {
               {currentLanguage === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
             </Button>
             <span className="flex items-center px-4">
-              {currentPage} / {articlesData.totalPages}
+              {currentPage} / {(articlesData as any).totalPages}
             </span>
             <Button
               variant="outline"
-              disabled={currentPage === articlesData.totalPages}
-              onClick={() => setCurrentPage(prev => Math.min(articlesData.totalPages || 1, prev + 1))}
+              disabled={currentPage === (articlesData as any).totalPages}
+              onClick={() => setCurrentPage(prev => Math.min((articlesData as any).totalPages || 1, prev + 1))}
             >
               {currentLanguage === 'bn' ? 'পরবর্তী' : 'Next'}
             </Button>

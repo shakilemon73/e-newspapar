@@ -823,4 +823,126 @@ export async function updateUserRole(userId: string, role: string) {
   }
 }
 
+// ==============================================
+// DELETE OPERATIONS (Admin Service Role)
+// ==============================================
+
+export async function deleteArticleDirect(id: number) {
+  try {
+    console.log('Deleting article with service role key...');
+    
+    const { error } = await adminSupabase
+      .from('articles')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Article deletion error:', error);
+      throw new Error(error.message || 'Failed to delete article');
+    }
+
+    console.log('✅ Article deleted successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    throw error;
+  }
+}
+
+export async function deleteVideoContentDirect(id: number) {
+  try {
+    console.log('Deleting video content with service role key...');
+    
+    const { error } = await adminSupabase
+      .from('video_content')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Video deletion error:', error);
+      throw new Error(error.message || 'Failed to delete video');
+    }
+
+    console.log('✅ Video deleted successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting video:', error);
+    throw error;
+  }
+}
+
+export async function deleteCategoryDirect(id: number) {
+  try {
+    console.log('Deleting category with service role key...');
+    
+    const { error } = await adminSupabase
+      .from('categories')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Category deletion error:', error);
+      throw new Error(error.message || 'Failed to delete category');
+    }
+
+    console.log('✅ Category deleted successfully');
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    throw error;
+  }
+}
+
+// ==============================================
+// UPDATE OPERATIONS (Admin Service Role)
+// ==============================================
+
+export async function updateCategoryDirect(id: number, updates: any) {
+  try {
+    console.log('Updating category with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Category update error:', error);
+      throw new Error(error.message || 'Failed to update category');
+    }
+
+    console.log('✅ Category updated successfully');
+    return data;
+  } catch (error) {
+    console.error('Error updating category:', error);
+    throw error;
+  }
+}
+
+export async function updateArticleDirect(id: number, updates: any) {
+  try {
+    console.log('Updating article with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('articles')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Article update error:', error);
+      throw new Error(error.message || 'Failed to update article');
+    }
+
+    console.log('✅ Article updated successfully');
+    return data;
+  } catch (error) {
+    console.error('Error updating article:', error);
+    throw error;
+  }
+}
+
 export default adminSupabase;

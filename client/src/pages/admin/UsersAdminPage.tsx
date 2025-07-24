@@ -17,7 +17,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminUsers, updateUserRole } from '@/lib/admin-api-direct';
+import { getAdminUsers, updateUserRole } from '@/lib/admin-supabase-direct';
 import { queryClient } from '@/lib/queryClient';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -142,8 +142,8 @@ export default function UsersAdminPage() {
         return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
       } catch (error) {
         // Fallback calculation
-        if (users && users.users && Array.isArray(users.users)) {
-          const usersData = users.users;
+        if (users && (users as any).users && Array.isArray((users as any).users)) {
+          const usersData = (users as any).users;
           const totalUsers = usersData.length;
           const adminUsers = usersData.filter((u: any) => u.role === 'admin').length;
           return { totalUsers, adminUsers, activeUsers: 0, newUsers: 0 };

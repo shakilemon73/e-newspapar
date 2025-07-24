@@ -18,7 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminCategories, createCategory, updateCategory, deleteCategory } from '@/lib/admin-api-direct';
+import { getAdminCategoriesDirect, createCategoryDirect, deleteCategoryDirect, updateCategoryDirect } from '@/lib/admin-supabase-direct';
 // Using useQueryClient hook for query invalidation
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -106,7 +106,7 @@ export default function CategoriesAdminPage() {
   // Fetch categories using direct Supabase API
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ['admin-categories'],
-    queryFn: () => getAdminCategories(),
+    queryFn: () => getAdminCategoriesDirect(),
   });
 
   // Fetch articles to count per category
@@ -128,9 +128,9 @@ export default function CategoriesAdminPage() {
   const saveMutation = useMutation({
     mutationFn: async (data: CategoryFormValues) => {
       if (mode === 'create') {
-        return await createCategory(data);
+        return await createCategoryDirect(data);
       } else {
-        return await updateCategory(selectedCategory.id, data);
+        return await updateCategoryDirect(selectedCategory.id, data);
       }
     },
     onSuccess: () => {
@@ -152,7 +152,7 @@ export default function CategoriesAdminPage() {
 
   // Delete mutation using direct Supabase API
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteCategory(id),
+    mutationFn: (id: number) => deleteCategoryDirect(id),
     onSuccess: () => {
       toast({
         title: 'Category deleted',
@@ -274,7 +274,7 @@ export default function CategoriesAdminPage() {
             <CardContent>
               <div className="text-2xl font-bold">
                 {categoriesWithCounts.length > 0 
-                  ? categoriesWithCounts.sort((a, b) => b.articleCount - a.articleCount)[0]?.name?.slice(0, 8) + '...'
+                  ? categoriesWithCounts.sort((a: any, b: any) => b.articleCount - a.articleCount)[0]?.name?.slice(0, 8) + '...'
                   : 'None'
                 }
               </div>
