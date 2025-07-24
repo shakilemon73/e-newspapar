@@ -25,24 +25,28 @@ export function fixJSXRuntime(distPath) {
       let content = fs.readFileSync(filePath, 'utf8');
       let modified = false;
 
-      // Fix common JSX runtime issues
+      // Fix common JSX runtime issues with comprehensive patterns
       const fixes = [
-        // Fix jsxDEV function calls
+        // Fix jsxDEV function calls (most common issue)
         { from: /e\.jsxDEV/g, to: 'jsx' },
         { from: /\.jsxDEV\(/g, to: '.jsx(' },
         { from: /jsxDEV\(/g, to: 'jsx(' },
         
-        // Fix jsx and jsxs references
+        // Fix jsx and jsxs references that may be scoped incorrectly
         { from: /\be\.jsx\b/g, to: 'jsx' },
         { from: /\be\.jsxs\b/g, to: 'jsxs' },
         
-        // Fix React import issues - remove duplicate imports
-        { from: /import\s*\{\s*jsx,\s*jsxs\s*\}\s*from\s*["']react\/jsx-runtime["'];?/g, to: '' },
-        { from: /import\s*\{\s*jsx\s*\}\s*from\s*["']react\/jsx-runtime["'];?/g, to: '' },
+        // Fix undefined jsx references - key fix for Vercel
+        { from: /(?<![\w$.])\bjsx\(/g, to: 'window.jsx(' },
+        { from: /(?<![\w$.])\bjsxs\(/g, to: 'window.jsxs(' },
         
         // Fix potential development vs production JSX runtime issues
         { from: /\.jsxDEV\b/g, to: '.jsx' },
         { from: /\bjsxDEV\b/g, to: 'jsx' },
+        
+        // Fix module scope issues in production builds
+        { from: /\bconst jsx\s*=/g, to: 'window.jsx = window.jsx ||' },
+        { from: /\bconst jsxs\s*=/g, to: 'window.jsxs = window.jsxs ||' },
       ];
 
       fixes.forEach(({ from, to }) => {
@@ -52,8 +56,21 @@ export function fixJSXRuntime(distPath) {
         }
       });
 
-      // Skip adding imports since Vite bundles everything properly
-      // The import map in HTML will handle any bare module specifiers
+      // Add JSX runtime initialization for production environment
+      if (modified && content.includes('jsx(')) {
+        // Add JSX runtime globals at the beginning of the file
+        const jsxRuntimeInit = `
+// JSX Runtime Fix for Vercel Production
+if (typeof window !== 'undefined' && !window.jsx) {
+  import('https://esm.sh/react@18.3.1/jsx-runtime').then(({ jsx, jsxs, Fragment }) => {
+    window.jsx = jsx;
+    window.jsxs = jsxs;
+    window.Fragment = Fragment;
+  });
+}
+`;
+        content = jsxRuntimeInit + content;
+      }
 
       if (modified) {
         fs.writeFileSync(filePath, content);

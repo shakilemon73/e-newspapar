@@ -63,6 +63,7 @@ export default defineConfig({
     jsxFactory: undefined,
     jsxFragment: undefined,
     jsxInject: undefined,
-    jsxDev: false
+    jsxDev: false,
+    target: 'es2022'
   }
 });

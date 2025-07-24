@@ -39,6 +39,21 @@
     }
     </script>
     
+    <!-- JSX Runtime Polyfill for Vercel Production -->
+    <script type="module">
+      // Ensure JSX runtime is available globally
+      if (typeof window !== 'undefined') {
+        import('https://esm.sh/react@18.3.1/jsx-runtime').then(({ jsx, jsxs, Fragment }) => {
+          window.jsx = jsx;
+          window.jsxs = jsxs;
+          window.Fragment = Fragment;
+          console.log('✅ JSX runtime initialized globally');
+        }).catch(error => {
+          console.error('❌ Failed to initialize JSX runtime:', error);
+        });
+      }
+    </script>
+    
     <style>
       /* Critical CSS for Bengali fonts and loading state */
       body {
