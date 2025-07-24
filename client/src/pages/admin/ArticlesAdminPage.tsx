@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin-supabase-direct';
+import { createArticle, updateArticle, deleteArticle } from '@/lib/admin-crud-fixed';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
 import {

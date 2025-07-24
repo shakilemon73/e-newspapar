@@ -21,7 +21,8 @@ import {
   Radio
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getBreakingNews, createBreakingNews, updateBreakingNews, deleteBreakingNews } from '@/lib/admin-api-direct';
+import { getAdminBreakingNewsDirect } from '@/lib/admin-supabase-direct';
+import { createBreakingNews, updateBreakingNews, deleteBreakingNews } from '@/lib/admin-crud-fixed';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {

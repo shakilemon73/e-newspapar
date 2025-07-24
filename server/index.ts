@@ -46,7 +46,19 @@ import {
   createAudioArticleServerSide,
   createEPaperServerSide,
   createCategoryServerSide,
-  createBreakingNewsServerSide 
+  createBreakingNewsServerSide,
+  updateArticleServerSide,
+  deleteArticleServerSide,
+  updateBreakingNewsServerSide,
+  deleteBreakingNewsServerSide,
+  updateVideoServerSide,
+  deleteVideoServerSide,
+  updateCategoryServerSide,
+  deleteCategoryServerSide,
+  updateEPaperServerSide,
+  deleteEPaperServerSide,
+  updateAudioArticleServerSide,
+  deleteAudioArticleServerSide
 } from './admin-api';
 
 // Admin Articles
@@ -111,6 +123,146 @@ app.post('/api/admin/breaking-news', async (req: Request, res: Response) => {
     res.json(result);
   } catch (error: any) {
     console.error('Admin breaking news create error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// UPDATE and DELETE endpoints for CRUD functionality
+
+// Articles UPDATE/DELETE
+app.patch('/api/admin/articles/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateArticleServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin article update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/articles/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteArticleServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin article delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Breaking News UPDATE/DELETE
+app.patch('/api/admin/breaking-news/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateBreakingNewsServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin breaking news update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/breaking-news/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteBreakingNewsServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin breaking news delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Videos UPDATE/DELETE
+app.patch('/api/admin/videos/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateVideoServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin video update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/videos/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteVideoServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin video delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Categories UPDATE/DELETE
+app.patch('/api/admin/categories/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateCategoryServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin category update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/categories/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteCategoryServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin category delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// E-Papers UPDATE/DELETE
+app.patch('/api/admin/epapers/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateEPaperServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin e-paper update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/epapers/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteEPaperServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin e-paper delete error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Audio Articles UPDATE/DELETE
+app.patch('/api/admin/audio/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await updateAudioArticleServerSide(id, req.body);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin audio update error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/audio/:id', async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await deleteAudioArticleServerSide(id);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Admin audio delete error:', error);
     res.status(500).json({ error: error.message });
   }
 });

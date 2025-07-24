@@ -41,9 +41,9 @@ export async function createArticleServerSide(articleData: {
         image_url: articleData.image_url,
         category_id: articleData.category_id,
         is_featured: articleData.is_featured || false,
+        // Note: No 'published' column exists, remove it
         published_at: articleData.published_at || new Date().toISOString(),
-        view_count: 0,
-        author: 'Admin'
+        view_count: 0
       })
       .select()
       .single();
@@ -232,266 +232,70 @@ export async function createBreakingNewsServerSide(newsData: {
     throw error;
   }
 }
-
-// ==============================================
-// UPDATE OPERATIONS (with Service Role Key)
-// ==============================================
-
-export async function updateArticleServerSide(id: number, updates: any) {
-  try {
-    const { data, error } = await adminSupabase
-      .from('articles')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error updating article:', error);
-      throw new Error(error.message || 'Failed to update article');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error updating article server-side:', error);
+}
     throw error;
   }
 }
 
-export async function deleteArticleServerSide(id: number) {
+export async function createCategoryServerSide(categoryData: {
+  name: string;
+  slug?: string;
+  description?: string;
+  parent_id?: number;
+}) {
   try {
-    const { error } = await adminSupabase
-      .from('articles')
-      .delete()
-      .eq('id', id);
+    const slug = categoryData.slug || categoryData.name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-');
 
-    if (error) {
-      console.error('Supabase error deleting article:', error);
-      throw new Error(error.message || 'Failed to delete article');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting article server-side:', error);
-    throw error;
-  }
-}
-
-// UPDATE/DELETE functions for Videos, Categories, E-Papers, Audio Articles
-
-export async function updateVideoServerSide(id: number, updates: any) {
-  try {
-    const { data, error } = await adminSupabase
-      .from('video_content')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error updating video:', error);
-      throw new Error(error.message || 'Failed to update video');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error updating video server-side:', error);
-    throw error;
-  }
-}
-
-export async function deleteVideoServerSide(id: number) {
-  try {
-    const { error } = await adminSupabase
-      .from('video_content')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error deleting video:', error);
-      throw new Error(error.message || 'Failed to delete video');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting video server-side:', error);
-    throw error;
-  }
-}
-
-export async function updateCategoryServerSide(id: number, updates: any) {
-  try {
     const { data, error } = await adminSupabase
       .from('categories')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
+      .insert({
+        name: categoryData.name,
+        slug: slug,
+        description: categoryData.description,
+        parent_id: categoryData.parent_id,
+        created_at: new Date().toISOString()
       })
-      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase error updating category:', error);
-      throw new Error(error.message || 'Failed to update category');
+      console.error('Supabase error creating category:', error);
+      throw new Error(error.message || 'Failed to create category');
     }
 
     return data;
   } catch (error) {
-    console.error('Error updating category server-side:', error);
+    console.error('Error creating category server-side:', error);
     throw error;
   }
 }
 
-export async function deleteCategoryServerSide(id: number) {
+export async function createBreakingNewsServerSide(newsData: {
+  content: string;
+  is_active?: boolean;
+}) {
   try {
-    const { error } = await adminSupabase
-      .from('categories')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error deleting category:', error);
-      throw new Error(error.message || 'Failed to delete category');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting category server-side:', error);
-    throw error;
-  }
-}
-
-export async function updateEPaperServerSide(id: number, updates: any) {
-  try {
-    const { data, error } = await adminSupabase
-      .from('epapers')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error updating e-paper:', error);
-      throw new Error(error.message || 'Failed to update e-paper');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error updating e-paper server-side:', error);
-    throw error;
-  }
-}
-
-export async function deleteEPaperServerSide(id: number) {
-  try {
-    const { error } = await adminSupabase
-      .from('epapers')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error deleting e-paper:', error);
-      throw new Error(error.message || 'Failed to delete e-paper');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting e-paper server-side:', error);
-    throw error;
-  }
-}
-
-export async function updateAudioArticleServerSide(id: number, updates: any) {
-  try {
-    const { data, error } = await adminSupabase
-      .from('audio_articles')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error updating audio article:', error);
-      throw new Error(error.message || 'Failed to update audio article');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error updating audio article server-side:', error);
-    throw error;
-  }
-}
-
-export async function deleteAudioArticleServerSide(id: number) {
-  try {
-    const { error } = await adminSupabase
-      .from('audio_articles')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error deleting audio article:', error);
-      throw new Error(error.message || 'Failed to delete audio article');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting audio article server-side:', error);
-    throw error;
-  }
-}
-export async function updateBreakingNewsServerSide(id: number, updates: any) {
-  try {
+    // Match actual breaking_news table schema
     const { data, error } = await adminSupabase
       .from('breaking_news')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
+      .insert({
+        content: newsData.content,
+        is_active: newsData.is_active !== false
       })
-      .eq('id', id)
       .select()
       .single();
 
     if (error) {
-      console.error('Supabase error updating breaking news:', error);
-      throw new Error(error.message || 'Failed to update breaking news');
+      console.error('Supabase error creating breaking news:', error);
+      throw new Error(error.message || 'Failed to create breaking news');
     }
 
     return data;
   } catch (error) {
-    console.error('Error updating breaking news server-side:', error);
-    throw error;
-  }
-}
-
-export async function deleteBreakingNewsServerSide(id: number) {
-  try {
-    const { error } = await adminSupabase
-      .from('breaking_news')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Supabase error deleting breaking news:', error);
-      throw new Error(error.message || 'Failed to delete breaking news');
-    }
-
-    return { success: true };
-  } catch (error) {
-    console.error('Error deleting breaking news server-side:', error);
+    console.error('Error creating breaking news server-side:', error);
     throw error;
   }
 }
