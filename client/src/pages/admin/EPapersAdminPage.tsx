@@ -70,7 +70,9 @@ export default function EPapersAdminPage() {
         description: `The e-paper has been ${isEditing ? 'updated' : 'created'} successfully.`,
       });
       resetForm();
+      // Invalidate and refetch e-paper-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
     },
     onError: (error: Error) => {
       toast({
@@ -89,7 +91,9 @@ export default function EPapersAdminPage() {
         title: 'E-paper deleted',
         description: 'The e-paper has been deleted successfully.',
       });
+      // Invalidate and refetch e-paper-related queries  
       queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
     },
     onError: (error: Error) => {
       toast({

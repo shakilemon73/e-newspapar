@@ -148,7 +148,10 @@ export default function ArticlesAdminPage() {
         title: currentLanguage === 'bn' ? "নিবন্ধ মুছে ফেলা হয়েছে" : "Article Deleted",
         description: currentLanguage === 'bn' ? "নিবন্ধটি সফলভাবে মুছে ফেলা হয়েছে" : "The article has been successfully deleted",
       });
+      // Invalidate and refetch article-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-recent-activity'] });
       setDeleteDialogOpen(false);
       setArticleToDelete(null);
     },

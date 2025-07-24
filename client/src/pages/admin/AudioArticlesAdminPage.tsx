@@ -75,7 +75,11 @@ export default function AudioArticlesAdminPage() {
   const createAudioMutation = useMutation({
     mutationFn: (audioData: any) => createAudioArticle(audioData),
     onSuccess: () => {
+      // Invalidate and refetch audio article-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-audio-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
+      
       toast({
         title: "Success",
         description: "Audio article created successfully",
@@ -98,7 +102,11 @@ export default function AudioArticlesAdminPage() {
       return await updateAudioArticle(id, audioData);
     },
     onSuccess: () => {
+      // Invalidate and refetch audio article-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-audio-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
+      
       toast({
         title: "Success",
         description: "Audio article updated successfully",
@@ -121,7 +129,11 @@ export default function AudioArticlesAdminPage() {
       return await deleteAudioArticle(id);
     },
     onSuccess: () => {
+      // Invalidate and refetch audio article-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-audio-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/audio-articles'] });
+      
       toast({
         title: "Success",
         description: "Audio article deleted successfully",

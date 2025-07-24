@@ -84,7 +84,10 @@ export default function SocialMediaAdminPage() {
   const createPostMutation = useMutation({
     mutationFn: (postData: any) => createSocialPost(postData),
     onSuccess: () => {
+      // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: "Success",
         description: "Social media post created successfully",
@@ -105,7 +108,10 @@ export default function SocialMediaAdminPage() {
   const updatePostMutation = useMutation({
     mutationFn: ({ id, ...postData }: any) => updateSocialPost(id, postData),
     onSuccess: () => {
+      // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: "Success",
         description: "Social media post updated successfully",
@@ -126,7 +132,10 @@ export default function SocialMediaAdminPage() {
   const deletePostMutation = useMutation({
     mutationFn: (id: number) => deleteSocialPost(id),
     onSuccess: () => {
+      // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: "Success",
         description: "Social media post deleted successfully",

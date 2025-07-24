@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -97,6 +97,7 @@ const getBreakingNewsColumns = (t: any) => [
 export default function BreakingNewsAdminPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedNews, setSelectedNews] = useState<any>(null);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -150,13 +151,17 @@ export default function BreakingNewsAdminPage() {
       }
     },
     onSuccess: () => {
+      // Invalidate and refetch breaking news queries
+      queryClient.invalidateQueries({ queryKey: ['admin-breaking-news'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['public-breaking-news'] });
+      
       toast({
         title: `Breaking news ${mode === 'create' ? 'created' : 'updated'}`,
         description: `The breaking news has been ${mode === 'create' ? 'created' : 'updated'} successfully.`,
       });
       setDialogOpen(false);
       form.reset();
-      // Note: Using standard queryClient since we're in React context
     },
     onError: (error: Error) => {
       toast({
@@ -171,6 +176,11 @@ export default function BreakingNewsAdminPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteBreakingNews(id),
     onSuccess: () => {
+      // Invalidate and refetch breaking news queries
+      queryClient.invalidateQueries({ queryKey: ['admin-breaking-news'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['public-breaking-news'] });
+      
       toast({
         title: 'Breaking news deleted',
         description: 'The breaking news has been successfully deleted.',
@@ -192,6 +202,11 @@ export default function BreakingNewsAdminPage() {
     mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => 
       updateBreakingNews(id, { is_active }),
     onSuccess: () => {
+      // Invalidate and refetch breaking news queries
+      queryClient.invalidateQueries({ queryKey: ['admin-breaking-news'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['public-breaking-news'] });
+      
       toast({
         title: 'Status updated',
         description: 'The breaking news status has been updated.',

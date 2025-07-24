@@ -74,6 +74,10 @@ export default function VideosAdminPage() {
   const createVideoMutation = useMutation({
     mutationFn: (videoData: any) => createVideoContent(videoData),
     onSuccess: () => {
+      // Invalidate and refetch video-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: t('success', 'Success', 'সফল'),
         description: t('video_created_successfully', 'Video created successfully', 'ভিডিও সফলভাবে তৈরি হয়েছে'),
@@ -94,6 +98,10 @@ export default function VideosAdminPage() {
   const updateVideoMutation = useMutation({
     mutationFn: ({ id, ...videoData }: any) => updateVideoContent(id, videoData),
     onSuccess: () => {
+      // Invalidate and refetch video-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: "Success",
         description: "Video updated successfully",
@@ -114,7 +122,10 @@ export default function VideosAdminPage() {
   const deleteVideoMutation = useMutation({
     mutationFn: (id: number) => deleteVideoContent(id),
     onSuccess: () => {
+      // Invalidate and refetch video-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
       toast({
         title: "Success",
         description: "Video deleted successfully",

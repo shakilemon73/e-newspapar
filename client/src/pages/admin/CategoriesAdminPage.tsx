@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -89,6 +89,7 @@ const getCategoryColumns = (t: any) => [
 export default function CategoriesAdminPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [mode, setMode] = useState<'create' | 'edit'>('create');
@@ -134,6 +135,11 @@ export default function CategoriesAdminPage() {
       }
     },
     onSuccess: () => {
+      // Invalidate and refetch category-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      
       toast({
         title: `Category ${mode === 'create' ? 'created' : 'updated'}`,
         description: `The category has been ${mode === 'create' ? 'created' : 'updated'} successfully.`,
@@ -154,6 +160,11 @@ export default function CategoriesAdminPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteCategoryDirect(id),
     onSuccess: () => {
+      // Invalidate and refetch category-related queries
+      queryClient.invalidateQueries({ queryKey: ['admin-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/articles'] });
+      
       toast({
         title: 'Category deleted',
         description: 'The category has been successfully deleted.',
