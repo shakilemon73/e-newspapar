@@ -120,6 +120,106 @@
       "destination": "/index.html"
     },
     {
+      "source": "/archive",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/advanced-search",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/recommendations",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/user-analytics",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/social-media-test",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/unused-tables-demo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/auth",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard/profile",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/video/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/audio/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/audio-articles",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/trending-analytics",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/advanced-algorithms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/footer-pages",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/user-dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/comments",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/seo",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/search",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/database",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/email-notifications",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/performance",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/mobile-app",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/advertisements",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/security",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/set-admin-role",
+      "destination": "/index.html"
+    },
+    {
       "source": "/((?!api/|assets/|favicon|generated-icon|og-default-image|placeholder-).*)",
       "destination": "/index.html"
     }
