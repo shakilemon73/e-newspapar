@@ -61,11 +61,14 @@ export default function VideosAdminPage() {
   }, [authLoading, user, setLocation]);
 
   // Fetch videos using direct Supabase API
-  const { data: videos, isLoading, error } = useQuery({
+  const { data: videosData, isLoading, error } = useQuery({
     queryKey: ['admin-videos'],
     queryFn: () => getAdminVideos(),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
+
+  // Extract videos array from the response
+  const videos = videosData?.videos || [];
 
   // Create video mutation using direct Supabase API
   const createVideoMutation = useMutation({
@@ -204,7 +207,7 @@ export default function VideosAdminPage() {
                 <Video className="h-8 w-8 text-blue-600" />
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Videos</p>
-                  <p className="text-2xl font-bold">{videos?.length || 0}</p>
+                  <p className="text-2xl font-bold">{videos.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -216,7 +219,7 @@ export default function VideosAdminPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Views</p>
                   <p className="text-2xl font-bold">
-                    {videos?.reduce((sum: number, video: VideoContent) => sum + video.viewCount, 0) || 0}
+                    {videos.reduce((sum: number, video: VideoContent) => sum + (video.viewCount || 0), 0)}
                   </p>
                 </div>
               </div>
@@ -229,9 +232,9 @@ export default function VideosAdminPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Published Today</p>
                   <p className="text-2xl font-bold">
-                    {videos?.filter((video: VideoContent) => 
+                    {videos.filter((video: VideoContent) => 
                       new Date(video.publishedAt).toDateString() === new Date().toDateString()
-                    ).length || 0}
+                    ).length}
                   </p>
                 </div>
               </div>
@@ -244,9 +247,9 @@ export default function VideosAdminPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Avg Duration</p>
                   <p className="text-2xl font-bold">
-                    {videos?.length ? 
+                    {videos.length ? 
                       Math.round(videos.reduce((sum: number, video: VideoContent) => {
-                        const duration = video.duration.split(':').reduce((acc, time) => (60 * acc) + +time, 0);
+                        const duration = video.duration?.split(':').reduce((acc, time) => (60 * acc) + +time, 0) || 0;
                         return sum + duration;
                       }, 0) / videos.length / 60) : 0}m
                   </p>
@@ -273,13 +276,13 @@ export default function VideosAdminPage() {
               <div className="text-center py-8 text-red-500">
                 Error loading videos: {error.message}
               </div>
-            ) : videos?.length === 0 ? (
+            ) : videos.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 No videos found. Create your first video!
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {videos?.map((video: VideoContent) => (
+                {videos.map((video: VideoContent) => (
                   <Card key={video.id} className="overflow-hidden">
                     <div className="aspect-video bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
                       {video.thumbnailUrl ? (
@@ -367,7 +370,6 @@ export default function VideosAdminPage() {
                     value={videoUrl}
                     onChange={setVideoUrl}
                     placeholder="https://example.com/video.mp4"
-                    required
                   />
                   <FileUploadField
                     label="Thumbnail Image"
