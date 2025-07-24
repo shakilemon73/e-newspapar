@@ -84,6 +84,8 @@ try {
   if (fs.existsSync('dist-static/index-static.html')) {
     fs.copyFileSync('dist-static/index-static.html', 'dist-static/index.html');
     console.log('✅ Created index.html for Vercel compatibility');
+  } else {
+    console.error('❌ index-static.html not found in dist-static/');
   }
 
   // Copy 404.html for proper client-side routing fallback
