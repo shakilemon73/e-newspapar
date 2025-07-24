@@ -99,12 +99,12 @@ const PersonalizedRecommendationsWidget: React.FC = () => {
             <Link key={article.id} href={`/article/${article.slug}`}>
               <div className="flex space-x-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
                 <img 
-                  src={article.image_url || article.imageUrl || '/api/placeholder/64/64'} 
+                  src={article.image_url || article.imageUrl || '/placeholder-64x64.svg'} 
                   alt={article.title}
                   className="w-16 h-16 object-cover rounded"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = '/api/placeholder/64/64';
+                    target.src = '/placeholder-64x64.svg';
                   }}
                 />
                 <div className="flex-1 min-w-0">
@@ -340,7 +340,7 @@ const SocialActivityWidget: React.FC = () => {
       user: 'পাঠক',
       article: 'সাম্প্রতিক সংবাদ',
       time: 'কিছুক্ষণ আগে',
-      avatar: '/api/placeholder/32/32'
+      avatar: '/placeholder-32x32.svg'
     }
   ];
 

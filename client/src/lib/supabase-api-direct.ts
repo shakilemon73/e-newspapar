@@ -56,7 +56,7 @@ export function transformArticleData(data: any[]): Article[] {
     // Ensure content exists
     content: article.content || '',
     // Ensure proper image URL handling with proper placeholder
-    image_url: article.image_url || article.imageUrl || '/api/placeholder/400/225'
+    image_url: article.image_url || article.imageUrl || '/placeholder-800x450.svg'
   }));
 }
 

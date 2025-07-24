@@ -192,7 +192,7 @@ export const UserDashboard = () => {
                   {bookmarkedArticles.slice(0, 3).map((article) => (
                     <div key={article.id} className="flex items-start space-x-3">
                       <img
-                        src={article.image_url || '/api/placeholder/60/60'}
+                        src={article.image_url || '/placeholder-60x60.svg'}
                         alt={article.title}
                         className="w-15 h-15 rounded object-cover"
                       />
@@ -262,7 +262,7 @@ export const UserDashboard = () => {
                   <div key={article.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start space-x-3">
                       <img
-                        src={article.image_url || '/api/placeholder/80/80'}
+                        src={article.image_url || '/placeholder-80x80.svg'}
                         alt={article.title}
                         className="w-20 h-20 rounded object-cover"
                       />
@@ -314,7 +314,7 @@ export const UserDashboard = () => {
                   <div key={history.id} className="border rounded-lg p-4">
                     <div className="flex items-start space-x-3">
                       <img
-                        src={history.articles.image_url || '/api/placeholder/60/60'}
+                        src={history.articles.image_url || '/placeholder-60x60.svg'}
                         alt={history.articles.title}
                         className="w-15 h-15 rounded object-cover"
                       />
