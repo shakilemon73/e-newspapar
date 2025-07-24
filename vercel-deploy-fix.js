@@ -1,4 +1,39 @@
-<!DOCTYPE html>
+#!/usr/bin/env node
+/**
+ * Vercel Deployment Fix - Create proper index.html for SPA routing
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function createVercelCompatibleHTML() {
+  console.log('🔧 Creating Vercel-compatible index.html...');
+  
+  const distDir = path.join(__dirname, 'dist-static');
+  const assetsDir = path.join(distDir, 'assets');
+  
+  if (!fs.existsSync(assetsDir)) {
+    console.error('❌ Assets directory not found');
+    return;
+  }
+  
+  // Find the main JS and CSS files
+  const assets = fs.readdirSync(assetsDir);
+  const mainJS = assets.find(file => file.startsWith('main-') && file.endsWith('.js'));
+  const mainCSS = assets.find(file => file.startsWith('main-') && file.endsWith('.css'));
+  
+  if (!mainJS || !mainCSS) {
+    console.error('❌ Main assets not found');
+    return;
+  }
+  
+  console.log(`📄 Found assets: ${mainJS}, ${mainCSS}`);
+  
+  const html = `<!DOCTYPE html>
 <html lang="bn" dir="ltr">
   <head>
     <meta charset="UTF-8" />
@@ -28,7 +63,7 @@
     <title>Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র</title>
     
     <!-- Load CSS first -->
-    <link rel="stylesheet" crossorigin href="/assets/main-BZOrmsXw.css">
+    <link rel="stylesheet" crossorigin href="/assets/${mainCSS}">
     
     <!-- Essential Environment Variables -->
     <script>
@@ -126,6 +161,45 @@
     </div>
     
     <!-- Load Main Application -->
-    <script type="module" crossorigin src="/assets/main-Dgc2oLFD.js"></script>
+    <script type="module" crossorigin src="/assets/${mainJS}"></script>
   </body>
-</html>
+</html>`;
+
+  const indexPath = path.join(distDir, 'index.html');
+  fs.writeFileSync(indexPath, html);
+  console.log('✅ Created Vercel-compatible index.html');
+  
+  // Also create a more specific vercel.json
+  const vercelConfig = {
+    "version": 2,
+    "framework": null,
+    "buildCommand": "node vercel-build.js",
+    "outputDirectory": "dist-static",
+    "installCommand": "npm install",
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "headers": [
+      {
+        "source": "/assets/(.*)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/((?!assets/|favicon|generated-icon|og-default-image|placeholder-).*)",
+        "destination": "/index.html"
+      }
+    ]
+  };
+  
+  const vercelConfigPath = path.join(__dirname, 'vercel.json');
+  fs.writeFileSync(vercelConfigPath, JSON.stringify(vercelConfig, null, 2));
+  console.log('✅ Updated vercel.json with simplified rewrites');
+}
+
+createVercelCompatibleHTML();
