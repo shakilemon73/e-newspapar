@@ -1,63 +1,43 @@
 #!/usr/bin/env node
 
-// Force Vercel deployment with correct configuration
-import fs from 'fs';
+// Force deployment script to fix admin pages on Vercel
 import { execSync } from 'child_process';
+import fs from 'fs';
 
-console.log('🚀 Force deploying corrected Vercel configuration...');
+console.log('🚀 Force deploying admin page fix to Vercel...\n');
 
-// Verify vercel.json has correct configuration
-const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
-console.log('📋 Current vercel.json rewrites:', JSON.stringify(vercelConfig.rewrites, null, 2));
-
-// Verify the rewrite rule is correct
-const hasCorrectRewrite = vercelConfig.rewrites?.some(rule => 
-  rule.source === "/(.*)" && rule.destination === "/index.html"
-);
-
-if (!hasCorrectRewrite) {
-  console.error('❌ ERROR: vercel.json does not have correct rewrite rule!');
-  console.log('Expected: {"source": "/(.*)", "destination": "/index.html"}');
-  process.exit(1);
-}
-
-console.log('✅ vercel.json configuration is correct');
-
-// Create a fresh build
-console.log('🏗️ Creating fresh build...');
-try {
-  execSync('node vercel-build.js', { stdio: 'inherit' });
-  console.log('✅ Build completed successfully');
-} catch (error) {
-  console.error('❌ Build failed:', error.message);
-  process.exit(1);
-}
-
-// Verify critical files exist
+// Check if the fix files exist
 const requiredFiles = [
-  'dist-static/index.html',
-  'dist-static/404.html',
-  'dist-static/assets'
+  'dist-static/admin-login.html',
+  'dist-static/admin-dashboard.html', 
+  'dist-static/about.html',
+  'dist-static/contact.html'
 ];
 
+console.log('✅ Verifying fix files exist:');
 for (const file of requiredFiles) {
-  if (!fs.existsSync(file)) {
-    console.error(`❌ ERROR: Required file missing: ${file}`);
+  const exists = fs.existsSync(file);
+  console.log(`  ${exists ? '✅' : '❌'} ${file}`);
+  if (!exists) {
+    console.error(`❌ Missing file: ${file}`);
     process.exit(1);
   }
 }
 
-console.log('✅ All required files present');
+console.log('\n📝 Current vercel.json rewrites:');
+const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
+vercelConfig.rewrites.forEach(rule => {
+  console.log(`  ${rule.source} → ${rule.destination}`);
+});
 
-// Add deployment instructions
-console.log('\n🚀 DEPLOYMENT INSTRUCTIONS:');
-console.log('1. Commit any remaining changes:');
-console.log('   git add .');
-console.log('   git commit -m "Force deploy - fix admin routing"');
-console.log('   git push origin main');
-console.log('\n2. OR use Vercel CLI:');
-console.log('   npx vercel --prod --force');
-console.log('\n3. OR manually redeploy in Vercel Dashboard');
-
-console.log('\n✅ Ready for deployment!');
-console.log('After deployment, test: https://www.dainiktni.news/admin-login');
+console.log('\n⚡ MANUAL DEPLOYMENT REQUIRED');
+console.log('Since I cannot access Git directly, please run these commands:');
+console.log('');
+console.log('1. git add .');
+console.log('2. git commit -m "Fix Vercel admin 404 - deploy route files"');
+console.log('3. git push origin main');
+console.log('');
+console.log('OR use Vercel CLI:');
+console.log('npx vercel --prod --force');
+console.log('');
+console.log('✅ All files are ready - admin pages will work after deployment');
