@@ -143,6 +143,12 @@ function AdminRouter() {
         </AdminRouteGuard>
       </Route>
       
+      <Route path="/admin/audio-articles">
+        <AdminRouteGuard>
+          <AudioArticlesAdminPage />
+        </AdminRouteGuard>
+      </Route>
+      
       <Route path="/admin/analytics">
         <AdminRouteGuard>
           <AnalyticsAdminPage />
@@ -173,7 +179,19 @@ function AdminRouter() {
         </AdminRouteGuard>
       </Route>
       
+      <Route path="/admin/algorithms">
+        <AdminRouteGuard>
+          <AdvancedAlgorithmsPage />
+        </AdminRouteGuard>
+      </Route>
+      
       <Route path="/admin/trending-analytics">
+        <AdminRouteGuard>
+          <TrendingAnalyticsPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/trending">
         <AdminRouteGuard>
           <TrendingAnalyticsPage />
         </AdminRouteGuard>
@@ -221,6 +239,12 @@ function AdminRouter() {
         </AdminRouteGuard>
       </Route>
       
+      <Route path="/admin/email">
+        <AdminRouteGuard>
+          <EmailNotificationPage />
+        </AdminRouteGuard>
+      </Route>
+      
       <Route path="/admin/performance">
         <AdminRouteGuard>
           <PerformanceMonitoringPage />
@@ -234,6 +258,12 @@ function AdminRouter() {
       </Route>
       
       <Route path="/admin/advertisements">
+        <AdminRouteGuard>
+          <AdvertisementManagementPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/advertisement">
         <AdminRouteGuard>
           <AdvertisementManagementPage />
         </AdminRouteGuard>
