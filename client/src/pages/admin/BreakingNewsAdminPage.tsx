@@ -21,8 +21,7 @@ import {
   Radio
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminBreakingNewsDirect } from '@/lib/admin-supabase-direct';
-import { createBreakingNews, updateBreakingNews, deleteBreakingNews } from '@/lib/admin-crud-fixed';
+import { createBreakingNews, updateBreakingNews, deleteBreakingNews } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -56,9 +55,9 @@ import {
 
 const breakingNewsFormSchema = z.object({
   content: z.string().min(10, 'Content must be at least 10 characters'),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean(),
   article_id: z.number().optional(),
-  creation_type: z.enum(['new', 'existing']).default('new'),
+  creation_type: z.enum(['new', 'existing']),
 });
 
 type BreakingNewsFormValues = z.infer<typeof breakingNewsFormSchema>;
@@ -124,7 +123,10 @@ export default function BreakingNewsAdminPage() {
   // Fetch breaking news using direct Supabase API
   const { data: breakingNews, isLoading, error } = useQuery({
     queryKey: ['admin-breaking-news'],
-    queryFn: () => getBreakingNews(),
+    queryFn: async () => {
+      const { getBreakingNews } = await import('../../lib/admin-api-direct');
+      return await getBreakingNews();
+    },
   });
 
   // Fetch articles for selection
@@ -132,7 +134,7 @@ export default function BreakingNewsAdminPage() {
     queryKey: ['/api/articles'],
     queryFn: async () => {
       const { getArticles } = await import('../../lib/supabase-api-direct');
-      return await getArticles(50);
+      return await getArticles({ limit: 50 });
     },
     enabled: creationType === 'existing'
   });
@@ -143,7 +145,7 @@ export default function BreakingNewsAdminPage() {
       const payload = {
         title: data.content, // Use content as title for breaking news
         content: data.content,
-        priority: 'high' as const,
+        priority: 1, // Use number instead of string
         is_active: data.is_active
       };
       
