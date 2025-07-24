@@ -4,6 +4,8 @@
   "description": "A comprehensive Bengali news website built with modern web technologies, featuring a responsive design, user authentication, content management, and advanced algorithms for personalized content recommendations.",
   "main": "postcss.config.js",
   "dependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

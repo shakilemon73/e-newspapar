@@ -7,7 +7,16 @@ export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'automatic',
-      jsxImportSource: 'react'
+      jsxImportSource: 'react',
+      babel: {
+        plugins: [],
+        presets: [
+          ['@babel/preset-react', {
+            runtime: 'automatic',
+            importSource: 'react'
+          }]
+        ]
+      }
     })
   ],
   root: 'client',

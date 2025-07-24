@@ -1,4 +1,4 @@
-import{s,o as u,a as o,n as i,b as g}from"./main-dBiflkGQ.js";u({id:i(),title:o(),slug:o(),content:o(),excerpt:o().nullable(),image_url:o().nullable(),category_id:i(),author:o(),read_time:i(),is_featured:g(),view_count:i(),published_at:o(),created_at:o(),updated_at:o()});u({id:i(),name:o(),slug:o(),created_at:o(),updated_at:o()});const d={async getAll(e=10,r=0,t,c){try{let a=s.from("articles").select(`
+import{s,o as u,a as o,n as i,b as g}from"./main-Bzb33CdK.js";u({id:i(),title:o(),slug:o(),content:o(),excerpt:o().nullable(),image_url:o().nullable(),category_id:i(),author:o(),read_time:i(),is_featured:g(),view_count:i(),published_at:o(),created_at:o(),updated_at:o()});u({id:i(),name:o(),slug:o(),created_at:o(),updated_at:o()});const d={async getAll(e=10,r=0,t,c){try{let a=s.from("articles").select(`
           *,
           categories (
             id,
