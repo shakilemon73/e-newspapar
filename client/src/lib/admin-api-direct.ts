@@ -60,15 +60,25 @@ export async function deleteArticle(id: number) {
   }
 }
 
-// Breaking News additional operations
+// Breaking News additional operations with SERVICE ROLE KEY
 export async function getBreakingNews() {
   try {
-    const { data, error } = await supabase
+    console.log('🔐 Fetching breaking news with service role key for admin...');
+    
+    // Import admin client with service role key
+    const { default: adminSupabase } = await import('./admin-supabase-direct');
+    
+    const { data, error } = await adminSupabase
       .from('breaking_news')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Admin breaking news fetch error:', error);
+      throw error;
+    }
+    
+    console.log(`✅ Fetched ${data?.length || 0} breaking news items for admin`);
     return data || [];
   } catch (error) {
     console.error('Error fetching breaking news:', error);
@@ -78,14 +88,27 @@ export async function getBreakingNews() {
 
 export async function updateBreakingNews(id: number, updates: any) {
   try {
-    const { data, error } = await supabase
+    console.log('🔐 Updating breaking news with service role key...');
+    
+    // Import admin client with service role key
+    const { default: adminSupabase } = await import('./admin-supabase-direct');
+    
+    const { data, error } = await adminSupabase
       .from('breaking_news')
-      .update(updates)
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Admin breaking news update error:', error);
+      throw new Error(error.message || 'Failed to update breaking news');
+    }
+    
+    console.log('✅ Breaking news updated successfully');
     return data;
   } catch (error) {
     console.error('Error updating breaking news:', error);
@@ -95,15 +118,63 @@ export async function updateBreakingNews(id: number, updates: any) {
 
 export async function deleteBreakingNews(id: number) {
   try {
-    const { error } = await supabase
+    console.log('🔐 Deleting breaking news with service role key...');
+    
+    // Import admin client with service role key
+    const { default: adminSupabase } = await import('./admin-supabase-direct');
+    
+    const { error } = await adminSupabase
       .from('breaking_news')
       .delete()
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Admin breaking news delete error:', error);
+      throw new Error(error.message || 'Failed to delete breaking news');
+    }
+    
+    console.log('✅ Breaking news deleted successfully');
     return true;
   } catch (error) {
     console.error('Error deleting breaking news:', error);
+    throw error;
+  }
+}
+
+export async function createBreakingNews(newsData: {
+  title: string;
+  content?: string;
+  is_active?: boolean;
+  priority?: number;
+}) {
+  try {
+    console.log('🔐 Creating breaking news with service role key...');
+    
+    // Import admin client with service role key
+    const { default: adminSupabase } = await import('./admin-supabase-direct');
+    
+    const { data, error } = await adminSupabase
+      .from('breaking_news')
+      .insert({
+        title: newsData.title,
+        content: newsData.content || newsData.title, // Use title as content if not provided
+        is_active: newsData.is_active !== false,
+        priority: newsData.priority || 1,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Admin breaking news create error:', error);
+      throw new Error(error.message || 'Failed to create breaking news');
+    }
+
+    console.log('✅ Breaking news created successfully:', data);
+    return data;
+  } catch (error) {
+    console.error('Error creating breaking news:', error);
     throw error;
   }
 }
@@ -927,42 +998,7 @@ export async function deleteWeatherData(id: number) {
   }
 }
 
-// Breaking News creation operation
-export async function createBreakingNews(newsData: {
-  title: string;
-  content?: string;
-  is_active?: boolean;
-  priority?: number;
-}) {
-  try {
-    console.log('Creating breaking news with service role key...');
-    
-    const { default: adminSupabase } = await import('./admin-supabase-direct');
-    
-    const { data, error } = await adminSupabase
-      .from('breaking_news')
-      .insert({
-        title: newsData.title,
-        content: newsData.content || '',
-        is_active: newsData.is_active !== false,
-        priority: newsData.priority || 1,
-        created_at: new Date().toISOString()
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase admin error:', error);
-      throw new Error(error.message || 'Failed to create breaking news');
-    }
-
-    console.log('✅ Breaking news created successfully:', data);
-    return data;
-  } catch (error) {
-    console.error('Error creating breaking news:', error);
-    throw error;
-  }
-}
+// Breaking News creation operation - MOVED TO PROPER LOCATION ABOVE
 
 // Video content creation operation
 export async function createVideo(videoData: {
