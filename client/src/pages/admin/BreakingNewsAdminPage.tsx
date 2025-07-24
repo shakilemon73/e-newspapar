@@ -91,13 +91,7 @@ const getBreakingNewsColumns = (t: any) => [
     label: t('created', 'Created', 'তৈরি'), 
     sortable: true,
     render: (value: string) => <DateFormatter date={value} type="relative" />
-  },
-  { 
-    key: 'updated_at', 
-    label: t('updated', 'Updated', 'আপডেট'), 
-    sortable: true,
-    render: (value: string) => <DateFormatter date={value} type="relative" />
-  },
+  }
 ];
 
 export default function BreakingNewsAdminPage() {
@@ -143,10 +137,10 @@ export default function BreakingNewsAdminPage() {
   const saveMutation = useMutation({
     mutationFn: async (data: BreakingNewsFormValues) => {
       const payload = {
-        title: data.content, // Use content as title for breaking news
+        title: data.content, // Use content as title for breaking news (for function signature)
         content: data.content,
-        priority: 1, // Use number instead of string
         is_active: data.is_active
+        // Removed priority field since it doesn't exist in the database
       };
       
       if (mode === 'create') {

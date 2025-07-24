@@ -93,12 +93,14 @@ export async function updateBreakingNews(id: number, updates: any) {
     // Import admin client with service role key
     const { default: adminSupabase } = await import('./admin-supabase-direct');
     
+    // Only update fields that exist in the schema: content, is_active
+    const validUpdates: any = {};
+    if (updates.content !== undefined) validUpdates.content = updates.content;
+    if (updates.is_active !== undefined) validUpdates.is_active = updates.is_active;
+    
     const { data, error } = await adminSupabase
       .from('breaking_news')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
+      .update(validUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -153,15 +155,13 @@ export async function createBreakingNews(newsData: {
     // Import admin client with service role key
     const { default: adminSupabase } = await import('./admin-supabase-direct');
     
+    // Only use fields that exist in the schema: content, is_active
     const { data, error } = await adminSupabase
       .from('breaking_news')
       .insert({
-        title: newsData.title,
         content: newsData.content || newsData.title, // Use title as content if not provided
-        is_active: newsData.is_active !== false,
-        priority: newsData.priority || 1,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        is_active: newsData.is_active !== false
+        // Note: priority, updated_at, title fields don't exist in the actual schema
       })
       .select()
       .single();
