@@ -183,13 +183,14 @@ export async function getAdminArticles(options: {
       query = query.eq('category_id', parseInt(category));
     }
     
-    if (status && status !== 'all') {
-      if (status === 'published') {
-        query = query.eq('is_published', true);
-      } else if (status === 'draft') {
-        query = query.eq('is_published', false);
-      }
-    }
+    // Note: Removed is_published filter since column doesn't exist in current schema
+    // if (status && status !== 'all') {
+    //   if (status === 'published') {
+    //     query = query.eq('is_published', true);
+    //   } else if (status === 'draft') {
+    //     query = query.eq('is_published', false);
+    //   }
+    // }
 
     // Apply sorting - fix column name mismatch
     const dbSortBy = sortBy === 'publishedAt' ? 'published_at' : sortBy;
@@ -223,50 +224,28 @@ export async function createArticle(articleData: {
   title: string;
   content: string;
   excerpt?: string;
-  author?: string;
   category_id: number;
   image_url?: string;
   is_featured?: boolean;
-  is_published?: boolean;
   slug?: string;
   published_at?: string;
 }) {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) throw new Error('Not authenticated');
+    // Use Express API endpoint with service role key
+    const response = await fetch('/api/admin/articles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(articleData)
+    });
 
-    const slug = articleData.slug || articleData.title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .slice(0, 100);
-
-    // Use admin Supabase client with service key for Vercel deployment
-    const { data, error } = await adminSupabase
-      .from('articles')
-      .insert({
-        title: articleData.title,
-        slug: slug,
-        content: articleData.content,
-        excerpt: articleData.excerpt,
-        image_url: articleData.image_url,
-        category_id: articleData.category_id,
-        is_featured: articleData.is_featured || false,
-        is_published: articleData.is_published !== false,
-        published_at: articleData.published_at || new Date().toISOString(),
-        // Remove author field temporarily since column doesn't exist in database
-        read_time: Math.ceil(articleData.content.length / 200) || 5,
-        view_count: 0
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase error:', error);
-      throw new Error(error.message || 'Failed to create article');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create article');
     }
 
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error creating article:', error);
     throw error;

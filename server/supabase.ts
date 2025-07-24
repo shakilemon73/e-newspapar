@@ -1,4 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES module compatibility
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from project root
+const envPath = path.resolve(__dirname, '../.env');
+console.log('Loading .env from:', envPath);
+const result = dotenv.config({ path: envPath });
+console.log('Environment loaded:', result.parsed ? 'Success' : 'Failed');
+if (result.error) console.log('Dotenv error:', result.error);
 
 // SECURITY: Environment variables only - no hardcoded fallbacks
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -7,6 +21,10 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // SECURITY: Strict validation of environment variables
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
+  console.error('Environment variables status:');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing');
+  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing');
   throw new Error('🚨 SECURITY ERROR: Missing critical environment variables. Set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY');
 }
 
