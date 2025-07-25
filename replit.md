@@ -10,6 +10,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **BACKEND AI PROCESSING COMPLETED (January 25, 2025)**: Implemented complete backend AI processing with Supabase database integration for persistent AI analysis, automatic article processing, and admin AI dashboard.
 
+**AI SECURITY HARDENING COMPLETED (January 25, 2025)**: Fixed critical security vulnerability where AI processing controls were exposed to public users. AI processing now restricted to admin users only with proper authentication checks.
+
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.
 
 ## User Preferences

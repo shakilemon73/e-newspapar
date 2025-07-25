@@ -1725,7 +1725,7 @@ const ArticleDetail = () => {
                 }}
               />
 
-              {/* Backend AI Integration Panel */}
+              {/* Backend AI Integration Panel - Admin Only */}
               <BackendAIIntegration 
                 articleId={article.id}
                 showStats={false}

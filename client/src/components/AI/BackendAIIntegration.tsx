@@ -14,10 +14,13 @@ import {
   BarChart3,
   Settings,
   Play,
-  RefreshCw
+  RefreshCw,
+  Lock,
+  Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { aiApiClient } from '@/lib/ai-api';
+import { useSupabaseAdminAuth } from '@/hooks/use-supabase-admin-auth';
 
 interface BackendAIIntegrationProps {
   articleId?: number;
@@ -33,6 +36,12 @@ export function BackendAIIntegration({
   const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'completed'>('idle');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAdmin } = useSupabaseAdminAuth();
+
+  // Security: Only show AI processing controls to admin users
+  if (!isAdmin) {
+    return null; // Completely hide AI processing from regular users
+  }
 
   // Get AI statistics
   const { data: aiStats, isLoading: statsLoading } = useQuery({
