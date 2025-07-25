@@ -14,6 +14,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **UI CLEANUP COMPLETED (January 25, 2025)**: Removed technical explanatory text about AI system internals while preserving all AI functionality for cleaner user interface.
 
+**AI PUBLIC ACCESS ENABLED (January 25, 2025)**: Enabled AI functionality for all users (not just admins) based on user request. AI processing features now available to everyone.
+
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.
 
 ## User Preferences

@@ -9,13 +9,9 @@ const router = Router();
  * All AI processing handled on backend with Supabase integration
  */
 
-// Process single article with AI - ADMIN ONLY
+// Process single article with AI - Available to all users
 router.post('/ai/process-article/:id', async (req, res) => {
-  // Security: Only allow authenticated admin users
-  console.log('[AI Security] AI processing request from:', req.ip);
-  
-  // Add rate limiting - only 5 requests per minute per IP
-  // In production, implement proper rate limiting middleware
+  console.log('[AI Processing] AI processing request from:', req.ip);
   try {
     const articleId = parseInt(req.params.id);
     
@@ -51,10 +47,9 @@ router.post('/ai/process-article/:id', async (req, res) => {
   }
 });
 
-// Batch process articles with AI - ADMIN ONLY
+// Batch process articles with AI - Available to all users  
 router.post('/ai/batch-process', async (req, res) => {
-  // Security: Restrict batch processing to prevent abuse
-  console.log('[AI Security] Batch processing request from:', req.ip);
+  console.log('[AI Processing] Batch processing request from:', req.ip);
   try {
     const { limit = 10 } = req.body;
     

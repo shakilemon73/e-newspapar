@@ -36,20 +36,8 @@ export function BackendAIIntegration({
   const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'completed'>('idle');
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  // Use a safe check for admin status without requiring the provider
-  const [isAdmin, setIsAdmin] = useState(false);
-  
-  // Safe admin check without requiring provider
-  useEffect(() => {
-    // For now, always hide AI processing from public users
-    // This ensures security regardless of provider availability
-    setIsAdmin(false);
-  }, []);
-
-  // Security: Only show AI processing controls to admin users
-  if (!isAdmin) {
-    return null; // Completely hide AI processing from regular users
-  }
+  // AI functionality available to all users
+  const isAdmin = true; // Make AI features available to everyone
 
   // Get AI statistics
   const { data: aiStats, isLoading: statsLoading } = useQuery({
