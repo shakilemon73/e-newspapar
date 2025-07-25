@@ -16,6 +16,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **AI PUBLIC ACCESS ENABLED (January 25, 2025)**: Enabled AI functionality for all users (not just admins) based on user request. AI processing features now available to everyone.
 
+**LIGHT MODE DEFAULT ENABLED (July 25, 2025)**: Changed default theme from system preference to light mode. Users now see light mode by default instead of following their system theme preference.
+
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.
 
 ## User Preferences

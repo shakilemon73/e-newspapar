@@ -245,44 +245,9 @@
         100% { transform: rotate(360deg); }
       }
     </style>
-    <script type="module" crossorigin src="/assets/main-Dgc2oLFD.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/main-BZOrmsXw.css">
-  
-<script>
-// Storage cleanup for production deployment
-(function() {
-  try {
-    console.log('🧹 Starting storage cleanup...');
-    let cleanedCount = 0;
-    
-    // Clean corrupted localStorage entries
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key) {
-        try {
-          const value = localStorage.getItem(key);
-          if (value) {
-            JSON.parse(value);
-          }
-        } catch (e) {
-          console.warn('🗑️ Removing corrupted localStorage key:', key, e);
-          localStorage.removeItem(key);
-          cleanedCount++;
-        }
-      }
-    }
-    
-    if (cleanedCount > 0) {
-      console.log(`✅ Cleaned up ${cleanedCount} corrupted storage entries`);
-    } else {
-      console.log('✅ No corrupted storage entries found');
-    }
-  } catch (error) {
-    console.warn('Storage cleanup failed:', error);
-  }
-})();
-</script>
-</head>
+    <script type="module" crossorigin src="/assets/main-DoFhRcZI.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-CJBADigy.css">
+  </head>
   <body>
     <div id="root">
       <div class="loading">
