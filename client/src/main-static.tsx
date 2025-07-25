@@ -3,10 +3,19 @@ import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { staticQueryClient } from './lib/static-queryClient';
 import { cleanupCorruptedStorage } from './lib/storage-cleanup';
+import { interceptThirdPartyDOMOperations } from './lib/third-party-wrapper';
 import App from './App';
 import './index.css';
 
-// Run storage cleanup immediately to prevent JSON parsing errors
+// Initialize third-party DOM operation interceptor FIRST
+try {
+  interceptThirdPartyDOMOperations();
+  console.log('🛡️ Third-party library protection activated');
+} catch (error) {
+  console.warn('Third-party interceptor failed:', error);
+}
+
+// Run storage cleanup to prevent JSON parsing errors
 try {
   cleanupCorruptedStorage();
 } catch (error) {

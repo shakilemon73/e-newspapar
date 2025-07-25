@@ -21,9 +21,9 @@ try {
   process.env.NODE_ENV = 'production';
   process.env.VITE_NODE_ENV = 'production';
 
-  // Build with static config
+  // Build with static config and force empty output directory
   console.log('🏗️ Building static site with admin support...');
-  execSync('vite build --config vite.config.static.ts', { 
+  execSync('vite build --config vite.config.static.ts --emptyOutDir', { 
     stdio: 'inherit',
     env: {
       ...process.env,
