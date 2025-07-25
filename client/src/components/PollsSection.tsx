@@ -131,12 +131,12 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {polls.map((poll) => {
+      {polls.map((poll, pollIndex) => {
         const hasVoted = votedPolls.has(poll.id);
         const isExpired = poll.expires_at && new Date(poll.expires_at) < new Date();
 
         return (
-          <Card key={poll.id} className="border-l-4 border-l-blue-500">
+          <Card key={`poll-${poll.id}-${pollIndex}`} className="border-l-4 border-l-blue-500">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -158,7 +158,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {poll.options.map((option) => {
+              {poll.options.map((option, optionIndex) => {
                 // Use votes or vote_count, whichever is available
                 const optionVotes = option.votes || option.vote_count || 0;
                 const percentage = poll.total_votes > 0 
@@ -166,7 +166,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
                   : 0;
 
                 return (
-                  <div key={option.id} className="space-y-2">
+                  <div key={`option-${option.id}-${poll.id}-${optionIndex}`} className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{option.text}</span>
                       {hasVoted && (

@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/hooks/use-supabase-auth";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { AutoStorageCleanup } from "@/components/StorageCleanupButton";
+import "@/lib/app-initialization"; // Initialize enhanced storage system
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";

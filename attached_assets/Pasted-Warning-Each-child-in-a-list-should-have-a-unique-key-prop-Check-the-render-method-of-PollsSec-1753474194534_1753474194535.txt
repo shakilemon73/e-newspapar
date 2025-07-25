@@ -1,0 +1,41 @@
+Warning: Each child in a list should have a unique "key" prop.
+
+Check the render method of `PollsSection`. See https://reactjs.org/link/warning-keys for more information.
+    at div
+    at PollsSection (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/components/PollsSection.tsx:25:32)
+    at div
+    at div
+    at div
+    at div
+    at div
+    at ArticleDetail (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/pages/ArticleDetail.tsx:90:22)
+    at Route (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fc3b3ca6:206:16)
+    at Switch (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=fc3b3ca6:262:17)
+    at UserRouter
+    at main
+    at div
+    at SiteSettingsProvider (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/contexts/SiteSettingsContext.tsx:36:40)
+    at AuthProvider (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/hooks/use-supabase-auth.tsx:22:32)
+    at ThemeProvider (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/components/ThemeProvider.tsx:20:33)
+    at UserApp
+    at App (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/src/App.tsx?v=WnmvhhxMdqiLlBDpki6sY:25:22)
+    at QueryClientProvider (https://558bd225-4892-4ee8-ab9f-0443136c2d46-00-jt7e496xt91r.picard.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=fc3b3ca6:2934:3)
+overrideMethod @ hook.js:608Understand this error
+Article:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)Understand this error
+Article:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)Understand this error
+VM282:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)
+_storageChangeDispatcher @ content.js:2
+_storageChangeDispatcherCallback @ content.js:2Understand this error
+VM283:1 Uncaught (in promise) SyntaxError: "[object Object]" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at l._storageChangeDispatcher (content.js:2:898238)
+    at _storageChangeDispatcherCallback (content.js:2:897686)

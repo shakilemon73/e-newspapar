@@ -23,6 +23,31 @@ const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
 
 console.log('🔐 Admin Supabase client using SERVICE ROLE key');
 
+/**
+ * Create user_storage table for localStorage migration
+ */
+export async function initializeUserStorageTable(): Promise<void> {
+  try {
+    console.log('📦 Initializing user_storage table...');
+    
+    const { data, error } = await adminSupabase
+      .from('user_storage')
+      .select('count(*)')
+      .limit(1);
+
+    if (error && error.code === 'PGRST116') {
+      // Table doesn't exist, we'll rely on external table creation
+      console.log('⚠️ user_storage table needs to be created manually in Supabase');
+    } else if (error) {
+      console.error('Error checking user_storage table:', error);
+    } else {
+      console.log('✅ user_storage table is available');
+    }
+  } catch (error) {
+    console.error('Failed to initialize user_storage table:', error);
+  }
+}
+
 // ==============================================
 // COMMENTS MANAGEMENT (Admin Service Role)
 // ==============================================

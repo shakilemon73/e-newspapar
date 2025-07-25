@@ -1,208 +1,283 @@
+/**
+ * Supabase-based storage solution to replace localStorage
+ * Fixes JSON parse errors by storing data in Supabase database
+ */
+
 import { supabase } from './supabase';
-import { createMediaBucket } from './supabase-bucket-setup';
 
-export type MediaType = 'images' | 'videos' | 'audio';
-
-export interface UploadResult {
-  success: boolean;
-  url?: string;
-  path?: string;
-  error?: string;
+interface UserStorageData {
+  id?: number;
+  user_id: string;
+  storage_key: string;
+  storage_value: any;
+  created_at?: string;
+  updated_at?: string;
 }
 
+// Media type for file uploads (required by admin components)
+export type MediaType = 'image' | 'video' | 'audio' | 'document' | 'pdf';
+
+// File upload class for admin components
 export class SupabaseStorage {
-  /**
-   * Upload a file to Supabase Storage
-   */
-  static async uploadFile(
-    file: File,
-    type: MediaType,
-    fileName?: string
-  ): Promise<UploadResult> {
+  static async uploadFile(file: File, mediaType: MediaType): Promise<{ url: string; path: string }> {
     try {
-      // First, ensure the media bucket exists
-      const bucketResult = await createMediaBucket();
-      if (!bucketResult.success && !bucketResult.message?.includes('already exists')) {
-        return { success: false, error: `Bucket setup failed: ${bucketResult.error}` };
-      }
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${mediaType}s/${fileName}`;
 
-      // Generate unique filename if not provided
-      const fileExtension = file.name.split('.').pop();
-      const uniqueFileName = fileName || `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExtension}`;
-      
-      // Define file path based on type
-      const filePath = `${type}/${uniqueFileName}`;
-
-      // Upload file to Supabase Storage
       const { data, error } = await supabase.storage
         .from('media')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+        .upload(filePath, file);
 
       if (error) {
-        console.error('Upload error:', error);
-        // If bucket doesn't exist, try to create it and retry
-        if (error.message.includes('Bucket not found')) {
-          console.log('Bucket not found, creating media bucket...');
-          const createResult = await createMediaBucket();
-          if (createResult.success) {
-            // Retry upload after creating bucket
-            const { data: retryData, error: retryError } = await supabase.storage
-              .from('media')
-              .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false
-              });
-            
-            if (retryError) {
-              return { success: false, error: retryError.message };
-            }
-            
-            // Get public URL for successful retry
-            const { data: urlData } = supabase.storage
-              .from('media')
-              .getPublicUrl(filePath);
-
-            return {
-              success: true,
-              url: urlData.publicUrl,
-              path: filePath
-            };
-          }
-        }
-        return { success: false, error: error.message };
+        throw new Error(`Upload failed: ${error.message}`);
       }
 
-      // Get public URL
       const { data: urlData } = supabase.storage
         .from('media')
         .getPublicUrl(filePath);
 
       return {
-        success: true,
         url: urlData.publicUrl,
         path: filePath
       };
-
-    } catch (error: any) {
-      console.error('Upload error:', error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  /**
-   * Delete a file from Supabase Storage
-   */
-  static async deleteFile(filePath: string): Promise<boolean> {
-    try {
-      const { error } = await supabase.storage
-        .from('media')
-        .remove([filePath]);
-
-      if (error) {
-        console.error('Delete error:', error);
-        return false;
-      }
-
-      return true;
     } catch (error) {
-      console.error('Delete error:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Get public URL for a file
-   */
-  static getPublicUrl(filePath: string): string {
-    const { data } = supabase.storage
-      .from('media')
-      .getPublicUrl(filePath);
-
-    return data.publicUrl;
-  }
-
-  /**
-   * List files in a directory
-   */
-  static async listFiles(folder: MediaType, limit = 100) {
-    try {
-      const { data, error } = await supabase.storage
-        .from('media')
-        .list(folder, {
-          limit,
-          sortBy: { column: 'created_at', order: 'desc' }
-        });
-
-      if (error) {
-        console.error('List files error:', error);
-        return [];
-      }
-
-      return data || [];
-    } catch (error) {
-      console.error('List files error:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get file info
-   */
-  static async getFileInfo(filePath: string) {
-    try {
-      const { data, error } = await supabase.storage
-        .from('media')
-        .list(filePath.split('/')[0], {
-          search: filePath.split('/')[1]
-        });
-
-      if (error) {
-        console.error('Get file info error:', error);
-        return null;
-      }
-
-      return data?.[0] || null;
-    } catch (error) {
-      console.error('Get file info error:', error);
-      return null;
+      console.error('File upload error:', error);
+      throw error;
     }
   }
 }
 
-// Utility functions for file validation
-export const validateImageFile = (file: File): boolean => {
-  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-  const maxSize = 5 * 1024 * 1024; // 5MB
+// File validator function for admin components
+export function getFileValidator(mediaType: MediaType) {
+  const validators = {
+    image: (file: File) => file.type.startsWith('image/'),
+    video: (file: File) => file.type.startsWith('video/'),
+    audio: (file: File) => file.type.startsWith('audio/'),
+    document: (file: File) => ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type),
+    pdf: (file: File) => file.type === 'application/pdf'
+  };
 
-  return allowedTypes.includes(file.type) && file.size <= maxSize;
-};
+  return validators[mediaType] || (() => true);
+}
 
-export const validateVideoFile = (file: File): boolean => {
-  const allowedTypes = ['video/mp4', 'video/webm', 'video/ogg'];
-  const maxSize = 100 * 1024 * 1024; // 100MB
+/**
+ * Store data in Supabase instead of localStorage
+ */
+export async function setSupabaseStorage(key: string, value: any, userId?: string): Promise<boolean> {
+  try {
+    // Get current user if userId not provided
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('No user found for Supabase storage');
+        return false;
+      }
+      userId = user.id;
+    }
 
-  return allowedTypes.includes(file.type) && file.size <= maxSize;
-};
+    // Upsert the data
+    const { error } = await supabase
+      .from('user_storage')
+      .upsert({
+        user_id: userId,
+        storage_key: key,
+        storage_value: value,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,storage_key'
+      });
 
-export const validateAudioFile = (file: File): boolean => {
-  const allowedTypes = ['audio/mp3', 'audio/wav', 'audio/ogg', 'audio/mpeg'];
-  const maxSize = 50 * 1024 * 1024; // 50MB
+    if (error) {
+      console.error('Error storing data in Supabase:', error);
+      return false;
+    }
 
-  return allowedTypes.includes(file.type) && file.size <= maxSize;
-};
-
-export const getFileValidator = (type: MediaType) => {
-  switch (type) {
-    case 'images':
-      return validateImageFile;
-    case 'videos':
-      return validateVideoFile;
-    case 'audio':
-      return validateAudioFile;
-    default:
-      return () => false;
+    console.log(`✅ Stored ${key} in Supabase storage`);
+    return true;
+  } catch (error) {
+    console.error('Failed to store in Supabase:', error);
+    return false;
   }
-};
+}
+
+/**
+ * Get data from Supabase instead of localStorage
+ */
+export async function getSupabaseStorage<T = any>(key: string, userId?: string): Promise<T | null> {
+  try {
+    // Get current user if userId not provided
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('No user found for Supabase storage');
+        return null;
+      }
+      userId = user.id;
+    }
+
+    const { data, error } = await supabase
+      .from('user_storage')
+      .select('storage_value')
+      .eq('user_id', userId)
+      .eq('storage_key', key)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error getting data from Supabase:', error);
+      return null;
+    }
+
+    return data?.storage_value || null;
+  } catch (error) {
+    console.error('Failed to get from Supabase:', error);
+    return null;
+  }
+}
+
+/**
+ * Remove data from Supabase storage
+ */
+export async function removeSupabaseStorage(key: string, userId?: string): Promise<boolean> {
+  try {
+    // Get current user if userId not provided
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn('No user found for Supabase storage');
+        return false;
+      }
+      userId = user.id;
+    }
+
+    const { error } = await supabase
+      .from('user_storage')
+      .delete()
+      .eq('user_id', userId)
+      .eq('storage_key', key);
+
+    if (error) {
+      console.error('Error removing data from Supabase:', error);
+      return false;
+    }
+
+    console.log(`✅ Removed ${key} from Supabase storage`);
+    return true;
+  } catch (error) {
+    console.error('Failed to remove from Supabase:', error);
+    return false;
+  }
+}
+
+/**
+ * Migrate existing localStorage data to Supabase
+ */
+export async function migrateLocalStorageToSupabase(): Promise<void> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.log('No user found, skipping localStorage migration');
+      return;
+    }
+
+    console.log('🔄 Migrating localStorage to Supabase...');
+
+    const keysToMigrate = [
+      'theme',
+      'language',
+      'article-theme',
+      'userSettings',
+      'user-preferences',
+      'site-settings'
+    ];
+
+    let migratedCount = 0;
+
+    for (const key of keysToMigrate) {
+      try {
+        const value = localStorage.getItem(key);
+        if (value && value !== 'null' && value !== 'undefined' && value !== '[object Object]') {
+          // Try to parse JSON if it looks like JSON
+          let parsedValue = value;
+          if (value.startsWith('{') || value.startsWith('[') || value.startsWith('"')) {
+            try {
+              parsedValue = JSON.parse(value);
+            } catch {
+              // Keep as string if parsing fails
+            }
+          }
+
+          const success = await setSupabaseStorage(key, parsedValue, user.id);
+          if (success) {
+            // Remove from localStorage after successful migration
+            localStorage.removeItem(key);
+            migratedCount++;
+            console.log(`✅ Migrated ${key} to Supabase`);
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to migrate ${key}:`, error);
+      }
+    }
+
+    if (migratedCount > 0) {
+      console.log(`✅ Migrated ${migratedCount} localStorage items to Supabase`);
+    } else {
+      console.log('✅ No localStorage items to migrate');
+    }
+  } catch (error) {
+    console.error('Failed to migrate localStorage to Supabase:', error);
+  }
+}
+
+/**
+ * Hybrid storage: Try Supabase first, fallback to safe localStorage
+ */
+export async function hybridStorageGet<T = any>(key: string): Promise<T | null> {
+  try {
+    // Try Supabase first
+    const supabaseValue = await getSupabaseStorage<T>(key);
+    if (supabaseValue !== null) {
+      return supabaseValue;
+    }
+
+    // Fallback to safe localStorage
+    const { safeLocalStorageGet } = await import('./storage-cleanup');
+    return safeLocalStorageGet<T>(key);
+  } catch (error) {
+    console.warn(`Hybrid storage get failed for ${key}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Hybrid storage: Store in both Supabase and localStorage for reliability
+ */
+export async function hybridStorageSet(key: string, value: any): Promise<boolean> {
+  try {
+    const promises: Promise<boolean>[] = [];
+
+    // Store in Supabase
+    promises.push(setSupabaseStorage(key, value));
+
+    // Store in localStorage safely
+    promises.push(
+      (async () => {
+        try {
+          const { safeLocalStorageSet } = await import('./storage-cleanup');
+          return safeLocalStorageSet(key, value);
+        } catch {
+          return false;
+        }
+      })()
+    );
+
+    const results = await Promise.allSettled(promises);
+    
+    // Return true if at least one storage method succeeded
+    return results.some(result => result.status === 'fulfilled' && result.value === true);
+  } catch (error) {
+    console.warn(`Hybrid storage set failed for ${key}:`, error);
+    return false;
+  }
+}

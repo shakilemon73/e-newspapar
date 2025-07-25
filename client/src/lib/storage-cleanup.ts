@@ -1,11 +1,11 @@
 /**
- * Storage cleanup utility to fix JSON parsing errors
+ * ENHANCED Storage cleanup utility to fix JSON parsing errors
  * This addresses the "SyntaxError: [object Object] is not valid JSON" errors
  * that can occur with corrupted localStorage/sessionStorage entries
  */
 
 export function cleanupCorruptedStorage() {
-  console.log('🧹 Starting storage cleanup...');
+  console.log('🧹 Starting enhanced storage cleanup...');
   
   const keysToCheck = [
     // Supabase auth tokens
@@ -15,18 +15,36 @@ export function cleanupCorruptedStorage() {
     'userSettings',
     'theme',
     'language',
+    'article-theme',
+    'user-preferences',
+    'site-settings',
     // Check all keys starting with 'sb-' (Supabase related)
-    ...Object.keys(localStorage).filter(key => key.startsWith('sb-'))
+    ...Object.keys(localStorage).filter(key => key.startsWith('sb-')),
+    // Check all existing keys
+    ...Object.keys(localStorage)
   ];
 
   let cleanedCount = 0;
 
-  keysToCheck.forEach(key => {
+  // Remove duplicates from keysToCheck - Fix TypeScript Set iteration issue
+  const uniqueKeys = Array.from(new Set(keysToCheck));
+
+  uniqueKeys.forEach(key => {
     try {
       const value = localStorage.getItem(key);
       if (value && value !== 'null' && value !== 'undefined') {
-        // Try to parse the JSON
-        JSON.parse(value);
+        // Check if it's an object that was stored incorrectly
+        if (value === '[object Object]' || value.startsWith('[object ')) {
+          console.warn(`🗑️ Removing invalid object localStorage key: ${key}`);
+          localStorage.removeItem(key);
+          cleanedCount++;
+          return;
+        }
+        
+        // Only try to parse if it looks like JSON
+        if (value.startsWith('{') || value.startsWith('[') || value.startsWith('"')) {
+          JSON.parse(value);
+        }
       }
     } catch (error) {
       console.warn(`🗑️ Removing corrupted localStorage key: ${key}`, error);
