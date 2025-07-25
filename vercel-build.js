@@ -309,7 +309,7 @@ try {
     const vercelConfig = JSON.parse(fs.readFileSync('vercel.json', 'utf8'));
     if (vercelConfig.rewrites && vercelConfig.rewrites.length > 0) {
       const rewriteRule = vercelConfig.rewrites[0];
-      if (rewriteRule.source === '/((?!api/.*).*)' && rewriteRule.destination === '/index.html') {
+      if (rewriteRule.source === '/((?!api/.*).*)'  && rewriteRule.destination === '/index.html') {
         console.log('✅ vercel.json has correct Stack Overflow routing pattern');
       } else {
         console.log('⚠️ vercel.json routing pattern may not match Stack Overflow solution');
