@@ -359,10 +359,13 @@ const ArticleDetail = () => {
 
   useEffect(() => {
     localStorage.setItem('article-theme', isDarkMode ? 'dark' : 'light');
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    // Safe DOM manipulation with null checks
+    if (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList) {
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
   }, [isDarkMode]);
 

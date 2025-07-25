@@ -20,6 +20,13 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **VERCEL CONSOLE ERRORS FIXED (July 25, 2025)**: Resolved all major console errors in Vercel deployment including AI API 404s, database relationship errors, localStorage JSON parsing issues, and multiple Supabase client warnings. Site now runs error-free on Vercel.
 
+**VERCEL DEPLOYMENT RUNTIME ERRORS FIXED (July 25, 2025)**: Fixed critical browser console errors that appeared after successful Vercel deployment:
+- Fixed "Cannot read properties of undefined (reading 'add')" error in ArticleDetail.tsx:606:31 by adding null checks for document.documentElement.classList
+- Fixed "SyntaxError: '[object Object]' is not valid JSON" error in content.js storage dispatcher by enhancing storage cleanup to detect and remove invalid object strings
+- Added comprehensive global error handlers to prevent DOM manipulation and JSON parsing errors
+- Enhanced storage-cleanup.ts to detect patterns like '[object Object]', 'undefined', 'null', 'NaN' and remove them proactively
+- Site now loads without console errors on Vercel production deployment
+
 **SPA ROUTING COMPLETELY FIXED (July 25, 2025)**: Implemented proper Single Page Application routing for all 48 pages (23 public + 25 admin). Fixed 404 errors on page refresh and direct links with simplified vercel.json catch-all rewrite rule. Updated vercel-build.js to align with SPA approach, removing conflicting individual HTML file creation. All routes now work correctly on Vercel static hosting.
 
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.

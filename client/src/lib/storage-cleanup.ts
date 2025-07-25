@@ -34,8 +34,15 @@ export function cleanupCorruptedStorage() {
       const value = localStorage.getItem(key);
       if (value && value !== 'null' && value !== 'undefined') {
         // Check if it's an object that was stored incorrectly
-        if (value === '[object Object]' || value.startsWith('[object ')) {
+        if (value === '[object Object]' || value.startsWith('[object ') || value.includes('[object Object]')) {
           console.warn(`🗑️ Removing invalid object localStorage key: ${key}`);
+          localStorage.removeItem(key);
+          cleanedCount++;
+          return;
+        }
+        
+        // Check for other common invalid patterns
+        if (value === 'undefined' || value === 'null' || value === 'NaN' || value === '') {
           localStorage.removeItem(key);
           cleanedCount++;
           return;
@@ -68,7 +75,17 @@ export function cleanupCorruptedStorage() {
     try {
       const value = sessionStorage.getItem(key);
       if (value && value !== 'null' && value !== 'undefined') {
-        JSON.parse(value);
+        // Check for invalid object patterns in sessionStorage too
+        if (value === '[object Object]' || value.startsWith('[object ') || value.includes('[object Object]')) {
+          sessionStorage.removeItem(key);
+          cleanedCount++;
+          return;
+        }
+        
+        // Only try to parse if it looks like JSON
+        if (value.startsWith('{') || value.startsWith('[') || value.startsWith('"')) {
+          JSON.parse(value);
+        }
       }
     } catch (error) {
       console.warn(`🗑️ Removing corrupted sessionStorage key: ${key}`, error);

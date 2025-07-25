@@ -2,8 +2,16 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { staticQueryClient } from './lib/static-queryClient';
+import { cleanupCorruptedStorage } from './lib/storage-cleanup';
 import App from './App';
 import './index.css';
+
+// Run storage cleanup immediately to prevent JSON parsing errors
+try {
+  cleanupCorruptedStorage();
+} catch (error) {
+  console.warn('Storage cleanup failed:', error);
+}
 
 // Static site entry point - uses static query client with Supabase
 const rootElement = document.getElementById('root');
@@ -19,11 +27,27 @@ if (!finalRootElement) {
   throw new Error('Unable to create root element');
 }
 
-// Add global error handler for DOM-related errors
+// Add comprehensive global error handler
 window.addEventListener('error', (event) => {
-  if (event.error && event.error.message && event.error.message.includes('add')) {
-    console.warn('DOM classList error caught:', event.error);
-    event.preventDefault();
+  if (event.error && event.error.message) {
+    const message = event.error.message;
+    // Handle classList errors
+    if (message.includes('add') || message.includes('classList') || message.includes('Cannot read properties of undefined')) {
+      console.warn('DOM manipulation error prevented:', event.error);
+      event.preventDefault();
+      return;
+    }
+    // Handle JSON parsing errors
+    if (message.includes('JSON.parse') || message.includes('not valid JSON') || message.includes('[object Object]')) {
+      console.warn('JSON parsing error prevented:', event.error);
+      try {
+        cleanupCorruptedStorage();
+      } catch (cleanupError) {
+        console.warn('Cleanup failed:', cleanupError);
+      }
+      event.preventDefault();
+      return;
+    }
   }
 });
 
