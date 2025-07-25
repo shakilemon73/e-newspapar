@@ -69,8 +69,8 @@ export function BengaliSentimentAnalyzer({ text, className }: BengaliSentimentAn
         const result = await classifier(text.slice(0, 512)); // BERT token limit
         const firstResult = Array.isArray(result) ? result[0] : result;
         const sentimentResult = getSentimentDisplay(
-          firstResult?.label || 'neutral', 
-          firstResult?.score || 0.5
+          (firstResult as any)?.label || 'neutral', 
+          (firstResult as any)?.score || 0.5
         );
         setSentiment(sentimentResult);
 

@@ -15,6 +15,8 @@ import { TagsDisplay } from '@/components/TagsDisplay';
 import { BengaliVoiceHelper } from '@/components/BengaliVoiceHelper';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { PollsSection } from '@/components/PollsSection';
+import { AIEnhancedArticleDetail } from '@/components/AI/AIEnhancedArticleDetail';
+import { BackendAIIntegration } from '@/components/AI/BackendAIIntegration';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
@@ -1712,6 +1714,23 @@ const ArticleDetail = () => {
                   
                 </CardContent>
               </Card>
+
+              {/* AI-Enhanced Article Features */}
+              <AIEnhancedArticleDetail 
+                article={{
+                  id: article.id,
+                  title: article.title,
+                  content: article.content || '',
+                  summary: article.summary
+                }}
+              />
+
+              {/* Backend AI Integration Panel */}
+              <BackendAIIntegration 
+                articleId={article.id}
+                showStats={false}
+                className="mt-6"
+              />
 
               {/* Comments Section */}
               <CommentsSection articleId={article.id} />

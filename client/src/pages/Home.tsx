@@ -15,6 +15,7 @@ import AudioArticles from '@/components/AudioArticles';
 
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
+import { AIEnhancedHomepage } from '@/components/AI/AIEnhancedHomepage';
 
 interface Category {
   id: number;
@@ -194,6 +195,11 @@ const Home = () => {
         {/* Social Media Feed Section */}
         <section className="container-modern py-6 fade-in">
           <SocialMediaFeed />
+        </section>
+
+        {/* AI-Enhanced Features */}
+        <section className="container-modern py-6">
+          <AIEnhancedHomepage />
         </section>
       </main>
     </>

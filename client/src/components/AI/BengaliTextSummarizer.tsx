@@ -40,7 +40,9 @@ export function BengaliTextSummarizer({ text, onSummaryGenerated }: BengaliTextS
         do_sample: false
       });
 
-      const generatedSummary = Array.isArray(result) ? result[0]?.summary_text || result[0]?.generated_text : result?.summary_text || result?.generated_text;
+      const generatedSummary = Array.isArray(result) 
+        ? (result[0] as any)?.summary_text || (result[0] as any)?.generated_text || 'সারসংক্ষেপ তৈরি করা যায়নি।'
+        : (result as any)?.summary_text || (result as any)?.generated_text || 'সারসংক্ষেপ তৈরি করা যায়নি।';
       setSummary(generatedSummary);
       
       if (onSummaryGenerated) {

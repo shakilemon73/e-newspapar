@@ -61,6 +61,12 @@ import {
   deleteAudioArticleServerSide
 } from './admin-api';
 
+// Import AI routes
+import { aiRoutes } from './ai-routes';
+
+// Mount AI routes
+app.use('/api', aiRoutes);
+
 // Admin Articles
 app.post('/api/admin/articles', async (req: Request, res: Response) => {
   try {
