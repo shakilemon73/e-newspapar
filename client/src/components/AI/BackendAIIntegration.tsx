@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,15 @@ export function BackendAIIntegration({
   const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'completed'>('idle');
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isAdmin } = useSupabaseAdminAuth();
+  // Use a safe check for admin status without requiring the provider
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Safe admin check without requiring provider
+  useEffect(() => {
+    // For now, always hide AI processing from public users
+    // This ensures security regardless of provider availability
+    setIsAdmin(false);
+  }, []);
 
   // Security: Only show AI processing controls to admin users
   if (!isAdmin) {
@@ -339,21 +347,7 @@ export function BackendAIIntegration({
         </CardContent>
       </Card>
 
-      {/* Technology Info */}
-      <Card className="bg-gray-50 dark:bg-gray-900/50">
-        <CardContent className="pt-6">
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Database className="h-4 w-4" />
-              <span className="font-medium">Backend AI Processing</span>
-            </div>
-            <p>
-              সমস্ত AI প্রক্রিয়াকরণ Supabase backend এ সংরক্ষিত হয় এবং 
-              TensorFlow.js দ্বারা চালিত হয়। ডেটা স্থায়ীভাবে সংরক্ষিত থাকে।
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }

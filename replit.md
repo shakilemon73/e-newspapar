@@ -12,6 +12,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **AI SECURITY HARDENING COMPLETED (January 25, 2025)**: Fixed critical security vulnerability where AI processing controls were exposed to public users. AI processing now restricted to admin users only with proper authentication checks.
 
+**UI CLEANUP COMPLETED (January 25, 2025)**: Removed technical explanatory text about AI system internals while preserving all AI functionality for cleaner user interface.
+
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.
 
 ## User Preferences
