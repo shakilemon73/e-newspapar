@@ -242,9 +242,9 @@ const ArticleDetail = () => {
     }
   };
 
-  // Update related articles when fetched
+  // Update related articles when fetched - FIXED TO PREVENT INFINITE LOOPS
   useEffect(() => {
-    if (fetchedRelatedArticles) {
+    if (fetchedRelatedArticles && fetchedRelatedArticles.length > 0) {
       // Transform the data to match our interface
       const transformedArticles = fetchedRelatedArticles.map((article: any) => ({
         ...article,
@@ -254,12 +254,12 @@ const ArticleDetail = () => {
       }));
       setRelatedArticles(transformedArticles);
     }
-  }, [fetchedRelatedArticles]);
+  }, [fetchedRelatedArticles?.length]); // Use length instead of the array itself
 
-  // Check if article is saved
+  // Check if article is saved - FIXED TO PREVENT INFINITE LOOPS
   useEffect(() => {
     const checkIfSaved = async () => {
-      if (!user || !article) return;
+      if (!user || !article?.id) return;
 
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -284,7 +284,7 @@ const ArticleDetail = () => {
     };
     
     checkIfSaved();
-  }, [user, article]);
+  }, [user?.id, article?.id]); // Use specific properties instead of whole objects
 
   // Enhanced reading progress and analytics - FIXED FOR INFINITE LOOP
   useEffect(() => {
@@ -365,10 +365,10 @@ const ArticleDetail = () => {
     }
   }, [isDarkMode]);
 
-  // Track reading history when an article is viewed by a logged-in user
+  // Track reading history when an article is viewed by a logged-in user - FIXED TO PREVENT INFINITE LOOPS
   useEffect(() => {
     const trackReading = async () => {
-      if (!user || !article) return;
+      if (!user?.id || !article?.id) return;
       
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -388,7 +388,7 @@ const ArticleDetail = () => {
     };
     
     trackReading();
-  }, [user, article]);
+  }, [user?.id, article?.id]); // Use specific properties instead of whole objects
   
   // Share functionality
   const handleShare = async (platform: string = 'copy') => {
@@ -1091,7 +1091,9 @@ const ArticleDetail = () => {
     };
   }, [articleSlug]); // Only depend on articleSlug - CRITICAL FIX
 
-  // Handle URL updates separately to prevent infinite loops
+  // TEMPORARILY DISABLED URL UPDATES TO PREVENT INFINITE LOOPS
+  // This useEffect is causing infinite re-renders, disabling for now
+  /*
   useEffect(() => {
     if (article && article.title && !isLoading) {
       const cleanSlug = createBengaliSlug(article.title);
@@ -1107,7 +1109,8 @@ const ArticleDetail = () => {
         }
       }
     }
-  }, [article?.title, isLoading, viewTracked]); // More specific dependencies
+  }, [article?.title, isLoading, viewTracked]);
+  */
 
   // World-class loading state
   if (isLoading) {

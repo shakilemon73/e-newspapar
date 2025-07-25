@@ -74,7 +74,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
 
       if (!result.success) {
         if (result.message.includes('ইতিমধ্যে')) {
-          setVotedPolls(prev => new Set([...prev, pollId]));
+          setVotedPolls(prev => new Set(Array.from(prev).concat(pollId)));
         }
         toast({
           title: result.success ? "সফল" : "ত্রুটি",
@@ -84,7 +84,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
         return;
       }
 
-      setVotedPolls(prev => new Set([...prev, pollId]));
+      setVotedPolls(prev => new Set(Array.from(prev).concat(pollId)));
       toast({
         title: "সফল",
         description: result.message
