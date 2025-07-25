@@ -31,6 +31,110 @@ interface ArticleAIAnalysis {
  * Integrates with Supabase database for persistent AI analysis
  */
 class BengaliAIService {
+
+  /**
+   * AI-powered time-based popular articles with dynamic ranking
+   */
+  async getAIPopularArticles(timeRange: 'daily' | 'weekly' | 'monthly', limit: number = 6): Promise<AIProcessingResult> {
+    try {
+      console.log(`[AI Popular] Generating ${timeRange} popular articles with AI ranking...`);
+      
+      // Calculate time range for filtering
+      const now = new Date();
+      let startDate: Date;
+      
+      switch (timeRange) {
+        case 'daily':
+          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000); // Last 24 hours
+          break;
+        case 'weekly':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // Last 7 days
+          break;
+        case 'monthly':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
+          break;
+      }
+
+      // Get articles with AI analysis and view tracking
+      const { data: articles, error } = await supabaseServiceRole
+        .from('articles')
+        .select(`
+          id, title, slug, excerpt, published_at, view_count,
+          categories!inner(id, name, slug),
+          article_ai_analysis(
+            sentiment_label, sentiment_score, auto_tags, 
+            content_complexity, reading_time_minutes
+          )
+        `)
+        .gte('published_at', startDate.toISOString())
+        .order('view_count', { ascending: false })
+        .limit(limit * 2); // Get more to apply AI filtering
+
+      if (error) {
+        console.error('[AI Popular] Database error:', error);
+        return { success: false, error: error.message };
+      }
+
+      // AI-enhanced ranking algorithm
+      const aiRankedArticles = this.applyAIRanking(articles || [], timeRange);
+      
+      return {
+        success: true,
+        data: {
+          articles: aiRankedArticles.slice(0, limit),
+          timeRange,
+          totalCount: aiRankedArticles.length,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+      
+    } catch (error) {
+      console.error('[AI Popular] Processing error:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * AI ranking algorithm for popular articles
+   */
+  private applyAIRanking(articles: any[], timeRange: string): any[] {
+    return articles.map(article => {
+      let aiScore = article.view_count || 0;
+      
+      // AI sentiment boost
+      if (article.article_ai_analysis?.[0]?.sentiment_score) {
+        const sentimentBoost = article.article_ai_analysis[0].sentiment_score * 100;
+        aiScore += sentimentBoost;
+      }
+      
+      // Time-based relevance boost
+      const publishedAt = new Date(article.published_at);
+      const hoursOld = (Date.now() - publishedAt.getTime()) / (1000 * 60 * 60);
+      
+      switch (timeRange) {
+        case 'daily':
+          aiScore += Math.max(0, 50 - hoursOld); // Newer articles get higher score
+          break;
+        case 'weekly':
+          aiScore += Math.max(0, 20 - hoursOld / 24); // Daily decay
+          break;
+        case 'monthly':
+          aiScore += Math.max(0, 10 - hoursOld / (24 * 7)); // Weekly decay
+          break;
+      }
+      
+      // Complexity bonus for quality content
+      const complexity = article.article_ai_analysis?.[0]?.content_complexity;
+      if (complexity === 'মাধ্যম') aiScore += 25;
+      if (complexity === 'কঠিন') aiScore += 15;
+      
+      return {
+        ...article,
+        aiScore: Math.round(aiScore),
+        trending: aiScore > (article.view_count || 0) * 1.5
+      };
+    }).sort((a, b) => b.aiScore - a.aiScore);
+  }
   
   /**
    * Process article with comprehensive AI analysis
@@ -341,4 +445,6 @@ class BengaliAIService {
   }
 }
 
-export const bengaliAIService = new BengaliAIService();
+// Export singleton instance
+const bengaliAIService = new BengaliAIService();
+export { bengaliAIService, BengaliAIService };

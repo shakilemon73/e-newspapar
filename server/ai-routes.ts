@@ -221,4 +221,29 @@ router.get('/ai/stats', async (req, res) => {
   }
 });
 
+// Get AI-powered popular articles with time-based filtering
+router.get('/ai/popular/:timeRange', async (req, res) => {
+  try {
+    const { timeRange } = req.params;
+    const limit = parseInt(req.query.limit as string) || 6;
+    
+    if (!['daily', 'weekly', 'monthly'].includes(timeRange)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid time range. Use: daily, weekly, or monthly'
+      });
+    }
+    
+    const result = await bengaliAIService.getAIPopularArticles(timeRange as any, limit);
+    res.json(result);
+    
+  } catch (error) {
+    console.error('[AI Popular API] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get AI popular articles'
+    });
+  }
+});
+
 export { router as aiRoutes };

@@ -16,6 +16,8 @@ interface Article {
   publishedAt: string;
   category: Category;
   viewCount: number;
+  aiScore?: number;
+  trending?: boolean;
 }
 
 type TimeRange = 'daily' | 'weekly' | 'monthly';
@@ -27,38 +29,68 @@ export const PopularNewsSection = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPopularArticles = async () => {
+    const fetchAIPopularArticles = async () => {
       try {
         setIsLoading(true);
-        const { articlesApiDirect } = await import('../lib/queryClient-direct');
-        const data = await articlesApiDirect.getPopular(6);
-        console.log(`[PopularNews] Fetched ${data.length} popular articles for ${timeRange}`);
         
-        // Transform data to match Article interface
-        const transformedData = data.map((article: any) => ({
-          id: article.id,
-          title: article.title,
-          slug: article.slug,
-          excerpt: article.excerpt,
-          publishedAt: article.published_at || article.publishedAt,
-          category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
-          viewCount: article.view_count || article.viewCount || 0
-        }));
+        // Use AI-powered popular articles API
+        const response = await fetch(`/api/ai/popular/${timeRange}?limit=6`);
+        const result = await response.json();
         
-        setPopularArticles(transformedData);
-        setError(null);
+        if (result.success && result.data?.articles) {
+          console.log(`[AI Popular] Fetched ${result.data.articles.length} AI-ranked articles for ${timeRange}`);
+          
+          // Transform AI data to match Article interface
+          const transformedData = result.data.articles.map((article: any) => ({
+            id: article.id,
+            title: article.title,
+            slug: article.slug,
+            excerpt: article.excerpt,
+            publishedAt: article.published_at || article.publishedAt,
+            category: article.categories || { id: 0, name: 'সাধারণ', slug: 'general' },
+            viewCount: article.view_count || article.viewCount || 0,
+            aiScore: article.aiScore,
+            trending: article.trending
+          }));
+          
+          setPopularArticles(transformedData);
+          setError(null);
+        } else {
+          throw new Error(result.error || 'AI API failed');
+        }
       } catch (err) {
-        setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
-        console.error('Error fetching popular articles:', err);
+        console.error('AI popular articles failed, falling back to regular API:', err);
+        
+        // Fallback to regular popular articles
+        try {
+          const { articlesApiDirect } = await import('../lib/queryClient-direct');
+          const data = await articlesApiDirect.getPopular(6);
+          
+          const transformedData = data.map((article: any) => ({
+            id: article.id,
+            title: article.title,
+            slug: article.slug,
+            excerpt: article.excerpt,
+            publishedAt: article.published_at || article.publishedAt,
+            category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
+            viewCount: article.view_count || article.viewCount || 0
+          }));
+          
+          setPopularArticles(transformedData);
+          setError(null);
+        } catch (fallbackErr) {
+          setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
+          console.error('Both AI and fallback APIs failed:', fallbackErr);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPopularArticles();
+    fetchAIPopularArticles();
     
-    // Auto-refresh every 30 seconds to show updated view counts
-    const interval = setInterval(fetchPopularArticles, 30000);
+    // Auto-refresh every 2 minutes for AI-powered content
+    const interval = setInterval(fetchAIPopularArticles, 120000);
     
     return () => clearInterval(interval);
   }, [timeRange]);
@@ -167,29 +199,51 @@ export const PopularNewsSection = () => {
       
       <div className="space-y-4">
         {popularArticles.map((article, index) => (
-          <div className="flex gap-4" key={article.id}>
-            <div className="flex-shrink-0 font-bold text-2xl text-accent w-6">
-              {index + 1}
-            </div>
-            <div>
-              <h4 className="news-title mb-1">
-                <Link href={`/article/${article.slug}`} className="hover:text-accent transition">
-                  {article.title}
-                </Link>
-              </h4>
-              <p className="text-sm text-muted-foreground line-clamp-2">{article.excerpt}</p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
-                <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
-                <span className="flex items-center">
-                  <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                    <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                  </svg>
-                  {article.viewCount || 0} বার দেখা হয়েছে
-                </span>
+          <Link key={article.id} href={`/article/${article.slug}`}>
+            <div className="flex items-start gap-4 p-3 hover:bg-muted/50 transition-colors rounded-lg relative">
+              <div className="flex-shrink-0 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-sm">
+                {index + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-semibold text-foreground leading-tight line-clamp-2 flex-1">
+                    {article.title}
+                  </h4>
+                  {article.trending && (
+                    <div className="flex-shrink-0 ml-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                        🔥 ট্রেন্ডিং
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{article.excerpt}</p>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span className="flex items-center gap-2">
+                    <span className="px-2 py-1 bg-muted rounded text-xs">
+                      {article.category?.name || 'সাধারণ'}
+                    </span>
+                    {article.aiScore && (
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-medium">
+                        AI: {article.aiScore}
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-2 text-right">
+                    <span className="flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                      </svg>
+                      {article.viewCount || 0} বার
+                    </span>
+                    <span>•</span>
+                    <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
