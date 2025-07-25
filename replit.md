@@ -26,6 +26,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **REPLIT AGENT MIGRATION COMPLETED (July 25, 2025)**: Successfully completed migration from Replit Agent to standard Replit environment. All packages installed, Express server running on port 5000 with Supabase integration, and unnecessary test/debug files cleaned up.
 
+**SPA ROUTING FIXED FOR ALL PAGES (July 25, 2025)**: Enhanced vercel.json with explicit admin route rewrites and updated vercel-build.js to handle all 48 pages (23 public + 25 admin) via single index.html. Fixed client-side routing so admin pages work correctly on direct access and page refresh. All admin routes (/admin-login, /admin-dashboard, /admin/*) now properly serve via SPA routing.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
