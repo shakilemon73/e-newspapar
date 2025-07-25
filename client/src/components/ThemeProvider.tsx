@@ -27,9 +27,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Update DOM with theme class
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+      // Use safe DOM helper to prevent classList errors
+      import('../lib/safe-dom-helpers').then(({ safeDocumentElementAdd }) => {
+        safeDocumentElementAdd('dark');
+      }).catch(console.warn);
     } else {
-      document.documentElement.classList.remove('dark');
+      // Use safe DOM helper to prevent classList errors
+      import('../lib/safe-dom-helpers').then(({ safeDocumentElementRemove }) => {
+        safeDocumentElementRemove('dark');
+      }).catch(console.warn);
     }
     
     // Save theme preference to localStorage

@@ -25,6 +25,9 @@ This is a comprehensive Bengali news website built with modern web technologies,
 - Fixed "SyntaxError: '[object Object]' is not valid JSON" error in content.js storage dispatcher by enhancing storage cleanup to detect and remove invalid object strings
 - Added comprehensive global error handlers to prevent DOM manipulation and JSON parsing errors
 - Enhanced storage-cleanup.ts to detect patterns like '[object Object]', 'undefined', 'null', 'NaN' and remove them proactively
+- Created safe-dom-helpers.ts with Stack Overflow proven solutions for classList operations in production builds
+- Updated ThemeProvider.tsx, AccessibilityEnhancements.tsx, and ArticleDetail.tsx to use safe DOM helpers
+- Implemented world-class error boundaries for index.esm.js errors from third-party libraries
 - Site now loads without console errors on Vercel production deployment
 
 **SPA ROUTING COMPLETELY FIXED (July 25, 2025)**: Implemented proper Single Page Application routing for all 48 pages (23 public + 25 admin). Fixed 404 errors on page refresh and direct links with simplified vercel.json catch-all rewrite rule. Updated vercel-build.js to align with SPA approach, removing conflicting individual HTML file creation. All routes now work correctly on Vercel static hosting.

@@ -43,22 +43,37 @@ export const ReadingFocusMode: React.FC<{ isActive: boolean; onToggle: () => voi
   onToggle 
 }) => {
   useEffect(() => {
-    if (isActive) {
-      document.body.classList.add('reading-focus-mode');
-      // Hide non-essential elements
-      const elements = document.querySelectorAll('header, nav, footer, aside, .ads, .social-media');
-      elements.forEach(el => {
-        (el as HTMLElement).style.opacity = '0.3';
-        (el as HTMLElement).style.pointerEvents = 'none';
-      });
-    } else {
-      document.body.classList.remove('reading-focus-mode');
-      const elements = document.querySelectorAll('header, nav, footer, aside, .ads, .social-media');
-      elements.forEach(el => {
-        (el as HTMLElement).style.opacity = '1';
-        (el as HTMLElement).style.pointerEvents = 'auto';
-      });
-    }
+    // Use safe DOM helpers to prevent classList errors
+    import('../lib/safe-dom-helpers').then(({ safeDocumentBodyAdd, safeDocumentBodyRemove }) => {
+      if (isActive) {
+        safeDocumentBodyAdd('reading-focus-mode');
+        // Hide non-essential elements safely
+        try {
+          const elements = document.querySelectorAll('header, nav, footer, aside, .ads, .social-media');
+          elements.forEach(el => {
+            if (el && el instanceof HTMLElement) {
+              el.style.opacity = '0.3';
+              el.style.pointerEvents = 'none';
+            }
+          });
+        } catch (error) {
+          console.warn('Focus mode element styling failed:', error);
+        }
+      } else {
+        safeDocumentBodyRemove('reading-focus-mode');
+        try {
+          const elements = document.querySelectorAll('header, nav, footer, aside, .ads, .social-media');
+          elements.forEach(el => {
+            if (el && el instanceof HTMLElement) {
+              el.style.opacity = '1';
+              el.style.pointerEvents = 'auto';
+            }
+          });
+        } catch (error) {
+          console.warn('Focus mode element restore failed:', error);
+        }
+      }
+    }).catch(console.warn);
   }, [isActive]);
 
   return (
@@ -173,50 +188,60 @@ export const AccessibilityPanel: React.FC = () => {
   };
 
   const applySettings = () => {
-    const root = document.documentElement;
-    
-    // Apply font size
-    root.style.setProperty('--reading-font-size', `${settings.fontSize}px`);
-    
-    // Apply font family
-    const fontMap = {
-      'system': 'system-ui, -apple-system, sans-serif',
-      'serif': 'Georgia, serif',
-      'sans-serif': 'Arial, sans-serif',
-      'bengali': 'SolaimanLipi, Arial, sans-serif',
-      'dyslexia': 'OpenDyslexic, Arial, sans-serif'
-    };
-    root.style.setProperty('--reading-font-family', fontMap[settings.fontFamily as keyof typeof fontMap]);
-    
-    // Apply line height
-    root.style.setProperty('--reading-line-height', settings.lineHeight.toString());
-    
-    // Apply contrast
-    if (settings.highContrast) {
-      document.body.classList.add('high-contrast');
-    } else {
-      document.body.classList.remove('high-contrast');
-    }
-    
-    // Apply reduced motion
-    if (settings.reducedMotion) {
-      document.body.classList.add('reduced-motion');
-    } else {
-      document.body.classList.remove('reduced-motion');
-    }
-    
-    // Apply dyslexia-friendly styling
-    if (settings.dyslexiaFriendly) {
-      document.body.classList.add('dyslexia-friendly');
-    } else {
-      document.body.classList.remove('dyslexia-friendly');
-    }
-    
-    // Apply color-blind friendly styling
-    if (settings.colorBlindFriendly) {
-      document.body.classList.add('color-blind-friendly');
-    } else {
-      document.body.classList.remove('color-blind-friendly');
+    // Safe DOM manipulation with comprehensive error handling
+    try {
+      const root = document.documentElement;
+      if (!root) return;
+      
+      // Apply font size
+      root.style.setProperty('--reading-font-size', `${settings.fontSize}px`);
+      
+      // Apply font family
+      const fontMap = {
+        'system': 'system-ui, -apple-system, sans-serif',
+        'serif': 'Georgia, serif',
+        'sans-serif': 'Arial, sans-serif',
+        'bengali': 'SolaimanLipi, Arial, sans-serif',
+        'dyslexia': 'OpenDyslexic, Arial, sans-serif'
+      };
+      root.style.setProperty('--reading-font-family', fontMap[settings.fontFamily as keyof typeof fontMap]);
+      
+      // Apply line height
+      root.style.setProperty('--reading-line-height', settings.lineHeight.toString());
+      
+      // Use safe DOM helpers for classList operations
+      import('../lib/safe-dom-helpers').then(({ safeDocumentBodyAdd, safeDocumentBodyRemove }) => {
+        // Apply contrast
+        if (settings.highContrast) {
+          safeDocumentBodyAdd('high-contrast');
+        } else {
+          safeDocumentBodyRemove('high-contrast');
+        }
+        
+        // Apply reduced motion
+        if (settings.reducedMotion) {
+          safeDocumentBodyAdd('reduced-motion');
+        } else {
+          safeDocumentBodyRemove('reduced-motion');
+        }
+        
+        // Apply dyslexia-friendly styling
+        if (settings.dyslexiaFriendly) {
+          safeDocumentBodyAdd('dyslexia-friendly');
+        } else {
+          safeDocumentBodyRemove('dyslexia-friendly');
+        }
+        
+        // Apply color-blind friendly styling
+        if (settings.colorBlindFriendly) {
+          safeDocumentBodyAdd('color-blind-friendly');
+        } else {
+          safeDocumentBodyRemove('color-blind-friendly');
+        }
+      }).catch(console.warn);
+      
+    } catch (error) {
+      console.warn('Accessibility settings application failed:', error);
     }
   };
 

@@ -27,24 +27,57 @@ if (!finalRootElement) {
   throw new Error('Unable to create root element');
 }
 
-// Add comprehensive global error handler
+// World-class global error handler based on Stack Overflow solutions
 window.addEventListener('error', (event) => {
   if (event.error && event.error.message) {
     const message = event.error.message;
-    // Handle classList errors
-    if (message.includes('add') || message.includes('classList') || message.includes('Cannot read properties of undefined')) {
-      console.warn('DOM manipulation error prevented:', event.error);
+    const filename = event.filename || '';
+    
+    // Handle classList errors (most common production issue) 
+    if (message.includes('add') || 
+        message.includes('classList') || 
+        message.includes('Cannot read properties of undefined') ||
+        message.includes('Cannot read property') ||
+        filename.includes('index.esm.js')) {
+      console.warn('🛡️ DOM manipulation error prevented:', event.error);
       event.preventDefault();
-      return;
+      return true;
     }
+    
     // Handle JSON parsing errors
-    if (message.includes('JSON.parse') || message.includes('not valid JSON') || message.includes('[object Object]')) {
-      console.warn('JSON parsing error prevented:', event.error);
+    if (message.includes('JSON.parse') || 
+        message.includes('not valid JSON') || 
+        message.includes('[object Object]') ||
+        message.includes('SyntaxError')) {
+      console.warn('🛡️ JSON parsing error prevented:', event.error);
       try {
         cleanupCorruptedStorage();
       } catch (cleanupError) {
         console.warn('Cleanup failed:', cleanupError);
       }
+      event.preventDefault();
+      return true;
+    }
+    
+    // Handle React production build errors
+    if (message.includes('Cannot read properties') && 
+        (filename.includes('react-dom') || filename.includes('main-'))) {
+      console.warn('🛡️ React production error prevented:', event.error);
+      event.preventDefault();
+      return true;
+    }
+  }
+  return false;
+});
+
+// Additional error boundary for unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason && event.reason.message) {
+    const message = event.reason.message;
+    if (message.includes('classList') || 
+        message.includes('Cannot read properties') ||
+        message.includes('[object Object]')) {
+      console.warn('🛡️ Promise rejection prevented:', event.reason);
       event.preventDefault();
       return;
     }

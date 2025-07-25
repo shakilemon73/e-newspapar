@@ -359,14 +359,14 @@ const ArticleDetail = () => {
 
   useEffect(() => {
     localStorage.setItem('article-theme', isDarkMode ? 'dark' : 'light');
-    // Safe DOM manipulation with null checks
-    if (typeof document !== 'undefined' && document.documentElement && document.documentElement.classList) {
+    // Use safe DOM helpers to prevent classList errors
+    import('../lib/safe-dom-helpers').then(({ safeDocumentElementAdd, safeDocumentElementRemove }) => {
       if (isDarkMode) {
-        document.documentElement.classList.add('dark');
+        safeDocumentElementAdd('dark');
       } else {
-        document.documentElement.classList.remove('dark');
+        safeDocumentElementRemove('dark');
       }
-    }
+    }).catch(console.warn);
   }, [isDarkMode]);
 
   // Track reading history when an article is viewed by a logged-in user - FIXED TO PREVENT INFINITE LOOPS
