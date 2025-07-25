@@ -32,37 +32,9 @@ try {
     }
   });
 
-  // Apply JSX runtime polyfill fix
-  console.log('🔧 Applying JSX runtime polyfill...');
-  const jsxPolyfill = `
-// JSX Runtime Polyfill for Vercel Static Deployment
-(function() {
-  if (typeof globalThis !== 'undefined' && !globalThis.jsx) {
-    // Import React from global if available
-    const React = globalThis.React || window.React;
-    if (React && React.createElement) {
-      globalThis.jsx = React.createElement;
-      globalThis.jsxs = React.createElement;
-      globalThis.jsxDEV = React.createElement;
-      globalThis.Fragment = React.Fragment;
-    }
-  }
-})();
-`;
-
-  // Read the main JS file and prepend JSX polyfill
-  const assetsDir = 'dist-static/assets';
-  if (fs.existsSync(assetsDir)) {
-    const jsFiles = fs.readdirSync(assetsDir).filter(file => file.endsWith('.js'));
-    jsFiles.forEach(file => {
-      const filePath = path.join(assetsDir, file);
-      const content = fs.readFileSync(filePath, 'utf8');
-      if (content.includes('jsx') || content.includes('jsxs')) {
-        fs.writeFileSync(filePath, jsxPolyfill + content);
-        console.log(`✅ Applied JSX polyfill to ${file}`);
-      }
-    });
-  }
+  // Skip JSX polyfill - using proper Vite React configuration instead
+  console.log('✅ Using proper React JSX automatic runtime (no polyfill needed)');
+  console.log('🔧 Vite configuration handles JSX transformation automatically');
 
   // Copy static assets
   console.log('📁 Copying static assets...');

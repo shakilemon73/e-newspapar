@@ -1,17 +1,3 @@
-
-// JSX Runtime Polyfill for Vercel Static Deployment
-(function() {
-  if (typeof globalThis !== 'undefined' && !globalThis.jsx) {
-    // Import React from global if available
-    const React = globalThis.React || window.React;
-    if (React && React.createElement) {
-      globalThis.jsx = React.createElement;
-      globalThis.jsxs = React.createElement;
-      globalThis.jsxDEV = React.createElement;
-      globalThis.Fragment = React.Fragment;
-    }
-  }
-})();
 const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/queryClient-direct-DbKA_QCE.js","assets/supabase-direct-api-BeqKIb7Z.js"])))=>i.map(i=>d[i]);
 var WP=Object.defineProperty;var t0=t=>{throw TypeError(t)};var KP=(t,s,r)=>s in t?WP(t,s,{enumerable:!0,configurable:!0,writable:!0,value:r}):t[s]=r;var Bn=(t,s,r)=>KP(t,typeof s!="symbol"?s+"":s,r),lx=(t,s,r)=>s.has(t)||t0("Cannot "+r);var M=(t,s,r)=>(lx(t,s,"read from private field"),r?r.call(t):s.get(t)),Ie=(t,s,r)=>s.has(t)?t0("Cannot add the same private member more than once"):s instanceof WeakSet?s.add(t):s.set(t,r),je=(t,s,r,n)=>(lx(t,s,"write to private field"),n?n.call(t,r):s.set(t,r),r),He=(t,s,r)=>(lx(t,s,"access private method"),r);var Vu=(t,s,r,n)=>({set _(a){je(t,s,a,r)},get _(){return M(t,s,n)}});function GP(t,s){for(var r=0;r<s.length;r++){const n=s[r];if(typeof n!="string"&&!Array.isArray(n)){for(const a in n)if(a!=="default"&&!(a in t)){const i=Object.getOwnPropertyDescriptor(n,a);i&&Object.defineProperty(t,a,i.get?i:{enumerable:!0,get:()=>n[a]})}}}return Object.freeze(Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}))}(function(){const s=document.createElement("link").relList;if(s&&s.supports&&s.supports("modulepreload"))return;for(const a of document.querySelectorAll('link[rel="modulepreload"]'))n(a);new MutationObserver(a=>{for(const i of a)if(i.type==="childList")for(const o of i.addedNodes)o.tagName==="LINK"&&o.rel==="modulepreload"&&n(o)}).observe(document,{childList:!0,subtree:!0});function r(a){const i={};return a.integrity&&(i.integrity=a.integrity),a.referrerPolicy&&(i.referrerPolicy=a.referrerPolicy),a.crossOrigin==="use-credentials"?i.credentials="include":a.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(a){if(a.ep)return;a.ep=!0;const i=r(a);fetch(a.href,i)}})();var Fr=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof global<"u"?global:typeof self<"u"?self:{};function gi(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}function QP(t){if(t.__esModule)return t;var s=t.default;if(typeof s=="function"){var r=function n(){return this instanceof n?Reflect.construct(s,arguments,this.constructor):s.apply(this,arguments)};r.prototype=s.prototype}else r={};return Object.defineProperty(r,"__esModule",{value:!0}),Object.keys(t).forEach(function(n){var a=Object.getOwnPropertyDescriptor(t,n);Object.defineProperty(r,n,a.get?a:{enumerable:!0,get:function(){return t[n]}})}),r}var HN={exports:{}},Ze={};/**
  * @license React

@@ -69,10 +69,7 @@ export default defineConfig({
   },
   esbuild: {
     jsx: 'automatic',
-    jsxFactory: undefined,
-    jsxFragment: undefined,
-    jsxInject: undefined,
     jsxDev: false,
-    target: 'es2022'
+    target: 'es2020'
   }
 });
