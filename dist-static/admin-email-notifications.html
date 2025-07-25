@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="bn" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/generated-icon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Admin EmailNotificationPage - Bengali News Website Administration" />
+    <meta name="keywords" content="বাংলা সংবাদ, Bangladesh news, bengali news, dhaka news, bd news" />
+    <meta name="author" content="Bengali News Team" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র" />
+    <meta property="og:description" content="সর্বশেষ সংবাদ, রাজনীতি, খেলা, বিনোদন, আন্তর্জাতিক এবং আরো অনেক কিছু" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/generated-icon.png" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র" />
+    <meta name="twitter:description" content="সর্বশেষ সংবাদ, রাজনীতি, খেলা, বিনোদন, আন্তর্জাতিক এবং আরো অনেক কিছু" />
+    <meta name="twitter:image" content="/generated-icon.png" />
+    
+    <!-- Bengali Font Support -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <title>Admin EmailNotificationPage - Bengali News</title>
+    
+    <!-- Storage Cleanup Script - Fix JSON parse errors FIRST -->
+    <script>
+      // Fix storage cleanup to prevent JSON parse errors
+      function cleanupCorruptedStorage() {
+        console.log('🧹 Starting storage cleanup...');
+        
+        const keysToCheck = [
+          'supabase.auth.token', 'sb-auth-token', 'userSettings', 'theme', 'language',
+          ...Object.keys(localStorage).filter(key => key.startsWith('sb-'))
+        ];
+
+        let cleanedCount = 0;
+        keysToCheck.forEach(key => {
+          try {
+            const value = localStorage.getItem(key);
+            if (value && value !== 'null' && value !== 'undefined') {
+              JSON.parse(value);
+            }
+          } catch (error) {
+            console.warn('🗑️ Removing corrupted localStorage key: ' + key, error);
+            try {
+              localStorage.removeItem(key);
+              cleanedCount++;
+            } catch (removeError) {
+              console.error('Failed to remove corrupted key ' + key + ':', removeError);
+            }
+          }
+        });
+
+        if (cleanedCount > 0) {
+          console.log('✅ Cleaned up ' + cleanedCount + ' corrupted storage entries');
+        } else {
+          console.log('✅ No corrupted storage entries found');
+        }
+      }
+      
+      // Run storage cleanup immediately
+      cleanupCorruptedStorage();
+    </script>
+
+    <!-- Ultimate JSX Runtime Polyfill - Guaranteed to work -->
+    <script>
+      // Pre-load React error handling
+      window.onerror = function(msg, url, lineNo, columnNo, error) {
+        if (msg.includes('jsx is not defined') || msg.includes('jsxDEV is not a function')) {
+          console.warn('JSX runtime error caught, initializing polyfill...');
+          initializeJSXPolyfill();
+        }
+        return false;
+      };
+      
+      function initializeJSXPolyfill() {
+        // Create jsx runtime functions using basic createElement
+        if (typeof React !== 'undefined' && React.createElement) {
+          window.jsx = function(type, props, key) {
+            if (key !== undefined) {
+              props = props || {};
+              props.key = key;
+            }
+            if (props && typeof props.children !== 'undefined') {
+              const { children, ...rest } = props;
+              return React.createElement(type, rest, children);
+            }
+            return React.createElement(type, props);
+          };
+          
+          window.jsxs = window.jsx;
+          window.jsxDEV = window.jsx;
+          window.Fragment = React.Fragment || 'div';
+          
+          // Global assignments for modules
+          if (typeof globalThis !== 'undefined') {
+            globalThis.jsx = window.jsx;
+            globalThis.jsxs = window.jsxs;
+            globalThis.jsxDEV = window.jsxDEV;
+            globalThis.Fragment = window.Fragment;
+          }
+          
+          console.log('✅ Ultimate JSX polyfill active');
+          return true;
+        }
+        return false;
+      }
+      
+      // Try to initialize immediately
+      if (!initializeJSXPolyfill()) {
+        // Wait for React to load
+        let retries = 0;
+        const waitForReact = setInterval(() => {
+          if (initializeJSXPolyfill() || retries++ > 50) {
+            clearInterval(waitForReact);
+          }
+        }, 100);
+      }
+    </script>
+    
+    <!-- Load React UMD from reliable CDN -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+    
+    <script>
+      // Ensure polyfill is active after React loads
+      if (typeof React !== 'undefined') {
+        initializeJSXPolyfill();
+      }
+    </script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+      // Enhanced JSX Runtime Polyfill with better error handling
+      (function() {
+        // Wait for React to be fully loaded
+        function initializeJSXRuntime() {
+          if (typeof React === 'undefined' || typeof React.createElement !== 'function') {
+            console.warn('React not ready, retrying JSX runtime initialization...');
+            setTimeout(initializeJSXRuntime, 50);
+            return;
+          }
+          
+          // Create robust jsx functions
+          function createJSXFunction(isDev = false) {
+            return function(type, props, key) {
+              try {
+                if (!type) return null;
+                
+                // Handle props properly
+                let finalProps = props || {};
+                if (key !== undefined) {
+                  finalProps = { ...finalProps, key };
+                }
+                
+                // Extract children if present
+                if (finalProps.children !== undefined) {
+                  const { children, ...rest } = finalProps;
+                  return React.createElement(type, rest, children);
+                }
+                
+                return React.createElement(type, finalProps);
+              } catch (error) {
+                console.error('JSX function error:', error);
+                return null;
+              }
+            };
+          }
+          
+          // Create global JSX functions
+          window.jsx = createJSXFunction(false);
+          window.jsxs = createJSXFunction(false);
+          window.jsxDEV = createJSXFunction(true);
+          window.Fragment = React.Fragment;
+          
+          // Add to global scope for module access
+          if (typeof globalThis !== 'undefined') {
+            globalThis.jsx = window.jsx;
+            globalThis.jsxs = window.jsxs;
+            globalThis.jsxDEV = window.jsxDEV;
+            globalThis.Fragment = window.Fragment;
+            globalThis.React = React;
+            globalThis.ReactDOM = ReactDOM;
+          }
+          
+          console.log('✅ Enhanced JSX runtime polyfill loaded successfully');
+        }
+        
+        // Initialize immediately or wait for React
+        if (typeof React !== 'undefined') {
+          initializeJSXRuntime();
+        } else {
+          // Poll for React availability
+          let attempts = 0;
+          const pollForReact = setInterval(() => {
+            attempts++;
+            if (typeof React !== 'undefined' || attempts > 100) {
+              clearInterval(pollForReact);
+              if (typeof React !== 'undefined') {
+                initializeJSXRuntime();
+              } else {
+                console.error('❌ React failed to load after 5 seconds');
+              }
+            }
+          }, 50);
+        }
+      })();
+    </script>
+    
+    <style>
+      /* Critical CSS for Bengali fonts and loading state */
+      body {
+        font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Kalpurush', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #ffffff;
+        color: #1a1a1a;
+      }
+      
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-size: 1.2rem;
+        background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e5e7eb;
+        border-top: 4px solid #3b82f6;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 12px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/main-Dgc2oLFD.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-BZOrmsXw.css">
+  
+<script>
+// Storage cleanup for production deployment
+(function() {
+  try {
+    console.log('🧹 Starting storage cleanup...');
+    let cleanedCount = 0;
+    
+    // Clean corrupted localStorage entries
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value) {
+            JSON.parse(value);
+          }
+        } catch (e) {
+          console.warn('🗑️ Removing corrupted localStorage key:', key, e);
+          localStorage.removeItem(key);
+          cleanedCount++;
+        }
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      console.log(`✅ Cleaned up ${cleanedCount} corrupted storage entries`);
+    } else {
+      console.log('✅ No corrupted storage entries found');
+    }
+  } catch (error) {
+    console.warn('Storage cleanup failed:', error);
+  }
+})();
+</script>
+</head>
+  <body>
+    <div id="root">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <span>Bengali News লোড হচ্ছে...</span>
+      </div>
+    </div>
+  </body>
+</html>

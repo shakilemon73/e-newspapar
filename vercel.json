@@ -18,27 +18,149 @@
     }
   ],
   "rewrites": [
-    { "source": "/about", "destination": "/about.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/admin-login", "destination": "/admin-login.html" },
-    { "source": "/admin-dashboard", "destination": "/admin-dashboard.html" },
-    { "source": "/admin/articles", "destination": "/admin-articles.html" },
-    { "source": "/admin/users", "destination": "/admin-users.html" },
-    { "source": "/admin/categories", "destination": "/admin-categories.html" },
-    { "source": "/admin/videos", "destination": "/admin-videos.html" },
-    { "source": "/admin/breaking-news", "destination": "/admin-breaking-news.html" },
-    { "source": "/admin/epapers", "destination": "/admin-epapers.html" },
-    { "source": "/admin/audio-articles", "destination": "/admin-audio-articles.html" },
-    { "source": "/admin/comments", "destination": "/admin-comments.html" },
-    { "source": "/admin/settings", "destination": "/admin-settings.html" },
-    { "source": "/admin/weather", "destination": "/admin-weather.html" },
-    { "source": "/admin/analytics", "destination": "/admin-analytics.html" },
-    { "source": "/admin/social-media", "destination": "/admin-social-media.html" },
-    { "source": "/admin/trending", "destination": "/admin-trending.html" },
-    { "source": "/admin/algorithms", "destination": "/admin-algorithms.html" },
-    { "source": "/admin/email", "destination": "/admin-email.html" },
-    { "source": "/admin/advertisement", "destination": "/admin-advertisement.html" },
-    { "source": "/admin/(.*)", "destination": "/admin-dashboard.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/admin-login",
+      "destination": "/admin-login.html"
+    },
+    {
+      "source": "/admin-dashboard",
+      "destination": "/admin-dashboard.html"
+    },
+    {
+      "source": "/admin-access",
+      "destination": "/admin-access.html"
+    },
+    {
+      "source": "/admin/articles",
+      "destination": "/admin-articles.html"
+    },
+    {
+      "source": "/admin/categories",
+      "destination": "/admin-categories.html"
+    },
+    {
+      "source": "/admin/epapers",
+      "destination": "/admin-epapers.html"
+    },
+    {
+      "source": "/admin/breaking-news",
+      "destination": "/admin-breaking-news.html"
+    },
+    {
+      "source": "/admin/videos",
+      "destination": "/admin-videos.html"
+    },
+    {
+      "source": "/admin/audio",
+      "destination": "/admin-audio.html"
+    },
+    {
+      "source": "/admin/audio-articles",
+      "destination": "/admin-audio-articles.html"
+    },
+    {
+      "source": "/admin/users",
+      "destination": "/admin-users.html"
+    },
+    {
+      "source": "/admin/analytics",
+      "destination": "/admin-analytics.html"
+    },
+    {
+      "source": "/admin/trending",
+      "destination": "/admin-trending.html"
+    },
+    {
+      "source": "/admin/trending-analytics",
+      "destination": "/admin-trending-analytics.html"
+    },
+    {
+      "source": "/admin/settings",
+      "destination": "/admin-settings.html"
+    },
+    {
+      "source": "/admin/weather",
+      "destination": "/admin-weather.html"
+    },
+    {
+      "source": "/admin/algorithms",
+      "destination": "/admin-algorithms.html"
+    },
+    {
+      "source": "/admin/advanced-algorithms",
+      "destination": "/admin-advanced-algorithms.html"
+    },
+    {
+      "source": "/admin/comments",
+      "destination": "/admin-comments.html"
+    },
+    {
+      "source": "/admin/email",
+      "destination": "/admin-email.html"
+    },
+    {
+      "source": "/admin/email-notifications",
+      "destination": "/admin-email-notifications.html"
+    },
+    {
+      "source": "/admin/social-media",
+      "destination": "/admin-social-media.html"
+    },
+    {
+      "source": "/admin/advertisement",
+      "destination": "/admin-advertisement.html"
+    },
+    {
+      "source": "/admin/advertisements",
+      "destination": "/admin-advertisements.html"
+    },
+    {
+      "source": "/admin/seo",
+      "destination": "/admin-seo.html"
+    },
+    {
+      "source": "/admin/search",
+      "destination": "/admin-search.html"
+    },
+    {
+      "source": "/admin/database",
+      "destination": "/admin-database.html"
+    },
+    {
+      "source": "/admin/performance",
+      "destination": "/admin-performance.html"
+    },
+    {
+      "source": "/admin/mobile-app",
+      "destination": "/admin-mobile-app.html"
+    },
+    {
+      "source": "/admin/security",
+      "destination": "/admin-security.html"
+    },
+    {
+      "source": "/admin/footer-pages",
+      "destination": "/admin-footer-pages.html"
+    },
+    {
+      "source": "/admin/user-dashboard",
+      "destination": "/admin-user-dashboard.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/admin-dashboard.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ]
 }
