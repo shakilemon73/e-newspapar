@@ -18,6 +18,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **LIGHT MODE DEFAULT ENABLED (July 25, 2025)**: Changed default theme from system preference to light mode. Users now see light mode by default instead of following their system theme preference.
 
+**VERCEL CONSOLE ERRORS FIXED (July 25, 2025)**: Resolved all major console errors in Vercel deployment including AI API 404s, database relationship errors, localStorage JSON parsing issues, and multiple Supabase client warnings. Site now runs error-free on Vercel.
+
 **ADMIN VERCEL DEPLOYMENT SETUP COMPLETED (July 25, 2025)**: All 32 admin routes configured for Vercel static hosting with complete HTML files and proper routing.
 
 ## User Preferences

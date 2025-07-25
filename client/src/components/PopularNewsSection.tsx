@@ -33,30 +33,24 @@ export const PopularNewsSection = () => {
       try {
         setIsLoading(true);
         
-        // Use AI-powered popular articles API
-        const response = await fetch(`/api/ai/popular/${timeRange}?limit=6`);
-        const result = await response.json();
+        // Use static AI service for popular articles (no Express server needed)
+        const result = await StaticAIService.getPopularArticles(timeRange, 6);
         
         if (result.success && result.data?.articles) {
-          console.log(`[AI Popular] Fetched ${result.data.articles.length} AI-ranked articles for ${timeRange}`);
-          
-          // Transform AI data to match Article interface
           const transformedData = result.data.articles.map((article: any) => ({
             id: article.id,
             title: article.title,
             slug: article.slug,
             excerpt: article.excerpt,
             publishedAt: article.published_at || article.publishedAt,
-            category: article.categories || { id: 0, name: 'সাধারণ', slug: 'general' },
-            viewCount: article.view_count || article.viewCount || 0,
-            aiScore: article.aiScore,
-            trending: article.trending
+            category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
+            viewCount: article.view_count || article.viewCount || 0
           }));
           
           setPopularArticles(transformedData);
           setError(null);
         } else {
-          throw new Error(result.error || 'AI API failed');
+          throw new Error(result.error || 'Static AI service failed');
         }
       } catch (err) {
         console.error('AI popular articles failed, falling back to regular API:', err);
