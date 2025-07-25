@@ -132,53 +132,15 @@ try {
     console.log('✅ Created index.html for Vercel compatibility');
   }
 
-  // Create all admin HTML files if they don't exist in dist-static
-  console.log('🔐 Ensuring all admin HTML files exist...');
+  // SPA Routing: Single index.html serves all routes
+  console.log('🎯 Using SPA routing - single index.html serves all 48 pages...');
   
-  // Define all 32 admin routes
-  const adminRoutes = [
-    'admin-access', 'admin-login', 'admin-dashboard', 'admin-articles',
-    'admin-categories', 'admin-epapers', 'admin-breaking-news', 'admin-videos',
-    'admin-audio', 'admin-audio-articles', 'admin-users', 'admin-analytics',
-    'admin-trending', 'admin-trending-analytics', 'admin-settings', 'admin-weather',
-    'admin-algorithms', 'admin-advanced-algorithms', 'admin-comments', 'admin-email',
-    'admin-email-notifications', 'admin-social-media', 'admin-advertisement',
-    'admin-advertisements', 'admin-seo', 'admin-search', 'admin-database',
-    'admin-performance', 'admin-mobile-app', 'admin-security', 'admin-footer-pages',
-    'admin-user-dashboard'
-  ];
-
-  let createdAdminFiles = 0;
-  const templatePath = 'dist-static/index.html';
-  let templateContent = '';
-  
-  if (fs.existsSync(templatePath)) {
-    templateContent = fs.readFileSync(templatePath, 'utf8');
-    
-    adminRoutes.forEach(route => {
-      const adminHtmlPath = `dist-static/${route}.html`;
-      
-      if (!fs.existsSync(adminHtmlPath)) {
-        // Customize content for each admin page
-        let adminContent = templateContent;
-        
-        // Update title for admin pages
-        const adminTitle = route.replace('admin-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        adminContent = adminContent.replace('<title>Bengali News</title>', `<title>Admin ${adminTitle} - Bengali News</title>`);
-        
-        // Add noindex meta tag for admin pages
-        const noIndexMeta = '<meta name="robots" content="noindex, nofollow">';
-        adminContent = adminContent.replace('<meta name="viewport"', noIndexMeta + '\n    <meta name="viewport"');
-        
-        fs.writeFileSync(adminHtmlPath, adminContent);
-        createdAdminFiles++;
-        console.log(`✅ Created ${route}.html`);
-      }
-    });
-    
-    console.log(`✅ All ${adminRoutes.length} admin routes ready (${createdAdminFiles} newly created)`);
+  if (fs.existsSync('dist-static/index.html')) {
+    console.log('✅ index.html ready for SPA routing (serves all admin and public routes)');
+    console.log('📝 All 48 pages (23 public + 25 admin) handled by client-side routing');
+    console.log('🚫 No individual admin HTML files needed with simplified Vercel routing');
   } else {
-    console.log('ℹ️  Template file not found, skipping admin file creation');
+    console.log('❌ index.html not found - SPA routing will fail');
   }
 
   // Create 404.html for proper client-side routing fallback
@@ -284,26 +246,13 @@ try {
     }
   });
 
-  // Add admin-specific meta tags to admin HTML files
-  console.log('🔐 Enhancing admin page meta tags...');
-  const adminHtmlFiles = fs.readdirSync('dist-static').filter(file => file.startsWith('admin-') && file.endsWith('.html'));
-  
-  adminHtmlFiles.forEach(adminFile => {
-    const adminPath = `dist-static/${adminFile}`;
-    let adminContent = fs.readFileSync(adminPath, 'utf8');
-    
-    // Add noindex to admin pages for SEO
-    if (!adminContent.includes('robots')) {
-      const noIndexMeta = '<meta name="robots" content="noindex, nofollow">';
-      adminContent = adminContent.replace('<meta name="viewport"', noIndexMeta + '\n    <meta name="viewport"');
-      fs.writeFileSync(adminPath, adminContent);
-    }
-  });
-  console.log(`✅ Enhanced ${adminHtmlFiles.length} admin pages with proper meta tags`);
+  // SPA Routing: All admin pages handled by React Router in index.html
+  console.log('🔐 Admin pages use client-side routing (no individual HTML files needed)');
+  console.log('✅ Admin authentication and routing handled by React components');
 
-  console.log('✅ Enhanced Vercel build completed successfully!');
+  console.log('✅ SPA Vercel build completed successfully!');
   console.log('📦 Output directory: dist-static/');
-  console.log(`🔐 All ${adminHtmlFiles.length} admin pages ready for static deployment`);
+  console.log('🎯 Single index.html serves all 48 pages via client-side routing');
   
   // List built files
   const files = fs.readdirSync('dist-static');

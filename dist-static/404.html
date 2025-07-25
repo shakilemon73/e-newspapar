@@ -3,45 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>পৃষ্ঠা পাওয়া যায়নি - Bengali News</title>
+    <title>পৃষ্ঠা খুঁজে পাওয়া যায়নি - Bengali News</title>
     <style>
         body {
-            font-family: 'Noto Sans Bengali', Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(45deg, #f0f9ff, #e0f2fe);
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             text-align: center;
+            padding: 50px 20px;
+            margin: 0;
         }
         .container {
-            padding: 2rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
         }
-        h1 { color: #1e40af; margin-bottom: 1rem; }
-        p { color: #64748b; margin-bottom: 1.5rem; }
+        h1 { font-size: 3em; margin-bottom: 20px; }
+        p { font-size: 1.2em; margin-bottom: 30px; }
         .btn {
-            background: #1e40af;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
             text-decoration: none;
-            display: inline-block;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s;
         }
+        .btn:hover { transform: scale(1.05); }
     </style>
+
+<script>
+// Storage cleanup for production deployment
+(function() {
+  try {
+    console.log('🧹 Starting storage cleanup...');
+    let cleanedCount = 0;
+    
+    // Clean corrupted localStorage entries
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value) {
+            JSON.parse(value);
+          }
+        } catch (e) {
+          console.warn('🗑️ Removing corrupted localStorage key:', key, e);
+          localStorage.removeItem(key);
+          cleanedCount++;
+        }
+      }
+    }
+    
+    if (cleanedCount > 0) {
+      console.log(`✅ Cleaned up ${cleanedCount} corrupted storage entries`);
+    } else {
+      console.log('✅ No corrupted storage entries found');
+    }
+  } catch (error) {
+    console.warn('Storage cleanup failed:', error);
+  }
+})();
+</script>
 </head>
 <body>
     <div class="container">
-        <h1>৪০৪ - পৃষ্ঠা পাওয়া যায়নি</h1>
-        <p>দুঃখিত, আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি পাওয়া যায়নি।</p>
-        <a href="/" class="btn">হোম পেজে ফিরে যান</a>
+        <h1>৪০৪</h1>
+        <p>দুঃখিত, আপনার অনুরোধকৃত পৃষ্ঠাটি খুঁজে পাওয়া যায়নি।</p>
+        <a href="/" class="btn">হোমপেজে ফিরে যান</a>
     </div>
     <script>
-        // Auto-redirect to home after 5 seconds
+        // Auto-redirect after 5 seconds
         setTimeout(() => {
             window.location.href = '/';
         }, 5000);

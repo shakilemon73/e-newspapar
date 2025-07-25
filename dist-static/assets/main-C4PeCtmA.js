@@ -1,3 +1,17 @@
+
+// JSX Runtime Polyfill for Vercel Static Deployment
+(function() {
+  if (typeof globalThis !== 'undefined' && !globalThis.jsx) {
+    // Import React from global if available
+    const React = globalThis.React || window.React;
+    if (React && React.createElement) {
+      globalThis.jsx = React.createElement;
+      globalThis.jsxs = React.createElement;
+      globalThis.jsxDEV = React.createElement;
+      globalThis.Fragment = React.Fragment;
+    }
+  }
+})();
 const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/queryClient-direct-CY7UMmvV.js","assets/supabase-direct-api-ByN4rQJs.js"])))=>i.map(i=>d[i]);
 var Ij=t=>{throw TypeError(t)};var Xf=(t,s,r)=>s.has(t)||Ij("Cannot "+r);var F=(t,s,r)=>(Xf(t,s,"read from private field"),r?r.call(t):s.get(t)),Me=(t,s,r)=>s.has(t)?Ij("Cannot add the same private member more than once"):s instanceof WeakSet?s.add(t):s.set(t,r),be=(t,s,r,n)=>(Xf(t,s,"write to private field"),n?n.call(t,r):s.set(t,r),r),We=(t,s,r)=>(Xf(t,s,"access private method"),r);var Lu=(t,s,r,n)=>({set _(a){be(t,s,a,r)},get _(){return F(t,s,n)}});function pT(t,s){for(var r=0;r<s.length;r++){const n=s[r];if(typeof n!="string"&&!Array.isArray(n)){for(const a in n)if(a!=="default"&&!(a in t)){const i=Object.getOwnPropertyDescriptor(n,a);i&&Object.defineProperty(t,a,i.get?i:{enumerable:!0,get:()=>n[a]})}}}return Object.freeze(Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}))}(function(){const s=document.createElement("link").relList;if(s&&s.supports&&s.supports("modulepreload"))return;for(const a of document.querySelectorAll('link[rel="modulepreload"]'))n(a);new MutationObserver(a=>{for(const i of a)if(i.type==="childList")for(const l of i.addedNodes)l.tagName==="LINK"&&l.rel==="modulepreload"&&n(l)}).observe(document,{childList:!0,subtree:!0});function r(a){const i={};return a.integrity&&(i.integrity=a.integrity),a.referrerPolicy&&(i.referrerPolicy=a.referrerPolicy),a.crossOrigin==="use-credentials"?i.credentials="include":a.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(a){if(a.ep)return;a.ep=!0;const i=r(a);fetch(a.href,i)}})();var Ur=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof global<"u"?global:typeof self<"u"?self:{};function nc(t){return t&&t.__esModule&&Object.prototype.hasOwnProperty.call(t,"default")?t.default:t}function gT(t){if(t.__esModule)return t;var s=t.default;if(typeof s=="function"){var r=function n(){return this instanceof n?Reflect.construct(s,arguments,this.constructor):s.apply(this,arguments)};r.prototype=s.prototype}else r={};return Object.defineProperty(r,"__esModule",{value:!0}),Object.keys(t).forEach(function(n){var a=Object.getOwnPropertyDescriptor(t,n);Object.defineProperty(r,n,a.get?a:{enumerable:!0,get:function(){return t[n]}})}),r}var bN={exports:{}},Ye={};/**
  * @license React
