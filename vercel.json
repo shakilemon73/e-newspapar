@@ -28,8 +28,8 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!api|_next|assets|favicon|.*\\.).*)(?<!\\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot))$",
-      "destination": "/"
+      "source": "/((?!api/.*).*)",
+      "destination": "/index.html"
     }
   ]
 }
