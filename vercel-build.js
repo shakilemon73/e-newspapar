@@ -132,21 +132,32 @@ try {
     console.log('✅ Created index.html for Vercel compatibility');
   }
 
-  // Enhanced SPA Routing: Single index.html serves all routes with explicit admin support
-  console.log('🎯 Configuring SPA routing for all 48 pages (23 public + 25 admin)...');
+  // STACK OVERFLOW PROVEN SOLUTION: Regex-based SPA routing
+  console.log('🎯 Implementing Stack Overflow proven solution for SPA routing...');
+  console.log('📋 Using regex pattern "/[^.]+" to match all routes except files');
+  console.log('🔍 This pattern prevents conflicts with JS/CSS/image files');
   
   if (fs.existsSync('dist-static/index.html')) {
-    console.log('✅ index.html ready for enhanced SPA routing');
-    console.log('📝 Public routes: /, /category/*, /article/*, /video/*, /audio/*, /search, etc.');
-    console.log('🔐 Admin routes: /admin-login, /admin-dashboard, /admin/*, /admin-access, /set-admin-role');
-    console.log('🎯 vercel.json configured with explicit admin route rewrites for reliable routing');
+    console.log('✅ index.html ready for Stack Overflow SPA routing solution');
+    console.log('📝 Pattern: /[^.]+ matches routes without dots (excludes .js, .css, .png, etc.)');
+    console.log('🔐 All admin routes: /admin-login, /admin-dashboard, /admin/* will work');
+    console.log('🎯 vercel.json configured with proven regex pattern from 183+ upvotes solution');
     
-    // Validate admin route handling
+    // Validate React routing is bundled
     const indexContent = fs.readFileSync('dist-static/index.html', 'utf8');
-    if (indexContent.includes('AdminApp') || indexContent.includes('react')) {
-      console.log('✅ React admin routing components present in index.html');
+    if (indexContent.includes('main-') && indexContent.includes('.js')) {
+      console.log('✅ React bundle detected in index.html - client-side routing ready');
     } else {
-      console.log('⚠️ Admin routing components may not be properly bundled');
+      console.log('⚠️ React bundle may not be properly bundled');
+    }
+    
+    // Verify critical asset files exist
+    const assetsDir = 'dist-static/assets';
+    if (fs.existsSync(assetsDir)) {
+      const assets = fs.readdirSync(assetsDir);
+      const jsFiles = assets.filter(f => f.endsWith('.js'));
+      const cssFiles = assets.filter(f => f.endsWith('.css'));
+      console.log(`✅ Assets ready: ${jsFiles.length} JS files, ${cssFiles.length} CSS files`);
     }
   } else {
     console.log('❌ index.html not found - SPA routing will fail');

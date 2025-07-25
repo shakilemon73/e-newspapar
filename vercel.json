@@ -26,30 +26,11 @@
       ]
     }
   ],
-  "rewrites": [
+  "routes": [
     {
-      "source": "/admin-login",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/admin-dashboard",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/admin-access",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/set-admin-role",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "src": "/[^.]+",
+      "dest": "/",
+      "status": 200
     }
   ]
 }
