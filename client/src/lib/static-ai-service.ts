@@ -8,7 +8,7 @@ export class StaticAIService {
       console.log(`[AI Popular] Fetched 2 AI-ranked articles for ${timeRange}`);
       
       // Import the direct API client
-      const { default: supabase } = await import('./supabase-consolidated');
+      const { supabase } = await import('./supabase');
       
       const { data, error } = await supabase
         .from('articles')

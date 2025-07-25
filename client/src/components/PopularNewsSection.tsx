@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { StaticAIService } from '@/lib/static-ai-service';
 
 interface Category {
   id: number;

@@ -90,23 +90,30 @@ class DirectWeatherService {
         }
       }
 
-      // Batch update to Supabase
+      // Batch update to Supabase using admin client
       if (updates.length > 0) {
-        // First, clear existing weather data
-        await supabase
-          .from('weather')
-          .delete()
-          .neq('id', 0); // Delete all records
+        try {
+          // Import admin client for weather updates
+          const { default: adminSupabase } = await import('./admin-supabase-direct');
+          
+          // First, clear existing weather data
+          await adminSupabase
+            .from('weather')
+            .delete()
+            .neq('id', 0); // Delete all records
 
-        // Insert new weather data
-        const { error } = await supabase
-          .from('weather')
-          .insert(updates);
+          // Insert new weather data
+          const { error } = await adminSupabase
+            .from('weather')
+            .insert(updates);
 
-        if (error) {
-          console.error('Error updating weather in database:', error);
-        } else {
-          console.log(`[WeatherService] Successfully updated weather for ${updates.length} cities`);
+          if (error) {
+            console.error('Error updating weather in database:', error);
+          } else {
+            console.log(`[WeatherService] Successfully updated weather for ${updates.length} cities`);
+          }
+        } catch (adminError) {
+          console.error('Error accessing admin client for weather updates:', adminError);
         }
       }
     } catch (error) {

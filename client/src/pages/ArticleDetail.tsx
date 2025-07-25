@@ -101,6 +101,7 @@ interface Article {
   slug: string;
   content?: string;
   excerpt: string;
+  summary?: string;
   image_url: string;
   imageUrl?: string;
   published_at: string;
@@ -1092,17 +1093,21 @@ const ArticleDetail = () => {
 
   // Handle URL updates separately to prevent infinite loops
   useEffect(() => {
-    if (article && article.title) {
+    if (article && article.title && !isLoading) {
       const cleanSlug = createBengaliSlug(article.title);
       const cleanUrl = `/article/${cleanSlug}`;
       const currentPath = window.location.pathname;
       
-      // Only update URL if it contains encoded characters and avoid infinite loops
-      if (currentPath.includes('%') && currentPath !== cleanUrl) {
-        updateDisplayUrl(cleanUrl);
+      // Only update URL once and if it contains encoded characters
+      if (currentPath.includes('%') && currentPath !== cleanUrl && !viewTracked) {
+        try {
+          updateDisplayUrl(cleanUrl);
+        } catch (err) {
+          console.warn('URL update failed:', err);
+        }
       }
     }
-  }, [article?.title]);
+  }, [article?.title, isLoading, viewTracked]); // More specific dependencies
 
   // World-class loading state
   if (isLoading) {
