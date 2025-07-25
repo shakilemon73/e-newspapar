@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Enhanced Vercel build script with JSX runtime fixes and admin page support
- * Resolves "jsx is not defined" and ensures all admin pages work statically
+ * Complete Vercel build script with admin page support
+ * Creates admin HTML files, applies JSX fixes, and prepares for deployment
  */
 
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
-console.log('🚀 Starting enhanced Vercel build with admin support...');
+console.log('🚀 Starting complete Vercel build with admin support...');
 
 try {
   // Clean previous build
@@ -71,7 +71,7 @@ try {
   const faviconIcoPath = 'dist-static/favicon.ico';
   if (!fs.existsSync(faviconIcoPath)) {
     // Create a simple ICO file (base64 encoded)
-    const faviconBase64 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJUSURBVFhH7ZY9axRREMafJQQSCxsLwcJCG1sLG0uxsLCwsLGwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLCwsLGwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsA==';
+    const faviconBase64 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAJUSURBVFhH7ZY9axRREMafJQQSCxsLwcJCG1sLG0uxsLCwsLGwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLGwsLCwsLGwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLGwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsA==';
     fs.writeFileSync(faviconIcoPath, Buffer.from(faviconBase64, 'base64'));
     console.log('✅ Created favicon.ico');
   }
@@ -132,54 +132,148 @@ try {
     console.log('✅ Created index.html for Vercel compatibility');
   }
 
-  // Create all admin HTML files if they don't exist in dist-static
-  console.log('🔐 Ensuring all admin HTML files exist...');
+  // Create ALL 32 admin HTML files directly in dist-static
+  console.log('🔐 Creating all 32 admin HTML files...');
   
+  // Get the template content from index.html
+  const templatePath = 'dist-static/index.html';
+  let templateContent = '';
+  if (fs.existsSync(templatePath)) {
+    templateContent = fs.readFileSync(templatePath, 'utf8');
+  } else {
+    console.error('❌ Template file not found: dist-static/index.html');
+    process.exit(1);
+  }
+
   // Define all 32 admin routes
   const adminRoutes = [
-    'admin-access', 'admin-login', 'admin-dashboard', 'admin-articles',
-    'admin-categories', 'admin-epapers', 'admin-breaking-news', 'admin-videos',
-    'admin-audio', 'admin-audio-articles', 'admin-users', 'admin-analytics',
-    'admin-trending', 'admin-trending-analytics', 'admin-settings', 'admin-weather',
-    'admin-algorithms', 'admin-advanced-algorithms', 'admin-comments', 'admin-email',
-    'admin-email-notifications', 'admin-social-media', 'admin-advertisement',
-    'admin-advertisements', 'admin-seo', 'admin-search', 'admin-database',
-    'admin-performance', 'admin-mobile-app', 'admin-security', 'admin-footer-pages',
+    'admin-access',
+    'admin-login', 
+    'admin-dashboard',
+    'admin-articles',
+    'admin-categories',
+    'admin-epapers',
+    'admin-breaking-news',
+    'admin-videos',
+    'admin-audio',
+    'admin-audio-articles',
+    'admin-users',
+    'admin-analytics',
+    'admin-trending',
+    'admin-trending-analytics',
+    'admin-settings',
+    'admin-weather',
+    'admin-algorithms',
+    'admin-advanced-algorithms',
+    'admin-comments',
+    'admin-email',
+    'admin-email-notifications',
+    'admin-social-media',
+    'admin-advertisement',
+    'admin-advertisements',
+    'admin-seo',
+    'admin-search',
+    'admin-database',
+    'admin-performance',
+    'admin-mobile-app',
+    'admin-security',
+    'admin-footer-pages',
     'admin-user-dashboard'
   ];
 
   let createdAdminFiles = 0;
-  const templatePath = 'dist-static/index.html';
-  let templateContent = '';
-  
-  if (fs.existsSync(templatePath)) {
-    templateContent = fs.readFileSync(templatePath, 'utf8');
+  adminRoutes.forEach(route => {
+    const adminHtmlPath = `dist-static/${route}.html`;
     
-    adminRoutes.forEach(route => {
-      const adminHtmlPath = `dist-static/${route}.html`;
-      
-      if (!fs.existsSync(adminHtmlPath)) {
-        // Customize content for each admin page
-        let adminContent = templateContent;
-        
-        // Update title for admin pages
-        const adminTitle = route.replace('admin-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        adminContent = adminContent.replace('<title>Bengali News</title>', `<title>Admin ${adminTitle} - Bengali News</title>`);
-        
-        // Add noindex meta tag for admin pages
-        const noIndexMeta = '<meta name="robots" content="noindex, nofollow">';
-        adminContent = adminContent.replace('<meta name="viewport"', noIndexMeta + '\n    <meta name="viewport"');
-        
-        fs.writeFileSync(adminHtmlPath, adminContent);
-        createdAdminFiles++;
-        console.log(`✅ Created ${route}.html`);
-      }
-    });
+    // Customize content for each admin page
+    let adminContent = templateContent;
     
-    console.log(`✅ All ${adminRoutes.length} admin routes ready (${createdAdminFiles} newly created)`);
-  } else {
-    console.log('ℹ️  Template file not found, skipping admin file creation');
-  }
+    // Update title for admin pages
+    const adminTitle = route.replace('admin-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    adminContent = adminContent.replace('<title>Bengali News</title>', `<title>Admin ${adminTitle} - Bengali News</title>`);
+    
+    // Add noindex meta tag for admin pages
+    const noIndexMeta = '<meta name="robots" content="noindex, nofollow">';
+    adminContent = adminContent.replace('<meta name="viewport"', noIndexMeta + '\n    <meta name="viewport"');
+    
+    fs.writeFileSync(adminHtmlPath, adminContent);
+    createdAdminFiles++;
+    console.log(`✅ Created ${route}.html`);
+  });
+
+  console.log(`✅ Created all ${createdAdminFiles} admin HTML files`);
+
+  // Create admin verification page
+  const adminVerificationPath = 'dist-static/admin-verification.html';
+  const adminVerificationContent = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Route Verification - Bengali News</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .route-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .route-link {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .route-link:hover {
+            color: #ffd700;
+            text-decoration: underline;
+        }
+        .route-desc {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Admin Route Verification (${createdAdminFiles} Routes)</h1>
+        <div class="grid">
+            ${adminRoutes.map(route => {
+              const routeName = route.replace('admin-', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+              return `
+            <div class="route-card">
+                <a href="/${route}" class="route-link">/${route}</a>
+                <div class="route-desc">Admin ${routeName}</div>
+            </div>`;
+            }).join('')}
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="/admin-login" style="background: white; color: #667eea; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: bold;">Admin Login</a>
+        </div>
+    </div>
+</body>
+</html>`;
+  fs.writeFileSync(adminVerificationPath, adminVerificationContent);
+  console.log('✅ Created admin-verification.html');
 
   // Create 404.html for proper client-side routing fallback
   const notFoundPath = 'dist-static/404.html';
@@ -233,15 +327,11 @@ try {
   fs.writeFileSync(notFoundPath, notFoundContent);
   console.log('✅ Created 404.html for client-side routing');
 
-  // Apply storage cleanup to ALL admin pages
+  // Apply storage cleanup to ALL HTML pages
   console.log('🔧 Injecting storage cleanup script to all pages...');
   const htmlFiles = fs.readdirSync('dist-static').filter(file => file.endsWith('.html'));
   
-  htmlFiles.forEach(htmlFile => {
-    const htmlPath = `dist-static/${htmlFile}`;
-    if (fs.existsSync(htmlPath)) {
-      let htmlContent = fs.readFileSync(htmlPath, 'utf8');
-    const storageCleanup = `
+  const storageCleanup = `
 <script>
 // Storage cleanup for production deployment
 (function() {
@@ -276,7 +366,12 @@ try {
   }
 })();
 </script>`;
-    
+
+  htmlFiles.forEach(htmlFile => {
+    const htmlPath = `dist-static/${htmlFile}`;
+    if (fs.existsSync(htmlPath)) {
+      let htmlContent = fs.readFileSync(htmlPath, 'utf8');
+      
       // Insert before closing head tag
       htmlContent = htmlContent.replace('</head>', storageCleanup + '\n</head>');
       fs.writeFileSync(htmlPath, htmlContent);
@@ -284,30 +379,14 @@ try {
     }
   });
 
-  // Add admin-specific meta tags to admin HTML files
-  console.log('🔐 Enhancing admin page meta tags...');
-  const adminHtmlFiles = fs.readdirSync('dist-static').filter(file => file.startsWith('admin-') && file.endsWith('.html'));
-  
-  adminHtmlFiles.forEach(adminFile => {
-    const adminPath = `dist-static/${adminFile}`;
-    let adminContent = fs.readFileSync(adminPath, 'utf8');
-    
-    // Add noindex to admin pages for SEO
-    if (!adminContent.includes('robots')) {
-      const noIndexMeta = '<meta name="robots" content="noindex, nofollow">';
-      adminContent = adminContent.replace('<meta name="viewport"', noIndexMeta + '\n    <meta name="viewport"');
-      fs.writeFileSync(adminPath, adminContent);
-    }
-  });
-  console.log(`✅ Enhanced ${adminHtmlFiles.length} admin pages with proper meta tags`);
-
-  console.log('✅ Enhanced Vercel build completed successfully!');
+  console.log('✅ Complete Vercel build finished successfully!');
   console.log('📦 Output directory: dist-static/');
-  console.log(`🔐 All ${adminHtmlFiles.length} admin pages ready for static deployment`);
+  console.log(`🔐 All ${createdAdminFiles} admin pages ready for static deployment`);
+  console.log(`📄 Total HTML files created: ${htmlFiles.length + 1} (including verification page)`);
   
   // List built files
   const files = fs.readdirSync('dist-static');
-  console.log('📄 Built files:', files.join(', '));
+  console.log('📄 Built files:', files.length, 'items');
 
   // Calculate bundle size
   const statsPath = 'dist-static/assets';
@@ -322,7 +401,11 @@ try {
     console.log(`📊 Total bundle size: ${(totalSize / 1024 / 1024).toFixed(2)}MB`);
   }
 
+  console.log('🎉 Ready for Vercel deployment with complete admin support!');
+  console.log('📋 Test admin routes: /admin-verification.html');
+  console.log('🔐 Admin login: /admin-login');
+
 } catch (error) {
-  console.error('❌ Enhanced build failed:', error.message);
+  console.error('❌ Complete build failed:', error.message);
   process.exit(1);
 }
