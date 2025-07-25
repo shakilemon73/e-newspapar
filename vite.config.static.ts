@@ -29,12 +29,17 @@ export default defineConfig({
   build: {
     outDir: '../dist-static',
     minify: 'esbuild',
-    sourcemap: false,
+    sourcemap: true, // Enable sourcemaps for debugging
+    target: 'es2020',
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'client/index-static.html')
+      },
+      output: {
+        manualChunks: undefined
       }
-    }
+    },
+    chunkSizeWarningLimit: 1000
   },
   resolve: {
     alias: {
