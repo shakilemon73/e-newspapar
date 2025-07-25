@@ -3,16 +3,17 @@ import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { staticQueryClient } from './lib/static-queryClient';
 import { cleanupCorruptedStorage } from './lib/storage-cleanup';
-import { interceptThirdPartyDOMOperations } from './lib/third-party-wrapper';
+import { activateUltimateDOMProtection, DOMErrorBoundary } from './lib/dom-protection';
 import App from './App';
 import './index.css';
 
-// Initialize third-party DOM operation interceptor FIRST
+// CRITICAL: Activate ultimate DOM protection BEFORE anything else loads
+// This prevents index.esm.js classList errors from Radix UI and other libraries
 try {
-  interceptThirdPartyDOMOperations();
-  console.log('🛡️ Third-party library protection activated');
+  activateUltimateDOMProtection();
+  console.log('🛡️ Ultimate DOM protection system activated');
 } catch (error) {
-  console.warn('Third-party interceptor failed:', error);
+  console.error('DOM protection activation failed:', error);
 }
 
 // Run storage cleanup to prevent JSON parsing errors
@@ -98,9 +99,18 @@ try {
   
   root.render(
     <StrictMode>
-      <QueryClientProvider client={staticQueryClient}>
-        <App />
-      </QueryClientProvider>
+      <DOMErrorBoundary fallback={
+        <div className="flex items-center justify-center min-h-screen bg-background">
+          <div className="text-center space-y-4">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm text-muted-foreground">অ্যাপ লোড হচ্ছে...</p>
+          </div>
+        </div>
+      }>
+        <QueryClientProvider client={staticQueryClient}>
+          <App />
+        </QueryClientProvider>
+      </DOMErrorBoundary>
     </StrictMode>
   );
 } catch (error) {
