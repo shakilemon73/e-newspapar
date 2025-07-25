@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import SEO from '@/components/SEO';
 import supabase from '@/lib/supabase';
 
 interface ContactInfo {
@@ -217,11 +218,22 @@ export default function Contact() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">যোগাযোগ</h1>
+    <>
+      <SEO
+        title="যোগাযোগ - Bengali News"
+        description="আমাদের সাথে যোগাযোগ করুন। ফোন, ইমেইল বা অফিস ভিজিটের মাধ্যমে Bengali News টিমের সাথে কথা বলুন।"
+        image="/og-image.svg"
+        url="/contact"
+        type="website"
+        keywords="contact us, যোগাযোগ, phone, email, address, ঠিকানা, Bengali News"
+        tags={["contact", "যোগাযোগ", "support", "সাপোর্ট"]}
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">যোগাযোগ</h1>
           <p className="text-gray-600">আমাদের সাথে যোগাযোগ করুন</p>
         </div>
 
@@ -411,7 +423,8 @@ export default function Contact() {
             </Card>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

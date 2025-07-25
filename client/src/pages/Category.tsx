@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRoute } from 'wouter';
-import { Helmet } from 'react-helmet';
 import { Link } from 'wouter';
 import { 
   Grid, 
@@ -21,7 +20,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { generateCategoryMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
+import SEO from '@/components/SEO';
+import { generateCategorySEO } from '@/lib/seo-utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -369,29 +369,17 @@ const Category = () => {
     );
   }
 
-  // Generate comprehensive social media meta tags for category page
-  const socialMetaTags = generateCategoryMetaTags({
-    name: category.name,
-    slug: category.slug,
-    description: category.description
-  });
-  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
-
   return (
     <>
-      <Helmet>
-        <title>{socialMetaTags.title}</title>
-        {metaElements.map((meta, index) => 
-          meta.property ? (
-            <meta key={index} property={meta.property} content={meta.content} />
-          ) : (
-            <meta key={index} name={meta.name} content={meta.content} />
-          )
-        )}
-        {linkElements.map((link, index) => (
-          <link key={index} rel={link.rel} href={link.href} />
-        ))}
-      </Helmet>
+      <SEO
+        title={`${category.name} - Bengali News`}
+        description={category.description || `পড়ুন ${category.name} বিভাগের সর্বশেষ সংবাদ Bengali News-এ। সব খবর এক জায়গায়।`}
+        image="/og-image.svg"
+        url={`/category/${category.slug}`}
+        type="website"
+        keywords={`${category.name}, Bengali news, Bangladesh news, সংবাদ, ${category.slug}`}
+        tags={[category.name, "news", "সংবাদ", "Bangladesh", category.slug]}
+      />
 
       <div className="category-page">
         <div className="container mx-auto px-4 py-8">

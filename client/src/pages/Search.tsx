@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Helmet } from 'react-helmet';
+import SEO from '@/components/SEO';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { generateSearchMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 
 interface Category {
   id: number;
@@ -96,25 +95,17 @@ const Search = () => {
     }
   };
 
-  // Generate comprehensive social media meta tags for search page
-  const socialMetaTags = generateSearchMetaTags(query);
-  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
-
   return (
     <>
-      <Helmet>
-        <title>{socialMetaTags.title}</title>
-        {metaElements.map((meta, index) => 
-          meta.property ? (
-            <meta key={index} property={meta.property} content={meta.content} />
-          ) : (
-            <meta key={index} name={meta.name} content={meta.content} />
-          )
-        )}
-        {linkElements.map((link, index) => (
-          <link key={index} rel={link.rel} href={link.href} />
-        ))}
-      </Helmet>
+      <SEO
+        title={query ? `"${query}" অনুসন্ধানের ফলাফল - Bengali News` : 'অনুসন্ধান - Bengali News'}
+        description={query ? `"${query}" সম্পর্কিত সংবাদ খুঁজুন Bengali News-এ। ${articles.length}টি ফলাফল পাওয়া গেছে।` : 'Bengali News-এ সংবাদ অনুসন্ধান করুন। সর্বশেষ খবর, রাজনীতি, খেলা, বিনোদন এবং আরো অনেক কিছু।'}
+        image="/og-image.svg"
+        url={`/search${query ? `?q=${encodeURIComponent(query)}` : ''}`}
+        type="website"
+        keywords={`search, অনুসন্ধান, ${query}, Bengali news, বাংলা সংবাদ`}
+        tags={["search", "অনুসন্ধান", query || "news", "Bangladesh"]}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6 font-hind">

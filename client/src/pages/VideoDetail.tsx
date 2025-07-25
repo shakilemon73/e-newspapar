@@ -6,6 +6,7 @@ import { Clock, Eye, Calendar, AlertCircle } from "lucide-react";
 import { DateFormatter } from "@/components/DateFormatter";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import SEO from "@/components/SEO";
 
 interface VideoContent {
   id: number;
@@ -92,9 +93,20 @@ export default function VideoDetail() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <Card>
+    <>
+      <SEO
+        title={video ? `${video.title} - Bengali News` : 'ভিডিও - Bengali News'}
+        description={video ? video.description.substring(0, 160) : 'Bengali News ভিডিও কন্টেন্ট দেখুন।'}
+        image="/og-image.svg"
+        url={`/video/${slug}`}
+        type="video.other"
+        keywords={`video, ভিডিও, ${video?.title || 'news'}, Bengali News`}
+        tags={["video", "ভিডিও", video?.title || "news", "Bangladesh"]}
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <Card>
           <CardContent className="p-0">
             {/* Video Player */}
             <div className="relative aspect-video bg-black rounded-t-lg overflow-hidden">
@@ -147,7 +159,8 @@ export default function VideoDetail() {
             </Button>
           </Link>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

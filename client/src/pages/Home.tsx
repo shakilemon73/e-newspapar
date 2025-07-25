@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
-import { generateHomeMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
+import SEO from '@/components/SEO';
 import BreakingNewsTicker from '@/components/BreakingNewsTicker';
 import FeaturedSlideshow from '@/components/FeaturedSlideshow';
 import WeatherWidget from '@/components/WeatherWidget';
@@ -27,9 +26,7 @@ const Home = () => {
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-  // Generate comprehensive social media meta tags for home page
-  const socialMetaTags = generateHomeMetaTags();
-  const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
+  // SEO for homepage will be handled by SEO component
 
   // Fetch available categories from database (Direct Supabase)
   useEffect(() => {
@@ -61,20 +58,15 @@ const Home = () => {
 
   return (
     <>
-      <Helmet>
-        <title>{socialMetaTags.title}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        {metaElements.map((meta, index) => 
-          meta.property ? (
-            <meta key={index} property={meta.property} content={meta.content} />
-          ) : (
-            <meta key={index} name={meta.name} content={meta.content} />
-          )
-        )}
-        {linkElements.map((link, index) => (
-          <link key={index} rel={link.rel} href={link.href} />
-        ))}
-      </Helmet>
+      <SEO
+        title="Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র"
+        description="সর্বশেষ সংবাদ, রাজনীতি, খেলা, বিনোদন, আন্তর্জাতিক এবং আরো অনেক কিছু পড়ুন বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যমে। Breaking news, politics, sports, entertainment from Bangladesh."
+        image="/og-image.svg"
+        url="/"
+        type="website"
+        keywords="বাংলা সংবাদ, Bangladesh news, bengali news, dhaka news, bd news, breaking news, রাজনীতি, খেলা, বিনোদন"
+        tags={["news", "bangladesh", "bengali", "সংবাদ", "homepage"]}
+      />
 
       <main className="min-h-screen bg-background">
         {/* Breaking News Ticker */}

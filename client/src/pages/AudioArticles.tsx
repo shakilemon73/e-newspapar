@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Volume2, Calendar, AlertCircle } from 'lucide-react';
 import { DateFormatter } from '@/components/DateFormatter';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 interface AudioArticle {
   id: number;
@@ -85,12 +86,23 @@ export default function AudioArticles() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">সব অডিও আর্টিকেল</h1>
-          <p className="text-gray-600">গুরুত্বপূর্ণ সংবাদ শুনুন যেকোনো সময়</p>
-        </div>
+    <>
+      <SEO
+        title="অডিও আর্টিকেল - Bengali News"
+        description="শুনুন Bengali News-এর অডিও আর্টিকেল। গুরুত্বপূর্ণ সংবাদ শুনুন যেকোনো সময়, যেকোনো জায়গায়।"
+        image="/og-image.svg"
+        url="/audio-articles"
+        type="website"
+        keywords="audio articles, অডিও আর্টিকেল, podcast, পডকাস্ট, listen news, শোনার সংবাদ"
+        tags={["audio", "অডিও", "podcast", "news", "সংবাদ"]}
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">সব অডিও আর্টিকেল</h1>
+            <p className="text-gray-600">গুরুত্বপূর্ণ সংবাদ শুনুন যেকোনো সময়</p>
+          </div>
 
         {articles.length === 0 ? (
           <Card className="text-center">
@@ -142,7 +154,8 @@ export default function AudioArticles() {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

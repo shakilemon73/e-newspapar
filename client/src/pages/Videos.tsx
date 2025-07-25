@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Eye, Calendar, AlertCircle } from 'lucide-react';
 import { DateFormatter } from '@/components/DateFormatter';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 interface VideoItem {
   id: number;
@@ -94,12 +95,23 @@ export default function Videos() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">সব ভিডিও</h1>
-          <p className="text-gray-600">সবচেয়ে গুরুত্বপূর্ণ ঘটনাগুলোর ভিডিও দেখুন</p>
-        </div>
+    <>
+      <SEO
+        title="ভিডিও সংবাদ - Bengali News"
+        description="দেখুন সর্বশেষ ভিডিও সংবাদ ও গুরুত্বপূর্ণ ঘটনাগুলোর ভিডিও Bengali News-এ। Video news from Bangladesh."
+        image="/og-video.svg"
+        url="/videos"
+        type="website"
+        keywords="video news, ভিডিও সংবাদ, Bangladesh video news, bengali video"
+        tags={["video", "news", "ভিডিও", "Bangladesh"]}
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold mb-2">সব ভিডিও</h1>
+            <p className="text-gray-600">সবচেয়ে গুরুত্বপূর্ণ ঘটনাগুলোর ভিডিও দেখুন</p>
+          </div>
 
         {videos.length === 0 ? (
           <Card className="text-center">
@@ -148,7 +160,8 @@ export default function Videos() {
             ))}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

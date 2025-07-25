@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet';
+import SEO from '@/components/SEO';
 import { formatBengaliDate } from '@/lib/utils/dates';
 
 interface EPaper {
@@ -109,10 +109,15 @@ const EPaper = () => {
 
   return (
     <>
-      <Helmet>
-        <title>ই-পেপার আর্কাইভ - </title>
-        <meta name="description" content="র ই-পেপার আর্কাইভ। পুরনো সংস্করণ সহ সকল ই-পেপার এখানে পাবেন।" />
-      </Helmet>
+      <SEO
+        title="ই-পেপার আর্কাইভ - Bengali News"
+        description="Bengali News-এর ই-পেপার আর্কাইভ। পুরনো সংস্করণ সহ সকল ই-পেপার এখানে পাবেন। প্রতিদিনের সংবাদপত্র ডাউনলোড করুন।"
+        image="/og-image.svg"
+        url="/epaper"
+        type="website"
+        keywords="epaper, ই-পেপার, newspaper, সংবাদপত্র, archive, আর্কাইভ, Bengali News"
+        tags={["epaper", "newspaper", "আর্কাইভ", "সংবাদপত্র"]}
+      />
 
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 font-hind">ই-পেপার আর্কাইভ</h1>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Users, Heart, Award, Target, Phone, Mail, MapPin } from 'lucide-react';
 import { DateFormatter } from '@/components/DateFormatter';
+import SEO from '@/components/SEO';
 import supabase from '@/lib/supabase';
 
 interface TeamMember {
@@ -205,17 +206,28 @@ export default function About() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">পরিচিতি</h1>
-          <p className="text-gray-600"> সম্পর্কে জানুন</p>
-        </div>
+    <>
+      <SEO
+        title="আমাদের সম্পর্কে - Bengali News"
+        description="জানুন Bengali News সম্পর্কে। আমাদের দল, মিশন এবং দৃষ্টিভঙ্গি সম্পর্কে বিস্তারিত তথ্য।"
+        image="/og-image.svg"
+        url="/about"
+        type="website"
+        keywords="about us, সম্পর্কে, team, টিম, mission, vision, Bengali News"
+        tags={["about", "team", "company", "বাংলা সংবাদ"]}
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-4">পরিচিতি</h1>
+            <p className="text-gray-600"> সম্পর্কে জানুন</p>
+          </div>
 
-        {/* Company Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {companyInfo.map((info) => (
+          {/* Company Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            {companyInfo.map((info) => (
             <Card key={info.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -232,7 +244,7 @@ export default function About() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+            ))}
         </div>
 
         {/* Team Members */}
@@ -328,7 +340,8 @@ export default function About() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

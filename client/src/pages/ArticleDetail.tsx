@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet';
 import { updateDisplayUrl, decodeSlug, getCleanShareUrl, createBengaliSlug } from '@/lib/utils/url-utils';
 import { formatBengaliDate, getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { ReadingTimeIndicator } from '@/components/ReadingTimeIndicator';
+import SEO from '@/components/SEO';
+import { generateArticleSEO } from '@/lib/seo-utils';
 import { ArticleSummary } from '@/components/ArticleSummary';
 import { TextToSpeech } from '@/components/TextToSpeech';
 import { SavedArticleButton } from '@/components/SavedArticleButton';
@@ -1296,19 +1297,18 @@ const ArticleDetail = () => {
   // World-class main article content
   return (
     <div className={`min-h-screen transition-all duration-500 ${isDarkMode ? 'dark' : ''} ${isFullscreen ? 'p-0' : ''}`}>
-      <Helmet>
-        <title>{socialMetaTags.title}</title>
-        {metaElements.map((meta, index) => 
-          meta.property ? (
-            <meta key={index} property={meta.property} content={meta.content} />
-          ) : (
-            <meta key={index} name={meta.name} content={meta.content} />
-          )
-        )}
-        {linkElements.map((link, index) => (
-          <link key={index} rel={link.rel} href={link.href} />
-        ))}
-      </Helmet>
+      <SEO
+        title={article.title}
+        description={article.excerpt || article.content?.substring(0, 160) || 'পড়ুন এই গুরুত্বপূর্ণ সংবাদটি Bengali News-এ'}
+        image={article.image_url || '/og-image.svg'}
+        url={shareUrl}
+        type="article"
+        author={article.author}
+        publishedTime={article.published_at}
+        modifiedTime={article.updated_at}
+        section={article.category?.name}
+        tags={[article.category?.name || 'সাধারণ', 'বাংলা সংবাদ', 'Bangladesh'].filter(Boolean)}
+      />
 
       {/* Enhanced Reading Progress Bar */}
       <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-background/80 backdrop-blur-sm">
