@@ -35,8 +35,8 @@ export function BengaliTextSummarizer({ text, onSummaryGenerated }: BengaliTextS
       // Summarize text (limit input to prevent memory issues)
       const inputText = text.slice(0, 1000); // First 1000 characters
       const result = await summarizer(inputText, {
-        max_new_tokens: 100,
-        min_new_tokens: 30,
+        max_length: 100,
+        min_length: 30,
         do_sample: false
       });
 

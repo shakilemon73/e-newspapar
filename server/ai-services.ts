@@ -1,4 +1,10 @@
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for AI operations
+const supabaseServiceRole = createClient(
+  process.env.VITE_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // AI Service Types
 interface AIProcessingResult {
@@ -36,8 +42,8 @@ class BengaliAIService {
       // Generate comprehensive AI analysis
       const analysis = await this.generateArticleAnalysis(content, title);
       
-      // Store AI analysis in Supabase
-      const { data, error } = await supabase
+      // Store AI analysis in Supabase using service role
+      const { data, error } = await supabaseServiceRole
         .from('article_ai_analysis')
         .upsert({
           article_id: articleId,
@@ -59,7 +65,7 @@ class BengaliAIService {
 
       // Update article with AI-generated summary if none exists
       if (analysis.summary) {
-        await supabase
+        await supabaseServiceRole
           .from('articles')
           .update({ 
             summary: analysis.summary,
@@ -278,8 +284,8 @@ class BengaliAIService {
     try {
       console.log(`[AI] Starting batch processing of ${limit} articles...`);
 
-      // Get unprocessed articles
-      const { data: articles, error } = await supabase
+      // Get unprocessed articles using service role
+      const { data: articles, error } = await supabaseServiceRole
         .from('articles')
         .select('id, title, content')
         .eq('ai_processed', false)
@@ -316,7 +322,7 @@ class BengaliAIService {
    */
   async getArticleAIAnalysis(articleId: number): Promise<AIProcessingResult> {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServiceRole
         .from('article_ai_analysis')
         .select('*')
         .eq('article_id', articleId)

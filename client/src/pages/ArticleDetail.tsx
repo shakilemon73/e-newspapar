@@ -1721,7 +1721,7 @@ const ArticleDetail = () => {
                   id: article.id,
                   title: article.title,
                   content: article.content || '',
-                  summary: article.summary
+                  summary: article.summary || article.excerpt
                 }}
               />
 
