@@ -100,7 +100,7 @@ const EPaperGeneratorAdmin = () => {
     totalViews: 0,
     totalDownloads: 0,
     avgGenerationTime: 0,
-    popularTemplates: []
+    popularTemplates: [] as string[]
   });
 
   // Layout templates based on research
