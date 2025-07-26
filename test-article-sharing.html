@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article Sharing Test - Bengali News</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .feature-box {
+            background: #e8f6f3;
+            border-left: 4px solid #27ae60;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .preview-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 500px;
+            margin: 15px 0;
+            background: white;
+        }
+        .preview-image {
+            width: 100%;
+            height: 250px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 14px;
+            border-bottom: 1px solid #eee;
+        }
+        .preview-content {
+            padding: 15px;
+        }
+        .preview-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        .preview-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        .preview-url {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: white;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .implemented { background-color: #27ae60; }
+        .enhanced { background-color: #3498db; }
+        .code {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📰 Enhanced Article Sharing - Bengali News</h1>
+        
+        <div class="feature-box">
+            <h3>✅ Enhanced Features for Article Sharing</h3>
+            <p>When someone shares an article link on social media, they'll now see:</p>
+            <ul>
+                <li><strong>Real Article Title</strong> - Directly from your database</li>
+                <li><strong>Meta Description</strong> - Article excerpt or clean content preview</li>
+                <li><strong>Original Article Image</strong> - The actual image uploaded with the article</li>
+                <li><strong>Author Information</strong> - Article author or Bengali News</li>
+                <li><strong>Category & Section</strong> - Article category for better organization</li>
+                <li><strong>Publish Date</strong> - When the article was published</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🎯 What Social Media Users See</h2>
+            
+            <div class="preview-card">
+                <div class="preview-image">
+                    <span class="highlight">Original Article Image from Database</span><br>
+                    (or Dynamic OG Image if no image available)
+                </div>
+                <div class="preview-content">
+                    <div class="preview-title">[Real Article Title] - Bengali News</div>
+                    <div class="preview-description">
+                        <span class="highlight">Article excerpt or first 160 characters of content</span><br>
+                        (HTML tags removed, clean text only)
+                    </div>
+                    <div class="preview-url">dainiktni.news • [Article Category] • [Publish Date]</div>
+                </div>
+            </div>
+            
+            <p><strong>Example with Bengali Content:</strong></p>
+            <div class="preview-card">
+                <div class="preview-image">
+                    <span class="highlight">https://example.com/article-image.jpg</span>
+                </div>
+                <div class="preview-content">
+                    <div class="preview-title">বাংলাদেশের অর্থনৈতিক প্রবৃদ্ধি - Bengali News</div>
+                    <div class="preview-description">
+                        দেশের অর্থনৈতিক প্রবৃদ্ধি গত মাসে ৬.৫ শতাংশ বৃদ্ধি পেয়েছে। এই প্রবৃদ্ধি মূলত কৃষি ও শিল্প খাতের অবদানে সম্ভব হয়েছে...
+                    </div>
+                    <div class="preview-url">dainiktni.news • অর্থনীতি • ২৬ জুলাই, ২০২৫</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔧 Technical Implementation</h2>
+            
+            <h4>1. Database Query Enhancement <span class="status enhanced">Enhanced</span></h4>
+            <div class="code">
+articles?slug=eq.${slug}&select=*,categories(name)
+            </div>
+            <p>Fetches article with category information for better meta tags.</p>
+            
+            <h4>2. Image Priority System <span class="status implemented">✅ Ready</span></h4>
+            <div class="code">
+const ogImage = article.image_url || article.imageUrl || 
+  `${baseUrl}/api/og-image?title=${encodeURIComponent(article.title)}&type=article&slug=${slug}`;
+            </div>
+            <p>Uses original article image first, then generates dynamic OG image as fallback.</p>
+            
+            <h4>3. Meta Description Generation <span class="status implemented">✅ Ready</span></h4>
+            <div class="code">
+if (article.excerpt) {
+  metaDescription = article.excerpt.substring(0, 160);
+} else if (article.content) {
+  const cleanContent = article.content.replace(/&lt;[^&gt;]*&gt;/g, '').replace(/\s+/g, ' ').trim();
+  metaDescription = cleanContent.substring(0, 160);
+}
+            </div>
+            <p>Creates clean, readable descriptions from article content.</p>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Testing Your Implementation</h2>
+            
+            <h4>Facebook Sharing Debugger</h4>
+            <div class="code">https://developers.facebook.com/tools/debug/sharing/</div>
+            <p>1. Paste any article URL from your site<br>
+               2. Click "Debug" to see the preview<br>
+               3. Verify title, description, and image are correct</p>
+            
+            <h4>Test with Crawler Simulation</h4>
+            <div class="code">curl -A "facebookexternalhit/1.1" https://www.dainiktni.news/article/your-article-slug</div>
+            <p>This should return HTML with proper meta tags including real article data.</p>
+            
+            <h4>WhatsApp Test</h4>
+            <p>1. Copy any article URL<br>
+               2. Paste in WhatsApp chat<br>
+               3. You should see article title, description, and image preview</p>
+            
+            <h4>Twitter/X Card Validator</h4>
+            <div class="code">https://cards-dev.twitter.com/validator</div>
+            <p>Test how your articles appear when shared on Twitter/X.</p>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 What's Included in Meta Tags</h2>
+            
+            <h4>Open Graph Tags</h4>
+            <ul>
+                <li><code>og:title</code> - Real article title</li>
+                <li><code>og:description</code> - Article excerpt or content preview</li>
+                <li><code>og:image</code> - Original article image</li>
+                <li><code>og:type</code> - "article"</li>
+                <li><code>og:url</code> - Article URL</li>
+            </ul>
+            
+            <h4>Article-Specific Tags</h4>
+            <ul>
+                <li><code>article:author</code> - Article author</li>
+                <li><code>article:section</code> - Article category</li>
+                <li><code>article:published_time</code> - Publish date</li>
+                <li><code>article:tag</code> - Article tags</li>
+            </ul>
+            
+            <h4>Twitter Card Tags</h4>
+            <ul>
+                <li><code>twitter:card</code> - "summary_large_image"</li>
+                <li><code>twitter:title</code> - Article title</li>
+                <li><code>twitter:description</code> - Article description</li>
+                <li><code>twitter:image</code> - Article image</li>
+            </ul>
+        </div>
+
+        <div class="feature-box">
+            <h3>🎉 Ready for Deployment</h3>
+            <p>Your article sharing is now fully optimized with:</p>
+            <ul>
+                <li>✅ Real article titles from database</li>
+                <li>✅ Meta descriptions from article content</li>
+                <li>✅ Original article images</li>
+                <li>✅ Proper category and author information</li>
+                <li>✅ Support for all major social platforms</li>
+            </ul>
+            <p><strong>Next step:</strong> Deploy to Vercel and test with real article URLs!</p>
+        </div>
+    </div>
+</body>
+</html>

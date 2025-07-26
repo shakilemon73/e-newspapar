@@ -93,7 +93,7 @@ async function getRouteMetadata(pathname, searchParams) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
         const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
         
-        const response = await fetch(`${supabaseUrl}/rest/v1/articles?slug=eq.${slug}&select=*`, {
+        const response = await fetch(`${supabaseUrl}/rest/v1/articles?slug=eq.${slug}&select=*,categories(name)`, {
           headers: {
             'apikey': supabaseKey,
             'Authorization': `Bearer ${supabaseKey}`,
@@ -105,15 +105,39 @@ async function getRouteMetadata(pathname, searchParams) {
           const articles = await response.json();
           if (articles && articles.length > 0) {
             const article = articles[0];
+            
+            // Use article's original image or generate dynamic OG image
+            const articleImage = article.image_url || article.imageUrl;
+            const ogImage = articleImage || `${baseUrl}/api/og-image?title=${encodeURIComponent(article.title)}&type=article&slug=${slug}`;
+            
+            // Create proper meta description from article content
+            let metaDescription = '';
+            if (article.excerpt) {
+              metaDescription = article.excerpt.substring(0, 160);
+            } else if (article.content) {
+              // Remove HTML tags and get clean text for description
+              const cleanContent = article.content.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+              metaDescription = cleanContent.substring(0, 160);
+            } else {
+              metaDescription = 'বিস্তারিত সংবাদ পড়ুন Bengali News এ। বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম।';
+            }
+            
+            // Add ellipsis if description was truncated
+            if (metaDescription.length === 160 && (article.excerpt?.length > 160 || article.content?.length > 160)) {
+              metaDescription += '...';
+            }
+            
             return {
               ...defaultMeta,
               title: `${article.title} - Bengali News`,
-              description: article.excerpt || article.content?.substring(0, 160) || 'বিস্তারিত সংবাদ পড়ুন Bengali News এ।',
+              description: metaDescription,
               type: 'article',
-              image: article.image_url || `${baseUrl}/api/og-image?title=${encodeURIComponent(article.title)}&type=article`,
+              image: ogImage,
               publishedTime: article.published_at,
-              author: 'Bengali News',
-              section: article.category_name || 'সংবাদ'
+              author: article.author || 'Bengali News',
+              section: article.categories?.name || article.category_name || 'সংবাদ',
+              articleSection: article.categories?.name || article.category_name || 'সংবাদ',
+              tags: article.tags || []
             };
           }
         }
@@ -270,9 +294,12 @@ function generateOGHTML(metadata, url) {
   
   <!-- Article specific tags -->
   ${metadata.type === 'article' ? `
-  <meta property="article:author" content="${metadata.siteName}">
-  <meta property="article:section" content="News">
-  <meta property="article:published_time" content="${new Date().toISOString()}">
+  <meta property="article:author" content="${metadata.author || 'Bengali News'}">
+  <meta property="article:section" content="${metadata.section || 'সংবাদ'}">
+  <meta property="article:published_time" content="${metadata.publishedTime || new Date().toISOString()}">
+  ${metadata.tags && Array.isArray(metadata.tags) && metadata.tags.length > 0 ? 
+    metadata.tags.map(tag => `<meta property="article:tag" content="${tag}">`).join('\n  ') : 
+    '<meta property="article:tag" content="Bengali News">'}
   ` : ''}
   
   <!-- Canonical URL -->
