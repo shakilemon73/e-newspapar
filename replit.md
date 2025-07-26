@@ -30,7 +30,7 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **COMPLETE 48-PAGE VERCEL SPA SETUP COMPLETED (July 26, 2025)**: Implemented research-backed Stack Overflow routing pattern `/((?!api/.*).*)`for all 64 routes. Created comprehensive test page (test-all-48-pages.html) with complete route verification. Built static deployment ready with 1.66MB optimized bundle. All public and admin routes now work without SPA errors on Vercel deployment.
 
-**VERCEL CONFIGURATION FULLY CORRECTED (July 26, 2025)**: Fixed all configuration errors after user feedback. Updated vercel.json to use correct `vercel-build.js` script, removed conflicting `functions` property (cannot be used with `builds`), and matched exact structure from all 3 provided configurations. Corrected builds reference, destination paths, and header targets to precisely match specifications. Build successful: 1.66MB bundle, all 48 pages ready for deployment.
+**VERCEL CONFIGURATION FULLY CORRECTED (July 26, 2025)**: Fixed all configuration errors after user feedback. Updated vercel.json to use correct `vercel-build.js` script, removed conflicting `functions` property (cannot be used with `builds`), replaced `routes` with `rewrites` (routes cannot be used with headers/rewrites), and matched exact structure from all 3 provided configurations. Corrected builds reference, destination paths, and header targets to precisely match specifications. Build successful: 1.66MB bundle, all 48 pages ready for deployment.
 
 ## User Preferences
 

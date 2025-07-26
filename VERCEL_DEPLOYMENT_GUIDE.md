@@ -124,18 +124,27 @@ Your application follows the modern full-stack pattern:
       "use": "@vercel/node"         // Node.js runtime
     }
   ],
-  "routes": [
+  "buildCommand": "cd client && npm install && npm run build",
+  "outputDirectory": "client/dist",
+  "rewrites": [
     {
-      "src": "/api/(.*)",           // Route API calls to serverless function
-      "dest": "/api/index.ts"
+      "source": "/api/(.*)",        // Route API calls to serverless function
+      "destination": "/api/index.ts"
     },
     {
-      "src": "/(.*)",               // Route frontend to React SPA
-      "dest": "/client/dist/index.html"
+      "source": "/((?!api/.*).*)",  // Route frontend to React SPA (excludes API)
+      "destination": "/index.html"
     }
   ],
-  "buildCommand": "cd client && npm install && npm run build",
-  "outputDirectory": "client/dist"
+  "headers": [
+    {
+      "source": "/api/(.*)",        // CORS headers for API routes
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, PATCH, OPTIONS" }
+      ]
+    }
+  ]
 }
 ```
 

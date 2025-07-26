@@ -34,8 +34,9 @@ try {
   const hasBuilds = vercelConfig.builds && vercelConfig.builds.length > 0;
   addCheck('Serverless function configuration', hasBuilds, hasBuilds ? 'API build configured' : 'No builds found');
   
-  const hasRoutes = vercelConfig.routes && vercelConfig.routes.length > 0;
-  addCheck('Routing configuration', hasRoutes, hasRoutes ? 'API and SPA routes configured' : 'No routes found');
+  const hasRoutes = (vercelConfig.routes && vercelConfig.routes.length > 0) || 
+                   (vercelConfig.rewrites && vercelConfig.rewrites.length > 0);
+  addCheck('Routing configuration', hasRoutes, hasRoutes ? 'API and SPA routes configured' : 'No routing configuration found');
   
   const hasHeaders = vercelConfig.headers && vercelConfig.headers.length > 0;
   addCheck('Security headers', hasHeaders, hasHeaders ? 'CORS and caching headers configured' : 'No headers found');
