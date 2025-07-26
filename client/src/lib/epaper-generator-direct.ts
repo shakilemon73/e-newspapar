@@ -119,10 +119,35 @@ export class EPaperGeneratorDirect {
           .limit(15);
 
         if (recentError) throw recentError;
-        return recentArticles || [];
+        
+        // Clean all Bengali text from recent articles too
+        const cleanedRecentArticles = (recentArticles || []).map(article => ({
+          ...article,
+          title: this.cleanTextForPDF(article.title || ''),
+          excerpt: this.cleanTextForPDF(article.excerpt || ''),
+          content: this.cleanTextForPDF(article.content || ''),
+          category: article.category ? {
+            ...article.category,
+            name: this.cleanTextForPDF(article.category.name || '')
+          } : null
+        }));
+        
+        return cleanedRecentArticles;
       }
 
-      return articles;
+      // Clean all Bengali text from articles before PDF generation
+      const cleanedArticles = articles.map(article => ({
+        ...article,
+        title: this.cleanTextForPDF(article.title || ''),
+        excerpt: this.cleanTextForPDF(article.excerpt || ''),
+        content: this.cleanTextForPDF(article.content || ''),
+        category: article.category ? {
+          ...article.category,
+          name: this.cleanTextForPDF(article.category.name || '')
+        } : null
+      }));
+      
+      return cleanedArticles;
     } catch (error) {
       console.error('Error collecting articles from Supabase:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
@@ -427,24 +452,24 @@ export class EPaperGeneratorDirect {
   }
 
   // Utility functions - Clean text for PDF compatibility
-  private truncateText(text: string, maxLength: number): string {
+  public cleanTextForPDF(text: string): string {
+    if (!text) return '';
     // Remove Bengali characters and other special Unicode characters that cause encoding issues
-    const cleanText = text
+    return text
       .replace(/[\u0980-\u09FF]/g, '') // Remove Bengali characters
       .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
-    
+  }
+
+  private truncateText(text: string, maxLength: number): string {
+    const cleanText = this.cleanTextForPDF(text);
     return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
   }
 
   private wrapText(text: string, maxWidth: number, fontSize: number): string[] {
     // Clean text first to avoid encoding issues
-    const cleanText = text
-      .replace(/[\u0980-\u09FF]/g, '') // Remove Bengali characters
-      .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
+    const cleanText = this.cleanTextForPDF(text);
       
     const words = cleanText.split(' ');
     const lines: string[] = [];
@@ -472,7 +497,8 @@ export async function generateEPaperDirect(date?: string, title?: string, autoSa
   const pdfBytes = await generator.generateEPaper(date);
   
   if (autoSave) {
-    const epaperTitle = title || `Bengali News - ${date || new Date().toISOString().split('T')[0]}`;
+    // Use only ASCII characters for title to avoid encoding issues
+    const epaperTitle = title ? generator.cleanTextForPDF(title) : `Bengali News - ${date || new Date().toISOString().split('T')[0]}`;
     const epaper = await generator.saveToSupabase(pdfBytes, epaperTitle, date);
     return { pdfBytes, epaper };
   }
