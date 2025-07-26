@@ -175,5 +175,4 @@ class StaticAIService {
 // Export singleton instance
 export const staticAIService = new StaticAIService();
 
-// Export types
-export type { AIPopularArticle, AIPopularResponse };
+// Export types (already defined above, no need to re-export)

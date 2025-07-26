@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { staticAIService } from '@/lib/static-ai-service';
+import { supabase } from '@/lib/supabase';
 
 interface Category {
   id: number;
@@ -30,64 +30,112 @@ export const PopularNewsSection = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchAIPopularArticles = async () => {
+    const fetchPopularArticles = async () => {
       try {
         setIsLoading(true);
+        setError(null);
         
-        // Use static AI service for popular articles (no Express server needed)
-        const result = await staticAIService.getStaticPopularArticles(timeRange, 6);
-        
-        if (result.success && result.data) {
-          const transformedData = result.data.map((article: any) => ({
-            id: article.id,
-            title: article.title,
-            slug: article.slug,
-            excerpt: article.excerpt,
-            publishedAt: article.published_at || article.publishedAt,
-            category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
-            viewCount: article.view_count || article.viewCount || 0
-          }));
+        // Determine date filter based on time range
+        let dateFilter = new Date();
+        switch (timeRange) {
+          case 'daily':
+            dateFilter.setDate(dateFilter.getDate() - 1);
+            break;
+          case 'weekly':
+            dateFilter.setDate(dateFilter.getDate() - 7);
+            break;
+          case 'monthly':
+            dateFilter.setMonth(dateFilter.getMonth() - 1);
+            break;
+        }
+
+        console.log(`[PopularNews] Fetching ${timeRange} popular articles since ${dateFilter.toISOString()}`);
+
+        // Query Supabase directly for popular articles
+        const { data, error: supabaseError } = await supabase
+          .from('articles')
+          .select(`
+            id,
+            title,
+            slug,
+            excerpt,
+            published_at,
+            view_count,
+            is_featured,
+            image_url,
+            categories!inner (
+              id,
+              name,
+              slug
+            )
+          `)
+          .gte('published_at', dateFilter.toISOString())
+          .order('view_count', { ascending: false })
+          .limit(6);
+
+        if (supabaseError) {
+          console.error('[PopularNews] Supabase error:', supabaseError);
+          throw supabaseError;
+        }
+
+        if (!data || data.length === 0) {
+          console.log('[PopularNews] No articles found, trying without date filter...');
           
-          setPopularArticles(transformedData);
-          setError(null);
+          // Fallback: Get popular articles without date filter
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('articles')
+            .select(`
+              id,
+              title,
+              slug,
+              excerpt,
+              published_at,
+              view_count,
+              is_featured,
+              image_url,
+              categories!inner (
+                id,
+                name,
+                slug
+              )
+            `)
+            .order('view_count', { ascending: false })
+            .limit(6);
+
+          if (fallbackError) {
+            throw fallbackError;
+          }
+
+          const transformedFallbackData = fallbackData?.map(article => ({
+            ...article,
+            publishedAt: article.published_at,
+            viewCount: article.view_count,
+            category: Array.isArray(article.categories) ? article.categories[0] : article.categories
+          })) || [];
+          
+          setPopularArticles(transformedFallbackData);
+          console.log(`[PopularNews] Fallback: Found ${transformedFallbackData.length} popular articles`);
         } else {
-          throw new Error(result.error || 'Static AI service failed');
-        }
-      } catch (err) {
-        console.error('AI popular articles failed, falling back to regular API:', err);
-        
-        // Fallback to regular popular articles
-        try {
-          const { articlesApiDirect } = await import('../lib/queryClient-direct');
-          const data = await articlesApiDirect.getPopular(6);
-          
-          const transformedData = data.map((article: any) => ({
-            id: article.id,
-            title: article.title,
-            slug: article.slug,
-            excerpt: article.excerpt,
-            publishedAt: article.published_at || article.publishedAt,
-            category: article.categories || article.category || { id: 0, name: 'সাধারণ', slug: 'general' },
-            viewCount: article.view_count || article.viewCount || 0
+          const transformedData = data.map(article => ({
+            ...article,
+            publishedAt: article.published_at,
+            viewCount: article.view_count,
+            category: Array.isArray(article.categories) ? article.categories[0] : article.categories
           }));
           
           setPopularArticles(transformedData);
-          setError(null);
-        } catch (fallbackErr) {
-          setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
-          console.error('Both AI and fallback APIs failed:', fallbackErr);
+          console.log(`[PopularNews] Found ${transformedData.length} popular articles for ${timeRange}`);
         }
+
+      } catch (err: any) {
+        console.error('[PopularNews] Error fetching articles:', err);
+        setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAIPopularArticles();
-    
-    // Auto-refresh every 2 minutes for AI-powered content
-    const interval = setInterval(fetchAIPopularArticles, 120000);
-    
-    return () => clearInterval(interval);
+    fetchPopularArticles();
   }, [timeRange]);
 
   const handleTimeRangeChange = (newRange: TimeRange) => {
@@ -218,9 +266,9 @@ export const PopularNewsSection = () => {
                     <span className="px-2 py-1 bg-muted rounded text-xs">
                       {article.category?.name || 'সাধারণ'}
                     </span>
-                    {article.aiScore && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded text-xs font-medium">
-                        AI: {article.aiScore}
+                    {article.is_featured && (
+                      <span className="px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded text-xs font-medium">
+                        ⭐ ফিচার্ড
                       </span>
                     )}
                   </span>
@@ -230,10 +278,10 @@ export const PopularNewsSection = () => {
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                         <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
                       </svg>
-                      {article.viewCount || 0} বার
+                      {article.viewCount || article.view_count || 0} বার
                     </span>
                     <span>•</span>
-                    <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+                    <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at)}</span>
                   </div>
                 </div>
               </div>
