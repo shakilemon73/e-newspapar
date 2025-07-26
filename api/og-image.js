@@ -69,7 +69,7 @@ function getBengaliText(text) {
   return bengaliRegex.test(text);
 }
 
-export default function handler(req) {
+export default async function handler(req) {
   try {
     const { searchParams } = new URL(req.url);
     
@@ -77,6 +77,35 @@ export default function handler(req) {
     const title = searchParams.get('title') || 'Bengali News';
     const type = searchParams.get('type') || 'default';
     const subtitle = searchParams.get('subtitle') || 'বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র';
+    const articleSlug = searchParams.get('slug');
+    
+    // For articles, try to fetch real data
+    let articleData = null;
+    if (type === 'article' && articleSlug) {
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        
+        if (supabaseUrl && supabaseKey) {
+          const response = await fetch(`${supabaseUrl}/rest/v1/articles?slug=eq.${articleSlug}&select=*`, {
+            headers: {
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            const articles = await response.json();
+            if (articles && articles.length > 0) {
+              articleData = articles[0];
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching article for OG image:', error);
+      }
+    }
     
     // Get colors based on type
     const colors = getTypeColors(type);
@@ -84,9 +113,15 @@ export default function handler(req) {
     // Determine if Bengali text is present
     const isBengali = getBengaliText(title) || getBengaliText(subtitle);
     
+    // Use article data if available
+    const finalTitle = articleData?.title || title;
+    const finalSubtitle = articleData?.excerpt || subtitle;
+    const categoryName = articleData?.category_name || '';
+    const publishedDate = articleData?.published_at ? new Date(articleData.published_at).toLocaleDateString('bn-BD') : '';
+    
     // Truncate title if too long
-    const displayTitle = title.length > 60 ? title.substring(0, 57) + '...' : title;
-    const displaySubtitle = subtitle.length > 80 ? subtitle.substring(0, 77) + '...' : subtitle;
+    const displayTitle = finalTitle.length > 60 ? finalTitle.substring(0, 57) + '...' : finalTitle;
+    const displaySubtitle = finalSubtitle.length > 80 ? finalSubtitle.substring(0, 77) + '...' : finalSubtitle;
     
     return new ImageResponse(
       (
@@ -179,14 +214,33 @@ export default function handler(req) {
               letterSpacing: '1px',
             }}
           >
-            {type === 'article' ? 'সংবাদ' : 
+            {categoryName || (type === 'article' ? 'সংবাদ' : 
              type === 'video' ? 'ভিডিও' :
              type === 'audio' ? 'অডিও' :
              type === 'category' ? 'বিভাগ' :
              type === 'search' ? 'অনুসন্ধান' :
              type === 'epaper' ? 'ই-পেপার' :
-             type === 'videos' ? 'ভিডিওসমূহ' : 'সংবাদ'}
+             type === 'videos' ? 'ভিডিওসমূহ' : 'সংবাদ')}
           </div>
+          
+          {/* Date Badge for Articles */}
+          {publishedDate && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '40px',
+                left: '40px',
+                padding: '8px 16px',
+                background: 'rgba(255,255,255,0.2)',
+                color: colors.text,
+                borderRadius: '15px',
+                fontSize: '14px',
+                fontWeight: '500',
+              }}
+            >
+              {publishedDate}
+            </div>
+          )}
           
           {/* Bottom Brand */}
           <div

@@ -84,9 +84,44 @@ async function getRouteMetadata(pathname, searchParams) {
       };
     }
 
-    // Article pages
+    // Article pages - Fetch real article data
     if (pathname.startsWith('/article/')) {
       const slug = pathname.replace('/article/', '');
+      
+      try {
+        // Try to fetch real article data from Supabase
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
+        const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+        
+        const response = await fetch(`${supabaseUrl}/rest/v1/articles?slug=eq.${slug}&select=*`, {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const articles = await response.json();
+          if (articles && articles.length > 0) {
+            const article = articles[0];
+            return {
+              ...defaultMeta,
+              title: `${article.title} - Bengali News`,
+              description: article.excerpt || article.content?.substring(0, 160) || 'বিস্তারিত সংবাদ পড়ুন Bengali News এ।',
+              type: 'article',
+              image: article.image_url || `${baseUrl}/api/og-image?title=${encodeURIComponent(article.title)}&type=article`,
+              publishedTime: article.published_at,
+              author: 'Bengali News',
+              section: article.category_name || 'সংবাদ'
+            };
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching article data:', error);
+      }
+      
+      // Fallback if API fails
       return {
         ...defaultMeta,
         title: `${slug.replace(/-/g, ' ')} - Bengali News`,
@@ -289,15 +324,15 @@ function generateOGHTML(metadata, url) {
 /**
  * Main middleware function
  */
-export function middleware(request) {
+export async function middleware(request) {
   const { pathname, searchParams } = request.nextUrl;
   const userAgent = request.headers.get('user-agent') || '';
   
   // Only process requests from social crawlers for routes that need OG tags
   if (isSocialCrawler(userAgent) && needsOGTags(pathname)) {
     try {
-      // Get metadata for this route
-      const metadata = getRouteMetadata(pathname, searchParams);
+      // Get metadata for this route (now async for article fetching)
+      const metadata = await getRouteMetadata(pathname, searchParams);
       const fullUrl = request.url;
       
       // Generate and return HTML with OG tags
@@ -306,7 +341,7 @@ export function middleware(request) {
       return new Response(ogHTML, {
         headers: {
           'content-type': 'text/html; charset=utf-8',
-          'cache-control': 'public, max-age=3600', // Cache for 1 hour
+          'cache-control': 'public, max-age=1800', // Cache for 30 minutes for articles
         },
       });
     } catch (error) {
