@@ -135,13 +135,7 @@ Your application follows the modern full-stack pattern:
     }
   ],
   "buildCommand": "cd client && npm install && npm run build",
-  "outputDirectory": "client/dist",
-  "functions": {
-    "api/index.ts": {
-      "maxDuration": 60,            // Function timeout
-      "memory": 1024                // Memory allocation
-    }
-  }
+  "outputDirectory": "client/dist"
 }
 ```
 
