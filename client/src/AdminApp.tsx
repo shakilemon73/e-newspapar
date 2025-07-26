@@ -38,6 +38,7 @@ import MobileAppManagementPage from "@/pages/admin/MobileAppManagementPage";
 import AdvertisementManagementPage from "@/pages/admin/AdvertisementManagementPage";
 import SecurityAccessControlPage from "@/pages/admin/SecurityAccessControlPage";
 import { AIAdminDashboard } from "@/components/AI/AIAdminDashboard";
+import EPaperGeneratorAdmin from "@/components/admin/EPaperGeneratorAdmin";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -117,6 +118,12 @@ function AdminRouter() {
       <Route path="/admin/epapers">
         <AdminRouteGuard>
           <EPapersAdminPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/epaper-generator">
+        <AdminRouteGuard>
+          <EPaperGeneratorAdmin />
         </AdminRouteGuard>
       </Route>
       

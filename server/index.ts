@@ -63,9 +63,13 @@ import {
 
 // Import AI routes
 import { aiRoutes } from './ai-routes';
+// Import E-Paper routes
+import epaperRoutes from './epaper-api';
 
 // Mount AI routes
 app.use('/api', aiRoutes);
+// Mount E-Paper routes
+app.use('/api/epaper', epaperRoutes);
 
 // Admin Articles
 app.post('/api/admin/articles', async (req: Request, res: Response) => {
