@@ -277,9 +277,9 @@ export class EPaperGeneratorDirect {
         currentY -= 12;
       });
 
-      // Add category and date
-      const categoryText = article.category?.name || 'সাধারণ';
-      const dateText = new Date(article.published_at).toLocaleDateString('bn-BD');
+      // Add category and date (using English to avoid encoding issues)
+      const categoryText = article.category?.name || 'General';
+      const dateText = new Date(article.published_at).toLocaleDateString('en-US');
       
       page.drawText(`${categoryText} • ${dateText}`, {
         x,
@@ -305,8 +305,8 @@ export class EPaperGeneratorDirect {
     const centerX = this.config.pageWidth / 2;
     const headerY = this.config.pageHeight - this.config.margins.top - 20;
 
-    // Newspaper title
-    page.drawText('বেঙ্গলি নিউজ', {
+    // Newspaper title (using English to avoid encoding issues)
+    page.drawText('Bengali News', {
       x: centerX - 60,
       y: headerY,
       size: 24,
@@ -314,8 +314,8 @@ export class EPaperGeneratorDirect {
       color: rgb(0, 0, 0)
     });
 
-    // Date and edition
-    const today = new Date().toLocaleDateString('bn-BD', { 
+    // Date and edition (using English format to avoid encoding issues)
+    const today = new Date().toLocaleDateString('en-US', { 
       weekday: 'long', 
       year: 'numeric', 
       month: 'long', 
@@ -353,8 +353,8 @@ export class EPaperGeneratorDirect {
       color: rgb(0.5, 0.5, 0.5)
     });
 
-    // Page number
-    page.drawText('পৃষ্ঠা ১', {
+    // Page number (using English to avoid encoding issues)
+    page.drawText('Page 1', {
       x: this.config.pageWidth - this.config.margins.right - 40,
       y: footerY,
       size: 8,
@@ -426,13 +426,27 @@ export class EPaperGeneratorDirect {
     }
   }
 
-  // Utility functions
+  // Utility functions - Clean text for PDF compatibility
   private truncateText(text: string, maxLength: number): string {
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    // Remove Bengali characters and other special Unicode characters that cause encoding issues
+    const cleanText = text
+      .replace(/[\u0980-\u09FF]/g, '') // Remove Bengali characters
+      .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+    
+    return cleanText.length > maxLength ? cleanText.substring(0, maxLength) + '...' : cleanText;
   }
 
   private wrapText(text: string, maxWidth: number, fontSize: number): string[] {
-    const words = text.split(' ');
+    // Clean text first to avoid encoding issues
+    const cleanText = text
+      .replace(/[\u0980-\u09FF]/g, '') // Remove Bengali characters
+      .replace(/[^\x00-\x7F]/g, '') // Remove non-ASCII characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+      
+    const words = cleanText.split(' ');
     const lines: string[] = [];
     let currentLine = '';
 
