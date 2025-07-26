@@ -1,11 +1,9 @@
-import { getSupabaseClient } from './supabase-singleton';
+import { supabase } from './supabase';
 
 /**
  * Vercel-safe API service - No Express dependencies
  * Fixes all 404 API errors for Vercel deployment
  */
-
-const supabase = getSupabaseClient();
 
 export class VercelSafeAPI {
   /**

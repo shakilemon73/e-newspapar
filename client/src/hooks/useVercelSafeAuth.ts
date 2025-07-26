@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { getSupabaseClient } from '@/lib/supabase-singleton';
+import { supabase } from '@/lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
 /**
  * Vercel-safe authentication hook
  * Prevents multiple GoTrueClient instances and localStorage errors
  */
-
-const supabase = getSupabaseClient();
 
 export function useVercelSafeAuth() {
   const [user, setUser] = useState<User | null>(null);

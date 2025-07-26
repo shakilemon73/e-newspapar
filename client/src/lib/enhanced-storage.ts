@@ -1,6 +1,4 @@
-import { getSupabaseClient } from './supabase-singleton';
-
-const supabase = getSupabaseClient();
+import { supabase } from './supabase';
 
 /**
  * Enhanced storage service for Vercel deployment

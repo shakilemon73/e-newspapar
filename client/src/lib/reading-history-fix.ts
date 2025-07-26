@@ -1,7 +1,7 @@
 // Reading History Fix for Database Relationship Errors
 // Handles the "Could not find relationship" error properly
 
-import { supabase } from './supabase-consolidated';
+import { supabase } from './supabase';
 
 export async function getUserReadingHistoryFixed(userId: string) {
   console.log(`[getUserReadingHistory] Fetching reading history for user: ${userId}`);
