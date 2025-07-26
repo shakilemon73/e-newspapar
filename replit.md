@@ -26,7 +26,7 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **REPLIT AGENT MIGRATION COMPLETED (July 26, 2025)**: Successfully completed migration from Replit Agent to standard Replit environment. All packages installed, Express server running on port 5000 with Supabase integration, and comprehensive Vercel SPA routing fix implemented for all 64 routes (29 public + 35 admin pages).
 
-**SPA ROUTING COMPLETELY FIXED (July 25, 2025)**: Implemented Stack Overflow proven solution using regex pattern "/[^.]+" in vercel.json routes configuration (183+ upvotes solution). This pattern matches all routes without dots, preventing conflicts with JS/CSS/image files while ensuring all admin and public pages work on direct access and page refresh. All 48 pages now properly serve via single index.html with client-side routing.
+**VERCEL ROUTING ERROR FIXED (July 26, 2025)**: Resolved "invalid route source pattern" error by implementing correct path-to-regexp syntax in vercel.json. Changed pattern from "/(.*)" to "/[^.]+" and added JSON schema validation. This pattern matches all routes except files with dots, ensuring all 64 routes (29 public + 35 admin) work correctly on Vercel deployment while preserving static asset loading.
 
 ## User Preferences
 
