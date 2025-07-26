@@ -232,7 +232,7 @@ const Category = () => {
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
           <div className="flex items-center space-x-2">
             <Clock className="w-3 h-3" />
-            <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+            <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at || '')}</span>
           </div>
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" className="h-auto p-1">
@@ -282,7 +282,7 @@ const Category = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Clock className="w-3 h-3" />
-                  <span>{getRelativeTimeInBengali(article.publishedAt)}</span>
+                  <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at || '')}</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2">

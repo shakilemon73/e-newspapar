@@ -99,7 +99,7 @@ export default function VideoDetail() {
         description={video ? video.description.substring(0, 160) : 'Bengali News ভিডিও কন্টেন্ট দেখুন।'}
         image="/og-image.svg"
         url={`/video/${slug}`}
-        type="video.other"
+        type="video"
         keywords={`video, ভিডিও, ${video?.title || 'news'}, Bengali News`}
         tags={["video", "ভিডিও", video?.title || "news", "Bangladesh"]}
       />

@@ -5,7 +5,7 @@ interface SEOProps {
   description?: string;
   image?: string;
   url?: string;
-  type?: 'website' | 'article' | 'profile' | 'video' | 'music';
+  type?: 'website' | 'article' | 'profile' | 'video' | 'video.other' | 'music';
   siteName?: string;
   locale?: string;
   twitterHandle?: string;
@@ -35,10 +35,15 @@ export default function SEO({
 }: SEOProps) {
   
   // Get current URL if not provided
-  const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
+  const currentUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://www.dainiktni.news');
+  
+  // Generate dynamic OG image for better social sharing
+  const dynamicImage = type === 'article' || type === 'video' ? 
+    `/api/og-image?title=${encodeURIComponent(title)}&type=${type}&subtitle=${encodeURIComponent(description.substring(0, 80))}` :
+    image;
   
   // Ensure image is absolute URL
-  const imageUrl = image.startsWith('http') ? image : `${currentUrl.split('/').slice(0, 3).join('/')}${image}`;
+  const imageUrl = dynamicImage.startsWith('http') ? dynamicImage : `${currentUrl.split('/').slice(0, 3).join('/')}${dynamicImage}`;
   
   // Clean description for social media (max 160 characters)
   const cleanDescription = description.length > 160 ? description.substring(0, 157) + '...' : description;
