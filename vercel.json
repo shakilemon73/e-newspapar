@@ -54,12 +54,6 @@
       }
     }
   ],
-  "functions": {
-    "server/index.ts": {
-      "runtime": "@vercel/node@18.x",
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     {
       "source": "/admin-login",
