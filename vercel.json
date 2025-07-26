@@ -1,13 +1,150 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "name": "bengali-news-app",
   "framework": null,
-  "buildCommand": "node vercel-build.js",
+  "buildCommand": "node vercel-build-optimized.js",
   "outputDirectory": "dist-static",
   "installCommand": "npm install",
   "cleanUrls": true,
   "trailingSlash": false,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/index.ts",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+    },
+    {
+      "src": "/health",
+      "dest": "/server/index.ts"
+    },
+    {
+      "src": "/(favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.json)",
+      "dest": "/dist-static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/dist-static/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist-static/assets/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|avif|mp4|webm))",
+      "dest": "/dist-static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist-static/index.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    }
+  ],
+  "functions": {
+    "server/index.ts": {
+      "runtime": "@vercel/node@18.x",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/admin-access",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin-login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin-dashboard",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/article/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/video/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/audio/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/category/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/user/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(videos|audio-articles|epaper|search|advanced-search|recommendations|user-analytics|social-media-test|unused-tables-demo)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(login|register|auth|profile|dashboard|saved-articles|reading-history)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/(about|contact|editorial-policy|advertisement|archive|privacy-policy|terms-of-service)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
     {
       "source": "/assets/(.*)",
       "headers": [
@@ -25,12 +162,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
     }
   ]
 }

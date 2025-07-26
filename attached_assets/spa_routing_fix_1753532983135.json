@@ -1,0 +1,910 @@
+// 📄 vercel.json - Fixed SPA Routing Configuration
+{
+  "version": 2,
+  "name": "bengali-news-app",
+  "builds": [
+    {
+      "src": "vercel-build.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server/index.ts",
+      "methods": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+    },
+    {
+      "src": "/health",
+      "dest": "/server/index.ts"
+    },
+    {
+      "src": "/(favicon\\.ico|sitemap\\.xml|robots\\.txt|manifest\\.json)",
+      "dest": "/dist-static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/dist-static/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/dist-static/assets/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|avif|mp4|webm))",
+      "dest": "/dist-static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist-static/index.html",
+      "headers": {
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    }
+  ],
+  "functions": {
+    "server/index.ts": {
+      "runtime": "@vercel/node@18.x",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/admin-login",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/article/(.*)",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/category/(.*)",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/search",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/user/(.*)",
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/(breaking-news|sports|entertainment|technology|health|business|politics|international|opinion|weather|video|audio|live|epaper|archive|gallery|events|jobs|classifieds|contact|about|privacy|terms)",
+      "destination": "/dist-static/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    },
+    {
+      "source": "/dist-static/index.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "trailingSlash": false
+}
+
+// 📄 client/src/App.tsx - Fixed Router Configuration
+import React, { Suspense } from 'react';
+import { Router, Route, Switch } from 'wouter';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import UserApp from './UserApp';
+import AdminApp from './AdminApp';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+
+// Create query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+// Router configuration for SPA
+const RouterConfig: React.FC = () => {
+  return (
+    <Router base="">
+      <Switch>
+        {/* Admin Routes */}
+        <Route path="/admin-login" component={() => <AdminApp />} />
+        <Route path="/admin/*" component={() => <AdminApp />} />
+        
+        {/* Public Routes */}
+        <Route path="/*" component={() => <UserApp />} />
+      </Switch>
+    </Router>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <Suspense fallback={<LoadingSpinner />}>
+              <RouterConfig />
+            </Suspense>
+            <Toaster 
+              position="top-right" 
+              richColors 
+              closeButton 
+              duration={4000}
+            />
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+};
+
+export default App;
+
+// 📄 client/src/UserApp.tsx - Fixed Public Routes
+import React from 'react';
+import { Route, Switch, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+// Lazy load components for better performance
+const Home = React.lazy(() => import('@/pages/Home'));
+const ArticleDetail = React.lazy(() => import('@/pages/ArticleDetail'));
+const CategoryPage = React.lazy(() => import('@/pages/CategoryPage'));
+const SearchResults = React.lazy(() => import('@/pages/SearchResults'));
+const UserProfile = React.lazy(() => import('@/pages/UserProfile'));
+const Login = React.lazy(() => import('@/pages/Login'));
+const Register = React.lazy(() => import('@/pages/Register'));
+const VideoNews = React.lazy(() => import('@/pages/VideoNews'));
+const AudioNews = React.lazy(() => import('@/pages/AudioNews'));
+const LiveNews = React.lazy(() => import('@/pages/LiveNews'));
+const BreakingNews = React.lazy(() => import('@/pages/BreakingNews'));
+const Weather = React.lazy(() => import('@/pages/Weather'));
+const Sports = React.lazy(() => import('@/pages/Sports'));
+const Entertainment = React.lazy(() => import('@/pages/Entertainment'));
+const Technology = React.lazy(() => import('@/pages/Technology'));
+const Health = React.lazy(() => import('@/pages/Health'));
+const Education = React.lazy(() => import('@/pages/Education'));
+const Business = React.lazy(() => import('@/pages/Business'));
+const Politics = React.lazy(() => import('@/pages/Politics'));
+const International = React.lazy(() => import('@/pages/International'));
+const Opinion = React.lazy(() => import('@/pages/Opinion'));
+const Editorial = React.lazy(() => import('@/pages/Editorial'));
+const EPaper = React.lazy(() => import('@/pages/EPaper'));
+const Archive = React.lazy(() => import('@/pages/Archive'));
+const Gallery = React.lazy(() => import('@/pages/Gallery'));
+const Events = React.lazy(() => import('@/pages/Events'));
+const Jobs = React.lazy(() => import('@/pages/Jobs'));
+const Classifieds = React.lazy(() => import('@/pages/Classifieds'));
+const ContactUs = React.lazy(() => import('@/pages/ContactUs'));
+const AboutUs = React.lazy(() => import('@/pages/AboutUs'));
+const PrivacyPolicy = React.lazy(() => import('@/pages/PrivacyPolicy'));
+const TermsOfService = React.lazy(() => import('@/pages/TermsOfService'));
+const NotFound = React.lazy(() => import('@/pages/NotFound'));
+
+const UserApp: React.FC = () => {
+  const [location] = useLocation();
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <main className="flex-1">
+        <React.Suspense fallback={<LoadingSpinner />}>
+          <Switch>
+            {/* Home Route */}
+            <Route path="/" component={Home} />
+            <Route path="/home" component={Home} />
+            
+            {/* Article Routes */}
+            <Route path="/article/:slug" component={ArticleDetail} />
+            <Route path="/article/:id/:slug" component={ArticleDetail} />
+            
+            {/* Category Routes */}
+            <Route path="/category/:category" component={CategoryPage} />
+            <Route path="/breaking-news" component={BreakingNews} />
+            <Route path="/sports" component={Sports} />
+            <Route path="/entertainment" component={Entertainment} />
+            <Route path="/technology" component={Technology} />
+            <Route path="/health" component={Health} />
+            <Route path="/education" component={Education} />
+            <Route path="/business" component={Business} />
+            <Route path="/politics" component={Politics} />
+            <Route path="/international" component={International} />
+            <Route path="/opinion" component={Opinion} />
+            <Route path="/editorial" component={Editorial} />
+            
+            {/* Media Routes */}
+            <Route path="/video" component={VideoNews} />
+            <Route path="/video/:id" component={VideoNews} />
+            <Route path="/audio" component={AudioNews} />
+            <Route path="/audio/:id" component={AudioNews} />
+            <Route path="/live" component={LiveNews} />
+            <Route path="/gallery" component={Gallery} />
+            <Route path="/gallery/:id" component={Gallery} />
+            
+            {/* Utility Routes */}
+            <Route path="/weather" component={Weather} />
+            <Route path="/epaper" component={EPaper} />
+            <Route path="/archive" component={Archive} />
+            <Route path="/archive/:date" component={Archive} />
+            <Route path="/search" component={SearchResults} />
+            
+            {/* User Routes */}
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route path="/user/profile" component={UserProfile} />
+            <Route path="/user/:username" component={UserProfile} />
+            
+            {/* Other Routes */}
+            <Route path="/events" component={Events} />
+            <Route path="/events/:id" component={Events} />
+            <Route path="/jobs" component={Jobs} />
+            <Route path="/jobs/:id" component={Jobs} />
+            <Route path="/classifieds" component={Classifieds} />
+            <Route path="/classifieds/:id" component={Classifieds} />
+            
+            {/* Static Pages */}
+            <Route path="/contact" component={ContactUs} />
+            <Route path="/about" component={AboutUs} />
+            <Route path="/privacy" component={PrivacyPolicy} />
+            <Route path="/terms" component={TermsOfService} />
+            
+            {/* 404 Route - Must be last */}
+            <Route component={NotFound} />
+          </Switch>
+        </React.Suspense>
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
+export default UserApp;
+
+// 📄 client/src/AdminApp.tsx - Fixed Admin Routes
+import React from 'react';
+import { Route, Switch, useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import AdminHeader from '@/components/admin/AdminHeader';
+import AdminSidebar from '@/components/admin/AdminSidebar';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+// Lazy load admin components
+const AdminLogin = React.lazy(() => import('@/pages/admin/AdminLogin'));
+const Dashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
+const ArticleEditor = React.lazy(() => import('@/pages/admin/ArticleEditor'));
+const ArticleList = React.lazy(() => import('@/pages/admin/ArticleList'));
+const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
+const CategoryManagement = React.lazy(() => import('@/pages/admin/CategoryManagement'));
+const CommentModeration = React.lazy(() => import('@/pages/admin/CommentModeration'));
+const MediaLibrary = React.lazy(() => import('@/pages/admin/MediaLibrary'));
+const Analytics = React.lazy(() => import('@/pages/admin/Analytics'));
+const Settings = React.lazy(() => import('@/pages/admin/Settings'));
+
+const AdminApp: React.FC = () => {
+  const [location] = useLocation();
+  const { user, isLoading, isAdmin } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // Show login if not authenticated or not admin
+  if (!user || !isAdmin) {
+    return (
+      <React.Suspense fallback={<LoadingSpinner />}>
+        <AdminLogin />
+      </React.Suspense>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <AdminHeader />
+      <div className="flex">
+        <AdminSidebar />
+        <main className="flex-1 p-6">
+          <React.Suspense fallback={<LoadingSpinner />}>
+            <Switch>
+              <Route path="/admin" component={Dashboard} />
+              <Route path="/admin/dashboard" component={Dashboard} />
+              <Route path="/admin/articles" component={ArticleList} />
+              <Route path="/admin/articles/new" component={ArticleEditor} />
+              <Route path="/admin/articles/edit/:id" component={ArticleEditor} />
+              <Route path="/admin/users" component={UserManagement} />
+              <Route path="/admin/categories" component={CategoryManagement} />
+              <Route path="/admin/comments" component={CommentModeration} />
+              <Route path="/admin/media" component={MediaLibrary} />
+              <Route path="/admin/analytics" component={Analytics} />
+              <Route path="/admin/settings" component={Settings} />
+              
+              {/* Default admin route */}
+              <Route component={Dashboard} />
+            </Switch>
+          </React.Suspense>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default AdminApp;
+
+// 📄 client/src/components/ErrorBoundary.tsx - Error Boundary Component
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false
+  };
+
+  public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('React Error Boundary caught an error:', error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="max-w-md mx-auto text-center p-6">
+            <div className="mb-4">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                কিছু ভুল হয়েছে
+              </h1>
+              <p className="text-gray-600">
+                পেজটি লোড করতে সমস্যা হয়েছে। দয়া করে পেজটি রিফ্রেশ করুন।
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                পেজ রিফ্রেশ করুন
+              </button>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="w-full bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                হোম পেজে যান
+              </button>
+            </div>
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-left">
+                <h3 className="text-sm font-medium text-red-800 mb-2">Error Details:</h3>
+                <pre className="text-xs text-red-700 whitespace-pre-wrap">
+                  {this.state.error.toString()}
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;
+
+// 📄 client/src/pages/NotFound.tsx - 404 Page Component
+import React from 'react';
+import { Link } from 'wouter';
+
+const NotFound: React.FC = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="max-w-md mx-auto text-center p-6">
+        <div className="mb-8">
+          <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-2">
+            পেজ খুঁজে পাওয়া যায়নি
+          </h2>
+          <p className="text-gray-600">
+            আপনি যে পেজটি খুঁজছেন সেটি অস্তিত্ব নেই বা সরানো হয়েছে।
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          <Link href="/">
+            <a className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              হোম পেজে ফিরে যান
+            </a>
+          </Link>
+          
+          <div className="text-sm text-gray-500">
+            অথবা
+          </div>
+          
+          <Link href="/search">
+            <a className="inline-block bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors">
+              খোঁজ করুন
+            </a>
+          </Link>
+        </div>
+        
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-sm text-gray-500">
+            সাহায্যের জন্য{' '}
+            <Link href="/contact">
+              <a className="text-blue-600 hover:text-blue-800">যোগাযোগ করুন</a>
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NotFound;
+
+// 📄 server/index.ts - Fixed Server with SPA Support
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import path from 'path';
+import { config } from 'dotenv';
+
+// Load environment variables
+config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
+    },
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://your-domain.vercel.app', 'https://your-custom-domain.com']
+    : ['http://localhost:3000', 'http://localhost:5000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Compression and parsing
+app.use(compression());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// API routes
+app.use('/api', (req, res, next) => {
+  res.json({ 
+    message: 'Bengali News API is running!', 
+    timestamp: new Date().toISOString(),
+    path: req.path,
+    method: req.method
+  });
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    uptime: process.uptime()
+  });
+});
+
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  const staticPath = path.join(process.cwd(), 'dist-static');
+  
+  // Serve static assets with proper caching
+  app.use('/static', express.static(path.join(staticPath, 'static'), {
+    maxAge: '1y',
+    immutable: true
+  }));
+  
+  app.use('/assets', express.static(path.join(staticPath, 'assets'), {
+    maxAge: '1y',
+    immutable: true
+  }));
+  
+  // Serve other static files
+  app.use(express.static(staticPath, {
+    maxAge: '1d'
+  }));
+  
+  // SPA fallback - Handle all routes by serving index.html
+  const spaRoutes = [
+    '/',
+    '/home',
+    '/article/*',
+    '/category/*',
+    '/breaking-news',
+    '/sports',
+    '/entertainment',
+    '/technology',
+    '/health',
+    '/education',
+    '/business',
+    '/politics',
+    '/international',
+    '/opinion',
+    '/editorial',
+    '/video',
+    '/video/*',
+    '/audio',
+    '/audio/*',
+    '/live',
+    '/gallery',
+    '/gallery/*',
+    '/weather',
+    '/epaper',
+    '/archive',
+    '/archive/*',
+    '/search',
+    '/login',
+    '/register',
+    '/user/*',
+    '/events',
+    '/events/*',
+    '/jobs',
+    '/jobs/*',
+    '/classifieds',
+    '/classifieds/*',
+    '/contact',
+    '/about',
+    '/privacy',
+    '/terms',
+    '/admin-login',
+    '/admin',
+    '/admin/*'
+  ];
+  
+  // Handle SPA routing for all defined routes
+  app.get('*', (req, res, next) => {
+    const filePath = path.join(staticPath, req.path);
+    
+    // Check if it's a file request
+    if (path.extname(req.path) && req.path !== '/') {
+      // If file doesn't exist, return 404
+      return res.status(404).send('File not found');
+    }
+    
+    // For all other routes, serve index.html
+    res.sendFile(path.join(staticPath, 'index.html'), (err) => {
+      if (err) {
+        console.error('Error serving index.html:', err);
+        res.status(500).send('Server error');
+      }
+    });
+  });
+}
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Server error:', err);
+  
+  // Don't send error details in production
+  const errorResponse = {
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    timestamp: new Date().toISOString()
+  };
+  
+  res.status(err.status || 500).json(errorResponse);
+});
+
+// 404 handler for API routes only
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ 
+    error: 'API route not found',
+    path: req.path,
+    method: req.method,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Bengali News Server running on port ${PORT}`);
+  console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐 Access: http://localhost:${PORT}`);
+  console.log(`📁 Static files: ${process.env.NODE_ENV === 'production' ? 'dist-static' : 'development mode'}`);
+});
+
+export default app;
+
+// 📄 vercel-build.js - Enhanced Build Script with SPA Support
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+console.log('🚀 Starting Vercel build for Bengali News App...');
+
+try {
+  // Clean previous builds
+  console.log('🧹 Cleaning previous builds...');
+  if (fs.existsSync('dist-static')) {
+    fs.rmSync('dist-static', { recursive: true, force: true });
+  }
+
+  // Install dependencies
+  console.log('📦 Installing dependencies...');
+  execSync('npm install', { stdio: 'inherit' });
+
+  // Install client dependencies
+  console.log('📦 Installing client dependencies...');
+  execSync('cd client && npm install', { stdio: 'inherit' });
+
+  // Type check
+  console.log('🔍 Running TypeScript checks...');
+  try {
+    execSync('npx tsc --noEmit', { stdio: 'inherit' });
+  } catch (error) {
+    console.warn('⚠️ TypeScript warnings found, continuing build...');
+  }
+
+  // Build frontend with Vite
+  console.log('⚡ Building frontend with Vite...');
+  execSync('cd client && npm run build', { stdio: 'inherit' });
+
+  // Copy built files to dist-static
+  console.log('📁 Copying built files...');
+  if (fs.existsSync('client/dist')) {
+    fs.cpSync('client/dist', 'dist-static', { recursive: true });
+  } else {
+    throw new Error('Client build directory not found!');
+  }
+
+  // Ensure index.html exists
+  const indexPath = path.join('dist-static', 'index.html');
+  if (!fs.existsSync(indexPath)) {
+    throw new Error('index.html not found in build output!');
+  }
+
+  // Generate sitemap
+  console.log('🗺️ Generating sitemap...');
+  generateSitemap();
+
+  // Generate robots.txt
+  console.log('🤖 Generating robots.txt...');
+  generateRobotsTxt();
+
+  // Generate _redirects file for additional SPA support
+  console.log('🔄 Generating redirects...');
+  generateRedirects();
+
+  // Create .nojekyll file for GitHub Pages compatibility
+  fs.writeFileSync(path.join('dist-static', '.nojekyll'), '');
+
+  console.log('✅ Build completed successfully!');
+  console.log('📊 Build size:', getDirectorySize('dist-static'));
+  console.log('📁 Files generated:', fs.readdirSync('dist-static').length);
+
+} catch (error) {
+  console.error('❌ Build failed:', error.message);
+  console.error('Stack trace:', error.stack);
+  process.exit(1);
+}
+
+function generateSitemap() {
+  const baseUrl = 'https://bengali-news.vercel.app';
+  const routes = [
+    { path: '/', priority: '1.0', changefreq: 'hourly' },
+    { path: '/breaking-news', priority: '0.9', changefreq: 'hourly' },
+    { path: '/sports', priority: '0.8', changefreq: 'daily' },
+    { path: '/entertainment', priority: '0.8', changefreq: 'daily' },
+    { path: '/technology', priority: '0.8', changefreq: 'daily' },
+    { path: '/health', priority: '0.7', changefreq: 'daily' },
+    { path: '/business', priority: '0.7', changefreq: 'daily' },
+    { path: '/politics', priority: '0.8', changefreq: 'daily' },
+    { path: '/international', priority: '0.7', changefreq: 'daily' },
+    { path: '/weather', priority: '0.6', changefreq: 'hourly' },
+    { path: '/video', priority: '0.7', changefreq: 'daily' },
+    { path: '/audio', priority: '0.6', changefreq: 'daily' },
+    { path: '/epaper', priority: '0.6', changefreq: 'daily' },
+    { path: '/jobs', priority: '0.5', changefreq: 'weekly' },
+    { path: '/contact', priority: '0.4', changefreq: 'monthly' },
+    { path: '/about', priority: '0.3', changefreq: 'monthly' }
+  ];
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes.map(route => `  <url>
+    <loc>${baseUrl}${route.path}</loc>
+    <changefreq>${route.changefreq}</changefreq>
+    <priority>${route.priority}</priority>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+  </url>`).join('\n')}
+</urlset>`;
+  
+  fs.writeFileSync('dist-static/sitemap.xml', sitemap);
+}
+
+function generateRobotsTxt() {
+  const robots = `User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/admin
+Disallow: /user/profile
+Disallow: /login
+Disallow: /register
+
+# Sitemap
+Sitemap: https://bengali-news.vercel.app/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
+
+# Block specific bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /`;
+  
+  fs.writeFileSync('dist-static/robots.txt', robots);
+}
+
+function generateRedirects() {
+  const redirects = `# SPA Fallback redirects
+/*    /index.html   200
+
+# Admin redirects
+/admin    /admin-login   301
+
+# Legacy URL redirects
+/news/*   /article/:splat   301
+/category.php   /category/:category   301
+/old-admin/*   /admin/:splat   301`;
+  
+  fs.writeFileSync('dist-static/_redirects', redirects);
+}
+
+function getDirectorySize(dirPath) {
+  let size = 0;
+  try {
+    const files = fs.readdirSync(dirPath, { withFileTypes: true });
+    
+    for (const file of files) {
+      const filePath = path.join(dirPath, file.name);
+      if (file.isDirectory()) {
+        size += getDirectorySize(filePath);
+      } else {
+        size += fs.statSync(filePath).size;
+      }
+    }
+  } catch (error) {
+    console.warn(`Warning: Could not read directory ${dirPath}`);
+  }
+  
+  return `${(size / 1024 / 1024).toFixed(2)} MB`;
+}
+
+// 📄 client/src/lib/router-utils.ts - Router utility functions
+export const isValidRoute = (path: string): boolean => {
+  const validRoutes = [
+    '/',
+    '/home',
+    '/breaking-news',
+    '/sports',
+    '/entertainment',
+    '/technology',
+    '/health',
+    '/education',
+    '/business',
+    '/politics',
+    '/international',
+    '/opinion',
+    '/editorial',
+    '/video',
+    '/audio',
+    '/live',
+    '/gallery',
+    '/weather',
+    '/epaper',
+    '/archive',
+    '/search',
+    '/login',
+    '/register',
+    '/events',
+    '/jobs',
+    '/classifieds',
+    '/contact',
+    '/about',
+    '/privacy',
+    '/terms',
+    '/admin-login'
+  ];
+
+  const dynamicRoutes = [
+    /^\/article\/[\w-]+$/,
+    /^\/article\/\d+\/[\w-]+$/,
+    /^\/category\/[\w-]+$/,
+    /^\/video\/\d+$/,
+    /^\/audio\/\d+$/,
+    /^\/gallery\/\d+$/,
+    /^\/archive\/\d{4}-\d{2}-\d{2}$/,
+    /^\/user\/[\w-]+$/,
+    /^\/events\/\d+$/,
+    /^\/jobs\/\d+$/,
+    /^\/classifieds\/\d+$/,
+    /^\/admin\/[\w-]+$/,
+    /^\/admin\/[\w-]+\/[\w-]+$/

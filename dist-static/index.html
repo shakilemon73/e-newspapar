@@ -1,6 +1,32 @@
 <!DOCTYPE html>
 <html lang="bn" dir="ltr">
   <head>
+  <!-- Enhanced Bengali News Meta Tags -->
+  <meta name="description" content="বাংলাদেশের নির্ভরযোগ্য অনলাইন সংবাদ মাধ্যম। সর্বশেষ খবর, রাজনীতি, খেলাধুলা, বিনোদন, প্রযুক্তি এবং আরও অনেক কিছু।">
+  <meta name="keywords" content="বাংলা সংবাদ, বাংলাদেশ, খবর, সর্বশেষ খবর, রাজনীতি, খেলাধুলা, বিনোদন">
+  <meta name="author" content="Bengali News Team">
+  <meta name="language" content="Bengali">
+  <meta name="robots" content="index, follow">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Bengali News - বাংলা সংবাদ">
+  <meta property="og:description" content="বাংলাদেশের নির্ভরযোগ্য অনলাইন সংবাদ মাধ্যম">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="/og-image.png">
+  <meta property="og:site_name" content="Bengali News">
+  
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Bengali News - বাংলা সংবাদ">
+  <meta name="twitter:description" content="বাংলাদেশের নির্ভরযোগ্য অনলাইন সংবাদ মাধ্যম">
+  <meta name="twitter:image" content="/og-image.png">
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#1e40af">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Bengali News">
+
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/generated-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -247,42 +273,7 @@
     </style>
     <script type="module" crossorigin src="/assets/main-obcM74wy.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/main-CJBADigy.css">
-  
-<script>
-// Storage cleanup for production deployment
-(function() {
-  try {
-    console.log('🧹 Starting storage cleanup...');
-    let cleanedCount = 0;
-    
-    // Clean corrupted localStorage entries
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key) {
-        try {
-          const value = localStorage.getItem(key);
-          if (value) {
-            JSON.parse(value);
-          }
-        } catch (e) {
-          console.warn('🗑️ Removing corrupted localStorage key:', key, e);
-          localStorage.removeItem(key);
-          cleanedCount++;
-        }
-      }
-    }
-    
-    if (cleanedCount > 0) {
-      console.log(`✅ Cleaned up ${cleanedCount} corrupted storage entries`);
-    } else {
-      console.log('✅ No corrupted storage entries found');
-    }
-  } catch (error) {
-    console.warn('Storage cleanup failed:', error);
-  }
-})();
-</script>
-</head>
+  </head>
   <body>
     <div id="root">
       <div class="loading">
@@ -290,5 +281,41 @@
         <span>Bengali News লোড হচ্ছে...</span>
       </div>
     </div>
-  </body>
+  
+<script>
+// 🧹 Enhanced storage cleanup for Vercel deployment
+(function() {
+  try {
+    console.log('🧹 Starting Vercel deployment storage cleanup...');
+    
+    // Clean potentially corrupted localStorage items
+    const keysToCheck = ['auth', 'user', 'theme', 'preferences', 'cache'];
+    let cleanedItems = 0;
+    
+    keysToCheck.forEach(key => {
+      try {
+        const item = localStorage.getItem(key);
+        if (item) {
+          JSON.parse(item); // Test if valid JSON
+        }
+      } catch (e) {
+        console.log(`🧹 Cleaning corrupted storage item: ${key}`);
+        localStorage.removeItem(key);
+        cleanedItems++;
+      }
+    });
+    
+    if (cleanedItems > 0) {
+      console.log(`✅ Cleaned ${cleanedItems} corrupted storage items`);
+    } else {
+      console.log('✅ No corrupted storage items found');
+    }
+    
+    console.log('🚀 Bengali News App ready for Vercel');
+  } catch (error) {
+    console.warn('Storage cleanup error:', error);
+  }
+})();
+</script>
+</body>
 </html>
