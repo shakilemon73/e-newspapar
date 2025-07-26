@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengali News - Social Media Sharing Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .test-url {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px;
+        }
+        .success { border-left-color: #28a745; }
+        .warning { border-left-color: #ffc107; }
+        .info { border-left-color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>🔗 Bengali News - Social Media Sharing Test</h1>
+    <p>This page helps you test and debug Open Graph meta tags for social media sharing on your Bengali news website.</p>
+
+    <div class="test-section success">
+        <h2>✅ Open Graph Implementation Status</h2>
+        <p><strong>Status:</strong> Successfully implemented server-side Open Graph tags</p>
+        <p><strong>Method:</strong> Express API endpoint with crawler detection</p>
+        <p><strong>Compatible with:</strong> Facebook, Twitter, LinkedIn, WhatsApp, Telegram, Discord, Slack</p>
+    </div>
+
+    <div class="test-section info">
+        <h2>🧪 Test URLs</h2>
+        <p>Test these URLs in social media debugger tools:</p>
+        
+        <h3>Homepage:</h3>
+        <div class="test-url">https://www.dainiktni.news/</div>
+        
+        <h3>Sample Article (with dynamic content):</h3>
+        <div class="test-url">https://www.dainiktni.news/article/sample-article</div>
+        
+        <h3>API Endpoint (for crawler testing):</h3>
+        <div class="test-url">https://www.dainiktni.news/api/social-meta/article/sample-article</div>
+    </div>
+
+    <div class="test-section warning">
+        <h2>🔍 Debug Tools</h2>
+        <p>Use these official tools to test your Open Graph implementation:</p>
+        
+        <a href="https://developers.facebook.com/tools/debug/" target="_blank" class="button">Facebook Debugger</a>
+        <a href="https://cards-dev.twitter.com/validator" target="_blank" class="button">Twitter Card Validator</a>
+        <a href="https://www.linkedin.com/post-inspector/" target="_blank" class="button">LinkedIn Post Inspector</a>
+        <a href="https://developers.google.com/search/docs/advanced/structured-data" target="_blank" class="button">Google Rich Results</a>
+    </div>
+
+    <div class="test-section info">
+        <h2>📝 How It Works</h2>
+        <ol>
+            <li><strong>Crawler Detection:</strong> Server detects social media crawlers by User-Agent</li>
+            <li><strong>Dynamic Content:</strong> For articles, fetches real content from Supabase database</li>
+            <li><strong>Meta Generation:</strong> Creates proper Open Graph tags with article title, description, image</li>
+            <li><strong>Social Optimization:</strong> Optimized for all major platforms (Facebook, Twitter, LinkedIn, WhatsApp)</li>
+            <li><strong>Fallback:</strong> Regular users get redirected to normal React app</li>
+        </ol>
+    </div>
+
+    <div class="test-section success">
+        <h2>🎯 Expected Results</h2>
+        <p>When sharing Bengali News links, you should see:</p>
+        <ul>
+            <li>✅ Proper Bengali title and description</li>
+            <li>✅ High-quality preview image (1200x630px)</li>
+            <li>✅ Article-specific content for article pages</li>
+            <li>✅ Consistent branding across all platforms</li>
+            <li>✅ Fast loading preview generation</li>
+        </ul>
+    </div>
+
+    <div class="test-section warning">
+        <h2>⚠️ Testing Instructions</h2>
+        <ol>
+            <li>Copy any of the test URLs above</li>
+            <li>Paste into a social media debugger tool</li>
+            <li>Click "Debug" or "Preview"</li>
+            <li>Verify that proper meta tags are displayed</li>
+            <li>For articles: check that real content appears</li>
+            <li>Test sharing on actual social media platforms</li>
+        </ol>
+        <p><strong>Note:</strong> It may take 5-10 minutes for changes to propagate across social media platforms.</p>
+    </div>
+
+    <div class="test-section info">
+        <h2>🚀 Production Deployment</h2>
+        <p>The Open Graph implementation is ready for production deployment on Vercel:</p>
+        <ul>
+            <li>✅ Works with static site deployment</li>
+            <li>✅ No server-side rendering required</li>
+            <li>✅ Compatible with CDN caching</li>
+            <li>✅ Optimized for performance</li>
+            <li>✅ SEO-friendly with structured data</li>
+        </ul>
+    </div>
+
+    <script>
+        // Test crawler detection locally
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Current URL:', window.location.href);
+        
+        // Simulate social media crawler detection
+        const socialCrawlers = [
+            'facebookexternalhit', 'Facebot', 'Twitterbot', 'LinkedInBot',
+            'Slackbot', 'TelegramBot', 'WhatsApp', 'SkypeUriPreview'
+        ];
+        
+        const isCrawler = socialCrawlers.some(bot => 
+            navigator.userAgent.toLowerCase().includes(bot.toLowerCase())
+        );
+        
+        if (isCrawler) {
+            console.log('✅ Social media crawler detected!');
+        } else {
+            console.log('👤 Regular user detected');
+        }
+    </script>
+</body>
+</html>
