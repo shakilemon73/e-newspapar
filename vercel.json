@@ -1,12 +1,12 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "name": "bengali-news-app",
-  "framework": null,
-  "buildCommand": "node vercel-build-optimized.js",
-  "outputDirectory": "dist-static",
-  "installCommand": "npm install",
-  "cleanUrls": true,
+  "builds": [
+    {
+      "src": "vercel-build.js",
+      "use": "@vercel/node"
+    }
+  ],
   "trailingSlash": false,
   "routes": [
     {
@@ -62,56 +62,32 @@
   },
   "rewrites": [
     {
-      "source": "/admin-access",
-      "destination": "/index.html"
-    },
-    {
       "source": "/admin-login",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/admin-dashboard",
-      "destination": "/index.html"
+      "destination": "/dist-static/index.html"
     },
     {
       "source": "/admin/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist-static/index.html"
     },
     {
       "source": "/article/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/video/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/audio/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist-static/index.html"
     },
     {
       "source": "/category/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist-static/index.html"
+    },
+    {
+      "source": "/search",
+      "destination": "/dist-static/index.html"
     },
     {
       "source": "/user/(.*)",
-      "destination": "/index.html"
+      "destination": "/dist-static/index.html"
     },
     {
-      "source": "/dashboard/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/(videos|audio-articles|epaper|search|advanced-search|recommendations|user-analytics|social-media-test|unused-tables-demo)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/(login|register|auth|profile|dashboard|saved-articles|reading-history)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/(about|contact|editorial-policy|advertisement|archive|privacy-policy|terms-of-service)",
-      "destination": "/index.html"
+      "source": "/(breaking-news|sports|entertainment|technology|health|business|politics|international|opinion|weather|video|audio|live|epaper|archive|gallery|events|jobs|classifieds|contact|about|privacy|terms)",
+      "destination": "/dist-static/index.html"
     }
   ],
   "headers": [
@@ -137,7 +113,7 @@
       ]
     },
     {
-      "source": "/index.html",
+      "source": "/dist-static/index.html",
       "headers": [
         {
           "key": "Cache-Control",
