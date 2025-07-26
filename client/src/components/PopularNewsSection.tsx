@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { StaticAIService } from '@/lib/static-ai-service';
+import { staticAIService } from '@/lib/static-ai-service';
 
 interface Category {
   id: number;
@@ -35,10 +35,10 @@ export const PopularNewsSection = () => {
         setIsLoading(true);
         
         // Use static AI service for popular articles (no Express server needed)
-        const result = await StaticAIService.getPopularArticles(timeRange, 6);
+        const result = await staticAIService.getStaticPopularArticles(timeRange, 6);
         
-        if (result.success && result.data?.articles) {
-          const transformedData = result.data.articles.map((article: any) => ({
+        if (result.success && result.data) {
+          const transformedData = result.data.map((article: any) => ({
             id: article.id,
             title: article.title,
             slug: article.slug,
