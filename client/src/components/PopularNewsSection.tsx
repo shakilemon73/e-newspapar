@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { supabase } from '@/lib/supabase';
+import { VercelSafeAPI } from '@/lib/vercel-safe-api';
 
 interface Category {
   id: number;
@@ -35,96 +35,16 @@ export const PopularNewsSection = () => {
         setIsLoading(true);
         setError(null);
         
-        // Determine date filter based on time range
-        let dateFilter = new Date();
-        switch (timeRange) {
-          case 'daily':
-            dateFilter.setDate(dateFilter.getDate() - 1);
-            break;
-          case 'weekly':
-            dateFilter.setDate(dateFilter.getDate() - 7);
-            break;
-          case 'monthly':
-            dateFilter.setMonth(dateFilter.getMonth() - 1);
-            break;
-        }
+        console.log(`[PopularNews] Fetching ${timeRange} popular articles using Vercel-safe API`);
 
-        console.log(`[PopularNews] Fetching ${timeRange} popular articles since ${dateFilter.toISOString()}`);
+        // Use Vercel-safe API to avoid database relationship errors
+        const result = await VercelSafeAPI.getPopularArticles(timeRange, 6);
 
-        // Query Supabase directly for popular articles
-        const { data, error: supabaseError } = await supabase
-          .from('articles')
-          .select(`
-            id,
-            title,
-            slug,
-            excerpt,
-            published_at,
-            view_count,
-            is_featured,
-            image_url,
-            categories!inner (
-              id,
-              name,
-              slug
-            )
-          `)
-          .gte('published_at', dateFilter.toISOString())
-          .order('view_count', { ascending: false })
-          .limit(6);
-
-        if (supabaseError) {
-          console.error('[PopularNews] Supabase error:', supabaseError);
-          throw supabaseError;
-        }
-
-        if (!data || data.length === 0) {
-          console.log('[PopularNews] No articles found, trying without date filter...');
-          
-          // Fallback: Get popular articles without date filter
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from('articles')
-            .select(`
-              id,
-              title,
-              slug,
-              excerpt,
-              published_at,
-              view_count,
-              is_featured,
-              image_url,
-              categories!inner (
-                id,
-                name,
-                slug
-              )
-            `)
-            .order('view_count', { ascending: false })
-            .limit(6);
-
-          if (fallbackError) {
-            throw fallbackError;
-          }
-
-          const transformedFallbackData = fallbackData?.map(article => ({
-            ...article,
-            publishedAt: article.published_at,
-            viewCount: article.view_count,
-            category: Array.isArray(article.categories) ? article.categories[0] : article.categories
-          })) || [];
-          
-          setPopularArticles(transformedFallbackData);
-          console.log(`[PopularNews] Fallback: Found ${transformedFallbackData.length} popular articles`);
+        if (result.success && result.data) {
+          setPopularArticles(result.data);
+          console.log(`[PopularNews] Found ${result.data.length} popular articles for ${timeRange}`);
         } else {
-          const transformedData = data.map(article => ({
-            ...article,
-            publishedAt: article.published_at,
-            viewCount: article.view_count,
-            category: Array.isArray(article.categories) ? article.categories[0] : article.categories
-          }));
-          
-          setPopularArticles(transformedData);
-          console.log(`[PopularNews] Found ${transformedData.length} popular articles for ${timeRange}`);
+          setError(result.error || 'জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
         }
 
       } catch (err: any) {
