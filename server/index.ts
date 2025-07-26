@@ -273,6 +273,75 @@ app.delete('/api/admin/audio/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Social Media Meta Tags Generator Endpoint
+app.get('/api/social-meta/:path(*)', async (req: Request, res: Response) => {
+  try {
+    const userAgent = req.headers['user-agent'] || '';
+    const pathname = `/${req.params.path || ''}`;
+    
+    console.log(`[Social Meta] Request for path: ${pathname} with User-Agent: ${userAgent}`);
+    
+    // List of social media crawlers
+    const socialCrawlers = [
+      'facebookexternalhit', 'Facebot', 'Twitterbot', 'LinkedInBot',
+      'Slackbot', 'TelegramBot', 'WhatsApp', 'SkypeUriPreview',
+      'GoogleBot', 'Googlebot', 'Discordbot', 'DiscordBot',
+      'Applebot', 'iMessageBot', 'Snapchat', 'Pinterest', 'InstagramBot',
+      'redditbot', 'crawler', 'spider', 'bot'
+    ];
+    
+    const isCrawler = socialCrawlers.some(bot => 
+      userAgent.toLowerCase().includes(bot.toLowerCase())
+    );
+    
+    if (!isCrawler) {
+      console.log('[Social Meta] Not a social crawler, redirecting to main site');
+      return res.redirect(`https://www.dainiktni.news${pathname}`);
+    }
+    
+    console.log('[Social Meta] Social media crawler detected, generating meta tags...');
+    
+    // Import meta generator
+    const { generateMetaTags, generateOGHTML } = await import('./social-meta-generator');
+    
+    // Generate meta tags for this path
+    const metaTags = await generateMetaTags(pathname);
+    
+    // Generate and return HTML with OG tags
+    const ogHTML = generateOGHTML(metaTags);
+    
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=3600'); // Cache for 1 hour
+    res.setHeader('X-Social-Meta', 'true');
+    res.send(ogHTML);
+    
+  } catch (error) {
+    console.error('[Social Meta] Error generating meta tags:', error);
+    
+    // Return basic HTML on error
+    const errorHTML = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>Bengali News</title>
+  <meta property="og:title" content="Bengali News - বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম">
+  <meta property="og:description" content="সর্বশেষ সংবাদ পড়ুন Bengali News এ।">
+  <meta property="og:image" content="https://www.dainiktni.news/og-image.png">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.dainiktni.news">
+</head>
+<body>
+  <h1>Bengali News</h1>
+  <p>Loading...</p>
+  <script>window.location.href = 'https://www.dainiktni.news';</script>
+</body>
+</html>`;
+    
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.status(500).send(errorHTML);
+  }
+});
+
 // Catch-all for other deprecated API routes
 app.use('/api/*', (req: Request, res: Response) => {
   res.status(410).json({ 
