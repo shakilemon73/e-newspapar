@@ -65,10 +65,7 @@ export async function getAdminEPapers() {
     
     const { data, error } = await supabase
       .from('epapers')
-      .select(`
-        *,
-        article_count:epapers_articles(count)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -112,10 +109,9 @@ export async function getArticlesForEPaper(options: {
         image_url,
         view_count,
         published_at,
-        author,
         categories!inner(name)
       `)
-      .eq('is_published', true)
+      .not('published_at', 'is', null)
       .order('view_count', { ascending: false })
       .order('published_at', { ascending: false });
 
@@ -147,7 +143,7 @@ export async function getArticlesForEPaper(options: {
       category: article.categories?.name || 'সাধারণ',
       view_count: article.view_count || 0,
       published_at: article.published_at,
-      author: article.author
+      author: 'Admin'
     }));
 
     return {
