@@ -138,7 +138,7 @@ export async function getArticlesForEPaper(options: {
     if (error) throw error;
 
     // Transform data for e-paper use
-    const articles: ArticleForEPaper[] = (data || []).map(article => ({
+    const articles: ArticleForEPaper[] = (data || []).map((article: any) => ({
       id: article.id,
       title: article.title,
       excerpt: article.excerpt || article.content?.substring(0, 200) + '...',

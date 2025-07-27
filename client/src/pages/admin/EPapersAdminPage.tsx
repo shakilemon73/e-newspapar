@@ -308,25 +308,25 @@ export default function EPapersAdminPage() {
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">{t('E-Papers Management', 'ই-পেপার ব্যবস্থাপনা')}</h1>
-            <p className="text-muted-foreground">{t('Create, generate and manage digital newspaper editions', 'ডিজিটাল সংবাদপত্র তৈরি, উৎপাদন এবং পরিচালনা করুন')}</p>
+            <h1 className="text-2xl font-bold">{t('epaper-management', 'E-Papers Management', 'ই-পেপার ব্যবস্থাপনা')}</h1>
+            <p className="text-muted-foreground">{t('epaper-description', 'Create, generate and manage digital newspaper editions', 'ডিজিটাল সংবাদপত্র তৈরি, উৎপাদন এবং পরিচালনা করুন')}</p>
           </div>
         </div>
 
         <Tabs defaultValue="manage" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="manage">{t('Manage E-Papers', 'ই-পেপার পরিচালনা')}</TabsTrigger>
-            <TabsTrigger value="auto-generate">{t('Auto Generate', 'স্বয়ংক্রিয় তৈরি')}</TabsTrigger>
-            <TabsTrigger value="manual-create">{t('Manual Create', 'ম্যানুয়াল তৈরি')}</TabsTrigger>
+            <TabsTrigger value="manage">{t('manage-epapers', 'Manage E-Papers', 'ই-পেপার পরিচালনা')}</TabsTrigger>
+            <TabsTrigger value="auto-generate">{t('auto-generate', 'Auto Generate', 'স্বয়ংক্রিয় তৈরি')}</TabsTrigger>
+            <TabsTrigger value="manual-create">{t('manual-create', 'Manual Create', 'ম্যানুয়াল তৈরি')}</TabsTrigger>
           </TabsList>
 
           {/* Manage E-Papers Tab */}
           <TabsContent value="manage">
             <Card>
               <CardHeader>
-                <CardTitle>{t('Published E-Papers', 'প্রকাশিত ই-পেপার')}</CardTitle>
+                <CardTitle>{t('published-epapers', 'Published E-Papers', 'প্রকাশিত ই-পেপার')}</CardTitle>
                 <CardDescription>
-                  {t('Manage existing e-papers and control what users see', 'বিদ্যমান ই-পেপার পরিচালনা করুন এবং ব্যবহারকারীরা কী দেখে তা নিয়ন্ত্রণ করুন')} {epapers?.length || 0}
+                  {t('manage-epapers-desc', 'Manage existing e-papers and control what users see', 'বিদ্যমান ই-পেপার পরিচালনা করুন এবং ব্যবহারকারীরা কী দেখে তা নিয়ন্ত্রণ করুন')} {epapers?.length || 0}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -343,12 +343,12 @@ export default function EPapersAdminPage() {
                             {epaper.is_latest && (
                               <Badge variant="default" className="text-xs">
                                 <Star className="w-3 h-3 mr-1" />
-                                {t('Latest', 'সর্বশেষ')}
+                                {t('latest', 'Latest', 'সর্বশেষ')}
                               </Badge>
                             )}
                             {epaper.is_published && (
                               <Badge variant="secondary" className="text-xs">
-                                {t('Published', 'প্রকাশিত')}
+                                {t('published', 'Published', 'প্রকাশিত')}
                               </Badge>
                             )}
                           </div>
@@ -369,7 +369,7 @@ export default function EPapersAdminPage() {
                             disabled={setLatestMutation.isPending}
                           >
                             <Star className="w-4 h-4 mr-1" />
-                            {epaper.is_latest ? t('Current Latest', 'বর্তমান সর্বশেষ') : t('Set as Latest', 'সর্বশেষ হিসেবে সেট করুন')}
+                            {epaper.is_latest ? t('current-latest', 'Current Latest', 'বর্তমান সর্বশেষ') : t('set-as-latest', 'Set as Latest', 'সর্বশেষ হিসেবে সেট করুন')}
                           </Button>
                           <Button 
                             size="sm" 
@@ -380,7 +380,7 @@ export default function EPapersAdminPage() {
                             })}
                             disabled={togglePublishMutation.isPending}
                           >
-                            {epaper.is_published ? t('Unpublish', 'অপ্রকাশিত') : t('Publish', 'প্রকাশ')}
+                            {epaper.is_published ? t('unpublish', 'Unpublish', 'অপ্রকাশিত') : t('publish', 'Publish', 'প্রকাশ')}
                           </Button>
                           <Button 
                             size="sm" 
@@ -405,8 +405,8 @@ export default function EPapersAdminPage() {
                   {(!epapers || epapers.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
                       <Newspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                      <p>{t('No e-papers found', 'কোন ই-পেপার পাওয়া যায়নি')}</p>
-                      <p className="text-sm">{t('Create your first e-paper using the tabs above', 'উপরের ট্যাব ব্যবহার করে আপনার প্রথম ই-পেপার তৈরি করুন')}</p>
+                      <p>{t('no-epapers-found', 'No e-papers found', 'কোন ই-পেপার পাওয়া যায়নি')}</p>
+                      <p className="text-sm">{t('create-first-epaper', 'Create your first e-paper using the tabs above', 'উপরের ট্যাব ব্যবহার করে আপনার প্রথম ই-পেপার তৈরি করুন')}</p>
                     </div>
                   )}
                 </div>
@@ -420,25 +420,25 @@ export default function EPapersAdminPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="w-5 h-5" />
-                  {t('Auto Generate E-Paper from Articles', 'নিবন্ধ থেকে স্বয়ংক্রিয় ই-পেপার তৈরি')}
+                  {t('auto-generate-title', 'Auto Generate E-Paper from Articles', 'নিবন্ধ থেকে স্বয়ংক্রিয় ই-পেপার তৈরি')}
                 </CardTitle>
                 <CardDescription>
-                  {t('Generate e-paper automatically using articles from your Supabase database', 'আপনার সুপাবেস ডাটাবেস থেকে নিবন্ধ ব্যবহার করে স্বয়ংক্রিয়ভাবে ই-পেপার তৈরি করুন')}
+                  {t('auto-generate-desc', 'Generate e-paper automatically using articles from your Supabase database', 'আপনার সুপাবেস ডাটাবেস থেকে নিবন্ধ ব্যবহার করে স্বয়ংক্রিয়ভাবে ই-পেপার তৈরি করুন')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="auto-title">{t('E-Paper Title', 'ই-পেপার শিরোনাম')}</Label>
+                    <Label htmlFor="auto-title">{t('epaper-title', 'E-Paper Title', 'ই-পেপার শিরোনাম')}</Label>
                     <Input
                       id="auto-title"
                       value={generationOptions.title}
                       onChange={(e) => setGenerationOptions(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder={t('Enter e-paper title', 'ই-পেপার শিরোনাম লিখুন')}
+                      placeholder={t('enter-epaper-title', 'Enter e-paper title', 'ই-পেপার শিরোনাম লিখুন')}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="auto-date">{t('Publication Date', 'প্রকাশের তারিখ')}</Label>
+                    <Label htmlFor="auto-date">{t('publication-date', 'Publication Date', 'প্রকাশের তারিখ')}</Label>
                     <Input
                       id="auto-date"
                       type="date"
@@ -450,7 +450,7 @@ export default function EPapersAdminPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>{t('Layout Style', 'লেআউট স্টাইল')}</Label>
+                    <Label>{t('layout-style', 'Layout Style', 'লেআউট স্টাইল')}</Label>
                     <div className="flex gap-2 mt-2">
                       {(['traditional', 'modern', 'magazine'] as const).map((layout) => (
                         <Button
@@ -459,15 +459,15 @@ export default function EPapersAdminPage() {
                           variant={generationOptions.layout === layout ? "default" : "outline"}
                           onClick={() => setGenerationOptions(prev => ({ ...prev, layout }))}
                         >
-                          {layout === 'traditional' ? t('Traditional', 'ঐতিহ্যবাহী') :
-                           layout === 'modern' ? t('Modern', 'আধুনিক') :
-                           t('Magazine', 'ম্যাগাজিন')}
+                          {layout === 'traditional' ? t('traditional', 'Traditional', 'ঐতিহ্যবাহী') :
+                           layout === 'modern' ? t('modern', 'Modern', 'আধুনিক') :
+                           t('magazine', 'Magazine', 'ম্যাগাজিন')}
                         </Button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="max-articles">{t('Max Articles', 'সর্বোচ্চ নিবন্ধ')}</Label>
+                    <Label htmlFor="max-articles">{t('max-articles', 'Max Articles', 'সর্বোচ্চ নিবন্ধ')}</Label>
                     <Input
                       id="max-articles"
                       type="number"
@@ -480,7 +480,7 @@ export default function EPapersAdminPage() {
                 </div>
 
                 <div>
-                  <Label>{t('Include Categories', 'বিভাগ অন্তর্ভুক্ত করুন')}</Label>
+                  <Label>{t('include-categories', 'Include Categories', 'বিভাগ অন্তর্ভুক্ত করুন')}</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {categories?.map((category: string) => (
                       <Button
@@ -505,7 +505,7 @@ export default function EPapersAdminPage() {
                 <div className="flex gap-2">
                   <Button onClick={handlePreviewArticles} variant="outline">
                     <FileText className="w-4 h-4 mr-2" />
-                    {t('Preview Articles', 'নিবন্ধ পূর্বরূপ')}
+                    {t('preview-articles', 'Preview Articles', 'নিবন্ধ পূর্বরূপ')}
                   </Button>
                   <Button 
                     onClick={handleGenerateEPaper}
@@ -515,12 +515,12 @@ export default function EPapersAdminPage() {
                     {isGenerating || generateMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {t('Generating...', 'তৈরি হচ্ছে...')}
+                        {t('generating', 'Generating...', 'তৈরি হচ্ছে...')}
                       </>
                     ) : (
                       <>
                         <Zap className="w-4 h-4 mr-2" />
-                        {t('Generate E-Paper', 'ই-পেপার তৈরি করুন')}
+                        {t('generate-epaper', 'Generate E-Paper', 'ই-পেপার তৈরি করুন')}
                       </>
                     )}
                   </Button>
