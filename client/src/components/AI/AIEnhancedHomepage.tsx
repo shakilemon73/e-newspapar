@@ -174,24 +174,7 @@ export function AIEnhancedHomepage({ className }: AIEnhancedHomepageProps) {
         </CardContent>
       </Card>
 
-      {/* Technology Footer */}
-      <Card className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20">
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Brain className="h-5 w-5 text-blue-500" />
-              <span className="font-semibold text-blue-800 dark:text-blue-200">
-                TensorFlow.js + Supabase AI Engine
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              আমাদের ওয়েবসাইট সম্পূর্ণ বিনামূল্যে এবং ওপেন সোর্স AI প্রযুক্তি ব্যবহার করে। 
-              সমস্ত বিশ্লেষণ রিয়েল-টাইমে Supabase ডেটাবেসে সংরক্ষিত হয় এবং 
-              আপনার ব্যক্তিগত তথ্য সুরক্ষিত থাকে।
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }
