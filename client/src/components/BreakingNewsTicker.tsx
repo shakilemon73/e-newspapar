@@ -4,6 +4,8 @@ import { AlertCircle } from 'lucide-react';
 interface BreakingNews {
   id: number;
   content: string;
+  priority?: number;
+  urgencyScore?: number;
 }
 
 export const BreakingNewsTicker = () => {
@@ -15,10 +17,53 @@ export const BreakingNewsTicker = () => {
     const fetchBreakingNews = async () => {
       try {
         setIsLoading(true);
+        
+        // Get breaking news with AI processing
         const { getBreakingNews } = await import('../lib/supabase-api-direct');
-        const data = await getBreakingNews();
-        setBreakingNews(data);
+        const rawData = await getBreakingNews();
+        
+        // Process each breaking news item with AI
+        const aiEnhancedData = await Promise.allSettled(
+          rawData.map(async (item: any) => {
+            try {
+              // Process breaking news content with AI
+              const response = await fetch('/api/ai/process-article', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  content: item.content,
+                  type: 'breaking_news'
+                })
+              });
+              
+              const result = await response.json();
+              
+              if (result.success && result.data) {
+                return {
+                  ...item,
+                  priority: result.data.urgency || 1,
+                  urgencyScore: result.data.sentimentScore || 0.5
+                };
+              }
+              
+              return item;
+            } catch (error) {
+              console.warn('[AI Breaking News] Processing failed for item:', item.id);
+              return item;
+            }
+          })
+        );
+        
+        // Extract successful results and sort by AI priority
+        const processedData = aiEnhancedData
+          .filter(result => result.status === 'fulfilled')
+          .map(result => (result as PromiseFulfilledResult<any>).value)
+          .sort((a, b) => (b.priority || 1) - (a.priority || 1));
+        
+        setBreakingNews(processedData);
         setError(null);
+        console.log(`[AI Breaking News] Processed ${processedData.length} items with AI enhancement`);
+        
       } catch (err) {
         setError('ব্রেকিং নিউজ লোড করতে সমস্যা হয়েছে');
         console.error('Error fetching breaking news:', err);

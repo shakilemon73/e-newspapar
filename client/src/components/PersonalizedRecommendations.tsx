@@ -21,6 +21,7 @@ interface Article {
   imageUrl: string;
   publishedAt: string;
   category: Category;
+  personalScore?: number;
 }
 
 export const PersonalizedRecommendations = () => {
@@ -55,14 +56,32 @@ export const PersonalizedRecommendations = () => {
         
         const token = session.access_token;
         
-        // Fetch personalized recommendations
+        // Fetch AI-powered personalized recommendations
         try {
-          const { getPersonalizedRecommendations } = await import('../lib/supabase-api-direct');
-          const data = await getPersonalizedRecommendations(user.id, 6);
-          setArticles(data);
+          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=6`);
+          const result = await response.json();
+          
+          if (result.success && result.data?.articles) {
+            // Transform AI-enhanced data for display
+            const transformedArticles = result.data.articles.map((article: any) => ({
+              id: article.id,
+              title: article.title,
+              slug: article.slug,
+              excerpt: article.excerpt || article.summary,
+              imageUrl: article.image_url || '/placeholder-300x176.svg',
+              publishedAt: article.published_at,
+              category: article.categories,
+              personalScore: article.personalScore
+            }));
+            
+            setArticles(transformedArticles);
+            console.log(`[AI Recommendations] Found ${transformedArticles.length} personalized articles with AI scoring`);
+          } else {
+            throw new Error('AI recommendations failed');
+          }
         } catch (error) {
-          // If personalized fails, fallback to popular articles
-          console.warn('Personalized recommendations failed, using popular articles');
+          // If AI personalized fails, fallback to popular articles
+          console.warn('AI personalized recommendations failed, using popular articles');
           const { getPopularArticles } = await import('../lib/supabase-api-direct');
           const data = await getPopularArticles(6);
           setArticles(data);

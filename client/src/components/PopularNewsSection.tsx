@@ -37,12 +37,26 @@ export const PopularNewsSection = () => {
         
         console.log(`[PopularNews] Fetching ${timeRange} popular articles using Vercel-safe API`);
 
-        // Use Vercel-safe API to avoid database relationship errors
-        const result = await VercelSafeAPI.getPopularArticles(timeRange, 6);
+        // Use AI-powered popular articles API
+        const response = await fetch(`/api/ai/popular-articles?timeRange=${timeRange}&limit=6`);
+        const result = await response.json();
 
-        if (result.success && result.data) {
-          setPopularArticles(result.data);
-          console.log(`[PopularNews] Found ${result.data.length} popular articles for ${timeRange}`);
+        if (result.success && result.data?.articles) {
+          // Transform AI-enhanced data for display
+          const transformedArticles = result.data.articles.map((article: any) => ({
+            id: article.id,
+            title: article.title,
+            slug: article.slug,
+            excerpt: article.excerpt || article.summary,
+            publishedAt: article.published_at,
+            category: article.categories,
+            viewCount: article.view_count,
+            aiScore: article.aiScore,
+            trending: article.trending
+          }));
+          
+          setPopularArticles(transformedArticles);
+          console.log(`[PopularNews AI] Found ${transformedArticles.length} AI-ranked articles for ${timeRange}`);
         } else {
           setError(result.error || 'জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
         }
@@ -200,6 +214,14 @@ export const PopularNewsSection = () => {
                       </svg>
                       {article.viewCount || article.view_count || 0} বার
                     </span>
+                    {article.aiScore && (
+                      <>
+                        <span>•</span>
+                        <span className="text-blue-600 font-medium">
+                          AI: {article.aiScore}
+                        </span>
+                      </>
+                    )}
                     <span>•</span>
                     <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at)}</span>
                   </div>

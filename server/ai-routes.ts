@@ -65,6 +65,81 @@ router.post('/ai/batch-process', async (req, res) => {
   }
 });
 
+// Get AI-powered popular articles
+router.get('/ai/popular-articles', async (req, res) => {
+  try {
+    const { timeRange = 'daily', limit = 6 } = req.query;
+    
+    const result = await bengaliAIService.getAIPopularArticles(
+      timeRange as 'daily' | 'weekly' | 'monthly', 
+      parseInt(limit as string)
+    );
+    res.json(result);
+
+  } catch (error) {
+    console.error('[AI Routes] Popular articles error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'AI popular articles failed' 
+    });
+  }
+});
+
+// Get personalized recommendations
+router.get('/ai/recommendations/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { limit = 6 } = req.query;
+    
+    const result = await bengaliAIService.getPersonalizedRecommendations(
+      userId, 
+      parseInt(limit as string)
+    );
+    res.json(result);
+
+  } catch (error) {
+    console.error('[AI Routes] Recommendations error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'AI recommendations failed' 
+    });
+  }
+});
+
+// Get AI trending topics
+router.get('/ai/trending-topics', async (req, res) => {
+  try {
+    const { limit = 10 } = req.query;
+    
+    const result = await bengaliAIService.getAITrendingTopics(parseInt(limit as string));
+    res.json(result);
+
+  } catch (error) {
+    console.error('[AI Routes] Trending topics error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'AI trending topics failed' 
+    });
+  }
+});
+
+// Get category AI insights
+router.get('/ai/category-insights/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    
+    const result = await bengaliAIService.getCategoryAIInsights(slug);
+    res.json(result);
+
+  } catch (error) {
+    console.error('[AI Routes] Category insights error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'AI category insights failed' 
+    });
+  }
+});
+
 // Get AI analysis for article
 router.get('/ai/analysis/:id', async (req, res) => {
   try {

@@ -69,6 +69,18 @@ export const CategoryNewsSection = ({ categorySlug, limit = 4 }: CategoryNewsSec
         
         setCategory(categoryData);
         
+        // Fetch AI insights for the category
+        try {
+          const insightsResponse = await fetch(`/api/ai/category-insights/${categorySlug}`);
+          const insightsResult = await insightsResponse.json();
+          
+          if (insightsResult.success) {
+            console.log(`[AI Category] Insights for ${categorySlug}:`, insightsResult.data);
+          }
+        } catch (aiError) {
+          console.warn(`[AI Category] Failed to get insights for ${categorySlug}:`, aiError);
+        }
+        
         // Fetch articles for this category with retry logic
         let articlesData: Article[] = [];
         let retryCount = 0;

@@ -39,8 +39,17 @@ export const DiscoveryWidget = () => {
   });
 
   const { data: trendingTopics } = useQuery({
-    queryKey: ['/api/trending-topics'],
+    queryKey: ['ai-trending-topics'],
     queryFn: async () => {
+      // Use AI-powered trending topics
+      const response = await fetch('/api/ai/trending-topics?limit=10');
+      const result = await response.json();
+      
+      if (result.success && result.data?.topics) {
+        return result.data.topics;
+      }
+      
+      // Fallback to direct API if AI fails
       const { getTrendingTopics } = await import('../lib/supabase-api-direct');
       return getTrendingTopics();
     },
@@ -122,8 +131,23 @@ export const DiscoveryWidget = () => {
 // ট্রেন্ডিং বিষয় (Trending Topics) Widget
 export const TrendingTopicsWidget = () => {
   const { data: trendingTopics, isLoading } = useQuery({
-    queryKey: ['trending-topics-limited'],
+    queryKey: ['ai-trending-topics-widget'],
     queryFn: async () => {
+      // Use AI-powered trending topics
+      const response = await fetch('/api/ai/trending-topics?limit=8');
+      const result = await response.json();
+      
+      if (result.success && result.data?.topics) {
+        return result.data.topics.map((topic: any) => ({
+          id: topic.topic,
+          topic_name: topic.topic,
+          mention_count: topic.score,
+          trending_score: topic.score / 100,
+          sentiment: topic.sentiment
+        }));
+      }
+      
+      // Fallback to direct API if AI fails
       const { getTrendingTopics } = await import('../lib/supabase-api-direct');
       return getTrendingTopics(8);
     },
@@ -171,13 +195,21 @@ export const TrendingTopicsWidget = () => {
                   </div>
                   <div>
                     <p className="font-medium text-sm">#{topic.topic_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {topic.mention_count} উল্লেখ
-                    </p>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{topic.mention_count} স্কোর</span>
+                      {topic.sentiment && (
+                        <Badge 
+                          variant={topic.sentiment === 'ইতিবাচক' ? 'default' : topic.sentiment === 'নেতিবাচক' ? 'destructive' : 'secondary'} 
+                          className="text-xs"
+                        >
+                          {topic.sentiment}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <Badge variant="outline" className="text-xs">
-                  {Math.round(topic.trending_score * 100)}% ট্রেন্ডিং
+                  AI র‍্যাঙ্ক: #{index + 1}
                 </Badge>
               </div>
             ))}

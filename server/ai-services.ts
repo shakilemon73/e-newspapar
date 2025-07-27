@@ -286,6 +286,256 @@ class BengaliAIService {
   }
 
   /**
+   * Get personalized recommendations using AI
+   */
+  async getPersonalizedRecommendations(userId: string, limit: number = 6): Promise<AIProcessingResult> {
+    try {
+      console.log(`[AI Recommendations] Generating personalized content for user ${userId}...`);
+      
+      // Get user reading history for preferences
+      const { data: readingHistory } = await supabaseServiceRole
+        .from('user_reading_history')
+        .select(`
+          article_id,
+          articles!inner(
+            categories!inner(id, name, slug)
+          )
+        `)
+        .eq('user_id', userId)
+        .limit(20);
+
+      // Extract preferred categories
+      const categoryPreferences = new Map();
+      readingHistory?.forEach(item => {
+        const category = item.articles?.categories;
+        if (category) {
+          categoryPreferences.set(category.slug, (categoryPreferences.get(category.slug) || 0) + 1);
+        }
+      });
+
+      // Get articles from preferred categories with AI analysis
+      const { data: articles, error } = await supabaseServiceRole
+        .from('articles')
+        .select(`
+          id, title, slug, excerpt, published_at, view_count,
+          categories!inner(id, name, slug),
+          article_ai_analysis(
+            sentiment_label, sentiment_score, auto_tags, 
+            content_complexity, reading_time_minutes
+          )
+        `)
+        .in('categories.slug', Array.from(categoryPreferences.keys()).slice(0, 3))
+        .order('published_at', { ascending: false })
+        .limit(limit * 2);
+
+      if (error) {
+        console.error('[AI Recommendations] Database error:', error);
+        return { success: false, error: error.message };
+      }
+
+      // AI-powered ranking based on user preferences
+      const rankedArticles = this.applyPersonalizationRanking(articles || [], categoryPreferences);
+      
+      return {
+        success: true,
+        data: {
+          articles: rankedArticles.slice(0, limit),
+          totalCount: rankedArticles.length,
+          userPreferences: Object.fromEntries(categoryPreferences),
+          lastUpdated: new Date().toISOString()
+        }
+      };
+
+    } catch (error) {
+      console.error('[AI Recommendations] Processing error:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Get AI-enhanced trending topics
+   */
+  async getAITrendingTopics(limit: number = 10): Promise<AIProcessingResult> {
+    try {
+      console.log('[AI Trending] Generating AI-powered trending topics...');
+      
+      // Get articles with high engagement and AI analysis
+      const { data: articles, error } = await supabaseServiceRole
+        .from('articles')
+        .select(`
+          id, title, view_count, published_at,
+          categories!inner(id, name, slug),
+          article_ai_analysis!inner(
+            sentiment_label, sentiment_score, auto_tags,
+            extracted_topics
+          )
+        `)
+        .gte('published_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order('view_count', { ascending: false })
+        .limit(50);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Extract and rank topics using AI
+      const topicMap = new Map();
+      articles?.forEach(article => {
+        const topics = article.article_ai_analysis?.[0]?.extracted_topics || [];
+        const sentimentScore = article.article_ai_analysis?.[0]?.sentiment_score || 0.5;
+        const viewBoost = Math.log(article.view_count + 1);
+
+        topics.forEach((topic: string) => {
+          const currentScore = topicMap.get(topic) || 0;
+          topicMap.set(topic, currentScore + (sentimentScore * 100) + viewBoost);
+        });
+      });
+
+      // Sort and format trending topics
+      const trendingTopics = Array.from(topicMap.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([topic, score]) => ({
+          topic,
+          score: Math.round(score),
+          sentiment: score > 60 ? 'ইতিবাচক' : score < 40 ? 'নেতিবাচক' : 'নিরপেক্ষ'
+        }));
+
+      return {
+        success: true,
+        data: {
+          topics: trendingTopics,
+          totalAnalyzed: articles?.length || 0,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+
+    } catch (error) {
+      console.error('[AI Trending] Processing error:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Get AI insights for category-specific content
+   */
+  async getCategoryAIInsights(categorySlug: string): Promise<AIProcessingResult> {
+    try {
+      console.log(`[AI Category] Analyzing category: ${categorySlug}`);
+      
+      // Get category articles with AI analysis
+      const { data: articles, error } = await supabaseServiceRole
+        .from('articles')
+        .select(`
+          id, title, view_count, published_at,
+          categories!inner(id, name, slug),
+          article_ai_analysis(
+            sentiment_label, sentiment_score, auto_tags,
+            content_complexity, reading_time_minutes
+          )
+        `)
+        .eq('categories.slug', categorySlug)
+        .gte('published_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+        .order('published_at', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Calculate category AI metrics
+      const insights = this.calculateCategoryInsights(articles || []);
+      
+      return {
+        success: true,
+        data: {
+          categorySlug,
+          ...insights,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+
+    } catch (error) {
+      console.error('[AI Category] Processing error:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Apply personalization ranking algorithm
+   */
+  private applyPersonalizationRanking(articles: any[], preferences: Map<string, number>): any[] {
+    return articles.map(article => {
+      let personalScore = article.view_count || 0;
+      
+      // Category preference boost
+      const categorySlug = article.categories?.slug;
+      if (categorySlug && preferences.has(categorySlug)) {
+        personalScore += preferences.get(categorySlug)! * 50;
+      }
+      
+      // AI sentiment boost
+      const sentimentScore = article.article_ai_analysis?.[0]?.sentiment_score || 0.5;
+      personalScore += sentimentScore * 100;
+      
+      // Content complexity preference (medium complexity preferred)
+      const complexity = article.article_ai_analysis?.[0]?.content_complexity;
+      if (complexity === 'মাধ্যম') personalScore += 30;
+      
+      return {
+        ...article,
+        personalScore: Math.round(personalScore)
+      };
+    }).sort((a, b) => b.personalScore - a.personalScore);
+  }
+
+  /**
+   * Calculate AI insights for category
+   */
+  private calculateCategoryInsights(articles: any[]) {
+    if (!articles.length) {
+      return {
+        avgSentiment: 0.5,
+        dominantSentiment: 'নিরপেক্ষ',
+        avgReadingTime: 3,
+        complexityDistribution: { 'সহজ': 0, 'মাধ্যম': 0, 'কঠিন': 0 },
+        totalArticles: 0
+      };
+    }
+
+    let totalSentiment = 0;
+    let totalReadingTime = 0;
+    const complexityCount = { 'সহজ': 0, 'মাধ্যম': 0, 'কঠিন': 0 };
+    const sentimentCount = { 'ইতিবাচক': 0, 'নেতিবাচক': 0, 'নিরপেক্ষ': 0 };
+
+    articles.forEach(article => {
+      const analysis = article.article_ai_analysis?.[0];
+      if (analysis) {
+        totalSentiment += analysis.sentiment_score || 0.5;
+        totalReadingTime += analysis.reading_time_minutes || 3;
+        
+        const complexity = analysis.content_complexity || 'মাধ্যম';
+        complexityCount[complexity as keyof typeof complexityCount]++;
+        
+        const sentiment = analysis.sentiment_label || 'নিরপেক্ষ';
+        sentimentCount[sentiment as keyof typeof sentimentCount]++;
+      }
+    });
+
+    const avgSentiment = totalSentiment / articles.length;
+    const dominantSentiment = Object.entries(sentimentCount)
+      .sort((a, b) => b[1] - a[1])[0][0];
+
+    return {
+      avgSentiment: Math.round(avgSentiment * 100) / 100,
+      dominantSentiment,
+      avgReadingTime: Math.round(totalReadingTime / articles.length),
+      complexityDistribution: complexityCount,
+      totalArticles: articles.length
+    };
+  }
+
+  /**
    * Generate relevant tags for Bengali content
    */
   private async generateTags(content: string, title: string): Promise<string[]> {

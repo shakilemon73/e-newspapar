@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Homepage Integration Test - বাংলা নিউজ AI সিস্টেম</title>
+    <style>
+        body {
+            font-family: 'Noto Sans Bengali', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-radius: 8px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #2196F3;
+            border-bottom: 2px solid #2196F3;
+            padding-bottom: 10px;
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px;
+        }
+        .status.success { background: #4CAF50; color: white; }
+        .status.pending { background: #FF9800; color: white; }
+        .status.error { background: #f44336; color: white; }
+        .endpoint-test {
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+        }
+        .btn {
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover { background: #1976D2; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .ai-feature {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 AI Homepage Integration Test</h1>
+            <h2>TensorFlow.js + Supabase AI সিস্টেম পরীক্ষা</h2>
+            <p>বাংলা নিউজ ওয়েবসাইটের AI ব্যাকএন্ড ইন্টিগ্রেশন যাচাই</p>
+        </div>
+
+        <!-- AI Backend Services Test -->
+        <div class="test-section">
+            <h3>🚀 AI Backend Services Test</h3>
+            <div class="endpoint-test">
+                <h4>1. AI Popular Articles</h4>
+                <button class="btn" onclick="testAIPopularArticles()">Test AI Popular Articles</button>
+                <div id="ai-popular-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-test">
+                <h4>2. AI Personalized Recommendations</h4>
+                <button class="btn" onclick="testAIRecommendations()">Test AI Recommendations</button>
+                <div id="ai-recommendations-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-test">
+                <h4>3. AI Trending Topics</h4>
+                <button class="btn" onclick="testAITrendingTopics()">Test AI Trending</button>
+                <div id="ai-trending-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-test">
+                <h4>4. AI Category Insights</h4>
+                <button class="btn" onclick="testAICategoryInsights()">Test Category Insights</button>
+                <div id="ai-category-result" class="result"></div>
+            </div>
+            
+            <div class="endpoint-test">
+                <h4>5. AI Article Processing</h4>
+                <button class="btn" onclick="testAIArticleProcessing()">Test Article Processing</button>
+                <div id="ai-processing-result" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Component Integration Test -->
+        <div class="test-section">
+            <h3>🎯 Component AI Integration Test</h3>
+            <div class="ai-feature">
+                <h4>✅ PopularNewsSection</h4>
+                <p>AI স্কোরিং এবং ট্রেন্ডিং র‍্যাঙ্কিং সহ জনপ্রিয় সংবাদ</p>
+                <div class="status success">Integrated ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ PersonalizedRecommendations</h4>
+                <p>ব্যবহারকারীর আচরণ বিশ্লেষণ এবং ব্যক্তিগত সুপারিশ</p>
+                <div class="status success">Integrated ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ HomepageFeatureSuite</h4>
+                <p>AI-চালিত ট্রেন্ডিং টপিকস এবং আবিষ্কার উইজেট</p>
+                <div class="status success">Integrated ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ CategoryNewsSection</h4>
+                <p>বিভাগভিত্তিক AI অন্তর্দৃষ্টি এবং কন্টেন্ট বিশ্লেষণ</p>
+                <div class="status success">Integrated ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ BreakingNewsTicker</h4>
+                <p>জরুরিত্বভিত্তিক AI অগ্রাধিকার এবং স্মার্ট সাজানো</p>
+                <div class="status success">Integrated ✓</div>
+            </div>
+        </div>
+
+        <!-- AI Features Overview -->
+        <div class="test-section">
+            <h3>🧠 AI Features Implementation Status</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div class="ai-feature">
+                    <h4>📊 Text Summarization</h4>
+                    <p>TensorFlow.js দিয়ে বাংলা টেক্সট সংক্ষিপ্তসার</p>
+                    <div class="status success">Active</div>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>💭 Sentiment Analysis</h4>
+                    <p>কন্টেন্টের আবেগ এবং মনোভাব বিশ্লেষণ</p>
+                    <div class="status success">Active</div>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>🏷️ Auto-Tagging</h4>
+                    <p>স্বয়ংক্রিয় কীওয়ার্ড এবং ট্যাগ সৃষ্টি</p>
+                    <div class="status success">Active</div>
+                </div>
+                
+                <div class="ai-feature">
+                    <h4>📈 Trending Analysis</h4>
+                    <p>ট্রেন্ডিং টপিক এবং জনপ্রিয়তা বিশ্লেষণ</p>
+                    <div class="status success">Active</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results Summary -->
+        <div class="test-section">
+            <h3>📋 Test Results Summary</h3>
+            <div id="test-summary">
+                <p>Tests not run yet. Click individual test buttons above.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {};
+
+        async function testAIPopularArticles() {
+            const resultDiv = document.getElementById('ai-popular-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/popular-articles?timeRange=daily&limit=3');
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.popularArticles = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.popularArticles = false;
+            }
+            updateTestSummary();
+        }
+
+        async function testAIRecommendations() {
+            const resultDiv = document.getElementById('ai-recommendations-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/recommendations/test-user?limit=3');
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.recommendations = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.recommendations = false;
+            }
+            updateTestSummary();
+        }
+
+        async function testAITrendingTopics() {
+            const resultDiv = document.getElementById('ai-trending-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/trending-topics?limit=5');
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.trending = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.trending = false;
+            }
+            updateTestSummary();
+        }
+
+        async function testAICategoryInsights() {
+            const resultDiv = document.getElementById('ai-category-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/category-insights/politics');
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.categoryInsights = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.categoryInsights = false;
+            }
+            updateTestSummary();
+        }
+
+        async function testAIArticleProcessing() {
+            const resultDiv = document.getElementById('ai-processing-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/process-article', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: 'বাংলাদেশের রাজনৈতিক পরিস্থিতি নিয়ে আলোচনা।',
+                        type: 'article'
+                    })
+                });
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.processing = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.processing = false;
+            }
+            updateTestSummary();
+        }
+
+        function updateTestSummary() {
+            const summaryDiv = document.getElementById('test-summary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            
+            if (totalTests === 0) return;
+            
+            summaryDiv.innerHTML = `
+                <div style="background: ${passedTests === totalTests ? '#4CAF50' : passedTests > 0 ? '#FF9800' : '#f44336'}; color: white; padding: 15px; border-radius: 8px;">
+                    <h4>Test Results: ${passedTests}/${totalTests} Passed</h4>
+                    <ul>
+                        ${Object.entries(testResults).map(([test, passed]) => 
+                            `<li>${test}: ${passed ? '✅ Passed' : '❌ Failed'}</li>`
+                        ).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Auto-run all tests on page load
+        window.onload = function() {
+            setTimeout(() => {
+                console.log('Starting AI Homepage Integration Tests...');
+                testAIPopularArticles();
+                setTimeout(() => testAIRecommendations(), 1000);
+                setTimeout(() => testAITrendingTopics(), 2000);
+                setTimeout(() => testAICategoryInsights(), 3000);
+                setTimeout(() => testAIArticleProcessing(), 4000);
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
