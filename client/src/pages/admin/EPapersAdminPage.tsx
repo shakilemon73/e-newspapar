@@ -197,7 +197,7 @@ export default function EPapersAdminPage() {
   // Toggle Publish mutation
   const togglePublishMutation = useMutation({
     mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) => 
-      toggleEPaperPublishStatus(id, isPublished),
+      toggleEPaperPublishStatus(id),
     onSuccess: () => {
       toast({
         title: 'Publish Status Updated',
