@@ -25,7 +25,12 @@ import { useToast } from '@/hooks/use-toast';
 import { getAdminEPapers, createEPaper, updateEPaper, deleteEPaper } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { generateEPaperDirect, downloadEPaperPDF } from '@/lib/epaper-generator-direct';
+import { 
+  generateEnhancedEpaper, 
+  checkLaTeXStatus, 
+  getAvailableCategories,
+  type LaTeXGenerationResult 
+} from '@/lib/latex-epaper-direct';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -147,53 +152,97 @@ export default function EPapersAdminPage() {
     saveMutation.mutate(formData);
   };
 
-  // E-Paper Generation Functions
+  // Enhanced LaTeX E-Paper Generation with AI
+  const [generationType, setGenerationType] = useState<'standard' | 'ai-enhanced' | 'premium'>('ai-enhanced');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // Fetch categories for AI-enhanced generation
+  const { data: categoriesData } = useQuery({
+    queryKey: ['epaper-categories'],
+    queryFn: () => getAvailableCategories(),
+  });
+
+  const categories = categoriesData?.categories || [];
+
+  // Enhanced LaTeX E-Paper Generation
   const handleGenerateEPaper = async () => {
+    if (!customTitle.trim()) {
+      toast({
+        title: t('Error', 'ত্রুটি'),
+        description: t('Please enter a title for the e-paper', 'ই-পেপারের জন্য একটি শিরোনাম লিখুন'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationProgress(10);
+
     try {
-      setIsGenerating(true);
-      setGenerationProgress(10);
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const displayTitle = customTitle || `বাংলা দৈনিক - ${format(selectedDate, 'MMMM d, yyyy')}`;
       
-      const dateString = format(selectedDate, 'yyyy-MM-dd');
-      const title = customTitle || `Bengali News - ${dateString}`;
+      setGenerationProgress(25);
       
-      setGenerationProgress(30);
-      
-      // Generate the e-paper with auto-save
-      const result = await generateEPaperDirect(dateString, title, true);
-      
-      setGenerationProgress(80);
-      
-      if (result.epaper) {
-        // Update form data with generated e-paper info
-        setFormData({
-          title: result.epaper.title,
-          publish_date: result.epaper.publish_date || dateString,
-          image_url: result.epaper.image_url || '',
-          pdf_url: result.epaper.pdf_url || '',
-          is_latest: true
-        });
-        
+      // Call the enhanced LaTeX e-paper generator
+      const result = await generateEnhancedEpaper({
+        title: displayTitle,
+        date: formattedDate,
+        generationType,
+        categoryPriority: selectedCategories.length > 0 ? selectedCategories : undefined,
+        customization: {
+          layout: 'traditional',
+          columns: 3,
+          colorScheme: 'professional'
+        }
+      });
+
+      setGenerationProgress(70);
+
+      if (result.success && result.pdfUrl) {
         // Refresh the e-papers list
         queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
         
-        setGenerationProgress(100);
+        setGenerationProgress(90);
         
         toast({
-          title: t('E-Paper Generated Successfully', 'ই-পেপার সফলভাবে তৈরি হয়েছে'),
-          description: t('The e-paper has been generated and saved to the database', 'ই-পেপারটি তৈরি করে ডাটাবেসে সংরক্ষণ করা হয়েছে'),
+          title: t('Success! 🎉', 'সফল! 🎉'),
+          description: t(`${generationType === 'ai-enhanced' ? 'AI-Enhanced' : 'Professional'} LaTeX e-paper "${displayTitle}" generated successfully.`, `${generationType === 'ai-enhanced' ? 'AI-উন্নত' : 'পেশাদার'} LaTeX ই-পেপার "${displayTitle}" সফলভাবে তৈরি।`),
         });
+
+        // Reset form
+        setCustomTitle('');
+        setSelectedDate(new Date());
+        setSelectedCategories([]);
         
-        // Auto-download the generated PDF
-        if (result.pdfBytes) {
-          await downloadEPaperPDF(result.pdfBytes, `${title}.pdf`);
+        setGenerationProgress(100);
+        
+        // Optional: Download the PDF automatically
+        if (result.pdfUrl) {
+          const link = document.createElement('a');
+          link.href = result.pdfUrl;
+          link.download = `${displayTitle.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
         }
+
+        // Show AI metrics if available
+        if (result.aiMetrics) {
+          toast({
+            title: t('AI Generation Details', 'AI তৈরির বিস্তারিত'),
+            description: t(`Selected ${result.aiMetrics.articlesSelected}/${result.aiMetrics.articlesConsidered} articles with ${Math.round(result.aiMetrics.diversityScore * 100)}% diversity score`, `${Math.round(result.aiMetrics.diversityScore * 100)}% বৈচিত্র্য স্কোর সহ ${result.aiMetrics.articlesSelected}/${result.aiMetrics.articlesConsidered} নিবন্ধ নির্বাচিত`),
+          });
+        }
+        
+      } else {
+        throw new Error(result.error || 'Failed to generate LaTeX e-paper');
       }
-      
     } catch (error) {
-      console.error('E-paper generation failed:', error);
+      console.error('LaTeX e-paper generation failed:', error);
       toast({
         title: t('Generation Failed', 'তৈরি করতে ব্যর্থ'),
-        description: error instanceof Error ? error.message : t('Failed to generate e-paper', 'ই-পেপার তৈরি করতে ব্যর্থ'),
+        description: error instanceof Error ? error.message : t('Failed to generate LaTeX e-paper', 'LaTeX ই-পেপার তৈরি করতে ব্যর্থ'),
         variant: 'destructive',
       });
     } finally {
