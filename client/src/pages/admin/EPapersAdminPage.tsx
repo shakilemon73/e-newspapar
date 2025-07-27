@@ -76,6 +76,17 @@ export default function EPapersAdminPage() {
   });
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [previewArticles, setPreviewArticles] = useState<any[]>([]);
+  
+  // PDF Preview States
+  const [generatedPdf, setGeneratedPdf] = useState<{
+    pdfUrl: string;
+    title: string;
+    date: string;
+    pdfBytes?: Uint8Array;
+  } | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   // Fetch e-papers using direct admin API
   const { data: epapersData, isLoading, error } = useQuery({
@@ -155,14 +166,21 @@ export default function EPapersAdminPage() {
   const generateMutation = useMutation({
     mutationFn: generateEPaperFromArticles,
     onSuccess: (result) => {
-      toast({
-        title: 'E-paper Generated Successfully!',
-        description: `Generated with ${result.articleCount} articles`,
+      // Show PDF preview instead of immediately saving
+      setGeneratedPdf({
+        pdfUrl: result.pdfUrl || '',
+        title: generationOptions.title,
+        date: generationOptions.date,
+        pdfBytes: result.pdfBytes
       });
+      setShowPdfPreview(true);
       setIsGenerating(false);
       setGenerationProgress(0);
-      queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      
+      toast({
+        title: 'E-paper Generated Successfully!',
+        description: `Generated with ${result.articleCount} articles. Choose to publish or save as draft.`,
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -266,6 +284,77 @@ export default function EPapersAdminPage() {
       setIsGenerating(false);
       setGenerationProgress(0);
     }
+  };
+
+  // Handle Publish/Draft Actions
+  const handlePublishEPaper = async () => {
+    if (!generatedPdf) return;
+    
+    setPublishing(true);
+    try {
+      const result = await createEPaper({
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: true,
+        is_published: true
+      });
+      
+      if (result.success) {
+        toast({
+          title: 'E-Paper Published!',
+          description: 'E-Paper has been published and is now visible to users.',
+        });
+        setShowPdfPreview(false);
+        setGeneratedPdf(null);
+        queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: 'Publishing Failed',
+        description: error instanceof Error ? error.message : 'Failed to publish E-Paper',
+        variant: 'destructive',
+      });
+    }
+    setPublishing(false);
+  };
+
+  const handleSaveDraft = async () => {
+    if (!generatedPdf) return;
+    
+    setSavingDraft(true);
+    try {
+      const result = await createEPaper({
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: false,
+        is_published: false
+      });
+      
+      if (result.success) {
+        toast({
+          title: 'Draft Saved!',
+          description: 'E-Paper has been saved as draft in Manage E-Papers tab.',
+        });
+        setShowPdfPreview(false);
+        setGeneratedPdf(null);
+        queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error) {
+      toast({
+        title: 'Save Failed',
+        description: error instanceof Error ? error.message : 'Failed to save draft',
+        variant: 'destructive',
+      });
+    }
+    setSavingDraft(false);
   };
 
   // Preview Articles Function
@@ -543,6 +632,103 @@ export default function EPapersAdminPage() {
                       )}
                     </div>
                   </div>
+                )}
+
+                {/* PDF Preview Section */}
+                {showPdfPreview && generatedPdf && (
+                  <Card className="border-green-200 bg-green-50">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-green-800">
+                        <FileText className="w-5 h-5" />
+                        PDF Generated Successfully
+                      </CardTitle>
+                      <CardDescription>
+                        Preview your generated E-Paper and choose to publish or save as draft
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium mb-2">E-Paper Details</h4>
+                          <div className="space-y-2 text-sm">
+                            <p><strong>Title:</strong> {generatedPdf.title}</p>
+                            <p><strong>Date:</strong> {generatedPdf.date}</p>
+                            <p><strong>Status:</strong> Ready for publishing</p>
+                          </div>
+                        </div>
+                        <div className="border rounded-lg p-4 bg-white">
+                          <h4 className="font-medium mb-2">PDF Preview</h4>
+                          {generatedPdf.pdfUrl ? (
+                            <div className="space-y-2">
+                              <iframe
+                                src={generatedPdf.pdfUrl}
+                                className="w-full h-32 border rounded"
+                                title="PDF Preview"
+                              />
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.open(generatedPdf.pdfUrl, '_blank')}
+                                className="w-full"
+                              >
+                                <Download className="w-4 h-4 mr-2" />
+                                View Full PDF
+                              </Button>
+                            </div>
+                          ) : (
+                            <p className="text-muted-foreground text-sm">PDF ready for download</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 pt-4 border-t">
+                        <Button
+                          onClick={handlePublishEPaper}
+                          disabled={publishing}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {publishing ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Publishing...
+                            </>
+                          ) : (
+                            <>
+                              <Newspaper className="w-4 h-4 mr-2" />
+                              Publish Now
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={handleSaveDraft}
+                          disabled={savingDraft}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          {savingDraft ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="w-4 h-4 mr-2" />
+                              Save as Draft
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setShowPdfPreview(false);
+                            setGeneratedPdf(null);
+                          }}
+                          variant="ghost"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </CardContent>
             </Card>
