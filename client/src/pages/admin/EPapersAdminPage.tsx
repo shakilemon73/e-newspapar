@@ -82,7 +82,6 @@ export default function EPapersAdminPage() {
     pdfUrl: string;
     title: string;
     date: string;
-    pdfBytes?: Uint8Array;
   } | null>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
@@ -170,8 +169,7 @@ export default function EPapersAdminPage() {
       setGeneratedPdf({
         pdfUrl: result.pdfUrl || '',
         title: generationOptions.title,
-        date: generationOptions.date,
-        pdfBytes: result.pdfBytes
+        date: generationOptions.date
       });
       setShowPdfPreview(true);
       setIsGenerating(false);
@@ -215,7 +213,7 @@ export default function EPapersAdminPage() {
   // Toggle Publish mutation
   const togglePublishMutation = useMutation({
     mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) => 
-      toggleEPaperPublishStatus(id),
+      toggleEPaperPublishStatus(id, isPublished),
     onSuccess: () => {
       toast({
         title: 'Publish Status Updated',
@@ -292,6 +290,15 @@ export default function EPapersAdminPage() {
     
     setPublishing(true);
     try {
+      console.log('Publishing E-Paper with data:', {
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: true,
+        is_published: true
+      });
+      
       const result = await createEPaper({
         title: generatedPdf.title,
         publish_date: generatedPdf.date,
@@ -300,6 +307,8 @@ export default function EPapersAdminPage() {
         is_latest: true,
         is_published: true
       });
+      
+      console.log('Publish result:', result);
       
       if (result.success) {
         toast({
@@ -310,9 +319,10 @@ export default function EPapersAdminPage() {
         setGeneratedPdf(null);
         queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || 'Failed to publish E-Paper');
       }
     } catch (error) {
+      console.error('Publishing error:', error);
       toast({
         title: 'Publishing Failed',
         description: error instanceof Error ? error.message : 'Failed to publish E-Paper',
@@ -327,6 +337,15 @@ export default function EPapersAdminPage() {
     
     setSavingDraft(true);
     try {
+      console.log('Saving draft with data:', {
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: false,
+        is_published: false
+      });
+      
       const result = await createEPaper({
         title: generatedPdf.title,
         publish_date: generatedPdf.date,
@@ -335,6 +354,8 @@ export default function EPapersAdminPage() {
         is_latest: false,
         is_published: false
       });
+      
+      console.log('Draft save result:', result);
       
       if (result.success) {
         toast({
@@ -345,9 +366,10 @@ export default function EPapersAdminPage() {
         setGeneratedPdf(null);
         queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
       } else {
-        throw new Error(result.error);
+        throw new Error(result.error || 'Failed to save draft');
       }
     } catch (error) {
+      console.error('Draft save error:', error);
       toast({
         title: 'Save Failed',
         description: error instanceof Error ? error.message : 'Failed to save draft',
