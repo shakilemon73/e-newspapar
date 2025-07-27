@@ -6,20 +6,28 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { 
   Plus, 
   Loader2, 
   FileText,
-  Calendar,
+  CalendarIcon,
   Download,
   Star,
   Edit,
-  Trash2
+  Trash2,
+  Zap,
+  Newspaper
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getAdminEPapers, createEPaper, updateEPaper, deleteEPaper } from '@/lib/admin-api-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { generateEPaperDirect, downloadEPaperPDF } from '@/lib/epaper-generator-direct';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface EPaper {
   id: number;
@@ -45,6 +53,12 @@ export default function EPapersAdminPage() {
     is_latest: false
   });
   const [isEditing, setIsEditing] = useState(false);
+  
+  // E-Paper Generator States
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [customTitle, setCustomTitle] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
 
   // Fetch e-papers using direct admin API
   const { data: epapersData, isLoading, error } = useQuery({
@@ -133,6 +147,61 @@ export default function EPapersAdminPage() {
     saveMutation.mutate(formData);
   };
 
+  // E-Paper Generation Functions
+  const handleGenerateEPaper = async () => {
+    try {
+      setIsGenerating(true);
+      setGenerationProgress(10);
+      
+      const dateString = format(selectedDate, 'yyyy-MM-dd');
+      const title = customTitle || `Bengali News - ${dateString}`;
+      
+      setGenerationProgress(30);
+      
+      // Generate the e-paper with auto-save
+      const result = await generateEPaperDirect(dateString, title, true);
+      
+      setGenerationProgress(80);
+      
+      if (result.epaper) {
+        // Update form data with generated e-paper info
+        setFormData({
+          title: result.epaper.title,
+          publish_date: result.epaper.publish_date || dateString,
+          image_url: result.epaper.image_url || '',
+          pdf_url: result.epaper.pdf_url || '',
+          is_latest: true
+        });
+        
+        // Refresh the e-papers list
+        queryClient.invalidateQueries({ queryKey: ['admin-epapers'] });
+        
+        setGenerationProgress(100);
+        
+        toast({
+          title: t('E-Paper Generated Successfully', 'ই-পেপার সফলভাবে তৈরি হয়েছে'),
+          description: t('The e-paper has been generated and saved to the database', 'ই-পেপারটি তৈরি করে ডাটাবেসে সংরক্ষণ করা হয়েছে'),
+        });
+        
+        // Auto-download the generated PDF
+        if (result.pdfBytes) {
+          await downloadEPaperPDF(result.pdfBytes, `${title}.pdf`);
+        }
+      }
+      
+    } catch (error) {
+      console.error('E-paper generation failed:', error);
+      toast({
+        title: t('Generation Failed', 'তৈরি করতে ব্যর্থ'),
+        description: error instanceof Error ? error.message : t('Failed to generate e-paper', 'ই-পেপার তৈরি করতে ব্যর্থ'),
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+      setGenerationProgress(0);
+    }
+  };
+
   if (isLoading) {
     return (
       <EnhancedAdminLayout>
@@ -149,11 +218,129 @@ export default function EPapersAdminPage() {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold">{t('E-Papers Management', 'ই-পেপার ব্যবস্থাপনা')}</h1>
-            <p className="text-muted-foreground">{t('Manage digital newspaper editions', 'ডিজিটাল সংবাদপত্র সংস্করণ পরিচালনা করুন')}</p>
+            <p className="text-muted-foreground">{t('Create, generate and manage digital newspaper editions', 'ডিজিটাল সংবাদপত্র তৈরি, উৎপাদন এবং পরিচালনা করুন')}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Tabs defaultValue="manage" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="manage" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              {t('Manage E-Papers', 'ই-পেপার পরিচালনা')}
+            </TabsTrigger>
+            <TabsTrigger value="generate" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              {t('Generate E-Paper', 'ই-পেপার তৈরি করুন')}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="generate" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Newspaper className="h-5 w-5" />
+                  {t('Generate New E-Paper', 'নতুন ই-পেপার তৈরি করুন')}
+                </CardTitle>
+                <CardDescription>
+                  {t('Create a new digital newspaper edition automatically from latest articles', 'সর্বশেষ নিবন্ধ থেকে স্বয়ংক্রিয়ভাবে একটি নতুন ডিজিটাল সংবাদপত্র সংস্করণ তৈরি করুন')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label>{t('Publication Date', 'প্রকাশের তারিখ')}</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !selectedDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(selectedDate, "PPP") : <span>{t('Pick a date', 'তারিখ নির্বাচন করুন')}</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => date && setSelectedDate(date)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="customTitle">{t('Custom Title (Optional)', 'কাস্টম শিরোনাম (ঐচ্ছিক)')}</Label>
+                      <Input
+                        id="customTitle"
+                        value={customTitle}
+                        onChange={(e) => setCustomTitle(e.target.value)}
+                        placeholder={t('Enter custom title for the e-paper', 'ই-পেপারের জন্য কাস্টম শিরোনাম লিখুন')}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="p-4 bg-muted rounded-lg">
+                      <h3 className="font-medium mb-2">{t('Generation Preview', 'তৈরির পূর্বরূপ')}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <strong>{t('Date:', 'তারিখ:')}</strong> {format(selectedDate, 'dd/MM/yyyy')}
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        <strong>{t('Title:', 'শিরোনাম:')}</strong> {customTitle || `Bengali News - ${format(selectedDate, 'yyyy-MM-dd')}`}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {t('This will create a PDF with latest articles and automatically save to database', 'এটি সর্বশেষ নিবন্ধ সহ একটি পিডিএফ তৈরি করবে এবং স্বয়ংক্রিয়ভাবে ডাটাবেসে সংরক্ষণ করবে')}
+                      </p>
+                    </div>
+
+                    {isGenerating && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>{t('Generating...', 'তৈরি হচ্ছে...')}</span>
+                          <span>{generationProgress}%</span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${generationProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <Button 
+                      onClick={handleGenerateEPaper}
+                      disabled={isGenerating}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {t('Generating E-Paper...', 'ই-পেপার তৈরি হচ্ছে...')}
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="mr-2 h-4 w-4" />
+                          {t('Generate E-Paper', 'ই-পেপার তৈরি করুন')}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="manage" className="space-y-6">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Form Section */}
           <Card>
             <CardHeader>
@@ -286,6 +473,8 @@ export default function EPapersAdminPage() {
             </CardContent>
           </Card>
         </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </EnhancedAdminLayout>
   );
