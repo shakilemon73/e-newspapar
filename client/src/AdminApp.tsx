@@ -39,7 +39,6 @@ import AdvertisementManagementPage from "@/pages/admin/AdvertisementManagementPa
 import SecurityAccessControlPage from "@/pages/admin/SecurityAccessControlPage";
 import { AIAdminDashboard } from "@/components/AI/AIAdminDashboard";
 import EPaperGeneratorAdmin from "@/components/admin/EPaperGeneratorAdmin";
-import EPaperControlPanel from "@/components/admin/EPaperControlPanel";
 
 // Admin Not Found Component
 function AdminNotFound() {
@@ -118,7 +117,7 @@ function AdminRouter() {
       
       <Route path="/admin/epapers">
         <AdminRouteGuard>
-          <EPaperControlPanel />
+          <EPapersAdminPage />
         </AdminRouteGuard>
       </Route>
       
