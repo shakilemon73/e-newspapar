@@ -523,6 +523,40 @@ h5 {
   font-weight: 500;
 }
 
+/* Mobile-First Slideshow Enhancements */
+.touch-pan-x {
+  touch-action: pan-x;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Extra Small Breakpoint for Mobile Optimization */
+@media (max-width: 480px) {
+  .xs\:hidden {
+    display: none;
+  }
+  
+  .xs\:flex {
+    display: flex;
+  }
+  
+  .xs\:inline {
+    display: inline;
+  }
+}
+
 h6 {
   font-size: var(--text-sm);
   @apply lg:text-base;

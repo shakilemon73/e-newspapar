@@ -148,17 +148,17 @@ export const FeaturedSlideshow = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
       {/* Main Featured Slideshow - World-Class Mobile-First Design */}
       <div className="lg:col-span-3">
         <div 
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-2xl group"
+          className="relative overflow-hidden rounded-2xl lg:rounded-3xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-lg lg:shadow-2xl group touch-pan-x"
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
-          {/* Hero Slideshow Container */}
-          <div className="relative aspect-[16/9] overflow-hidden">
+          {/* Hero Slideshow Container - Optimized for Mobile */}
+          <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-[16/9] overflow-hidden">
             {featuredArticles.map((article, index) => (
               <div 
                 key={article.id} 
@@ -202,55 +202,56 @@ export const FeaturedSlideshow = () => {
                     </div>
                   )}
 
-                  {/* Enhanced Content Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 p-8 text-white z-20">
-                    {/* Article Title - Typography Excellence */}
-                    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight mb-4 text-shadow-lg">
+                  {/* Enhanced Content Overlay - Mobile-First Typography */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8 text-white z-20">
+                    {/* Article Title - Mobile-Optimized Typography */}
+                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight mb-2 sm:mb-3 lg:mb-4 text-shadow-lg">
                       <Link 
                         href={`/article/${article.slug}`} 
-                        className="text-white hover:text-orange-200 transition-colors duration-300 line-clamp-3"
+                        className="text-white hover:text-orange-200 transition-colors duration-300 line-clamp-2 sm:line-clamp-3 block"
                       >
                         {article.title}
                       </Link>
                     </h2>
                     
-                    {/* Article Excerpt */}
-                    <p className="text-lg md:text-xl opacity-90 line-clamp-2 mb-4 text-shadow leading-relaxed">
+                    {/* Article Excerpt - Hidden on small mobile */}
+                    <p className="hidden sm:block text-sm sm:text-base lg:text-lg xl:text-xl opacity-90 line-clamp-1 lg:line-clamp-2 mb-3 lg:mb-4 text-shadow leading-relaxed">
                       {article.excerpt}
                     </p>
                     
-                    {/* Enhanced Metadata Row */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm md:text-base">
-                      {/* Publication Time */}
-                      <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
+                    {/* Enhanced Metadata Row - Mobile-First Design */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm lg:text-base">
+                      {/* Publication Time - Always Visible */}
+                      <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 sm:px-3">
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="text-xs sm:text-sm">{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
                       </div>
                       
-                      {/* Reading Time */}
+                      {/* Reading Time - Hidden on very small screens */}
                       {article.reading_time && (
-                        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{article.reading_time} মিনিট</span>
+                        <div className="hidden xs:flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 sm:px-3">
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span className="text-xs sm:text-sm">{article.reading_time} মিনিট</span>
                         </div>
                       )}
                       
-                      {/* View Count */}
+                      {/* View Count - Desktop Only */}
                       {article.view_count && (
-                        <div className="flex items-center gap-2 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1">
+                        <div className="hidden lg:flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
                           <Eye className="w-4 h-4" />
                           <span>{article.view_count.toLocaleString('bn-BD')} বার পড়া</span>
                         </div>
                       )}
                       
-                      {/* Read More CTA */}
-                      <Link href={`/article/${article.slug}`}>
+                      {/* Read More CTA - Mobile-Optimized */}
+                      <Link href={`/article/${article.slug}`} className="ml-auto">
                         <Button 
                           size="sm" 
-                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 ml-auto"
+                          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-xs sm:text-sm px-3 py-1.5 sm:px-4 sm:py-2 touch-target"
                         >
-                          বিস্তারিত পড়ুন
-                          <ChevronRight className="w-4 h-4 ml-1" />
+                          <span className="hidden xs:inline">বিস্তারিত পড়ুন</span>
+                          <span className="xs:hidden">পড়ুন</span>
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1" />
                         </Button>
                       </Link>
                     </div>
@@ -260,42 +261,42 @@ export const FeaturedSlideshow = () => {
             ))}
           </div>
 
-          {/* Navigation Controls - Enhanced UX */}
+          {/* Navigation Controls - Mobile-First Enhanced UX */}
           {featuredArticles.length > 1 && (
             <>
-              {/* Arrow Navigation - Touch-Friendly */}
+              {/* Arrow Navigation - Mobile-Optimized Touch Targets */}
               <button
                 onClick={handlePrevious}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full p-2.5 sm:p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 touch-target"
                 aria-label="Previous slide"
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
               
               <button
                 onClick={handleNext}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-30 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-30 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full p-2.5 sm:p-3 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 touch-target"
                 aria-label="Next slide"
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
-              {/* Play/Pause Control */}
+              {/* Play/Pause Control - Hidden on Mobile */}
               <button
                 onClick={toggleAutoPlay}
-                className="absolute top-6 right-6 z-30 bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="hidden sm:block absolute top-4 sm:top-6 right-4 sm:right-6 z-30 bg-black/50 hover:bg-black/70 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50 touch-target"
                 aria-label={isAutoPlaying ? 'Pause slideshow' : 'Play slideshow'}
               >
-                {isAutoPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                {isAutoPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
 
-              {/* Modern Dot Navigation */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-4 py-2">
+              {/* Modern Dot Navigation - Mobile-Optimized */}
+              <div className="absolute bottom-3 sm:bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 bg-black/50 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
                 {featuredArticles.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => handleDotClick(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 ${
+                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 touch-target ${
                       index === currentSlide 
                         ? 'bg-white scale-125 shadow-lg' 
                         : 'bg-white/50 hover:bg-white/75 hover:scale-110'
