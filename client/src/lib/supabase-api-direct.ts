@@ -1005,16 +1005,22 @@ export async function getTags(): Promise<Tag[]> {
 // Get trending tags
 export async function getTrendingTags(): Promise<Tag[]> {
   try {
+    // First try to get most popular tags by usage count
     const { data, error } = await supabase
       .from('tags')
       .select('*')
-      .eq('is_trending', true)
       .order('usage_count', { ascending: false })
       .limit(10);
 
     if (error) {
       console.error('Error fetching trending tags:', error);
       return [];
+    }
+
+    // Filter for trending tags if the column exists, otherwise return top usage tags
+    if (data && data.length > 0 && data[0].hasOwnProperty('is_trending')) {
+      const trendingTags = data.filter(tag => tag.is_trending === true);
+      return trendingTags.length > 0 ? trendingTags : data.slice(0, 6);
     }
 
     return data || [];

@@ -88,7 +88,8 @@ export default function TagsDisplay({
   }
 
   const getTagVariant = (tag: Tag) => {
-    if (tag.is_trending) return 'default';
+    // Check if is_trending exists and is true
+    if (tag.hasOwnProperty('is_trending') && tag.is_trending) return 'default';
     if (tag.usage_count > 50) return 'secondary';
     return 'outline';
   };
