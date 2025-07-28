@@ -33,6 +33,7 @@ import Profile from "@/pages/Profile";
 import Dashboard from "@/pages/Dashboard";
 import SavedArticles from "@/pages/SavedArticles";
 import ReadingHistory from "@/pages/ReadingHistory";
+import Tag from "@/pages/Tag";
 
 // Footer Pages
 import About from "@/pages/About";
@@ -53,6 +54,7 @@ function UserRouter() {
       <Route path="/article/:slug" component={ArticleDetail} />
       <Route path="/video/:slug" component={VideoDetail} />
       <Route path="/audio/:slug" component={AudioDetail} />
+      <Route path="/tag/:slug" component={Tag} />
       <Route path="/videos" component={Videos} />
       <Route path="/audio-articles" component={AudioArticles} />
       <Route path="/epaper" component={EPaper} />

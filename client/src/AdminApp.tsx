@@ -37,6 +37,7 @@ import PerformanceMonitoringPage from "@/pages/admin/PerformanceMonitoringPage";
 import MobileAppManagementPage from "@/pages/admin/MobileAppManagementPage";
 import AdvertisementManagementPage from "@/pages/admin/AdvertisementManagementPage";
 import SecurityAccessControlPage from "@/pages/admin/SecurityAccessControlPage";
+import TagsAdminPage from "@/pages/admin/TagsAdminPage";
 import { AIAdminDashboard } from "@/components/AI/AIAdminDashboard";
 
 // Admin Not Found Component
@@ -171,6 +172,12 @@ function AdminRouter() {
       <Route path="/admin/settings">
         <AdminRouteGuard>
           <SettingsAdminPage />
+        </AdminRouteGuard>
+      </Route>
+      
+      <Route path="/admin/tags">
+        <AdminRouteGuard>
+          <TagsAdminPage />
         </AdminRouteGuard>
       </Route>
       

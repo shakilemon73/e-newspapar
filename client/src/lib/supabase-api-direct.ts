@@ -1046,7 +1046,7 @@ export async function getArticleTags(articleId: number): Promise<Tag[]> {
       return [];
     }
 
-    return (data?.map(item => item.tags).filter(Boolean) || []) as Tag[];
+    return (data?.map(item => item.tags).filter(Boolean).flat() || []) as Tag[];
   } catch (error) {
     console.error('Error fetching article tags:', error);
     return [];
@@ -1085,6 +1085,151 @@ export async function getArticlesByTag(tagSlug: string, limit = 20): Promise<Art
     return transformArticleData(articles);
   } catch (error) {
     console.error('Error fetching articles by tag:', error);
+    return [];
+  }
+}
+
+// Add tags to article
+export async function addTagsToArticle(articleId: number, tagIds: number[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const tagAssociations = tagIds.map(tagId => ({
+      article_id: articleId,
+      tag_id: tagId
+    }));
+
+    const { error } = await supabase
+      .from('article_tags')
+      .insert(tagAssociations);
+
+    if (error) {
+      console.error('Error adding tags to article:', error);
+      return { success: false, message: 'ট্যাগ যোগ করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'ট্যাগ সফলভাবে যোগ করা হয়েছে!' };
+  } catch (error) {
+    console.error('Error adding tags to article:', error);
+    return { success: false, message: 'ট্যাগ যোগ করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Remove tags from article
+export async function removeTagsFromArticle(articleId: number, tagIds: number[]): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('article_tags')
+      .delete()
+      .eq('article_id', articleId)
+      .in('tag_id', tagIds);
+
+    if (error) {
+      console.error('Error removing tags from article:', error);
+      return { success: false, message: 'ট্যাগ মুছতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'ট্যাগ সফলভাবে মুছে ফেলা হয়েছে!' };
+  } catch (error) {
+    console.error('Error removing tags from article:', error);
+    return { success: false, message: 'ট্যাগ মুছতে সমস্যা হয়েছে' };
+  }
+}
+
+// Create new tag
+export async function createTag(tagData: { name: string; slug: string; description?: string; color?: string }): Promise<{ success: boolean; message: string; tag?: Tag }> {
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .insert({
+        name: tagData.name,
+        slug: tagData.slug,
+        description: tagData.description || '',
+        color: tagData.color || '#3B82F6',
+        usage_count: 0,
+        is_trending: false
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating tag:', error);
+      return { success: false, message: 'ট্যাগ তৈরি করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'নতুন ট্যাগ সফলভাবে তৈরি হয়েছে!', tag: data };
+  } catch (error) {
+    console.error('Error creating tag:', error);
+    return { success: false, message: 'ট্যাগ তৈরি করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Update tag
+export async function updateTag(tagId: number, updates: Partial<Tag>): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('tags')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', tagId);
+
+    if (error) {
+      console.error('Error updating tag:', error);
+      return { success: false, message: 'ট্যাগ আপডেট করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'ট্যাগ সফলভাবে আপডেট হয়েছে!' };
+  } catch (error) {
+    console.error('Error updating tag:', error);
+    return { success: false, message: 'ট্যাগ আপডেট করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Delete tag
+export async function deleteTag(tagId: number): Promise<{ success: boolean; message: string }> {
+  try {
+    // First, remove all article associations
+    await supabase
+      .from('article_tags')
+      .delete()
+      .eq('tag_id', tagId);
+
+    // Then delete the tag
+    const { error } = await supabase
+      .from('tags')
+      .delete()
+      .eq('id', tagId);
+
+    if (error) {
+      console.error('Error deleting tag:', error);
+      return { success: false, message: 'ট্যাগ ডিলিট করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'ট্যাগ সফলভাবে ডিলিট হয়েছে!' };
+  } catch (error) {
+    console.error('Error deleting tag:', error);
+    return { success: false, message: 'ট্যাগ ডিলিট করতে সমস্যা হয়েছে' };
+  }
+}
+
+// Search tags
+export async function searchTags(query: string): Promise<Tag[]> {
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .select('*')
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .order('usage_count', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Error searching tags:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error searching tags:', error);
     return [];
   }
 }
@@ -2117,24 +2262,24 @@ export async function getAdminUserStats(period: string = 'all'): Promise<any> {
     
     if (!users) return { totalUsers: 0, adminUsers: 0, activeUsers: 0, newUsers: 0 };
     
-    const totalUsers = users.length;
-    const adminUsers = users.filter(u => u.user_metadata?.role === 'admin').length;
+    const totalUsers = users.users?.length || 0;
+    const adminUsers = users.users?.filter((u: any) => u.user_metadata?.role === 'admin').length || 0;
     
     // Calculate active users (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const activeUsers = users.filter(u => {
+    const activeUsers = users.users?.filter((u: any) => {
       const lastSignIn = new Date(u.last_sign_in_at || u.created_at);
       return lastSignIn > thirtyDaysAgo;
-    }).length;
+    }).length || 0;
     
     // Calculate new users (last 7 days)  
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const newUsers = users.filter(u => {
+    const newUsers = users.users?.filter((u: any) => {
       const createdAt = new Date(u.created_at);
       return createdAt > sevenDaysAgo;
-    }).length;
+    }).length || 0;
     
     return { totalUsers, adminUsers, activeUsers, newUsers };
   } catch (error) {
@@ -2162,7 +2307,7 @@ export async function getPersonalizedRecommendations(userId: string, limit: numb
         .in('id', readingHistory.map(h => h.article_id));
         
       if (categoryPrefs) {
-        preferredCategories = [...new Set(categoryPrefs.map(c => c.category_id))];
+        preferredCategories = Array.from(new Set(categoryPrefs.map(c => c.category_id)));
       }
     }
     
