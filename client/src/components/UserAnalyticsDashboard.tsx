@@ -315,4 +315,4 @@ export function UserAnalyticsWidget({ userId }: { userId: string }) {
 }
 
 // Named export for compatibility
-export { default as UserAnalyticsDashboard };
+// export { default as UserAnalyticsDashboard };
