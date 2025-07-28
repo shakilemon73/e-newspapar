@@ -1,133 +1,107 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Star, ThumbsUp, User } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useToast } from '@/hooks/use-toast';
-import { getContentReviews, addReview, type Review } from '@/lib/supabase-api-direct';
-// Note: Using temporary auth check - replace with actual auth context
-// import { useAuth } from '@/contexts/AuthContext';
-
-// Temporary auth hook
-const useAuth = () => {
-  return { user: null }; // Replace with actual auth implementation
-};
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { 
+  getContentReviews, 
+  submitReview,
+  type Review 
+} from '../lib/missing-tables-api';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Textarea } from './ui/textarea';
+import { 
+  Star, 
+  MessageSquare, 
+  User,
+  ThumbsUp,
+  Send
+} from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { bn } from 'date-fns/locale';
+import { toast } from '../hooks/use-toast';
 
 interface ReviewsSectionProps {
+  contentType: 'article' | 'video' | 'audio';
   contentId: number;
-  contentType: string; // 'article', 'video', 'audio'
-  contentTitle?: string;
+  className?: string;
 }
 
-export default function ReviewsSection({ contentId, contentType, contentTitle }: ReviewsSectionProps) {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showAddReview, setShowAddReview] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [newReview, setNewReview] = useState({
-    rating: 5,
-    title: '',
-    content: ''
+const ReviewsSection: React.FC<ReviewsSectionProps> = ({
+  contentType,
+  contentId,
+  className = ''
+}) => {
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+  const queryClient = useQueryClient();
+
+  // Get current user
+  const { data: user } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) return null;
+      return user;
+    }
   });
-  
-  const { user } = useAuth();
-  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setLoading(true);
-        const fetchedReviews = await getContentReviews(contentId, contentType);
-        setReviews(fetchedReviews);
-      } catch (error) {
-        console.error('Error fetching reviews:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch reviews
+  const { data: reviews = [], isLoading } = useQuery({
+    queryKey: ['content-reviews', contentType, contentId],
+    queryFn: () => getContentReviews(contentType, contentId),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
 
-    fetchReviews();
-  }, [contentId, contentType]);
-
-  const handleSubmitReview = async () => {
-    if (!user) {
-      toast({
-        title: 'লগইন প্রয়োজন',
-        description: 'রিভিউ দিতে হলে আগে লগইন করুন',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    if (!newReview.content.trim()) {
-      toast({
-        title: 'রিভিউ লিখুন',
-        description: 'অন্তত কিছু মন্তব্য লিখুন',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      const result = await addReview({
-        content_id: contentId,
-        content_type: contentType,
-        user_id: user.id,
-        rating: newReview.rating,
-        title: newReview.title || undefined,
-        content: newReview.content
-      });
-
+  // Submit review mutation
+  const submitReviewMutation = useMutation({
+    mutationFn: async () => {
+      if (!rating) throw new Error('রেটিং দিন');
+      return submitReview(contentType, contentId, rating, reviewText);
+    },
+    onSuccess: (result) => {
       if (result.success) {
         toast({
-          title: 'রিভিউ যোগ করা হয়েছে',
-          description: result.message
-        });
-        
-        // Reset form
-        setNewReview({ rating: 5, title: '', content: '' });
-        setShowAddReview(false);
-        
-        // Refresh reviews
-        const updatedReviews = await getContentReviews(contentId, contentType);
-        setReviews(updatedReviews);
-      } else {
-        toast({
-          title: 'সমস্যা হয়েছে',
+          title: 'সফল',
           description: result.message,
-          variant: 'destructive'
         });
+        setShowReviewForm(false);
+        setRating(0);
+        setReviewText('');
+        queryClient.invalidateQueries({ 
+          queryKey: ['content-reviews', contentType, contentId] 
+        });
+      } else {
+        throw new Error(result.message);
       }
-    } catch (error) {
-      console.error('Error submitting review:', error);
+    },
+    onError: (error: any) => {
       toast({
-        title: 'সমস্যা হয়েছে',
-        description: 'রিভিউ জমা দিতে সমস্যা হয়েছে',
-        variant: 'destructive'
+        title: 'ত্রুটি',
+        description: error.message || 'রিভিউ জমা দিতে সমস্যা হয়েছে',
+        variant: 'destructive',
       });
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    },
+  });
 
-  const renderStars = (rating: number, interactive = false, onRatingChange?: (rating: number) => void) => {
+  const renderStars = (currentRating: number, interactive: boolean = false) => {
     return (
-      <div className="flex items-center space-x-1">
+      <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star
+          <button
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating 
-                ? 'fill-yellow-400 text-yellow-400' 
-                : 'text-gray-300 dark:text-gray-600'
-            } ${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
-            onClick={interactive && onRatingChange ? () => onRatingChange(star) : undefined}
-          />
+            type="button"
+            className={`${
+              star <= currentRating
+                ? 'text-yellow-400 fill-current'
+                : 'text-gray-300'
+            } ${interactive ? 'hover:text-yellow-400 cursor-pointer' : 'cursor-default'}`}
+            onClick={interactive ? () => setRating(star) : undefined}
+            disabled={!interactive}
+          >
+            <Star className="h-5 w-5" />
+          </button>
         ))}
       </div>
     );
@@ -137,154 +111,180 @@ export default function ReviewsSection({ contentId, contentType, contentTitle }:
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
     : 0;
 
-  if (loading) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <Skeleton className="h-6 w-32" />
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getContentTypeName = () => {
+    switch (contentType) {
+      case 'article': return 'নিবন্ধ';
+      case 'video': return 'ভিডিও';
+      case 'audio': return 'অডিও';
+      default: return 'কন্টেন্ট';
+    }
+  };
 
   return (
-    <Card className="w-full">
+    <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>রিভিউ ও রেটিং</span>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5" />
+            রিভিউ ও রেটিং
+            {reviews.length > 0 && (
+              <Badge variant="secondary">{reviews.length}</Badge>
+            )}
+          </CardTitle>
+          
           {reviews.length > 0 && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               {renderStars(Math.round(averageRating))}
-              <span className="text-sm text-gray-600 dark:text-gray-400">
-                ({reviews.length} টি রিভিউ)
+              <span className="text-sm text-gray-500">
+                ({averageRating.toFixed(1)})
               </span>
             </div>
           )}
-        </CardTitle>
+        </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
-        {/* Add Review Section */}
-        {!showAddReview ? (
-          <Button 
-            onClick={() => setShowAddReview(true)}
+        {/* Add Review Button */}
+        {user && !showReviewForm && (
+          <Button
+            onClick={() => setShowReviewForm(true)}
             className="w-full"
             variant="outline"
           >
-            রিভিউ যোগ করুন
+            <Star className="h-4 w-4 mr-2" />
+            এই {getContentTypeName()}টি রিভিউ করুন
           </Button>
-        ) : (
-          <div className="space-y-4 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
-            <div className="space-y-2">
-              <Label>রেটিং দিন</Label>
-              {renderStars(newReview.rating, true, (rating) => 
-                setNewReview(prev => ({ ...prev, rating }))
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="review-title">শিরোনাম (ঐচ্ছিক)</Label>
-              <Input
-                id="review-title"
-                value={newReview.title}
-                onChange={(e) => setNewReview(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="রিভিউর শিরোনাম লিখুন"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="review-content">আপনার মন্তব্য *</Label>
-              <Textarea
-                id="review-content"
-                value={newReview.content}
-                onChange={(e) => setNewReview(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="এই কন্টেন্ট সম্পর্কে আপনার মতামত লিখুন..."
-                rows={4}
-              />
-            </div>
-            
-            <div className="flex space-x-2">
-              <Button 
-                onClick={handleSubmitReview}
-                disabled={submitting}
-                className="flex-1"
-              >
-                {submitting ? 'জমা দেওয়া হচ্ছে...' : 'রিভিউ জমা দিন'}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowAddReview(false);
-                  setNewReview({ rating: 5, title: '', content: '' });
-                }}
-                disabled={submitting}
-              >
-                বাতিল
-              </Button>
-            </div>
-          </div>
+        )}
+
+        {/* Review Form */}
+        {showReviewForm && (
+          <Card className="border-2 border-primary/20">
+            <CardContent className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  রেটিং দিন *
+                </label>
+                {renderStars(rating, true)}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  আপনার মতামত (ঐচ্ছিক)
+                </label>
+                <Textarea
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="এই কন্টেন্ট সম্পর্কে আপনার মতামত লিখুন..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => submitReviewMutation.mutate()}
+                  disabled={!rating || submitReviewMutation.isPending}
+                  className="flex-1"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {submitReviewMutation.isPending ? 'জমা দেওয়া হচ্ছে...' : 'রিভিউ জমা দিন'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowReviewForm(false);
+                    setRating(0);
+                    setReviewText('');
+                  }}
+                >
+                  বাতিল
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Reviews List */}
-        {reviews.length > 0 ? (
+        {isLoading ? (
           <div className="space-y-4">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b pb-4 last:border-b-0">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <User className="w-5 h-5 text-gray-400" />
-                    <span className="font-medium text-sm">
-                      {review.user_profiles?.full_name || 'পাঠক'}
-                    </span>
-                    {review.is_verified && (
-                      <Badge variant="secondary" className="text-xs">
-                        যাচাইকৃত
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    {renderStars(review.rating)}
-                    <span className="text-xs text-gray-500">
-                      {new Date(review.created_at).toLocaleDateString('bn-BD')}
-                    </span>
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div key={i} className="border rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 bg-gray-200 rounded-full animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4" />
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-1/6" />
+                    <div className="h-12 bg-gray-200 rounded animate-pulse" />
                   </div>
                 </div>
-                
-                {review.title && (
-                  <h4 className="font-semibold text-sm mb-1">{review.title}</h4>
-                )}
-                
-                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
-                  {review.content}
-                </p>
-                
-                {review.helpful_count > 0 && (
-                  <div className="flex items-center space-x-1 text-xs text-gray-500">
-                    <ThumbsUp className="w-3 h-3" />
-                    <span>{review.helpful_count} জন এটি সহায়ক মনে করেছেন</span>
-                  </div>
-                )}
               </div>
             ))}
           </div>
+        ) : reviews.length === 0 ? (
+          <div className="text-center py-8">
+            <MessageSquare className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <p className="text-gray-500">এখনো কোনো রিভিউ নেই</p>
+            <p className="text-sm text-gray-400 mt-1">
+              প্রথম রিভিউ দিয়ে অন্যদের সাহায্য করুন!
+            </p>
+          </div>
         ) : (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>এখনো কোনো রিভিউ নেই</p>
-            <p className="text-sm">প্রথম রিভিউ দিন!</p>
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <div key={review.id} className="border rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-gray-500" />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium text-sm">
+                        {(review as any).user_profiles?.name || 'Anonymous User'}
+                      </span>
+                      {renderStars(review.rating)}
+                      <span className="text-xs text-gray-500">
+                        {formatDistanceToNow(new Date(review.created_at), {
+                          addSuffix: true,
+                          locale: bn
+                        })}
+                      </span>
+                    </div>
+                    
+                    {review.review_text && (
+                      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">
+                        {review.review_text}
+                      </p>
+                    )}
+                    
+                    <div className="flex items-center gap-4 mt-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-auto p-1"
+                      >
+                        <ThumbsUp className="h-3 w-3 mr-1" />
+                        সহায়ক
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Login prompt for non-users */}
+        {!user && (
+          <div className="text-center py-6 border-t">
+            <p className="text-gray-500 mb-2">রিভিউ দিতে লগইন করুন</p>
+            <Button variant="outline" size="sm">
+              লগইন
+            </Button>
           </div>
         )}
       </CardContent>
     </Card>
   );
-}
+};
+
+export default ReviewsSection;

@@ -102,6 +102,9 @@ async function handleJWTError(error: any, retryFn: () => Promise<any>) {
   throw error;
 }
 
+// ====== MISSING TABLES API IMPLEMENTATION ======
+// This section implements all missing database functionality
+
 // Categories API
 export async function getCategories(): Promise<Category[]> {
   try {
