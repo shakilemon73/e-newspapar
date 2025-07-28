@@ -86,7 +86,7 @@ class DirectAdvancedAlgorithms {
         image_url: article.image_url || '',
         published_at: article.published_at,
         relevance_score: this.calculateRelevanceScore(article, categoryPreferences),
-        category_name: article.categories?.name || 'সাধারণ',
+        category_name: (article.categories as any)?.name || 'সাধারণ',
       }));
 
     } catch (error) {
@@ -177,7 +177,7 @@ class DirectAdvancedAlgorithms {
         image_url: article.image_url || '',
         published_at: article.published_at,
         relevance_score: 100 - index, // Higher score for more popular articles
-        category_name: article.categories?.name || 'সাধারণ',
+        category_name: (article.categories as any)?.name || 'সাধারণ',
       }));
 
     } catch (error) {
@@ -224,7 +224,7 @@ class DirectAdvancedAlgorithms {
         image_url: article.image_url || '',
         published_at: article.published_at,
         relevance_score: this.calculateTrendingScore(article),
-        category_name: article.categories?.name || 'সাধারণ',
+        category_name: (article.categories as any)?.name || 'সাধারণ',
       }));
 
     } catch (error) {
