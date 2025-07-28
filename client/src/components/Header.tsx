@@ -113,12 +113,12 @@ export const Header = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-2.5">
             {/* Date and Breaking News Indicator - Mobile First */}
-            <div className="flex items-center space-x-3 text-sm">
-              <time className="font-medium hidden sm:block">{currentDate}</time>
+            <div className="flex items-center space-x-3 text-sm flex-shrink-0">
+              <time className="font-medium hidden sm:block whitespace-nowrap">{currentDate}</time>
               <span className="hidden sm:block text-primary-foreground/60">•</span>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span className="text-primary-foreground/90 text-xs sm:text-sm font-medium">সর্বশেষ খবর</span>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
+                <span className="text-primary-foreground/90 text-xs sm:text-sm font-medium whitespace-nowrap">সর্বশেষ খবর</span>
               </div>
             </div>
 
@@ -209,7 +209,7 @@ export const Header = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4 lg:py-5">
             {/* Enhanced Logo Section */}
-            <div className="flex items-center flex-shrink-0">
+            <div className="flex items-center flex-shrink-0 min-w-0">
               <Link href="/" className="group flex items-center space-x-3 hover:scale-[1.02] transition-all duration-300 ease-out">
                 {siteSettings.logoUrl && (
                   <div className="relative overflow-hidden rounded-xl shadow-sm group-hover:shadow-md transition-shadow">
@@ -223,11 +223,11 @@ export const Header = () => {
                     />
                   </div>
                 )}
-                <div className="flex flex-col">
-                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent leading-tight">
+                <div className="flex flex-col justify-center">
+                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent leading-tight whitespace-nowrap">
                     {siteSettings.siteName}
                   </span>
-                  <span className="text-xs text-muted-foreground hidden sm:block font-medium">
+                  <span className="text-xs text-muted-foreground hidden sm:block font-medium whitespace-nowrap">
                     বিশ্বস্ত সংবাদ মাধ্যম
                   </span>
                 </div>
@@ -235,7 +235,7 @@ export const Header = () => {
             </div>
             
             {/* Enhanced Desktop Search */}
-            <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-8">
+            <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-4 xl:mx-8">
               <div className="w-full relative">
                 <EnhancedSearchSystem 
                   placeholder="সংবাদ, বিভাগ বা লেখক খুঁজুন..."
@@ -248,9 +248,9 @@ export const Header = () => {
             </div>
 
             {/* Enhanced Desktop & Mobile Controls */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               {/* Desktop Media Sections - beside notification */}
-              <div className="hidden lg:flex items-center space-x-1 mr-4">
+              <div className="hidden xl:flex items-center space-x-1 mr-4">
                 <Link href="/epaper" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
                   📰 ই-পেপার
                 </Link>
@@ -319,7 +319,7 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center justify-start py-3 overflow-x-auto scrollbar-hide">
             {/* Home and Categories */}
-            <div className="flex items-center space-x-1 min-w-max">
+            <div className="flex items-center space-x-1 min-w-max pr-4">
               <Link href="/" className="nav-item group flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary">
                 <Home size={16} className="group-hover:scale-110 transition-transform" />
                 <span>প্রথম পাতা</span>
