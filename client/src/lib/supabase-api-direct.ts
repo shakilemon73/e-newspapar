@@ -497,25 +497,33 @@ export async function getLatestEPaper(): Promise<EPaper | null> {
       .order('publish_date', { ascending: false })
       .limit(1);
     
-    if (error) {
-      console.error('Error fetching latest e-paper (is_latest=true):', error);
-      
-      // Fallback: get the most recent e-paper by publish_date
-      const { data: fallbackData, error: fallbackError } = await supabase
-        .from('epapers')
-        .select('*')
-        .order('publish_date', { ascending: false })
-        .limit(1);
-      
-      if (fallbackError) {
-        console.error('Error fetching fallback latest e-paper:', fallbackError);
-        return null;
-      }
-      
-      return fallbackData?.[0] || null;
+    // If we have data and no error, return it
+    if (!error && data && data.length > 0) {
+      console.log('Found latest e-paper:', data[0].title);
+      return data[0];
     }
     
-    return data?.[0] || null;
+    console.log('No e-paper marked as latest, fetching most recent...');
+    
+    // Fallback: get the most recent e-paper by publish_date
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('epapers')
+      .select('*')
+      .order('publish_date', { ascending: false })
+      .limit(1);
+    
+    if (fallbackError) {
+      console.error('Error fetching fallback latest e-paper:', fallbackError);
+      return null;
+    }
+    
+    if (fallbackData && fallbackData.length > 0) {
+      console.log('Using most recent e-paper as latest:', fallbackData[0].title);
+      return fallbackData[0];
+    }
+    
+    console.log('No e-papers found in database');
+    return null;
   } catch (err) {
     console.error('Error in getLatestEPaper:', err);
     return null;
