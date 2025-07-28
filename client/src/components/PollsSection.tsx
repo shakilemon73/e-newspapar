@@ -39,8 +39,8 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
   const loadPolls = async () => {
     setIsLoading(true);
     try {
-      const { getPolls } = await import('../lib/supabase-api-direct');
-      const data = await getPolls();
+      const { getActivePolls } = await import('../lib/missing-tables-api');
+      const data = await getActivePolls();
       setPolls(data);
     } catch (error) {
       console.error('Error loading polls:', error);
@@ -69,7 +69,7 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
     }
 
     try {
-      const { voteOnPoll } = await import('../lib/supabase-api-direct');
+      const { voteOnPoll } = await import('../lib/missing-tables-api');
       const result = await voteOnPoll(pollId, optionId, user.id);
 
       if (!result.success) {

@@ -48,6 +48,10 @@ import { DateFormatter } from './DateFormatter';
 import { ReadingTimeEstimator } from './AccessibilityEnhancements';
 import { EnhancedArticleCard } from './UXEnhancementSuite';
 import { SiteName } from '@/hooks/use-global-site-name';
+import { PollsSection } from './PollsSection';
+import UserAnalyticsDashboard from './UserAnalyticsDashboard';
+import UserNotificationCenter from './UserNotificationCenter';
+import EnhancedTagsDisplay from './EnhancedTagsDisplay';
 
 // Personalized Recommendations Widget
 const PersonalizedRecommendationsWidget: React.FC = () => {
@@ -636,6 +640,10 @@ export const EnhancedHomepage: React.FC = () => {
           <div className="space-y-6">
             <PersonalizedRecommendationsWidget />
             <TrendingTopicsWidget />
+            <PollsSection className="w-full" />
+            <UserAnalyticsDashboard compact={true} />
+            <UserNotificationCenter maxHeight="300px" />
+            <EnhancedTagsDisplay mode="popular" limit={10} />
             <ReadingProgressWidget />
             <SocialActivityWidget />
             <ContentCategoriesWidget />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
-import { Search, Menu, User, LogOut, Home, Bookmark, Bell, X, ChevronDown } from 'lucide-react';
+import { Search, Menu, User, LogOut, Home, Bookmark, Bell, X, ChevronDown, Users } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Input } from '@/components/ui/input';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
@@ -163,6 +163,12 @@ export const Header = () => {
                       <Link href="/reading-history" className="cursor-pointer">
                         <Bell className="mr-2 h-4 w-4" />
                         <span>পড়ার ইতিহাস</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/user-engagement" className="cursor-pointer">
+                        <Users className="mr-2 h-4 w-4" />
+                        <span>এনগেজমেন্ট</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
