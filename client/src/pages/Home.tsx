@@ -15,6 +15,8 @@ import AudioArticles from '@/components/AudioArticles';
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 import { AIEnhancedHomepage } from '@/components/AI/AIEnhancedHomepage';
+import { AudioGrid } from '@/components/media/AudioGrid';
+import { VideoGrid } from '@/components/media/VideoGrid';
 
 interface Category {
   id: number;
@@ -213,10 +215,28 @@ const Home = () => {
           </section>
         )}
         
-        {/* 11. Audio Content Hub - Accessibility & Multi-Modal Experience */}
+        {/* 11. Audio Content Hub - Research-Based Audio Player */}
         <section className="px-4 py-6 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-violet-50 via-white to-purple-50/50 dark:from-violet-950/20 dark:via-gray-900 dark:to-purple-950/10 rounded-2xl border border-violet-100 dark:border-violet-900/30 shadow-lg">
-            <AudioArticles />
+          <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-orange-950/20 rounded-2xl p-6 border border-purple-100/60 dark:border-purple-900/30 shadow-lg">
+            <AudioGrid 
+              title="অডিও আর্টিকেল"
+              limit={6}
+              showPlayer={true}
+              layout="grid"
+              className="space-y-6"
+            />
+          </div>
+        </section>
+
+        {/* 12. Video Content Hub - Research-Based Video Player */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/20 dark:via-cyan-950/20 dark:to-teal-950/20 rounded-2xl p-6 border border-blue-100/60 dark:border-blue-900/30 shadow-lg">
+            <VideoGrid 
+              title="ভিডিও কন্টেন্ট"
+              limit={6}
+              showPlayer={true}
+              className="space-y-6"
+            />
           </div>
         </section>
         

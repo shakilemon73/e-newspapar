@@ -34,6 +34,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { VideoGrid } from '@/components/media/VideoGrid';
+import { AudioGrid } from '@/components/media/AudioGrid';
 
 interface Category {
   id: number;
