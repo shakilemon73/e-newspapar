@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { VercelSafeAPI } from '@/lib/vercel-safe-api';
+import { getMostReadArticles } from '@/lib/real-view-tracker';
 
 interface Category {
   id: number;
@@ -13,12 +13,12 @@ interface Article {
   id: number;
   title: string;
   slug: string;
-  excerpt: string;
-  publishedAt: string;
-  category: Category;
-  viewCount: number;
-  aiScore?: number;
-  trending?: boolean;
+  excerpt?: string;
+  image_url?: string;
+  published_at: string;
+  daily_views: number;
+  total_views: number;
+  category?: Category;
 }
 
 type TimeRange = 'daily' | 'weekly' | 'monthly';
@@ -30,46 +30,33 @@ export const PopularNewsSection = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchPopularArticles = async () => {
+    const fetchMostReadArticles = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        console.log(`[PopularNews] Fetching ${timeRange} popular articles using Vercel-safe API`);
+        console.log(`[PopularNews] Fetching ${timeRange} most read articles with real view counts`);
 
-        // Use AI-powered popular articles API
-        const response = await fetch(`/api/ai/popular-articles?timeRange=${timeRange}&limit=6`);
-        const result = await response.json();
-
-        if (result.success && result.data?.articles) {
-          // Transform AI-enhanced data for display
-          const transformedArticles = result.data.articles.map((article: any) => ({
-            id: article.id,
-            title: article.title,
-            slug: article.slug,
-            excerpt: article.excerpt || article.summary,
-            publishedAt: article.published_at,
-            category: article.categories,
-            viewCount: article.view_count,
-            aiScore: article.aiScore,
-            trending: article.trending
-          }));
-          
-          setPopularArticles(transformedArticles);
-          console.log(`[PopularNews AI] Found ${transformedArticles.length} AI-ranked articles for ${timeRange}`);
+        // Use real view tracking system instead of AI recommendations
+        const articles = await getMostReadArticles(6, timeRange);
+        
+        if (articles && articles.length > 0) {
+          setPopularArticles(articles);
+          console.log(`[PopularNews] Found ${articles.length} most read articles for ${timeRange}:`, 
+            articles.map(a => `${a.title} (${a.daily_views} daily, ${a.total_views} total)`));
         } else {
-          setError(result.error || 'জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
+          setError('কোনো জনপ্রিয় সংবাদ পাওয়া যায়নি');
         }
 
       } catch (err: any) {
-        console.error('[PopularNews] Error fetching articles:', err);
+        console.error('[PopularNews] Error fetching most read articles:', err);
         setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPopularArticles();
+    fetchMostReadArticles();
   }, [timeRange]);
 
   const handleTimeRangeChange = (newRange: TimeRange) => {
@@ -186,7 +173,7 @@ export const PopularNewsSection = () => {
                   <h4 className="font-semibold text-foreground leading-tight line-clamp-2 flex-1">
                     {article.title}
                   </h4>
-                  {article.trending && (
+                  {article.daily_views > 10 && (
                     <div className="flex-shrink-0 ml-2">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
                         🔥 ট্রেন্ডিং
@@ -200,11 +187,7 @@ export const PopularNewsSection = () => {
                     <span className="px-2 py-1 bg-muted rounded text-xs">
                       {article.category?.name || 'সাধারণ'}
                     </span>
-                    {article.is_featured && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 rounded text-xs font-medium">
-                        ⭐ ফিচার্ড
-                      </span>
-                    )}
+
                   </span>
                   <div className="flex items-center gap-2 text-right">
                     <span className="flex items-center">
@@ -212,18 +195,11 @@ export const PopularNewsSection = () => {
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                         <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
                       </svg>
-                      {article.viewCount || article.view_count || 0} বার
+                      {timeRange === 'daily' ? `${article.daily_views} আজ` : `${article.total_views} মোট`} পঠিত
                     </span>
-                    {article.aiScore && (
-                      <>
-                        <span>•</span>
-                        <span className="text-blue-600 font-medium">
-                          AI: {article.aiScore}
-                        </span>
-                      </>
-                    )}
+
                     <span>•</span>
-                    <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at)}</span>
+                    <span>{getRelativeTimeInBengali(article.published_at)}</span>
                   </div>
                 </div>
               </div>

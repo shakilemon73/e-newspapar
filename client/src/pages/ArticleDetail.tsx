@@ -21,6 +21,7 @@ import { BackendAIIntegration } from '@/components/AI/BackendAIIntegration';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { initializeViewTracking, trackArticleView } from '@/lib/real-view-tracker';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { 
   Bookmark, 
@@ -390,6 +391,16 @@ const ArticleDetail = () => {
     
     trackReading();
   }, [user?.id, article?.id]); // Use specific properties instead of whole objects
+
+  // Initialize view tracking for the article - REAL VIEW COUNT SYSTEM
+  useEffect(() => {
+    if (!article?.id || viewTracked) return;
+    
+    // Initialize view tracking system for this article
+    initializeViewTracking(article.id, user?.id);
+    setViewTracked(true);
+    console.log(`[ArticleDetail] Real view tracking initialized for article ${article.id} (${article.title})`);
+  }, [article?.id, user?.id, viewTracked]);
   
   // Share functionality
   const handleShare = async (platform: string = 'copy') => {
