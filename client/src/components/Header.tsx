@@ -107,20 +107,23 @@ export const Header = () => {
   };
 
   return (
-    <header className="glass-effect sticky top-0 z-50 shadow-sm">
-      {/* Modern Top Bar with News Priority */}
-      <div className="bg-primary text-primary-foreground border-b border-primary/20">
-        <div className="container-modern">
-          <div className="flex justify-between items-center py-2">
-            {/* Date and Location - Hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-3 text-sm">
-              <time className="font-medium">{currentDate}</time>
-              <span className="text-primary-foreground/60">•</span>
-              <span className="text-primary-foreground/90">ঢাকা, বাংলাদেশ</span>
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-sm border-b border-gray-200/50 dark:border-gray-700/50">
+      {/* Enhanced Top Bar - Mobile Optimized */}
+      <div className="bg-gradient-to-r from-primary via-primary/95 to-primary text-primary-foreground border-b border-primary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-2.5">
+            {/* Date and Breaking News Indicator - Mobile First */}
+            <div className="flex items-center space-x-3 text-sm">
+              <time className="font-medium hidden sm:block">{currentDate}</time>
+              <span className="hidden sm:block text-primary-foreground/60">•</span>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span className="text-primary-foreground/90 text-xs sm:text-sm font-medium">সর্বশেষ খবর</span>
+              </div>
             </div>
 
-            {/* User Area & Social */}
-            <div className="flex items-center space-x-4">
+            {/* Enhanced User Area & Quick Actions */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -179,110 +182,156 @@ export const Header = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="flex items-center space-x-3 text-sm">
-                  <Link href="/login" className="btn-link text-primary-foreground hover:text-primary-foreground/80">লগইন</Link>
-                  <span className="text-primary-foreground/40">|</span>
-                  <Link href="/register" className="btn-link text-primary-foreground hover:text-primary-foreground/80">রেজিস্টার</Link>
+                <div className="flex items-center space-x-2 text-sm">
+                  <Link href="/login" className="px-3 py-1.5 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-md transition-colors text-primary-foreground font-medium">লগইন</Link>
+                  <Link href="/register" className="px-3 py-1.5 bg-accent hover:bg-accent/90 rounded-md transition-colors text-white font-medium">রেজিস্টার</Link>
                 </div>
               )}
               
-              {/* Theme Toggle */}
-              <div className="border-l border-primary-foreground/20 pl-3">
+              {/* Enhanced Theme Toggle & Quick Actions */}
+              <div className="flex items-center space-x-2 border-l border-primary-foreground/20 pl-2 sm:pl-3">
                 <ThemeToggle />
+                {/* Mobile Quick Menu */}
+                <button 
+                  className="sm:hidden p-1.5 rounded-md hover:bg-primary-foreground/10 transition-colors"
+                  aria-label="আরো অপশন"
+                >
+                  <Menu className="h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Main Header with Logo and Search */}
-      <div className="bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="container-modern">
-          <div className="flex items-center justify-between py-4">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center space-x-3 hover:scale-105 transition-transform duration-200">
+      {/* Enhanced Main Header - Mobile Optimized */}
+      <div className="bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between py-4 lg:py-5">
+            {/* Enhanced Logo Section */}
+            <div className="flex items-center flex-shrink-0">
+              <Link href="/" className="group flex items-center space-x-3 hover:scale-[1.02] transition-all duration-300 ease-out">
                 {siteSettings.logoUrl && (
-                  <img 
-                    src={siteSettings.logoUrl} 
-                    alt={siteSettings.siteName}
-                    className="h-10 w-auto object-contain"
-                    onError={(e) => {
-                      // Hide logo if it fails to load
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
+                  <div className="relative overflow-hidden rounded-xl shadow-sm group-hover:shadow-md transition-shadow">
+                    <img 
+                      src={siteSettings.logoUrl} 
+                      alt={siteSettings.siteName}
+                      className="h-10 sm:h-12 w-auto object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
                 )}
-                <span className="headline gradient-text">
-                  {siteSettings.siteName}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent leading-tight">
+                    {siteSettings.siteName}
+                  </span>
+                  <span className="text-xs text-muted-foreground hidden sm:block font-medium">
+                    বিশ্বস্ত সংবাদ মাধ্যম
+                  </span>
+                </div>
               </Link>
             </div>
             
-            {/* Desktop Search */}
-            <div className="hidden md:flex items-center space-x-4">
-              <EnhancedSearchSystem 
-                placeholder="সংবাদ খুঁজুন..."
-                className="w-80"
-                showHistory={true}
-                showTrending={true}
-                showFilters={true}
-              />
+            {/* Enhanced Desktop Search */}
+            <div className="hidden lg:flex items-center flex-1 max-w-2xl mx-8">
+              <div className="w-full relative">
+                <EnhancedSearchSystem 
+                  placeholder="সংবাদ, বিভাগ বা লেখক খুঁজুন..."
+                  className="w-full border-2 border-gray-200/80 dark:border-gray-700/80 focus-within:border-primary/50 rounded-xl shadow-sm"
+                  showHistory={true}
+                  showTrending={true}
+                  showFilters={true}
+                />
+              </div>
             </div>
 
-            {/* Mobile Controls */}
-            <div className="flex items-center space-x-2 md:hidden">
+            {/* Enhanced Mobile Controls */}
+            <div className="flex items-center space-x-2">
+              {/* Search Button - Mobile */}
               <button 
                 onClick={toggleSearch}
-                className="p-2 rounded-lg hover:bg-accent/10 transition-colors"
-                aria-label="Search"
+                className="lg:hidden p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target"
+                aria-label="সার্চ করুন"
               >
-                <Search size={20} />
+                <Search size={20} className="text-gray-600 dark:text-gray-300" />
               </button>
-              <MobileNavigation categories={categories} />
+              
+              {/* Notification Bell */}
+              {user && (
+                <button 
+                  className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors touch-target relative"
+                  aria-label="নোটিফিকেশন"
+                >
+                  <Bell size={20} className="text-gray-600 dark:text-gray-300" />
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                </button>
+              )}
+              
+              {/* Mobile Navigation */}
+              <div className="lg:hidden">
+                <MobileNavigation categories={categories} />
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Mobile Search */}
+      {/* Enhanced Mobile Search */}
       {searchOpen && (
-        <div className="md:hidden bg-background border-b border-border p-4 slide-up">
-          <EnhancedSearchSystem 
-            placeholder="সংবাদ খুঁজুন..."
-            className="w-full"
-            showHistory={true}
-            showTrending={true}
-            showFilters={false}
-          />
+        <div className="lg:hidden bg-white/98 dark:bg-gray-900/98 backdrop-blur-sm border-b border-gray-200/60 dark:border-gray-700/60 p-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="relative">
+            <EnhancedSearchSystem 
+              placeholder="সংবাদ, বিভাগ বা লেখক খুঁজুন..."
+              className="w-full border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm"
+              showHistory={true}
+              showTrending={true}
+              showFilters={false}
+            />
+            <button 
+              onClick={toggleSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="সার্চ বন্ধ করুন"
+            >
+              <X size={16} className="text-gray-500" />
+            </button>
+          </div>
         </div>
       )}
       
-      {/* Navigation */}
-      <nav className="bg-background/98 backdrop-blur-sm border-b border-border">
-        <div className="container-modern">
+      {/* Enhanced Navigation - Mobile First */}
+      <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-start py-2 overflow-x-auto">
-            <div className="flex items-center space-x-2 min-w-max">
-              <Link href="/" className="nav-link flex items-center whitespace-nowrap">
-                <Home size={16} className="mr-1" />
-                প্রথম পাতা
+          <div className="hidden lg:flex items-center justify-start py-3 overflow-x-auto scrollbar-hide">
+            <div className="flex items-center space-x-1 min-w-max">
+              <Link href="/" className="nav-item group flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary">
+                <Home size={16} className="group-hover:scale-110 transition-transform" />
+                <span>প্রথম পাতা</span>
               </Link>
               
               {categories.map(category => (
                 <Link 
                   key={category.id}
                   href={`/category/${category.slug}`} 
-                  className="nav-link whitespace-nowrap"
+                  className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap"
                 >
                   {category.name}
                 </Link>
               ))}
               
-              <Link href="/epaper" className="nav-link whitespace-nowrap">ই-পেপার</Link>
-              <Link href="/videos" className="nav-link whitespace-nowrap">ভিডিও</Link>
-              <Link href="/audio-articles" className="nav-link whitespace-nowrap">অডিও</Link>
-              <Link href="/advanced-search" className="nav-link whitespace-nowrap">উন্নত অনুসন্ধান</Link>
+              <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-2"></div>
+              
+              <Link href="/epaper" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                📰 ই-পেপার
+              </Link>
+              <Link href="/videos" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                🎥 ভিডিও
+              </Link>
+              <Link href="/audio-articles" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                🎧 অডিও
+              </Link>
             </div>
           </div>
           

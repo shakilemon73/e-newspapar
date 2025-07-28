@@ -93,6 +93,43 @@
     --timing-ease-out: cubic-bezier(0, 0, 0.2, 1);
     --timing-ease-in: cubic-bezier(0.4, 0, 1, 1);
   }
+
+  /* Touch-friendly target size for mobile */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hide scrollbar for better UX */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Enhanced container with proper spacing */
+  .container-enhanced {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .container-enhanced {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container-enhanced {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
  
   .dark {
     --background: 210 11% 4%;
