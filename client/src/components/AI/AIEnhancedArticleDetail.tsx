@@ -27,14 +27,10 @@ interface AIEnhancedArticleDetailProps {
 }
 
 export function AIEnhancedArticleDetail({ article, className }: AIEnhancedArticleDetailProps) {
-  // Get AI analysis for this article
-  const { data: aiAnalysis, isLoading } = useQuery({
-    queryKey: ['ai-analysis', article.id],
-    queryFn: () => aiApiClient.getArticleAnalysis(article.id),
-    staleTime: 300000 // 5 minutes
-  });
-
-  const analysis = aiAnalysis?.data;
+  // Backend AI processing only - no frontend display
+  // AI analysis happens in background for admin analytics
+  
+  return null; // Component disabled for frontend display
 
   return (
     <div className={`space-y-4 ${className}`}>

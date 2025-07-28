@@ -33,11 +33,10 @@ export function BackendAIIntegration({
   showStats = true, 
   className 
 }: BackendAIIntegrationProps) {
-  const [processingStatus, setProcessingStatus] = useState<'idle' | 'processing' | 'completed'>('idle');
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  // AI functionality available to all users
-  const isAdmin = true; // Make AI features available to everyone
+  // Component disabled for public users - AI processing happens in backend only
+  // This component now only works for backend analytics and admin dashboard
+  
+  return null; // No frontend display - backend processing only
 
   // Get AI statistics
   const { data: aiStats, isLoading: statsLoading } = useQuery({

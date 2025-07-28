@@ -1044,8 +1044,7 @@ export async function getArticleTags(articleId: number): Promise<Tag[]> {
           name,
           slug,
           description,
-          usage_count,
-          is_trending
+          usage_count
         )
       `)
       .eq('article_id', articleId);
