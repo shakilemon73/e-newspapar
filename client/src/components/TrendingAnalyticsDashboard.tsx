@@ -159,7 +159,7 @@ export const TrendingAnalyticsDashboard = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center space-x-2">
             <TrendingUp className="w-6 h-6 text-blue-600" />
-            <span>ট্রেন্ডিং এনালিটিক্স</span>
+            <span>জনপ্রিয়তা বিশ্লেষণ</span>
           </h2>
           <p className="text-gray-600 mt-1">
             রিয়েল-টাইম জনপ্রিয় খবর এবং বিষয়
@@ -178,9 +178,9 @@ export const TrendingAnalyticsDashboard = () => {
 
       <Tabs defaultValue="trending" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="trending">ট্রেন্ডিং খবর</TabsTrigger>
-          <TabsTrigger value="popular">জনপ্রিয় খবর</TabsTrigger>
-          <TabsTrigger value="topics">ট্রেন্ডিং বিষয়</TabsTrigger>
+          <TabsTrigger value="trending">জনপ্রিয় খবর</TabsTrigger>
+          <TabsTrigger value="popular">সর্বাধিক পঠিত</TabsTrigger>
+          <TabsTrigger value="topics">আলোচিত টপিক</TabsTrigger>
         </TabsList>
 
         <TabsContent value="trending" className="space-y-4">
@@ -188,7 +188,7 @@ export const TrendingAnalyticsDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <TrendingUp className="w-5 h-5" />
-                <span>এখনই ট্রেন্ডিং</span>
+                <span>এখনই জনপ্রিয়</span>
                 <Badge variant="secondary">{trendingArticles.length}</Badge>
               </CardTitle>
             </CardHeader>
@@ -317,7 +317,7 @@ export const TrendingAnalyticsDashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
-                <span>ট্রেন্ডিং বিষয়</span>
+                <span>আলোচিত বিষয়</span>
                 <Badge variant="secondary">{trendingTopics.length}</Badge>
               </CardTitle>
             </CardHeader>

@@ -215,7 +215,7 @@ const TrendingTopicsWidget: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <TrendingUp className="w-5 h-5 text-primary" />
-          <span>ট্রেন্ডিং বিষয়</span>
+          <span>বিষয়</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

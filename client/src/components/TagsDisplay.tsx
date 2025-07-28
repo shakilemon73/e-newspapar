@@ -63,7 +63,7 @@ export default function TagsDisplay({
       <div className={className}>
         {showTitle && (
           <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-            {variant === 'trending' ? 'ট্রেন্ডিং ট্যাগ' : 'ট্যাগসমূহ'}
+            {variant === 'trending' ? 'ট্যাগ' : 'ট্যাগসমূহ'}
           </h3>
         )}
         <div className="flex flex-wrap gap-2">
@@ -98,7 +98,7 @@ export default function TagsDisplay({
     <div className={className}>
       {showTitle && (
         <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-white">
-          {variant === 'trending' ? 'ট্রেন্ডিং ট্যাগ' : variant === 'article' ? 'সংশ্লিষ্ট ট্যাগ' : 'সকল ট্যাগ'}
+          {variant === 'trending' ? 'ট্যাগ' : variant === 'article' ? 'ট্যাগ' : 'সকল ট্যাগ'}
         </h3>
       )}
       
@@ -128,7 +128,7 @@ export function TrendingTagsWidget() {
   return (
     <Card className="w-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base font-semibold">ট্রেন্ডিং ট্যাগ</CardTitle>
+        <CardTitle className="text-base font-semibold">ট্যাগ</CardTitle>
       </CardHeader>
       <CardContent>
         <TagsDisplay 

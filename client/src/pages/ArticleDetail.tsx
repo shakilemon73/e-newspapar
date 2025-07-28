@@ -1675,29 +1675,38 @@ const ArticleDetail = () => {
                     </div>
                   </div>
                   
-                  {/* Article Content */}
+                  {/* Article Content - Ad-Friendly with Proper Spacing */}
                   <div 
                     ref={contentRef}
                     className="p-8 pt-6"
                     style={{ fontSize: `${fontSize}px` }}
                   >
                     <div 
-                      className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed prose-strong:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg"
-                      dangerouslySetInnerHTML={{ __html: article.content || '' }}
+                      className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-6 prose-strong:text-foreground prose-a:text-primary hover:prose-a:text-primary/80 prose-blockquote:border-l-primary prose-blockquote:bg-muted/30 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:rounded-r-lg [&>p]:mb-6 [&>*]:mb-4"
+                      dangerouslySetInnerHTML={{ __html: article.content?.replace(/\n/g, '<br/>').replace(/\.\s/g, '. <br/><br/>') || '' }}
                       style={{ 
                         fontFamily: 'SolaimanLipi, Kalpurush, ApponaLohit, system-ui',
-                        lineHeight: '1.8'
+                        lineHeight: '1.8',
+                        wordSpacing: '0.1em',
+                        letterSpacing: '0.02em'
                       }}
                     />
 
-                    {/* Article Summary */}
-                    <div className="mt-8 p-6 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl">
+                    {/* Analysis Section - No AI Mentions */}
+                    <div className="mt-8 p-6 bg-gradient-to-br from-blue/5 to-blue/10 border border-blue/20 rounded-xl">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-blue-600" />
+                        নিবন্ধ বিশ্লেষণ
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        এই নিবন্ধের মূল বিষয়বস্তু এবং গুরুত্বপূর্ণ তথ্যাদি
+                      </p>
                       <ArticleSummary content={article.content || ''} />
                     </div>
 
-                    {/* Tags Display */}
+                    {/* Tags Display - Auto-Generated */}
                     <div className="mt-6">
-                      <TagsDisplay articleId={article.id} />
+                      <TagsDisplay articleId={article.id} variant="article" showTitle={true} />
                     </div>
                   </div>
                   

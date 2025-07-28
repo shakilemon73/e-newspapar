@@ -147,8 +147,8 @@ export const DiscoveryWidget = () => {
           {/* AI-Powered Trending Topics */}
           <div>
             <h4 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-1">
-              ট্রেন্ডিং
-              <Badge variant="outline" className="text-xs">AI</Badge>
+              জনপ্রিয়
+              <Badge variant="outline" className="text-xs">লাইভ</Badge>
             </h4>
             <div className="space-y-2">
               {trendingTopics?.slice(0, 4).map((topic: any, index: number) => (
@@ -310,7 +310,7 @@ export const TrendingTopicsWidget = () => {
       <CardHeader>
         <CardTitle className="flex items-center text-lg">
           <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
-          ট্রেন্ডিং বিষয়
+          বিষয়
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -500,7 +500,7 @@ export const ReadingStatsWidget = () => {
               <Separator />
               <div className="space-y-3">
                 <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-1">
-                  AI অন্তর্দৃষ্টি
+                  পাঠ বিশ্লেষণ
                   <Badge variant="outline" className="text-xs">নতুন</Badge>
                 </h4>
                 
