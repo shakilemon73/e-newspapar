@@ -16,6 +16,7 @@ import TagsDisplay from '@/components/TagsDisplay';
 import { BengaliVoiceHelper } from '@/components/BengaliVoiceHelper';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { PollsSection } from '@/components/PollsSection';
+import { ArticleMediaGallery } from '@/components/media/ArticleMediaGallery';
 
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
@@ -107,6 +108,16 @@ interface Article {
   summary?: string;
   image_url: string;
   imageUrl?: string;
+  media_urls?: string[];
+  video_urls?: string[];
+  mixed_media?: Array<{
+    type: 'image' | 'video';
+    url: string;
+    thumbnail?: string;
+    title?: string;
+    description?: string;
+    duration?: string;
+  }>;
   published_at: string;
   publishedAt?: string;
   category?: Category;
@@ -1131,7 +1142,15 @@ const ArticleDetail = () => {
           content: data.content || '',
           category: Array.isArray(data.categories) ? data.categories[0] : data.categories,
           is_featured: data.is_featured || false,
-          view_count: data.view_count || 0
+          view_count: data.view_count || 0,
+          // Add sample media data for demonstration
+          media_urls: data.media_urls || [
+            'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=600&fit=crop&auto=format&q=80',
+            'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop&auto=format&q=80'
+          ],
+          video_urls: data.video_urls || [
+            'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+          ]
         };
         
         // Track view count for new article (non-blocking)
@@ -1745,6 +1764,92 @@ const ArticleDetail = () => {
                       </p>
                     </div>
                   </div>
+
+                  {/* Article Media Gallery - Multiple Images, Videos, and Mixed Media */}
+                  {(() => {
+                    // Generate mock media data based on article content and user request
+                    const sampleMediaItems = [
+                      {
+                        id: '1',
+                        type: 'image' as const,
+                        url: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'সংবাদের প্রধান ছবি',
+                        description: 'বিস্তারিত তথ্যসহ মূল ঘটনার চিত্র'
+                      },
+                      {
+                        id: '2',
+                        type: 'video' as const,
+                        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+                        thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'ভিডিও রিপোর্ট',
+                        description: 'ঘটনাস্থল থেকে সরাসরি ভিডিও সংবাদ',
+                        duration: '২:৩০'
+                      },
+                      {
+                        id: '3',
+                        type: 'image' as const,
+                        url: 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'অতিরিক্ত চিত্র',
+                        description: 'সহায়ক তথ্যের ছবি'
+                      },
+                      {
+                        id: '4',
+                        type: 'video' as const,
+                        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                        thumbnail: 'https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'সাক্ষাৎকার ভিডিও',
+                        description: 'বিশেষজ্ঞদের মতামত এবং বিশ্লেষণ',
+                        duration: '৫:১৫'
+                      },
+                      {
+                        id: '5',
+                        type: 'image' as const,
+                        url: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'গ্রাফিক্স ও চার্ট',
+                        description: 'পরিসংখ্যানগত তথ্যের চিত্রায়ণ'
+                      },
+                      {
+                        id: '6',
+                        type: 'video' as const,
+                        url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+                        thumbnail: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=600&fit=crop&auto=format&q=80',
+                        title: 'লাইভ রিপোর্টিং',
+                        description: 'মাঠ পর্যায় থেকে লাইভ সংবাদ সম্প্রচার',
+                        duration: '৩:৪৫'
+                      }
+                    ];
+
+                    // Use article's media data if available, otherwise use sample data
+                    const mediaItems = article.mixed_media || 
+                      (article.media_urls || article.video_urls ? 
+                        [
+                          ...(article.media_urls || []).map((url, index) => ({
+                            id: `img-${index}`,
+                            type: 'image' as const,
+                            url,
+                            title: `ছবি ${index + 1}`,
+                            description: `${article.title} সম্পর্কিত ছবি`
+                          })),
+                          ...(article.video_urls || []).map((url, index) => ({
+                            id: `vid-${index}`,
+                            type: 'video' as const,
+                            url,
+                            title: `ভিডিও ${index + 1}`,
+                            description: `${article.title} সম্পর্কিত ভিডিও`,
+                            duration: '০০:০০'
+                          }))
+                        ] : sampleMediaItems);
+
+                    return mediaItems.length > 0 ? (
+                      <div className="mt-8">
+                        <ArticleMediaGallery 
+                          mediaItems={mediaItems}
+                          title="নিবন্ধের মিডিয়া সংগ্রহ"
+                          className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-700"
+                        />
+                      </div>
+                    ) : null;
+                  })()}
                   
                   {/* Article Content - Ad-Friendly with Proper Spacing */}
                   <div 
