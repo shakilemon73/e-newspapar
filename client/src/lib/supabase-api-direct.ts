@@ -2581,6 +2581,154 @@ export async function getActiveAdvertisements(placement?: string): Promise<Adver
   }
 }
 
+// ================================
+// CONTACT MESSAGES API
+// ================================
+
+export interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  replied_at?: string;
+}
+
+// Send contact message
+export async function sendContactMessage(data: {
+  name: string;
+  email: string;
+  phone?: string;
+  subject: string;
+  message: string;
+}): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('contact_messages')
+      .insert({
+        ...data,
+        is_read: false
+      });
+
+    if (error) {
+      console.error('Error sending contact message:', error);
+      return { success: false, message: 'বার্তা পাঠাতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'আপনার বার্তা সফলভাবে পাঠানো হয়েছে!' };
+  } catch (error) {
+    console.error('Error sending contact message:', error);
+    return { success: false, message: 'বার্তা পাঠাতে সমস্যা হয়েছে' };
+  }
+}
+
+// Get contact messages (admin only)
+export async function getContactMessages(): Promise<ContactMessage[]> {
+  try {
+    const { data, error } = await supabase
+      .from('contact_messages')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching contact messages:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching contact messages:', error);
+    return [];
+  }
+}
+
+// ================================
+// PAGE VIEWS AND ANALYTICS API  
+// ================================
+
+// Get popular pages
+export async function getPopularPages(limit = 10): Promise<any[]> {
+  try {
+    const { data, error } = await supabase
+      .from('page_views')
+      .select('page_url, page_title, count(*)')
+      .gt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // Last 7 days
+      .group('page_url, page_title')
+      .order('count', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching popular pages:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching popular pages:', error);
+    return [];
+  }
+}
+
+// Record page view
+export async function recordPageView(pageData: {
+  page_url: string;
+  page_title?: string;
+  user_id?: string;
+  session_id?: string;
+  referrer_url?: string;
+}): Promise<{ success: boolean }> {
+  try {
+    const { error } = await supabase
+      .from('page_views')
+      .insert({
+        ...pageData,
+        created_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.error('Error recording page view:', error);
+      return { success: false };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error recording page view:', error);
+    return { success: false };
+  }
+}
+
+// Get engagement metrics
+export async function getEngagementMetrics(
+  contentType?: string, 
+  contentId?: number, 
+  metricType?: string
+): Promise<any[]> {
+  try {
+    let query = supabase
+      .from('engagement_metrics')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (contentType) query = query.eq('content_type', contentType);
+    if (contentId) query = query.eq('content_id', contentId);
+    if (metricType) query = query.eq('metric_type', metricType);
+
+    const { data, error } = await query.limit(100);
+
+    if (error) {
+      console.error('Error fetching engagement metrics:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching engagement metrics:', error);
+    return [];
+  }
+}
 
 
 

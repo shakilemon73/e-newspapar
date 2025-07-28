@@ -38,6 +38,7 @@ import Tag from "@/pages/Tag";
 // Footer Pages
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
+import Polls from "@/pages/Polls";
 import EditorialPolicy from "@/pages/EditorialPolicy";
 import Advertisement from "@/pages/Advertisement";
 import Archive from "@/pages/Archive";
@@ -78,6 +79,7 @@ function UserRouter() {
       {/* Footer Pages */}
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/polls" component={Polls} />
       <Route path="/editorial-policy" component={EditorialPolicy} />
       <Route path="/advertisement" component={Advertisement} />
       <Route path="/archive" component={Archive} />
