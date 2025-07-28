@@ -247,8 +247,21 @@ export const Header = () => {
               </div>
             </div>
 
-            {/* Enhanced Mobile Controls */}
+            {/* Enhanced Desktop & Mobile Controls */}
             <div className="flex items-center space-x-2">
+              {/* Desktop Media Sections - beside notification */}
+              <div className="hidden lg:flex items-center space-x-1 mr-4">
+                <Link href="/epaper" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                  📰 ই-পেপার
+                </Link>
+                <Link href="/videos" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                  🎥 ভিডিও
+                </Link>
+                <Link href="/audio-articles" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
+                  🎧 অডিও
+                </Link>
+              </div>
+              
               {/* Search Button - Mobile */}
               <button 
                 onClick={toggleSearch}
@@ -304,8 +317,8 @@ export const Header = () => {
       <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-between py-3 overflow-x-auto scrollbar-hide">
-            {/* Left side - Home and Categories */}
+          <div className="hidden lg:flex items-center justify-start py-3 overflow-x-auto scrollbar-hide">
+            {/* Home and Categories */}
             <div className="flex items-center space-x-1 min-w-max">
               <Link href="/" className="nav-item group flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary">
                 <Home size={16} className="group-hover:scale-110 transition-transform" />
@@ -321,19 +334,6 @@ export const Header = () => {
                   {category.name}
                 </Link>
               ))}
-            </div>
-            
-            {/* Right side - Media sections aligned with search bar */}
-            <div className="flex items-center space-x-1">
-              <Link href="/epaper" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                📰 ই-পেপার
-              </Link>
-              <Link href="/videos" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                🎥 ভিডিও
-              </Link>
-              <Link href="/audio-articles" className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                🎧 অডিও
-              </Link>
             </div>
           </div>
           
