@@ -325,8 +325,8 @@ export const Header = () => {
                 <span>প্রথম পাতা</span>
               </Link>
               
-              {/* Categories Navigation (except last one) */}
-              {categories.slice(0, -1).map(category => (
+              {/* All Categories Navigation */}
+              {categories.map(category => (
                 <Link 
                   key={category.id}
                   href={`/category/${category.slug}`} 
@@ -337,31 +337,8 @@ export const Header = () => {
               ))}
             </div>
             
-            {/* Right Side - Last Category with Media Links */}
-            <div className="flex items-center space-x-1 min-w-max">
-              {/* Last Category */}
-              {categories.length > 0 && (
-                <Link 
-                  href={`/category/${categories[categories.length - 1].slug}`} 
-                  className="nav-item px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap"
-                >
-                  {categories[categories.length - 1].name}
-                </Link>
-              )}
-              
-              {/* Media Section Links aligned with Audio Articles */}
-              <div className="flex items-center space-x-1 border-l border-gray-200 dark:border-gray-700 pl-4 ml-4">
-                <Link href="/epaper" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                  📰 ই-পেপার
-                </Link>
-                <Link href="/videos" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                  🎥 ভিডিও
-                </Link>
-                <Link href="/audio-articles" className="nav-item px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary whitespace-nowrap">
-                  🎧 অডিও আর্টিকেল
-                </Link>
-              </div>
-            </div>
+            {/* Right Side - Spacer to push content toward notification */}
+            <div className="flex-1 max-w-16"></div>
           </div>
           
           {/* Mobile Navigation */}
