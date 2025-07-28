@@ -16,6 +16,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **AI PUBLIC ACCESS ENABLED (January 25, 2025)**: Enabled AI functionality for all users (not just admins) based on user request. AI processing features now available to everyone.
 
+**NATURAL AI ANALYSIS DISPLAY COMPLETED (July 28, 2025)**: Implemented clean "নিবন্ধ বিশ্লেষণ" section displaying AI-processed analysis results (reading time, sentiment, complexity, auto-tags, insights) without mentioning AI generation. Users see natural analysis details like "পড়ার সময়", "নিরপেক্ষ", "সহজ", "মূল বিষয়" while backend AI processing continues seamlessly. Enhanced ArticleSummary alignment with "প্রবন্ধের সারসংক্ষেপ দেখুন" properly positioned.
+
 **LIGHT MODE DEFAULT ENABLED (July 25, 2025)**: Changed default theme from system preference to light mode. Users now see light mode by default instead of following their system theme preference.
 
 **VERCEL CONSOLE ERRORS FIXED (July 25, 2025)**: Resolved all major console errors in Vercel deployment including AI API 404s, database relationship errors, localStorage JSON parsing issues, and multiple Supabase client warnings. Site now runs error-free on Vercel.

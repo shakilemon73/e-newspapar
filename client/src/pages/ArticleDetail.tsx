@@ -21,6 +21,7 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { initializeViewTracking, trackArticleView } from '@/lib/real-view-tracker';
+import { AnalysisDetails } from '@/components/AnalysisDetails';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { 
   Bookmark, 
@@ -1691,16 +1692,26 @@ const ArticleDetail = () => {
                       }}
                     />
 
-                    {/* Analysis Section - No AI Mentions */}
-                    <div className="mt-8 p-6 bg-gradient-to-br from-blue/5 to-blue/10 border border-blue/20 rounded-xl">
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Lightbulb className="w-5 h-5 text-blue-600" />
-                        নিবন্ধ বিশ্লেষণ
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        এই নিবন্ধের মূল বিষয়বস্তু এবং গুরুত্বপূর্ণ তথ্যাদি
+                    {/* Analysis Section - Backend AI Processing Results */}
+                    <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                          <Lightbulb className="w-5 h-5 text-blue-600" />
+                          নিবন্ধ বিশ্লেষণ
+                        </h3>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground mb-4">
+                        এই নিবন্ধের মূল বিষয়বস্তু, গুরুত্বপূর্ণ তথ্য এবং পাঠ বিশ্লেষণ
                       </p>
-                      <ArticleSummary content={article.content || ''} />
+
+                      {/* Article Summary with Proper Alignment */}
+                      <div className="space-y-4">
+                        <ArticleSummary content={article.content || ''} />
+                        
+                        {/* Analysis Details - Backend Processing Results */}
+                        <AnalysisDetails articleId={article.id} />
+                      </div>
                     </div>
 
                     {/* Tags Display - Auto-Generated */}
