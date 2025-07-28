@@ -5,10 +5,10 @@ import { formatBengaliDate } from '@/lib/utils/dates';
 interface EPaper {
   id: number;
   title: string;
-  publishDate: string;
-  imageUrl: string;
-  pdfUrl: string;
-  isLatest: boolean;
+  publish_date: string;
+  image_url: string;
+  pdf_url: string;
+  is_latest: boolean;
 }
 
 export const EPaperSection = () => {
@@ -102,19 +102,19 @@ export const EPaperSection = () => {
         <div className="w-full md:w-auto">
           <div className="text-center">
             <a 
-              href={latestEPaper.pdfUrl} 
+              href={latestEPaper.pdf_url} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="block hover:opacity-80 transition"
             >
               <img 
-                src={latestEPaper.imageUrl} 
+                src={latestEPaper.image_url} 
                 alt="আজকের ই-পেপার" 
                 className="mx-auto shadow-md border border-border h-80 object-cover"
               />
               <div className="mt-2 font-medium">{latestEPaper.title}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                {formatBengaliDate(latestEPaper.publishDate)}
+                {formatBengaliDate(latestEPaper.publish_date)}
               </div>
             </a>
           </div>
@@ -127,12 +127,12 @@ export const EPaperSection = () => {
               {epapers.filter(paper => paper.id !== latestEPaper.id).map((paper) => (
                 <a 
                   key={paper.id}
-                  href={paper.pdfUrl}
+                  href={paper.pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-2 border border-border rounded hover:bg-muted dark:hover:bg-muted transition text-sm"
                 >
-                  {formatBengaliDate(paper.publishDate).split(' ')[0]} {formatBengaliDate(paper.publishDate).split(' ')[1]}
+                  {formatBengaliDate(paper.publish_date).split(' ')[0]} {formatBengaliDate(paper.publish_date).split(' ')[1]}
                 </a>
               ))}
             </div>
