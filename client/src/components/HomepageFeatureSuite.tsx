@@ -58,33 +58,47 @@ export const DiscoveryWidget = () => {
     },
   });
 
-  // AI-powered personalized content discovery
+  // Enhanced AI-powered personalized content discovery
   useEffect(() => {
     const fetchAIInsights = async () => {
       try {
         if (user?.id) {
-          // Get AI recommendations for discovery
-          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=3&type=discovery`);
+          // Get comprehensive AI recommendations for logged-in users
+          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=5`);
           const result = await response.json();
           
           if (result.success) {
-            setAiInsights(result.data);
+            setAiInsights({
+              ...result.data,
+              type: 'personalized',
+              userPreferences: result.data.userPreferences,
+              aiRecommendations: true
+            });
             console.log('[AI Discovery] Generated personalized insights:', result.data);
           }
         } else {
-          // Get general AI insights for non-logged users
-          const response = await fetch('/api/ai/popular-articles?timeRange=weekly&limit=3');
+          // Get AI-powered trending articles for non-logged users
+          const response = await fetch('/api/ai/popular/weekly?limit=5');
           const result = await response.json();
           
           if (result.success) {
             setAiInsights({ 
               articles: result.data.articles,
-              type: 'popular'
+              type: 'trending',
+              aiPowered: true
             });
+            console.log('[AI Discovery] Generated trending insights for guest user');
           }
         }
       } catch (error) {
         console.warn('[AI Discovery] Failed to fetch insights:', error);
+        // Fallback to regular categories for discovery
+        const { getCategories } = await import('../lib/supabase-api-direct');
+        const fallbackCategories = await getCategories(3);
+        setAiInsights({ 
+          categories: fallbackCategories,
+          type: 'fallback'
+        });
       }
     };
 
@@ -308,13 +322,13 @@ export const ReadingStatsWidget = () => {
       if (!user?.id) return;
       
       try {
-        // Get AI-enhanced reading analytics
+        // Get comprehensive AI-enhanced reading analytics
         const response = await fetch(`/api/ai/user-analytics/${user.id}`);
         const result = await response.json();
         
         if (result.success) {
           setAiAnalytics(result.data);
-          console.log('[AI Reading Stats] Generated analytics:', result.data);
+          console.log('[AI Reading Stats] Generated comprehensive analytics:', result.data);
         }
       } catch (error) {
         console.warn('[AI Reading Stats] Failed to fetch analytics:', error);
@@ -481,6 +495,31 @@ export const ReadingStatsWidget = () => {
                       <span className="text-xs font-medium">{aiAnalytics.engagementScore}%</span>
                     </div>
                   </div>
+                )}
+                
+                {/* Enhanced AI Insights */}
+                {aiAnalytics.aiInsights && (
+                  <>
+                    {aiAnalytics.aiInsights.weeklyGrowth && (
+                      <div className="p-2 bg-muted/30 rounded">
+                        <div className="flex items-center gap-2 mb-1">
+                          <TrendingUp className="w-3 h-3 text-green-500" />
+                          <span className="text-xs font-medium">সাপ্তাহিক বৃদ্ধি</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{aiAnalytics.aiInsights.weeklyGrowth}</p>
+                      </div>
+                    )}
+                    
+                    {aiAnalytics.aiInsights.readingConsistency && (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Target className="w-4 h-4 text-purple-500" />
+                          <span className="text-sm">নিয়মিততা</span>
+                        </div>
+                        <span className="text-xs font-medium">{aiAnalytics.aiInsights.readingConsistency}%</span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </>

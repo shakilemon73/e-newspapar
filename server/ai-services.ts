@@ -298,7 +298,7 @@ class BengaliAIService {
         .select(`
           article_id,
           articles!inner(
-            categories!inner(id, name, slug)
+            categories(id, name, slug)
           )
         `)
         .eq('user_id', userId)
@@ -308,7 +308,7 @@ class BengaliAIService {
       const categoryPreferences = new Map();
       readingHistory?.forEach(item => {
         const category = item.articles?.categories;
-        if (category) {
+        if (category && typeof category === 'object' && 'slug' in category) {
           categoryPreferences.set(category.slug, (categoryPreferences.get(category.slug) || 0) + 1);
         }
       });
@@ -414,6 +414,203 @@ class BengaliAIService {
       console.error('[AI Trending] Processing error:', error);
       return { success: false, error: (error as Error).message };
     }
+  }
+
+  /**
+   * Generate comprehensive user analytics with AI insights
+   */
+  async generateUserAnalytics(userId: string): Promise<AIProcessingResult> {
+    try {
+      console.log(`[AI User Analytics] Generating analytics for user: ${userId}`);
+      
+      // Get comprehensive user data
+      const { data: readingHistory } = await supabaseServiceRole
+        .from('user_reading_history')
+        .select(`
+          *,
+          articles!inner(
+            id, title, view_count, published_at,
+            categories!inner(name, slug),
+            article_ai_analysis(sentiment_label, reading_time_minutes)
+          )
+        `)
+        .eq('user_id', userId)
+        .order('read_at', { ascending: false })
+        .limit(100);
+
+      const { data: userLikes } = await supabaseServiceRole
+        .from('user_likes')
+        .select('*, created_at')
+        .eq('user_id', userId)
+        .eq('content_type', 'article');
+
+      const { data: userBookmarks } = await supabaseServiceRole
+        .from('user_bookmarks')
+        .select('*, created_at')
+        .eq('user_id', userId);
+
+      // AI-powered reading pattern analysis
+      const readingPatterns = this.analyzeReadingPatterns(readingHistory || []);
+      
+      // Content preference analysis
+      const contentPreferences = this.analyzeContentPreferences(readingHistory || [], userLikes || []);
+      
+      // Engagement scoring using AI
+      const engagementScore = this.calculateEngagementScore(readingHistory || [], userLikes || [], userBookmarks || []);
+      
+      // Reading velocity analysis
+      const readingVelocity = this.analyzeReadingVelocity(readingHistory || []);
+
+      return {
+        success: true,
+        data: {
+          readingPattern: readingPatterns.description,
+          preferredTopics: contentPreferences.topTopics,
+          engagementScore: engagementScore.score,
+          readingVelocity: readingVelocity.level,
+          contentPreferences: contentPreferences.description,
+          totalInteractions: (readingHistory?.length || 0) + (userLikes?.length || 0) + (userBookmarks?.length || 0),
+          aiInsights: {
+            weeklyGrowth: engagementScore.weeklyGrowth,
+            readingConsistency: readingPatterns.consistency,
+            topCategories: contentPreferences.categoryDistribution,
+            peakReadingTimes: readingPatterns.peakTimes
+          },
+          lastUpdated: new Date().toISOString()
+        }
+      };
+
+    } catch (error) {
+      console.error('[AI User Analytics] Processing error:', error);
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Analyze user reading patterns with AI
+   */
+  private analyzeReadingPatterns(readingHistory: any[]): any {
+    if (!readingHistory.length) {
+      return {
+        description: "পর্যাপ্ত তথ্য নেই",
+        consistency: 0,
+        peakTimes: []
+      };
+    }
+
+    // Analyze reading times
+    const readingTimes = readingHistory.map(item => {
+      const date = new Date(item.read_at);
+      return date.getHours();
+    });
+
+    // Find peak reading times
+    const timeSlots = new Map();
+    readingTimes.forEach(hour => {
+      const slot = hour < 6 ? 'ভোর' : 
+                   hour < 12 ? 'সকাল' : 
+                   hour < 18 ? 'দুপুর' : 'সন্ধ্যা';
+      timeSlots.set(slot, (timeSlots.get(slot) || 0) + 1);
+    });
+
+    const peakSlot = Array.from(timeSlots.entries())
+      .sort((a, b) => b[1] - a[1])[0]?.[0] || 'সকাল';
+
+    // Calculate consistency (reading frequency)
+    const uniqueDays = new Set(readingHistory.map(item => 
+      new Date(item.read_at).toDateString()
+    )).size;
+    
+    const consistency = Math.min(100, Math.round((uniqueDays / 30) * 100));
+
+    return {
+      description: `আপনি প্রধানত ${peakSlot}ে পড়তে পছন্দ করেন`,
+      consistency,
+      peakTimes: Array.from(timeSlots.entries()).sort((a, b) => b[1] - a[1])
+    };
+  }
+
+  /**
+   * Analyze content preferences using AI
+   */
+  private analyzeContentPreferences(readingHistory: any[], userLikes: any[]): any {
+    const categoryCount = new Map();
+    
+    // Analyze reading history
+    readingHistory.forEach(item => {
+      const category = item.articles?.categories?.name;
+      if (category) {
+        categoryCount.set(category, (categoryCount.get(category) || 0) + 1);
+      }
+    });
+
+    // Weight liked content more heavily
+    userLikes.forEach(() => {
+      // Additional weight for liked content categories
+    });
+
+    const topTopics = Array.from(categoryCount.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([topic]) => topic);
+
+    const totalReads = readingHistory.length;
+    const longFormCount = readingHistory.filter(item => 
+      (item.articles?.article_ai_analysis?.[0]?.reading_time_minutes || 0) > 5
+    ).length;
+
+    const description = longFormCount > totalReads * 0.6 ? 
+      "দীর্ঘ ও বিস্তারিত নিবন্ধ পছন্দ করেন" : 
+      "সংক্ষিপ্ত ও তথ্যবহুল নিবন্ধ পছন্দ করেন";
+
+    return {
+      topTopics: topTopics.length ? topTopics : ['সাধারণ'],
+      description,
+      categoryDistribution: Object.fromEntries(categoryCount)
+    };
+  }
+
+  /**
+   * Calculate AI-powered engagement score
+   */
+  private calculateEngagementScore(readingHistory: any[], userLikes: any[], userBookmarks: any[]): any {
+    const totalActions = readingHistory.length + userLikes.length + userBookmarks.length;
+    const baseScore = Math.min(100, Math.round(totalActions * 2));
+    
+    // Calculate weekly growth
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentActivity = [
+      ...readingHistory.filter(item => new Date(item.read_at) > oneWeekAgo),
+      ...userLikes.filter(item => new Date(item.created_at) > oneWeekAgo),
+      ...userBookmarks.filter(item => new Date(item.created_at) > oneWeekAgo)
+    ].length;
+
+    const weeklyGrowth = Math.min(50, recentActivity * 5);
+
+    return {
+      score: Math.min(100, baseScore + weeklyGrowth),
+      weeklyGrowth: weeklyGrowth > 10 ? 'বৃদ্ধি পাচ্ছে' : 'স্থিতিশীল'
+    };
+  }
+
+  /**
+   * Analyze reading velocity with AI
+   */
+  private analyzeReadingVelocity(readingHistory: any[]): any {
+    if (readingHistory.length < 5) {
+      return { level: 'নতুন পাঠক' };
+    }
+
+    // Calculate articles per week
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const weeklyReads = readingHistory.filter(item => 
+      new Date(item.read_at) > oneWeekAgo
+    ).length;
+
+    if (weeklyReads > 15) return { level: 'অতি দ্রুত পাঠক' };
+    if (weeklyReads > 10) return { level: 'দ্রুত পাঠক' };
+    if (weeklyReads > 5) return { level: 'নিয়মিত পাঠক' };
+    return { level: 'ধীর পাঠক' };
   }
 
   /**
