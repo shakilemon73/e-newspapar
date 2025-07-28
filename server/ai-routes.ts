@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import type { Request, Response } from 'express';
 import { bengaliAIService } from './ai-services';
 import { supabase } from './supabase';
 
