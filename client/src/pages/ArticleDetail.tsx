@@ -1778,7 +1778,11 @@ const ArticleDetail = () => {
 
                       {/* Article Summary with Proper Alignment */}
                       <div className="space-y-4">
-                        <ArticleSummary content={article.content || ''} />
+                        <ArticleSummary 
+                          content={article.content || ''} 
+                          articleId={article.id}
+                          title={article.title}
+                        />
                         
                         {/* Analysis Details - Backend Processing Results */}
                         <AnalysisDetails articleId={article.id} />

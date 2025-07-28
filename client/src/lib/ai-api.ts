@@ -161,6 +161,9 @@ class AIApiClient {
 // Export singleton instance
 export const aiApiClient = new AIApiClient();
 
+// Export as aiAPI for backwards compatibility
+export const aiAPI = aiApiClient;
+
 // Hook for React Query integration
 export const useAIQueries = () => {
   return {
