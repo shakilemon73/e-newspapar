@@ -220,26 +220,26 @@ export const FeaturedSlideshow = () => {
                     </p>
                     
                     {/* Enhanced Metadata Row - Mobile-First Design */}
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm lg:text-base">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm lg:text-base text-white">
                       {/* Publication Time - Always Visible */}
                       <div className="flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 sm:px-3">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="text-xs sm:text-sm">{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                        <span className="text-xs sm:text-sm text-white">{article.publishedAt ? getRelativeTimeInBengali(article.publishedAt) : 'কিছুক্ষণ আগে'}</span>
                       </div>
                       
                       {/* Reading Time - Hidden on very small screens */}
                       {article.reading_time && (
                         <div className="hidden xs:flex items-center gap-1.5 bg-black/40 backdrop-blur-sm rounded-full px-2.5 py-1 sm:px-3">
-                          <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                          <span className="text-xs sm:text-sm">{article.reading_time} মিনিট</span>
+                          <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                          <span className="text-xs sm:text-sm text-white">{article.reading_time} মিনিট</span>
                         </div>
                       )}
                       
                       {/* View Count - Desktop Only */}
                       {article.view_count && (
                         <div className="hidden lg:flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1">
-                          <Eye className="w-4 h-4" />
-                          <span>{article.view_count.toLocaleString('bn-BD')} বার পড়া</span>
+                          <Eye className="w-4 h-4 text-white" />
+                          <span className="text-white">{article.view_count.toLocaleString('bn-BD')} বার পড়া</span>
                         </div>
                       )}
                       
@@ -307,7 +307,7 @@ export const FeaturedSlideshow = () => {
               </div>
 
               {/* Progress Bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 z-30">
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20 dark:bg-white/20 z-30">
                 <div 
                   className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300"
                   style={{ 
