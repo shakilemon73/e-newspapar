@@ -205,7 +205,7 @@ export const FeaturedSlideshow = () => {
                   {/* Enhanced Content Overlay - Mobile-First Typography */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8 text-white z-20">
                     {/* Article Title - Mobile-Optimized Typography */}
-                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight mb-2 sm:mb-3 lg:mb-4 text-shadow-lg">
+                    <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-bold leading-tight mb-2 sm:mb-3 lg:mb-4 text-shadow-lg text-white">
                       <Link 
                         href={`/article/${article.slug}`} 
                         className="text-white hover:text-orange-200 transition-colors duration-300 line-clamp-2 sm:line-clamp-3 block"
@@ -306,8 +306,8 @@ export const FeaturedSlideshow = () => {
                 ))}
               </div>
 
-              {/* Progress Bar */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20 dark:bg-white/20 z-30">
+              {/* Progress Bar - Thinner and less intrusive */}
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-black/10 dark:bg-white/10 z-30">
                 <div 
                   className="h-full bg-gradient-to-r from-orange-500 to-red-500 transition-all duration-300"
                   style={{ 
