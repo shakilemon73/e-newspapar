@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import SEO from '@/components/SEO';
-import BreakingNewsTicker from '@/components/BreakingNewsTicker';
+import { BreakingNewsTicker } from '@/components/BreakingNewsTicker';
 import FeaturedSlideshow from '@/components/FeaturedSlideshow';
 import WeatherWidget from '@/components/WeatherWidget';
 import LatestNews from '@/components/LatestNews';
