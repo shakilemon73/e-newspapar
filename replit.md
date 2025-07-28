@@ -272,13 +272,11 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: Supabase Auth integration with JWT tokens
 
 ### Database Design
-- **Primary Database**: Supabase PostgreSQL with 71 comprehensive tables
-- **Core Tables**: articles, categories, users, weather, epapers, breaking_news, video_content, audio_articles
-- **User Management**: user_profiles, user_settings, user_roles, user_sessions, user_permissions, user_bookmarks, user_likes, user_shares
-- **Analytics**: user_reading_history, article_analytics, trending_topics, user_interactions, page_views, click_tracking, engagement_metrics
-- **Content Management**: tags, article_tags, media_files, documents, newsletters, polls, surveys, reviews, ratings
-- **System Features**: logs, error_logs, audit_logs, system_settings, admin_actions, interaction_logs
-- **Security**: Row Level Security (RLS) policies for user data protection
+- **Primary Database**: Supabase PostgreSQL with 76 comprehensive tables
+- **Public Tables (28)**: articles, categories, breaking_news, weather, epapers, video_content, audio_articles, polls, reviews, trending_topics, tags, media, newsletters, social_media_posts, company_info, contact_info, team_members, editorial_policies, privacy_policy_sections, terms_of_service_sections, site_settings, advertisements, ad_packages, ad_rates, and more
+- **User Tables (43)**: user_profiles, user_settings, user_reading_history, user_interactions, user_bookmarks, user_likes, user_shares, user_notifications, user_achievements, user_activity, user_badges, article_comments, poll_votes, reading_goals, recommendation_cache, user_analytics, page_views, engagement_metrics, and more
+- **Admin Tables (5)**: admin_actions, audit_logs, error_logs, logs, system_settings
+- **Security**: Row Level Security (RLS) policies ensuring users only access their own data, public read access for content, and admin-only access for system tables
 
 ## Key Components
 
