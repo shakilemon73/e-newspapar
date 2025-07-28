@@ -317,7 +317,7 @@ export const Header = () => {
       <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-between py-3 overflow-x-auto scrollbar-hide">
+          <div className="hidden lg:flex items-center justify-between py-3 overflow-x-auto scrollbar-hide pt-[12px] pb-[12px] font-semibold">
             {/* Left Side - Home and Categories */}
             <div className="flex items-center space-x-1 min-w-max">
               <Link href="/" className="nav-item group flex items-center space-x-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 hover:bg-primary/10 hover:text-primary">
