@@ -59,67 +59,89 @@ const Home = () => {
   return (
     <>
       <SEO
-        title="Bengali News - বাংলাদেশের সর্বাধিক পঠিত অনলাইন সংবাদপত্র"
-        description="সর্বশেষ সংবাদ, রাজনীতি, খেলা, বিনোদন, আন্তর্জাতিক এবং আরো অনেক কিছু পড়ুন বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যমে। Breaking news, politics, sports, entertainment from Bangladesh."
+        title="বাংলা নিউজ - বাংলাদেশের নম্বর ১ সংবাদ পোর্টাল"
+        description="সর্বশেষ খবর, রাজনীতি, খেলা, বিনোদন, অর্থনীতি এবং আরো অনেক কিছুর জন্য বাংলাদেশের সবচেয়ে বিশ্বস্ত সংবাদ মাধ্যম। ২৪/৭ আপডেট পান আমাদের সাথে।"
         image="/og-image.svg"
         url="/"
         type="website"
-        keywords="বাংলা সংবাদ, Bangladesh news, bengali news, dhaka news, bd news, breaking news, রাজনীতি, খেলা, বিনোদন"
+        keywords="বাংলা সংবাদ, Bangladesh news, তাজা খবর, breaking news, রাজনীতি, খেলা, বিনোদন, অর্থনীতি"
         tags={["news", "bangladesh", "bengali", "সংবাদ", "homepage"]}
       />
 
-      <main className="min-h-screen bg-background">
-        {/* Breaking News Ticker */}
-        <section className="fade-in">
+      {/* World-Class Mobile-First Design Architecture */}
+      <main className="min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white dark:from-gray-950 dark:via-gray-900/50 dark:to-gray-950">
+        
+        {/* 1. Breaking News Banner - Urgent Information Architecture */}
+        <section className="sticky top-0 z-50 mb-2">
           <BreakingNewsTicker />
         </section>
 
-        {/* Featured Section with Slideshow */}
-        <section className="container-modern py-6 slide-up">
-          <FeaturedSlideshow />
+        {/* 2. Hero Featured Slideshow - Primary Content Discovery */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="relative overflow-hidden rounded-2xl shadow-xl">
+            <FeaturedSlideshow />
+          </div>
         </section>
 
-        {/* Weather and Latest News Widgets */}
-        <section className="container-modern py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Weather Widget */}
-            <div className="slide-in-right">
-              <WeatherWidget />
+        {/* 3. Essential Information Bento Grid - Mobile-First Layout */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Weather + Location Context */}
+            <div className="lg:col-span-1">
+              <div className="bg-gradient-to-br from-blue-50 via-white to-blue-50/50 dark:from-blue-950/30 dark:via-gray-900 dark:to-blue-950/20 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-lg hover:shadow-xl transition-all duration-300">
+                <WeatherWidget />
+              </div>
             </div>
             
-            {/* Latest News */}
-            <div className="slide-up">
-              <LatestNews />
+            {/* Latest News - Primary Content Stream */}
+            <div className="lg:col-span-2">
+              <div className="bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900 rounded-2xl border border-gray-200/60 dark:border-gray-700/40 shadow-lg hover:shadow-xl transition-all duration-300">
+                <LatestNews />
+              </div>
             </div>
           </div>
         </section>
-        
-        {/* Personalized Recommendations */}
-        <section className="container-modern py-6 fade-in">
-          <PersonalizedRecommendations />
-        </section>
 
-        {/* Homepage Feature Suite - Missing Features */}
-        <section className="container-modern py-6 slide-up">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-center mb-6 text-foreground">
-              আপনার জন্য বিশেষ সুবিধা
-            </h2>
-            <HomepageFeatureSuite />
+        {/* 4. Personalized AI Recommendations - User-Centric Content */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-green-50 via-white to-emerald-50/50 dark:from-green-950/20 dark:via-gray-900 dark:to-emerald-950/10 rounded-2xl border border-green-100 dark:border-green-900/30 shadow-lg">
+            <PersonalizedRecommendations />
           </div>
         </section>
 
+        {/* 5. Advanced Feature Discovery Suite - Jakob Nielsen's Recognition Over Recall */}
+        <section className="px-4 py-8 max-w-7xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-red-600 via-red-500 to-orange-500 dark:from-red-400 dark:via-red-300 dark:to-orange-400 bg-clip-text text-transparent mb-3">
+              আপনার জন্য বিশেষ সুবিধা
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+              আধুনিক প্রযুক্তি ও কৃত্রিম বুদ্ধিমত্তার সাহায্যে আপনার পছন্দের সংবাদ আবিষ্কার করুন
+            </p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-white via-purple-50/30 to-white dark:from-gray-900 dark:via-purple-950/20 dark:to-gray-900 rounded-3xl border border-purple-100/60 dark:border-purple-900/30 shadow-2xl p-1">
+            <div className="bg-gradient-to-br from-white/80 to-white/40 dark:from-gray-900/80 dark:to-gray-900/40 rounded-2xl p-6 backdrop-blur-sm">
+              <HomepageFeatureSuite />
+            </div>
+          </div>
+        </section>
 
-
-        {/* Category News Sections */}
-        <section className="container-modern py-6">
-          <div className="grid-news mb-8">
+        {/* 6. Category-Based Content Architecture - Information Scent (Steve Krug) */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold text-foreground mb-2">বিভাগীয় সংবাদ</h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-red-500 to-orange-500 mx-auto rounded-full"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {!categoriesLoading && mainCategories.length > 0 && mainCategories.map((category, index) => (
               <div 
                 key={category.slug} 
-                className="bounce-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900 border border-gray-200/60 dark:border-gray-700/40 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
+                style={{ animationDelay: `${index * 150}ms` }}
               >
+                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 via-transparent to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <CategoryNewsSection 
                   categorySlug={category.slug} 
                   limit={4}
@@ -128,14 +150,14 @@ const Home = () => {
             ))}
             
             {categoriesLoading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-card border border-border rounded shadow-sm p-4 h-80 animate-pulse">
-                    <div className="h-6 bg-muted rounded mb-4"></div>
+                  <div key={i} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 h-80 animate-pulse shadow-lg">
+                    <div className="h-6 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg mb-4"></div>
                     <div className="space-y-3">
-                      <div className="h-4 bg-muted rounded"></div>
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
                     </div>
                   </div>
                 ))}
@@ -144,31 +166,43 @@ const Home = () => {
           </div>
         </section>
 
-        {/* E-Paper Section */}
-        <section className="container-modern py-6 scale-in">
-          <EPaperSection />
+        {/* 7. Digital E-Paper - Traditional Media Integration */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-amber-50 via-white to-yellow-50/50 dark:from-amber-950/20 dark:via-gray-900 dark:to-yellow-950/10 rounded-2xl border border-amber-100 dark:border-amber-900/30 shadow-lg overflow-hidden">
+            <EPaperSection />
+          </div>
         </section>
 
-        {/* Popular News Section */}
-        <section className="container-modern py-6 slide-up">
-          <PopularNewsSection />
+        {/* 8. Popular & Trending Content - Social Proof Principle */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-rose-50 via-white to-pink-50/50 dark:from-rose-950/20 dark:via-gray-900 dark:to-pink-950/10 rounded-2xl border border-rose-100 dark:border-rose-900/30 shadow-lg">
+            <PopularNewsSection />
+          </div>
         </section>
         
-        {/* Video Content Section */}
-        <section className="container-modern py-6 fade-in">
-          <VideoContent />
+        {/* 9. Multimedia Content Hub - Rich Media Experience */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50/50 dark:from-indigo-950/20 dark:via-gray-900 dark:to-blue-950/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 shadow-lg">
+            <VideoContent />
+          </div>
         </section>
 
-        {/* Lifestyle and Entertainment */}
+        {/* 10. Lifestyle & Entertainment Categories - Emotional Design (Aaron Walter) */}
         {!categoriesLoading && lifestyleCategories.length > 0 && (
-          <section className="container-modern py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <section className="px-4 py-6 max-w-7xl mx-auto">
+            <div className="mb-8 text-center">
+              <h2 className="text-2xl font-bold text-foreground mb-2">জীবনযাত্রা ও বিনোদন</h2>
+              <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-teal-500 mx-auto rounded-full"></div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {lifestyleCategories.map((category, index) => (
                 <div 
                   key={category.slug} 
-                  className="rotate-in"
-                  style={{ animationDelay: `${index * 0.2}s` }}
+                  className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white via-teal-50/30 to-white dark:from-gray-900 dark:via-teal-950/20 dark:to-gray-900 border border-teal-100/60 dark:border-teal-900/30 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-500"
+                  style={{ animationDelay: `${index * 200}ms` }}
                 >
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500/5 via-transparent to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <CategoryNewsSection 
                     categorySlug={category.slug} 
                     limit={4}
@@ -179,20 +213,34 @@ const Home = () => {
           </section>
         )}
         
-        {/* Audio Articles Section */}
-        <section className="container-modern py-6 slide-in-right">
-          <AudioArticles />
+        {/* 11. Audio Content Hub - Accessibility & Multi-Modal Experience */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-violet-50 via-white to-purple-50/50 dark:from-violet-950/20 dark:via-gray-900 dark:to-purple-950/10 rounded-2xl border border-violet-100 dark:border-violet-900/30 shadow-lg">
+            <AudioArticles />
+          </div>
         </section>
         
-        {/* Social Media Feed Section */}
-        <section className="container-modern py-6 fade-in">
-          <SocialMediaFeed />
+        {/* 12. Social Media Integration - Community & Sharing */}
+        <section className="px-4 py-6 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-br from-cyan-50 via-white to-sky-50/50 dark:from-cyan-950/20 dark:via-gray-900 dark:to-sky-950/10 rounded-2xl border border-cyan-100 dark:border-cyan-900/30 shadow-lg">
+            <SocialMediaFeed />
+          </div>
         </section>
 
-        {/* AI-Enhanced Features */}
-        <section className="container-modern py-6">
-          <AIEnhancedHomepage />
+        {/* 13. AI-Enhanced Intelligence Hub - Future-Forward Features */}
+        <section className="px-4 py-8 max-w-7xl mx-auto mb-8">
+          <div className="bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-slate-950/50 dark:via-gray-900 dark:to-slate-950/30 rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-2xl overflow-hidden">
+            <div className="relative p-1">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl"></div>
+              <div className="relative bg-white/90 dark:bg-gray-900/90 rounded-2xl backdrop-blur-sm">
+                <AIEnhancedHomepage />
+              </div>
+            </div>
+          </div>
         </section>
+
+        {/* Bottom Spacing for Mobile Navigation */}
+        <div className="h-20 lg:h-8"></div>
       </main>
     </>
   );
