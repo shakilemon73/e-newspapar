@@ -140,8 +140,10 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  <span className="text-base">{poll.title || poll.question}</span>
+                  <BarChart3 className="h-5 w-5 text-blue-600" />
+                  <span className="text-base font-semibold text-foreground dark:text-white">
+                    {poll.title || poll.question || 'পোল প্রশ্ন'}
+                  </span>
                 </div>
                 {hasVoted && (
                   <CheckCircle className="h-5 w-5 text-green-500" />
@@ -168,25 +170,34 @@ export function PollsSection({ className = '' }: PollsSectionProps) {
                 return (
                   <div key={`option-${option.id}-${poll.id}-${optionIndex}`} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{option.text}</span>
+                      <span className="text-sm font-medium text-foreground dark:text-white">
+                        {option.text || `বিকল্প ${optionIndex + 1}`}
+                      </span>
                       {hasVoted && (
-                        <span className="text-xs text-muted-foreground">
-                          {percentage}% ({optionVotes})
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {percentage}% ({optionVotes} ভোট)
                         </span>
                       )}
                     </div>
                     
                     {hasVoted ? (
-                      <Progress value={percentage} className="h-3" />
+                      <div className="space-y-1">
+                        <Progress value={percentage} className="h-3" />
+                        <div className="text-xs text-muted-foreground text-right">
+                          {optionVotes} জন ভোট দিয়েছেন
+                        </div>
+                      </div>
                     ) : (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleVote(poll.id, option.id)}
                         disabled={isExpired || !poll.is_active}
-                        className="w-full justify-start"
+                        className="w-full justify-start text-foreground dark:text-white hover:bg-primary/10 border-2 py-2 h-auto"
                       >
-                        {option.text}
+                        <span className="font-medium">
+                          {option.text || `বিকল্প ${optionIndex + 1}`}
+                        </span>
                       </Button>
                     )}
                   </div>

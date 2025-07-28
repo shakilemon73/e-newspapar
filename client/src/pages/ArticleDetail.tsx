@@ -25,7 +25,8 @@ import { AnalysisDetails } from '@/components/AnalysisDetails';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { 
   Bookmark, 
-  BookmarkCheck, 
+  BookmarkCheck,
+  BookmarkPlus, 
   Share2, 
   Eye, 
   Calendar, 
@@ -464,23 +465,91 @@ const ArticleDetail = () => {
   };
 
   // Report functionality
+  const handleSaveOffline = async () => {
+    if (!article) return;
+    
+    if (!user) {
+      toast({
+        title: "লগইন প্রয়োজন",
+        description: "অফলাইন পড়ার জন্য অনুগ্রহ করে লগইন করুন।",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { toggleBookmark } = await import('../lib/supabase-api-direct');
+      const result = await toggleBookmark(article.id, user.id, true);
+      
+      if (result.success) {
+        toast({
+          title: "অফলাইন পড়ার জন্য সংরক্ষিত",
+          description: "নিবন্ধটি আপনার বুকমার্কে যোগ করা হয়েছে।",
+        });
+        
+        // Save to browser localStorage for offline access
+        const offlineArticles = JSON.parse(localStorage.getItem('offlineArticles') || '[]');
+        const articleData = {
+          id: article.id,
+          title: article.title,
+          content: article.content,
+          excerpt: article.excerpt,
+          published_at: article.published_at,
+          category: article.category,
+          savedAt: new Date().toISOString()
+        };
+        
+        // Check if already exists
+        const existingIndex = offlineArticles.findIndex((a: any) => a.id === article.id);
+        if (existingIndex === -1) {
+          offlineArticles.push(articleData);
+          localStorage.setItem('offlineArticles', JSON.stringify(offlineArticles));
+        }
+        
+      } else {
+        throw new Error(result.message || 'Failed to save for offline reading');
+      }
+    } catch (error) {
+      console.error('Error saving for offline:', error);
+      toast({
+        title: "অফলাইনে সংরক্ষণ করতে সমস্যা হয়েছে",
+        description: "দুঃখিত, নিবন্ধটি অফলাইনে সংরক্ষণ করতে সমস্যা হয়েছে।",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleReport = async () => {
     if (!article) return;
     
     const reason = prompt("রিপোর্ট করার কারণ লিখুন:");
-    if (!reason) return;
+    if (!reason || reason.trim().length === 0) {
+      toast({
+        title: "রিপোর্ট বাতিল",
+        description: "রিপোর্ট করার জন্য কারণ লিখুন।",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
       const { reportArticle } = await import('../lib/supabase-api-direct');
-      const result = await reportArticle(article.id, 'anonymous', reason.trim(), 'User reported from article page');
+      const userId = user?.id || 'anonymous';
+      
+      const result = await reportArticle(
+        article.id, 
+        userId, 
+        reason.trim(), 
+        navigator.userAgent
+      );
       
       if (result.success) {
         toast({
           title: "রিপোর্ট জমা দেওয়া হয়েছে",
-          description: result.message,
+          description: result.message || "আপনার রিপোর্ট আমাদের কাছে পৌঁছেছে।",
         });
       } else {
-        throw new Error('Failed to submit report');
+        throw new Error(result.message || 'Failed to submit report');
       }
     } catch (error) {
       console.error('Error reporting article:', error);
@@ -498,11 +567,13 @@ const ArticleDetail = () => {
     
     try {
       const { submitUserFeedback } = await import('../lib/supabase-api-direct');
+      const userId = user?.id || 'anonymous';
+      
       const result = await submitUserFeedback(
-        'anonymous',
+        userId,
         type === 'helpful' ? 'helpful' : 'content_feedback',
         type === 'helpful' ? 'User found article helpful' : 'User provided content feedback',
-        { article_id: article.id }
+        { article_id: article.id, user_agent: navigator.userAgent }
       );
 
       if (result.success) {
@@ -511,7 +582,7 @@ const ArticleDetail = () => {
           description: "আপনার মতামত আমাদের কাছে পৌঁছেছে। ধন্যবাদ।",
         });
       } else {
-        throw new Error('Failed to submit feedback');
+        throw new Error(result.message || 'Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -1737,12 +1808,16 @@ const ArticleDetail = () => {
                         )}
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Button variant="ghost" size="sm" onClick={handleSaveOffline}>
+                          <BookmarkPlus className="w-4 h-4 mr-1" />
+                          অফলাইন পড়ুন
+                        </Button>
                         <Button variant="ghost" size="sm" onClick={() => handleFeedback('helpful')}>
                           <ThumbsUp className="w-4 h-4 mr-1" />
                           সহায়ক
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleReport()}>
+                        <Button variant="ghost" size="sm" onClick={handleReport}>
                           <Flag className="w-4 h-4 mr-1" />
                           রিপোর্ট
                         </Button>
