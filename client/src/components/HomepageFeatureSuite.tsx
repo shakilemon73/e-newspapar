@@ -17,7 +17,8 @@ import {
   Eye,
   Bookmark,
   Filter,
-  Search
+  Search,
+  Sparkles
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -94,7 +95,7 @@ export const DiscoveryWidget = () => {
         console.warn('[AI Discovery] Failed to fetch insights:', error);
         // Fallback to regular categories for discovery
         const { getCategories } = await import('../lib/supabase-api-direct');
-        const fallbackCategories = await getCategories(3);
+        const fallbackCategories = await getCategories();
         setAiInsights({ 
           categories: fallbackCategories,
           type: 'fallback'
@@ -172,28 +173,85 @@ export const DiscoveryWidget = () => {
             </div>
           </div>
 
-          {/* AI Personal Insights */}
+          {/* AI Personal Insights - World-Class UX/UI Design */}
           {aiInsights && (
-            <div>
-              <h4 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                {user ? 'আপনার জন্য' : 'জনপ্রিয়'}
-                <Badge variant="outline" className="text-xs">AI</Badge>
-              </h4>
-              <div className="space-y-2">
-                {aiInsights.articles?.slice(0, 2).map((article: any, index: number) => (
+            <div className="space-y-3">
+              {/* Modern Header with AI Badge */}
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-base text-foreground flex items-center gap-2">
+                  <User className="w-4 h-4 text-primary" />
+                  {user ? 'আপনার জন্য বিশেষ সুবিধা' : 'জনপ্রিয় সুপারিশ'}
+                </h4>
+                <Badge variant="secondary" className="text-xs px-2 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:text-blue-300 dark:border-blue-700">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  AI
+                </Badge>
+              </div>
+
+              {/* Enhanced Card-Based Layout - 2025 Design Trends */}
+              <div className="grid grid-cols-1 gap-3">
+                {aiInsights.articles?.slice(0, 3).map((article: any, index: number) => (
                   <Link key={article.id || index} href={`/article/${article.slug}`}>
-                    <div className="p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
-                      <p className="text-xs font-medium line-clamp-2">{article.title}</p>
-                      {article.aiScore && (
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className="w-3 h-3 text-yellow-500" />
-                          <span className="text-xs text-muted-foreground">{article.aiScore} AI স্কোর</span>
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-white via-gray-50/50 to-white dark:from-gray-900 dark:via-gray-800/50 dark:to-gray-900 border border-gray-200/60 dark:border-gray-700/60 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 cursor-pointer">
+                      {/* Content Container with Perfect Spacing */}
+                      <div className="p-4">
+                        {/* Article Title with Better Typography */}
+                        <h5 className="font-medium text-sm leading-relaxed text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors duration-200">
+                          {article.title}
+                        </h5>
+                        
+                        {/* Enhanced Metadata Section */}
+                        <div className="flex items-center justify-between mt-3">
+                          {/* AI Score with Modern Design */}
+                          {(article.aiScore || article.relevance_score) && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
+                              <Star className="w-3 h-3 text-amber-600 dark:text-amber-400 fill-current" />
+                              <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                                {Math.round(article.aiScore || article.relevance_score)} স্কোর
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Category Badge */}
+                          {article.category_name && (
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 bg-white/80 dark:bg-gray-800/80 border-gray-300/60 dark:border-gray-600/60">
+                              {article.category_name}
+                            </Badge>
+                          )}
                         </div>
-                      )}
+
+                        {/* Reading Time Indicator */}
+                        {article.reading_time && (
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span>{article.reading_time} মিনিট পড়া</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Subtle Hover Effect Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                      
+                      {/* Bottom Accent Line */}
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                   </Link>
                 ))}
               </div>
+
+              {/* Enhanced CTA with Modern Styling */}
+              {user && aiInsights.articles?.length > 0 && (
+                <Link href="/dashboard">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full mt-2 bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 hover:from-primary/5 hover:to-primary/10 dark:hover:from-primary/10 dark:hover:to-primary/5 border-gray-200 dark:border-gray-700 hover:border-primary/30 dark:hover:border-primary/30 transition-all duration-300"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    আরো ব্যক্তিগত সুপারিশ দেখুন
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
 
