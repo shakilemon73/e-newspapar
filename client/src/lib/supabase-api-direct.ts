@@ -598,20 +598,7 @@ export async function getAudioArticles(): Promise<any[]> {
   return data || [];
 }
 
-// Social Media API
-export async function getSocialMediaPosts(): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('social_media_posts')
-    .select('*')
-    .order('published_at', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching social media posts:', error);
-    return [];
-  }
-  
-  return data || [];
-}
+// Social Media API (removed duplicate - using typed version below)
 
 // Trending Topics API with Enhanced Features
 export async function getTrendingTopics(limit: number = 10): Promise<any[]> {
@@ -699,22 +686,7 @@ export async function incrementViewCount(articleId: number): Promise<{ viewCount
 
 
 
-// Article Tags API
-export async function getArticleTags(articleId: number): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('article_tags')
-    .select(`
-      tags(id, name, slug, color)
-    `)
-    .eq('article_id', articleId);
-  
-  if (error) {
-    console.error('Error fetching article tags:', error);
-    return [];
-  }
-  
-  return data?.map(item => item.tags).filter(Boolean) || [];
-}
+// Article Tags API (removed duplicate - using the Tag[] version below)
 
 // Search Articles API
 export async function searchArticles(query: string, category?: string, limit = 20, offset = 0): Promise<Article[]> {
@@ -801,6 +773,322 @@ export async function subscribeToNewsletter(email: string): Promise<{ success: b
   }
 }
 
+// ================================
+// POLLS API - Interactive Polls
+// ================================
+
+export interface Poll {
+  id: number;
+  title: string;
+  description?: string;
+  options: PollOption[];
+  is_active: boolean;
+  multiple_choice: boolean;
+  expires_at?: string;
+  total_votes: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface PollOption {
+  id: number;
+  poll_id: number;
+  option_text: string;
+  option_order: number;
+  vote_count: number;
+}
+
+export interface PollVote {
+  id: number;
+  poll_id: number;
+  user_id: string;
+  option_id: number;
+  created_at: string;
+}
+
+// Get active polls
+export async function getActivePolls(): Promise<Poll[]> {
+  try {
+    const { data, error } = await supabase
+      .from('polls')
+      .select(`
+        *,
+        poll_options (
+          id,
+          option_text,
+          option_order,
+          vote_count
+        )
+      `)
+      .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching polls:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching polls:', error);
+    return [];
+  }
+}
+
+// Vote on a poll
+export async function votePoll(pollId: number, optionId: number, userId: string): Promise<{ success: boolean; message: string }> {
+  try {
+    // Check if user already voted
+    const { data: existingVote } = await supabase
+      .from('poll_votes')
+      .select('id')
+      .eq('poll_id', pollId)
+      .eq('user_id', userId)
+      .single();
+
+    if (existingVote) {
+      return { success: false, message: 'আপনি ইতিমধ্যে এই পোলে ভোট দিয়েছেন' };
+    }
+
+    // Add vote
+    const { error: voteError } = await supabase
+      .from('poll_votes')
+      .insert({
+        poll_id: pollId,
+        option_id: optionId,
+        user_id: userId
+      });
+
+    if (voteError) {
+      console.error('Error voting on poll:', voteError);
+      return { success: false, message: 'ভোট দিতে সমস্যা হয়েছে' };
+    }
+
+    // Update vote count
+    const { error: updateError } = await supabase.rpc('increment_poll_vote_count', {
+      option_id: optionId,
+      poll_id: pollId
+    });
+
+    if (updateError) {
+      console.error('Error updating vote count:', updateError);
+    }
+
+    return { success: true, message: 'সফলভাবে ভোট দেওয়া হয়েছে!' };
+  } catch (error) {
+    console.error('Error voting on poll:', error);
+    return { success: false, message: 'ভোট দিতে সমস্যা হয়েছে' };
+  }
+}
+
+// ================================
+// REVIEWS API - Content Reviews
+// ================================
+
+export interface Review {
+  id: number;
+  content_id: number;
+  content_type: string;
+  user_id: string;
+  rating: number;
+  title?: string;
+  content?: string;
+  is_verified: boolean;
+  helpful_count: number;
+  created_at: string;
+  updated_at?: string;
+  user_profiles?: {
+    full_name?: string;
+  };
+}
+
+// Get reviews for content
+export async function getContentReviews(contentId: number, contentType: string): Promise<Review[]> {
+  try {
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(`
+        *,
+        user_profiles (
+          full_name
+        )
+      `)
+      .eq('content_id', contentId)
+      .eq('content_type', contentType)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching reviews:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching reviews:', error);
+    return [];
+  }
+}
+
+// Add a review
+export async function addReview(review: {
+  content_id: number;
+  content_type: string;
+  user_id: string;
+  rating: number;
+  title?: string;
+  content?: string;
+}): Promise<{ success: boolean; message: string }> {
+  try {
+    const { error } = await supabase
+      .from('reviews')
+      .insert({
+        ...review,
+        is_verified: false,
+        helpful_count: 0
+      });
+
+    if (error) {
+      console.error('Error adding review:', error);
+      return { success: false, message: 'রিভিউ যোগ করতে সমস্যা হয়েছে' };
+    }
+
+    return { success: true, message: 'রিভিউ সফলভাবে যোগ করা হয়েছে!' };
+  } catch (error) {
+    console.error('Error adding review:', error);
+    return { success: false, message: 'রিভিউ যোগ করতে সমস্যা হয়েছে' };
+  }
+}
+
+// ================================
+// TAGS API - Article Tagging System
+// ================================
+
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  usage_count: number;
+  is_trending: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ArticleTag {
+  id: number;
+  article_id: number;
+  tag_id: number;
+  created_at?: string;
+  tags?: Tag;
+}
+
+// Get all tags
+export async function getTags(): Promise<Tag[]> {
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .select('*')
+      .order('usage_count', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching tags:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    return [];
+  }
+}
+
+// Get trending tags
+export async function getTrendingTags(): Promise<Tag[]> {
+  try {
+    const { data, error } = await supabase
+      .from('tags')
+      .select('*')
+      .eq('is_trending', true)
+      .order('usage_count', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Error fetching trending tags:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching trending tags:', error);
+    return [];
+  }
+}
+
+// Get tags for an article
+export async function getArticleTags(articleId: number): Promise<Tag[]> {
+  try {
+    const { data, error } = await supabase
+      .from('article_tags')
+      .select(`
+        tags (
+          id,
+          name,
+          slug,
+          description,
+          usage_count,
+          is_trending
+        )
+      `)
+      .eq('article_id', articleId);
+
+    if (error) {
+      console.error('Error fetching article tags:', error);
+      return [];
+    }
+
+    return (data?.map(item => item.tags).filter(Boolean) || []) as Tag[];
+  } catch (error) {
+    console.error('Error fetching article tags:', error);
+    return [];
+  }
+}
+
+// Get articles by tag
+export async function getArticlesByTag(tagSlug: string, limit = 20): Promise<Article[]> {
+  try {
+    const { data, error } = await supabase
+      .from('article_tags')
+      .select(`
+        articles (
+          id,
+          title,
+          slug,
+          excerpt,
+          image_url,
+          view_count,
+          published_at,
+          is_featured,
+          category_id,
+          categories (id, name, slug)
+        ),
+        tags!inner (slug)
+      `)
+      .eq('tags.slug', tagSlug)
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching articles by tag:', error);
+      return [];
+    }
+
+    const articles = data?.map(item => item.articles).filter(Boolean) || [];
+    return transformArticleData(articles);
+  } catch (error) {
+    console.error('Error fetching articles by tag:', error);
+    return [];
+  }
+}
+
 // User Dashboard APIs
 export async function getUserStats(userId: string): Promise<any> {
   try {
@@ -823,10 +1111,10 @@ export async function getUserStats(userId: string): Promise<any> {
         .select('*', { count: 'exact' })
         .eq('user_id', userId);
       
-      readingCount = historyCount2;
+      readingCount = historyCount2 || 0;
       readingError = error2;
     } else {
-      readingCount = historyCount1;
+      readingCount = historyCount1 || 0;
       readingError = error1;
     }
 
@@ -1907,6 +2195,238 @@ export async function getPersonalizedRecommendations(userId: string, limit: numb
     console.error('Error in getPersonalizedRecommendations:', error);
     // Fallback to popular articles
     return getPopularArticles(limit);
+  }
+}
+
+// ================================
+// USER ANALYTICS & ACHIEVEMENTS API
+// ================================
+
+export interface UserAnalytics {
+  id: number;
+  user_id: string;
+  total_articles_read: number;
+  total_time_spent: number;
+  favorite_categories: string[];
+  reading_streak: number;
+  last_active: string;
+  engagement_score: number;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface UserAchievement {
+  id: number;
+  user_id: string;
+  achievement_type: string;
+  achievement_name: string;
+  achievement_description: string;
+  badge_icon: string;
+  earned_at: string;
+  is_visible: boolean;
+}
+
+// Get user analytics
+export async function getUserAnalytics(userId: string): Promise<UserAnalytics | null> {
+  try {
+    const { data, error } = await supabase
+      .from('user_analytics')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching user analytics:', error);
+      return null;
+    }
+
+    return data || null;
+  } catch (error) {
+    console.error('Error fetching user analytics:', error);
+    return null;
+  }
+}
+
+// Get user achievements
+export async function getUserAchievements(userId: string): Promise<UserAchievement[]> {
+  try {
+    const { data, error } = await supabase
+      .from('user_achievements')
+      .select('*')
+      .eq('user_id', userId)
+      .order('earned_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user achievements:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching user achievements:', error);
+    return [];
+  }
+}
+
+// ================================
+// COMPANY & CONTACT INFO API
+// ================================
+
+export interface CompanyInfo {
+  id: number;
+  company_name: string;
+  description: string;
+  mission: string;
+  vision: string;
+  history: string;
+  founded_year: number;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  social_media: any;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  position: string;
+  department: string;
+  bio: string;
+  photo_url: string;
+  email?: string;
+  social_links?: any;
+  join_date: string;
+  is_active: boolean;
+  display_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Get company information
+export async function getCompanyInfo(): Promise<CompanyInfo | null> {
+  try {
+    const { data, error } = await supabase
+      .from('company_info')
+      .select('*')
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching company info:', error);
+      return null;
+    }
+
+    return data || null;
+  } catch (error) {
+    console.error('Error fetching company info:', error);
+    return null;
+  }
+}
+
+// Get team members
+export async function getTeamMembers(): Promise<TeamMember[]> {
+  try {
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching team members:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching team members:', error);
+    return [];
+  }
+}
+
+// ================================
+// SOCIAL MEDIA & ADVERTISEMENTS API
+// ================================
+
+export interface SocialMediaPost {
+  id: number;
+  platform: string;
+  post_type: string;
+  content: string;
+  media_url?: string;
+  external_url?: string;
+  engagement_count: number;
+  is_pinned: boolean;
+  published_at: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface Advertisement {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string;
+  target_url: string;
+  ad_type: string;
+  placement: string;
+  start_date: string;
+  end_date: string;
+  is_active: boolean;
+  click_count: number;
+  impression_count: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Get social media posts
+export async function getSocialMediaPosts(limit = 10): Promise<SocialMediaPost[]> {
+  try {
+    const { data, error } = await supabase
+      .from('social_media_posts')
+      .select('*')
+      .order('published_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching social media posts:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching social media posts:', error);
+    return [];
+  }
+}
+
+// Get active advertisements
+export async function getActiveAdvertisements(placement?: string): Promise<Advertisement[]> {
+  try {
+    let query = supabase
+      .from('advertisements')
+      .select('*')
+      .eq('is_active', true)
+      .lte('start_date', new Date().toISOString())
+      .gte('end_date', new Date().toISOString());
+
+    if (placement) {
+      query = query.eq('placement', placement);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching advertisements:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching advertisements:', error);
+    return [];
   }
 }
 

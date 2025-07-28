@@ -1,210 +1,129 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
-  User, 
-  Eye, 
+  Trophy, 
   Clock, 
-  Heart, 
-  Share2, 
   BookOpen, 
+  Target, 
   TrendingUp, 
-  Activity, 
-  Search, 
-  Settings 
+  Award,
+  Star,
+  Calendar
 } from 'lucide-react';
-import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
+import { getUserAnalytics, getUserAchievements, type UserAnalytics, type UserAchievement } from '@/lib/supabase-api-direct';
 
-interface UserAnalytics {
-  totalInteractions: number;
-  interactionsByType: Record<string, number>;
-  topCategories: Array<{
-    category_id: number;
-    interest_score: number;
-    categories: { name: string };
-  }>;
-  recentReading: Array<{
-    article_id: number;
-    read_count: number;
-    last_read_at: string;
-    articles: {
-      title: string;
-      categories: { name: string };
-    };
-  }>;
+interface UserAnalyticsDashboardProps {
+  userId: string;
+  className?: string;
 }
 
-interface UserInteraction {
-  id: number;
-  article_id: number;
-  interaction_type: string;
-  interaction_duration: number;
-  created_at: string;
-  articles: {
-    title: string;
-    slug: string;
-    image_url: string;
-    categories: { name: string };
-  };
-}
-
-interface UserPreference {
-  category_id: number;
-  interest_score: number;
-  categories: {
-    name: string;
-    slug: string;
-  };
-}
-
-interface NotificationPreferences {
-  breaking_news: boolean;
-  category_updates: boolean;
-  personalized_recommendations: boolean;
-  email_notifications: boolean;
-  push_notifications: boolean;
-}
-
-export const UserAnalyticsDashboard = () => {
+export default function UserAnalyticsDashboard({ userId, className = '' }: UserAnalyticsDashboardProps) {
   const [analytics, setAnalytics] = useState<UserAnalytics | null>(null);
-  const [interactions, setInteractions] = useState<UserInteraction[]>([]);
-  const [preferences, setPreferences] = useState<UserPreference[]>([]);
-  const [notifications, setNotifications] = useState<NotificationPreferences | null>(null);
+  const [achievements, setAchievements] = useState<UserAchievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useSupabaseAuth();
 
   useEffect(() => {
-    if (user) {
-      fetchUserData();
-    }
-  }, [user]);
-
-  const fetchUserData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [analyticsRes, interactionsRes, preferencesRes, notificationsRes] = await Promise.all([
-        fetch('/api/user/analytics'),
-        fetch('/api/user/interactions?limit=20'),
-        fetch('/api/user/preferences'),
-        fetch('/api/user/notifications')
-      ]);
-
-      if (analyticsRes.ok) {
-        const analyticsData = await analyticsRes.json();
+    const fetchAnalytics = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [analyticsData, achievementsData] = await Promise.all([
+          getUserAnalytics(userId),
+          getUserAchievements(userId)
+        ]);
+        
         setAnalytics(analyticsData);
+        setAchievements(achievementsData);
+      } catch (err) {
+        console.error('Error fetching user analytics:', err);
+        setError('ব্যবহারকারীর তথ্য লোড করতে সমস্যা হয়েছে');
+      } finally {
+        setLoading(false);
       }
+    };
 
-      if (interactionsRes.ok) {
-        const interactionsData = await interactionsRes.json();
-        setInteractions(interactionsData);
-      }
+    fetchAnalytics();
+  }, [userId]);
 
-      if (preferencesRes.ok) {
-        const preferencesData = await preferencesRes.json();
-        setPreferences(preferencesData);
-      }
-
-      if (notificationsRes.ok) {
-        const notificationsData = await notificationsRes.json();
-        setNotifications(notificationsData);
-      }
-    } catch (err) {
-      setError('ব্যবহারকারী ডেটা লোড করতে সমস্যা হয়েছে');
-      console.error('Error fetching user data:', err);
-    } finally {
-      setLoading(false);
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours} ঘন্টা ${remainingMinutes} মিনিট`;
     }
+    return `${remainingMinutes} মিনিট`;
   };
 
-  const updateNotificationPreferences = async (updatedPreferences: Partial<NotificationPreferences>) => {
+  const getEngagementLevel = (score: number): { label: string; color: string } => {
+    if (score >= 80) return { label: 'অত্যন্ত সক্রিয়', color: 'bg-green-500' };
+    if (score >= 60) return { label: 'সক্রিয়', color: 'bg-blue-500' };
+    if (score >= 40) return { label: 'মধ্যম', color: 'bg-yellow-500' };
+    if (score >= 20) return { label: 'কম সক্রিয়', color: 'bg-orange-500' };
+    return { label: 'নিষ্ক্রিয়', color: 'bg-red-500' };
+  };
+
+  const formatDate = (dateString: string): string => {
     try {
-      const response = await fetch('/api/user/notifications', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedPreferences)
+      const date = new Date(dateString);
+      return date.toLocaleDateString('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
-      }
-    } catch (err) {
-      console.error('Error updating notification preferences:', err);
+    } catch (error) {
+      return dateString;
     }
   };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('bn-BD', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getInteractionIcon = (type: string) => {
-    switch (type) {
-      case 'view': return <Eye className="w-4 h-4" />;
-      case 'like': return <Heart className="w-4 h-4" />;
-      case 'share': return <Share2 className="w-4 h-4" />;
-      case 'comment': return <BookOpen className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
-    }
-  };
-
-  const getInteractionColor = (type: string) => {
-    switch (type) {
-      case 'view': return 'bg-blue-100 text-blue-800';
-      case 'like': return 'bg-red-100 text-red-800';
-      case 'share': return 'bg-green-100 text-green-800';
-      case 'comment': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getInteractionName = (type: string) => {
-    switch (type) {
-      case 'view': return 'দেখেছেন';
-      case 'like': return 'পছন্দ করেছেন';
-      case 'share': return 'শেয়ার করেছেন';
-      case 'comment': return 'মন্তব্য করেছেন';
-      default: return 'ইন্টারঅ্যাক্ট করেছেন';
-    }
-  };
-
-  if (!user) {
-    return (
-      <Alert>
-        <AlertDescription>
-          ব্যবহারকারী এনালিটিক্স দেখতে অনুগ্রহ করে লগইন করুন।
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <Skeleton className="h-8 w-16 mb-2" />
+      <div className={className}>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader className="pb-2">
                 <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-full" />
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-16 w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-4 w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -212,291 +131,188 @@ export const UserAnalyticsDashboard = () => {
 
   if (error) {
     return (
-      <Alert className="border-red-200 bg-red-50">
-        <AlertDescription className="text-red-800">
-          {error}
-        </AlertDescription>
-      </Alert>
+      <div className={className}>
+        <Card>
+          <CardContent className="text-center py-8">
+            <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
+  const engagementLevel = analytics ? getEngagementLevel(analytics.engagement_score) : { label: 'নিষ্ক্রিয়', color: 'bg-gray-500' };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center space-x-2">
-            <User className="w-6 h-6 text-blue-600" />
-            <span>ব্যবহারকারী এনালিটিক্স</span>
-          </h2>
-          <p className="text-gray-600 mt-1">
-            আপনার পড়ার অভ্যাস এবং পছন্দের পরিসংখ্যান
-          </p>
-        </div>
-      </div>
-
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className={className}>
+      {/* Stats Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">মোট ইন্টারঅ্যাকশন</p>
-                <p className="text-2xl font-bold">{analytics?.totalInteractions || 0}</p>
-              </div>
-              <Activity className="w-8 h-8 text-blue-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">পঠিত নিবন্ধ</CardTitle>
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.total_articles_read || 0}</div>
+            <p className="text-xs text-muted-foreground">মোট পড়া নিবন্ধ</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">প্রিয় বিষয়</p>
-                <p className="text-2xl font-bold">{preferences.length}</p>
-              </div>
-              <Heart className="w-8 h-8 text-red-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">পড়ার সময়</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {analytics ? formatDuration(analytics.total_time_spent) : '০ মিনিট'}
             </div>
+            <p className="text-xs text-muted-foreground">মোট সময়</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">সাম্প্রতিক পড়া</p>
-                <p className="text-2xl font-bold">{analytics?.recentReading?.length || 0}</p>
-              </div>
-              <BookOpen className="w-8 h-8 text-green-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">পড়ার ধারাবাহিকতা</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.reading_streak || 0}</div>
+            <p className="text-xs text-muted-foreground">দিন ধরে নিয়মিত</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">সর্বোচ্চ</p>
-                <p className="text-2xl font-bold">
-                  {Math.max(...Object.values(analytics?.interactionsByType || {}))}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-purple-600" />
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">সক্রিয়তার স্কোর</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics?.engagement_score || 0}%</div>
+            <Badge variant="outline" className={`text-xs ${engagementLevel.color} text-white`}>
+              {engagementLevel.label}
+            </Badge>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="interactions" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="interactions">ইন্টারঅ্যাকশন</TabsTrigger>
-          <TabsTrigger value="preferences">পছন্দ</TabsTrigger>
-          <TabsTrigger value="reading">পড়ার ইতিহাস</TabsTrigger>
-          <TabsTrigger value="settings">সেটিংস</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="interactions" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Interaction Types Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="w-5 h-5" />
-                  <span>ইন্টারঅ্যাকশন প্রকার</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {Object.entries(analytics?.interactionsByType || {}).map(([type, count]) => (
-                    <div key={type} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <div className={`p-1 rounded ${getInteractionColor(type)}`}>
-                          {getInteractionIcon(type)}
-                        </div>
-                        <span className="text-sm">{getInteractionName(type)}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">{count}</span>
-                        <div className="w-16">
-                          <Progress 
-                            value={(count / (analytics?.totalInteractions || 1)) * 100} 
-                            className="h-2"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Recent Interactions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5" />
-                  <span>সাম্প্রতিক কার্যকলাপ</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-64 overflow-y-auto">
-                  {interactions.slice(0, 10).map((interaction) => (
-                    <div key={interaction.id} className="flex items-center space-x-3 p-2 rounded hover:bg-gray-50">
-                      <div className={`p-1 rounded ${getInteractionColor(interaction.interaction_type)}`}>
-                        {getInteractionIcon(interaction.interaction_type)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {interaction.articles.title}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(interaction.created_at)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="preferences" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Heart className="w-5 h-5" />
-                <span>বিষয়ভিত্তিক আগ্রহ</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Achievements */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Trophy className="w-5 h-5" />
+              <span>অর্জনসমূহ</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {achievements.length > 0 ? (
               <div className="space-y-4">
-                {preferences.map((pref) => (
-                  <div key={pref.category_id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex items-center space-x-3">
-                      <Badge variant="outline">{pref.categories.name}</Badge>
-                      <span className="text-sm text-gray-600">
-                        আগ্রহের মাত্রা: {Math.round(pref.interest_score * 100)}%
-                      </span>
+                {achievements.slice(0, 5).map((achievement) => (
+                  <div key={achievement.id} className="flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
+                      <Award className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <div className="w-32">
-                      <Progress 
-                        value={Math.min(pref.interest_score * 100, 100)} 
-                        className="h-2"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="reading" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <BookOpen className="w-5 h-5" />
-                <span>পড়ার ইতিহাস</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {analytics?.recentReading?.map((reading) => (
-                  <div key={reading.article_id} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{reading.articles.title}</p>
-                      <div className="flex items-center space-x-2 text-sm text-gray-500">
-                        <Badge variant="outline" className="text-xs">
-                          {reading.articles.categories.name}
-                        </Badge>
-                        <span>পড়েছেন {reading.read_count} বার</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {formatDate(reading.last_read_at)}
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{achievement.achievement_name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {achievement.achievement_description}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {formatDate(achievement.earned_at)}
                       </p>
                     </div>
+                    {achievement.is_visible && (
+                      <Star className="w-4 h-4 text-yellow-500" />
+                    )}
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Settings className="w-5 h-5" />
-                <span>নোটিফিকেশন সেটিংস</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {notifications && (
-                  <>
-                    <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">ব্রেকিং নিউজ</p>
-                        <p className="text-sm text-gray-600">জরুরি খবরের জন্য তাৎক্ষণিক বিজ্ঞপ্তি</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={notifications.breaking_news}
-                        onChange={(e) => updateNotificationPreferences({ breaking_news: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">বিষয়ভিত্তিক আপডেট</p>
-                        <p className="text-sm text-gray-600">আপনার পছন্দের বিষয়ে নতুন খবর</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={notifications.category_updates}
-                        onChange={(e) => updateNotificationPreferences({ category_updates: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">ব্যক্তিগত সুপারিশ</p>
-                        <p className="text-sm text-gray-600">আপনার জন্য বিশেষ নিউজ সুপারিশ</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={notifications.personalized_recommendations}
-                        onChange={(e) => updateNotificationPreferences({ personalized_recommendations: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 rounded-lg border">
-                      <div>
-                        <p className="font-medium">ইমেইল বিজ্ঞপ্তি</p>
-                        <p className="text-sm text-gray-600">ইমেইলে নিয়মিত আপডেট পান</p>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={notifications.email_notifications}
-                        onChange={(e) => updateNotificationPreferences({ email_notifications: e.target.checked })}
-                        className="w-4 h-4"
-                      />
-                    </div>
-                  </>
+                
+                {achievements.length > 5 && (
+                  <p className="text-sm text-center text-gray-500 dark:text-gray-400">
+                    আরও {achievements.length - 5} টি অর্জন...
+                  </p>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            ) : (
+              <div className="text-center py-8">
+                <Trophy className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-500 dark:text-gray-400">এখনো কোনো অর্জন নেই</p>
+                <p className="text-sm text-gray-400">আরও পড়ুন এবং অর্জন আনলক করুন!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Reading Progress & Insights */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BookOpen className="w-5 h-5" />
+              <span>পড়ার পরিসংখ্যান</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics?.engagement_score !== undefined && (
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>সক্রিয়তার স্কোর</span>
+                    <span>{analytics.engagement_score}%</span>
+                  </div>
+                  <Progress value={analytics.engagement_score} className="h-2" />
+                </div>
+              )}
+
+              {analytics?.favorite_categories && analytics.favorite_categories.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">প্রিয় বিভাগসমূহ</p>
+                  <div className="flex flex-wrap gap-1">
+                    {analytics.favorite_categories.slice(0, 3).map((category, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <Calendar className="w-4 h-4" />
+                  <span>
+                    সর্বশেষ সক্রিয়: {analytics?.last_active ? formatDate(analytics.last_active) : 'অজানা'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-};
+}
 
-export default UserAnalyticsDashboard;
+// Compact version for sidebar
+export function UserAnalyticsWidget({ userId }: { userId: string }) {
+  return (
+    <Card className="w-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base font-semibold flex items-center space-x-2">
+          <TrendingUp className="w-4 h-4" />
+          <span>আপনার পরিসংখ্যান</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <UserAnalyticsDashboard 
+          userId={userId}
+          className="space-y-4"
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
+// Named export for compatibility
+export { default as UserAnalyticsDashboard };

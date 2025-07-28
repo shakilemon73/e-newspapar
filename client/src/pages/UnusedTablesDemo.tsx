@@ -10,7 +10,7 @@ import { SavedArticleButton } from '@/components/SavedArticleButton';
 import { LikeButton } from '@/components/LikeButton';
 import { ShareButton } from '@/components/ShareButton';
 import { CommentsSection } from '@/components/CommentsSection';
-import { TagsDisplay } from '@/components/TagsDisplay';
+import TagsDisplay from '@/components/TagsDisplay';
 import { NewsletterSignup } from '@/components/NewsletterSignup';
 import { PollsSection } from '@/components/PollsSection';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
