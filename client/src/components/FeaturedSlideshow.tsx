@@ -215,7 +215,7 @@ export const FeaturedSlideshow = () => {
                     </h2>
                     
                     {/* Article Excerpt - Hidden on small mobile */}
-                    <p className="hidden sm:block text-sm sm:text-base lg:text-lg xl:text-xl opacity-90 line-clamp-1 lg:line-clamp-2 mb-3 lg:mb-4 text-shadow leading-relaxed">
+                    <p className="hidden sm:block text-sm sm:text-base lg:text-lg xl:text-xl opacity-90 line-clamp-1 lg:line-clamp-2 mb-3 lg:mb-4 text-shadow leading-relaxed text-white">
                       {article.excerpt}
                     </p>
                     
@@ -290,16 +290,16 @@ export const FeaturedSlideshow = () => {
                 {isAutoPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
 
-              {/* Modern Dot Navigation - Mobile-Optimized */}
-              <div className="absolute bottom-3 sm:bottom-4 lg:bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 sm:gap-2 bg-black/50 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2">
+              {/* Subtle Dot Navigation - Minimalist Design */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1">
                 {featuredArticles.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => handleDotClick(index)}
-                    className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-white/50 touch-target ${
+                    className={`w-1.5 h-1.5 rounded-full transition-all duration-300 focus:outline-none ${
                       index === currentSlide 
-                        ? 'bg-white scale-125 shadow-lg' 
-                        : 'bg-white/50 hover:bg-white/75 hover:scale-110'
+                        ? 'bg-white shadow-sm' 
+                        : 'bg-white/40 hover:bg-white/60'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
