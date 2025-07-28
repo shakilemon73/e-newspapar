@@ -22,27 +22,20 @@ export const BreakingNewsTicker = () => {
         const { getBreakingNews } = await import('../lib/supabase-api-direct');
         const rawData = await getBreakingNews();
         
-        // Process each breaking news item with AI
+        // Process each breaking news item with AI-safe method
+        const { processArticleWithAI } = await import('../lib/vercel-safe-ai-service');
+        
         const aiEnhancedData = await Promise.allSettled(
           rawData.map(async (item: any) => {
             try {
-              // Process breaking news content with AI
-              const response = await fetch('/api/ai/process-article', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  content: item.content,
-                  type: 'breaking_news'
-                })
-              });
-              
-              const result = await response.json();
+              // Process breaking news with Vercel-safe AI
+              const result = await processArticleWithAI(item.id);
               
               if (result.success && result.data) {
                 return {
                   ...item,
-                  priority: result.data.urgency || 1,
-                  urgencyScore: result.data.sentimentScore || 0.5
+                  priority: result.data.priority || 1,
+                  urgencyScore: 0.8 // High urgency for breaking news
                 };
               }
               

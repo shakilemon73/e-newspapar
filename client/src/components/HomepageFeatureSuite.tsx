@@ -65,22 +65,22 @@ export const DiscoveryWidget = () => {
       try {
         if (user?.id) {
           // Get comprehensive AI recommendations for logged-in users
-          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=5`);
-          const result = await response.json();
+          const { getAIRecommendations } = await import('../lib/vercel-safe-ai-service');
+          const result = await getAIRecommendations(user.id, 5);
           
           if (result.success) {
             setAiInsights({
-              ...result.data,
+              articles: result.data.articles,
               type: 'personalized',
-              userPreferences: result.data.userPreferences,
+              userPreferences: [],
               aiRecommendations: true
             });
             console.log('[AI Discovery] Generated personalized insights:', result.data);
           }
         } else {
           // Get AI-powered trending articles for non-logged users
-          const response = await fetch('/api/ai/popular/weekly?limit=5');
-          const result = await response.json();
+          const { getAIPopularArticles } = await import('../lib/vercel-safe-ai-service');
+          const result = await getAIPopularArticles('weekly', 5);
           
           if (result.success) {
             setAiInsights({ 

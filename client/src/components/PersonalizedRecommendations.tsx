@@ -56,10 +56,10 @@ export const PersonalizedRecommendations = () => {
         
         const token = session.access_token;
         
-        // Fetch AI-powered personalized recommendations
+        // Fetch AI-powered personalized recommendations with Vercel-safe method
         try {
-          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=6`);
-          const result = await response.json();
+          const { getAIRecommendations } = await import('../lib/vercel-safe-ai-service');
+          const result = await getAIRecommendations(user.id, 6);
           
           if (result.success && result.data?.articles) {
             // Transform AI-enhanced data for display
@@ -71,7 +71,7 @@ export const PersonalizedRecommendations = () => {
               imageUrl: article.image_url || '/placeholder-300x176.svg',
               publishedAt: article.published_at,
               category: article.categories,
-              personalScore: article.personalScore
+              personalScore: article.ai_score || 0.8
             }));
             
             setArticles(transformedArticles);

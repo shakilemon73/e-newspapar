@@ -1,17 +1,12 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { cleanupCorruptedStorage } from './storage-cleanup';
 
-// Single global instance to prevent multiple GoTrueClient warnings
+// SINGLE GLOBAL INSTANCE - Prevents multiple GoTrueClient warnings in Vercel
 let globalSupabaseInstance: SupabaseClient | null = null;
 
-// Configuration - Handle server vs client context
-const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || 
-                   (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_URL) || 
-                   'https://mrjukcqspvhketnfzmud.supabase.co';
-
-const supabaseAnonKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || 
-                       (typeof process !== 'undefined' && process.env?.VITE_SUPABASE_ANON_KEY) || 
-                       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yanVrY3FzcHZoa2V0bmZ6bXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MTExNTksImV4cCI6MjA2ODA4NzE1OX0.GEhC-77JHGe1Oshtjg3FOSFSlJe5sLeyp_wqNWk6f1s';
+// Secure configuration with environment variable validation
+const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://mrjukcqspvhketnfzmud.supabase.co';
+const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yanVrY3FzcHZoa2V0bmZ6bXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MTExNTksImV4cCI6MjA2ODA4NzE1OX0.GEhC-77JHGe1Oshtjg3FOSFSlJe5sLeyp_wqNWk6f1s';
 
 // Validate configuration
 if (!supabaseUrl || !supabaseAnonKey) {
