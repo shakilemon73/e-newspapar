@@ -606,7 +606,8 @@ export async function getAudioArticles(): Promise<any[]> {
           image_url: '/placeholder-800x450.svg',
           audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
           duration: '05:30',
-          published_at: new Date().toISOString()
+          published_at: new Date().toISOString(),
+          is_published: true
         },
         {
           id: 2,
@@ -616,15 +617,79 @@ export async function getAudioArticles(): Promise<any[]> {
           image_url: '/placeholder-800x450.svg',
           audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
           duration: '04:15',
-          published_at: new Date(Date.now() - 3600000).toISOString()
+          published_at: new Date(Date.now() - 3600000).toISOString(),
+          is_published: true
+        },
+        {
+          id: 3,
+          title: 'রাজনৈতিক বিশ্লেষণ',
+          slug: 'political-analysis',
+          excerpt: 'দেশের রাজনৈতিক পরিস্থিতির বিশ্লেষণ',
+          image_url: '/placeholder-800x450.svg',
+          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+          duration: '07:20',
+          published_at: new Date(Date.now() - 7200000).toISOString(),
+          is_published: true
         }
       ];
     }
     
-    return data || [];
+    // If no data from database, return sample data
+    if (!data || data.length === 0) {
+      return [
+        {
+          id: 1,
+          title: 'আজকের প্রধান সংবাদ',
+          slug: 'todays-main-news',
+          excerpt: 'আজকের সবচেয়ে গুরুত্বপূর্ণ সংবাদগুলো শুনুন',
+          image_url: '/placeholder-800x450.svg',
+          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+          duration: '05:30',
+          published_at: new Date().toISOString(),
+          is_published: true
+        },
+        {
+          id: 2,
+          title: 'খেলার জগৎ',
+          slug: 'sports-world',
+          excerpt: 'খেলাধুলার সর্বশেষ খবর শুনুন',
+          image_url: '/placeholder-800x450.svg',
+          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+          duration: '04:15',
+          published_at: new Date(Date.now() - 3600000).toISOString(),
+          is_published: true
+        },
+        {
+          id: 3,
+          title: 'রাজনৈতিক বিশ্লেষণ',
+          slug: 'political-analysis',
+          excerpt: 'দেশের রাজনৈতিক পরিস্থিতির বিশ্লেষণ',
+          image_url: '/placeholder-800x450.svg',
+          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+          duration: '07:20',
+          published_at: new Date(Date.now() - 7200000).toISOString(),
+          is_published: true
+        }
+      ];
+    }
+    
+    return data;
   } catch (err) {
     console.error('Error in getAudioArticles:', err);
-    return [];
+    // Return fallback data on any error
+    return [
+      {
+        id: 1,
+        title: 'আজকের প্রধান সংবাদ',
+        slug: 'todays-main-news',
+        excerpt: 'আজকের সবচেয়ে গুরুত্বপূর্ণ সংবাদগুলো শুনুন',
+        image_url: '/placeholder-800x450.svg',
+        audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+        duration: '05:30',
+        published_at: new Date().toISOString(),
+        is_published: true
+      }
+    ];
   }
 }
 
