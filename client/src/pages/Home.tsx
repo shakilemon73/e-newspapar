@@ -9,14 +9,14 @@ import EPaperSection from '@/components/EPaperSection';
 import PopularNewsSection from '@/components/PopularNewsSection';
 import PersonalizedRecommendations from '@/components/PersonalizedRecommendations';
 import SocialMediaFeed from '@/components/SocialMediaFeed';
-import VideoContent from '@/components/VideoContent';
+
 import AudioArticles from '@/components/AudioArticles';
 
 import { ContextAwareUXSuite } from '@/components/ContextAwareUXSuite';
 import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 import { AIEnhancedHomepage } from '@/components/AI/AIEnhancedHomepage';
 import { AudioGrid } from '@/components/media/AudioGrid';
-import { VideoGrid } from '@/components/media/VideoGrid';
+
 
 interface Category {
   id: number;
@@ -182,14 +182,9 @@ const Home = () => {
           </div>
         </section>
         
-        {/* 9. Multimedia Content Hub - Rich Media Experience */}
-        <section className="px-4 py-6 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-indigo-50 via-white to-blue-50/50 dark:from-indigo-950/20 dark:via-gray-900 dark:to-blue-950/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 shadow-lg">
-            <VideoContent />
-          </div>
-        </section>
 
-        {/* 10. Lifestyle & Entertainment Categories - Emotional Design (Aaron Walter) */}
+
+        {/* 9. Lifestyle & Entertainment Categories - Emotional Design (Aaron Walter) */}
         {!categoriesLoading && lifestyleCategories.length > 0 && (
           <section className="px-4 py-6 max-w-7xl mx-auto">
             <div className="mb-8 text-center">
@@ -228,26 +223,16 @@ const Home = () => {
           </div>
         </section>
 
-        {/* 12. Video Content Hub - Research-Based Video Player */}
-        <section className="px-4 py-6 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 dark:from-blue-950/20 dark:via-cyan-950/20 dark:to-teal-950/20 rounded-2xl p-6 border border-blue-100/60 dark:border-blue-900/30 shadow-lg">
-            <VideoGrid 
-              title="ভিডিও কন্টেন্ট"
-              limit={6}
-              showPlayer={true}
-              className="space-y-6"
-            />
-          </div>
-        </section>
+
         
-        {/* 12. Social Media Integration - Community & Sharing */}
+        {/* 9. Social Media Integration - Community & Sharing */}
         <section className="px-4 py-6 max-w-7xl mx-auto">
           <div className="bg-gradient-to-br from-cyan-50 via-white to-sky-50/50 dark:from-cyan-950/20 dark:via-gray-900 dark:to-sky-950/10 rounded-2xl border border-cyan-100 dark:border-cyan-900/30 shadow-lg">
             <SocialMediaFeed />
           </div>
         </section>
 
-        {/* 13. AI-Enhanced Intelligence Hub - Future-Forward Features */}
+        {/* 10. AI-Enhanced Intelligence Hub - Future-Forward Features */}
         <section className="px-4 py-8 max-w-7xl mx-auto mb-8">
           <div className="bg-gradient-to-br from-slate-50 via-white to-gray-50/50 dark:from-slate-950/50 dark:via-gray-900 dark:to-slate-950/30 rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-2xl overflow-hidden">
             <div className="relative p-1">
