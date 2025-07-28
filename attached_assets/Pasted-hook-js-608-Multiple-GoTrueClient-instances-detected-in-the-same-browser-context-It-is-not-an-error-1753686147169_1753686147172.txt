@@ -1,0 +1,130 @@
+hook.js:608 Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+overrideMethod @ hook.js:608
+hook.js:608 Multiple GoTrueClient instances detected in the same browser context. It is not an error, but this should be avoided as it may produce undefined behavior when used concurrently under the same storage key.
+overrideMethod @ hook.js:608
+/api/ai/popular-articles?timeRange=daily&limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/popular/weekly?limit=5:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=8:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [PopularNews] Error fetching articles: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+hook.js:608 [AI Discovery] Failed to fetch insights: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+/api/ai/recommendations/413875c0-7254-4eb2-8fbe-5425779e04da?limit=5:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/user-analytics/413875c0-7254-4eb2-8fbe-5425779e04da:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [AI Discovery] Failed to fetch insights: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+hook.js:608 [AI Reading Stats] Failed to fetch analytics: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/weather?select=*&city=eq.%E0%A6%A2%E0%A6%BE%E0%A6%95%E0%A6%BE:1  Failed to load resource: the server responded with a status of 406 ()
+hook.js:608 Error fetching weather by city: Object
+overrideMethod @ hook.js:608
+hook.js:608 Error fetching IP-based weather: Error: No weather data received
+    at g (index-4cmxhZZg.js:815:239799)
+    at async index-4cmxhZZg.js:815:240552
+overrideMethod @ hook.js:608
+/api/ai/process-article:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/process-article:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/process-article:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/process-article:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/process-article:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [AI Breaking News] Processing failed for item: 19
+overrideMethod @ hook.js:608
+hook.js:608 [AI Breaking News] Processing failed for item: 16
+overrideMethod @ hook.js:608
+hook.js:608 [AI Breaking News] Processing failed for item: 18
+overrideMethod @ hook.js:608
+hook.js:608 [AI Breaking News] Processing failed for item: 17
+overrideMethod @ hook.js:608
+hook.js:608 [AI Breaking News] Processing failed for item: 3
+overrideMethod @ hook.js:608
+225:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/recommendations/413875c0-7254-4eb2-8fbe-5425779e04da?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+chromewebdata/:1 Refused to display 'https://www.youtube.com/' in a frame because it set 'X-Frame-Options' to 'sameorigin'.
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/user_storage?on_conflict=user_id%2Cstorage_key:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 AI personalized recommendations failed, using popular articles
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/reading_history?select=*&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da:1  Failed to load resource: the server responded with a status of 404 ()
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/user_settings?select=*&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da:1  Failed to load resource: the server responded with a status of 406 ()
+/api/ai/trending-topics?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=8:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/recommendations/413875c0-7254-4eb2-8fbe-5425779e04da?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 AI personalized recommendations failed, using popular articles
+overrideMethod @ hook.js:608
+hook.js:608 Error storing data in Supabase: Object
+overrideMethod @ hook.js:608
+/api/ai/recommendations/413875c0-7254-4eb2-8fbe-5425779e04da?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 AI personalized recommendations failed, using popular articles
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/user_storage?on_conflict=user_id%2Cstorage_key:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 Error storing data in Supabase: Object
+overrideMethod @ hook.js:608
+/api/ai/category-insights/economy:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [AI Category] Failed to get insights for economy: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/reading_history?select=article_id%2Clast_read_at%2Carticles%28id%2Ctitle%2Cslug%2Cexcerpt%2Cimage_url%2Cview_count%2Cpublished_at%2Cis_featured%2Ccategory_id%2Ccategories%28id%2Cname%2Cslug%29%29&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&order=last_read_at.desc&limit=10:1  Failed to load resource: the server responded with a status of 400 ()
+hook.js:608 Error fetching reading history: Object
+overrideMethod @ hook.js:608
+/api/ai/category-insights/international:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/category-insights/archive:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/category-insights/islamic-life:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [AI Category] Failed to get insights for international: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+hook.js:608 [AI Category] Failed to get insights for archive: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+hook.js:608 [AI Category] Failed to get insights for islamic-life: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+/api/ai/category-insights/sports:1  Failed to load resource: the server responded with a status of 404 ()
+hook.js:608 [AI Category] Failed to get insights for sports: SyntaxError: Unexpected token 'T', "The page c"... is not valid JSON
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/reading_history?select=article_id%2Clast_read_at%2Carticles%28id%2Ctitle%2Cslug%2Cexcerpt%2Cimage_url%2Cview_count%2Cpublished_at%2Cis_featured%2Ccategory_id%2Ccategories%28id%2Cname%2Cslug%29%29&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&order=last_read_at.desc&limit=10:1  Failed to load resource: the server responded with a status of 400 ()
+hook.js:608 Error fetching reading history: Object
+overrideMethod @ hook.js:608
+mrjukcqspvhketnfzmud.supabase.co/rest/v1/reading_history?select=article_id%2Clast_read_at%2Carticles%28id%2Ctitle%2Cslug%2Cexcerpt%2Cimage_url%2Cview_count%2Cpublished_at%2Cis_featured%2Ccategory_id%2Ccategories%28id%2Cname%2Cslug%29%29&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&order=last_read_at.desc&limit=10:1  Failed to load resource: the server responded with a status of 400 ()
+hook.js:608 Error fetching reading history: Object
+overrideMethod @ hook.js:608
+/api/ai/trending-topics?limit=8:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=8:1  Failed to load resource: the server responded with a status of 404 ()
+/api/ai/trending-topics?limit=6:1  Failed to load resource: the server responded with a status of 404 ()
+index-4cmxhZZg.js:815  GET https://www.dainiktni.news/api/ai/recommendations/413875c0-7254-4eb2-8fbe-5425779e04da?limit=6 404 (Not Found)
+(anonymous) @ index-4cmxhZZg.js:815
+await in (anonymous)
+(anonymous) @ index-4cmxhZZg.js:815
+jf @ index-4cmxhZZg.js:40
+$l @ index-4cmxhZZg.js:40
+(anonymous) @ index-4cmxhZZg.js:40
+N @ index-4cmxhZZg.js:25
+S @ index-4cmxhZZg.js:25
+index-4cmxhZZg.js:815 AI personalized recommendations failed, using popular articles
+overrideMethod @ hook.js:608
+(anonymous) @ index-4cmxhZZg.js:815
+await in (anonymous)
+(anonymous) @ index-4cmxhZZg.js:815
+jf @ index-4cmxhZZg.js:40
+$l @ index-4cmxhZZg.js:40
+(anonymous) @ index-4cmxhZZg.js:40
+N @ index-4cmxhZZg.js:25
+S @ index-4cmxhZZg.js:25
+index-4cmxhZZg.js:718  GET https://mrjukcqspvhketnfzmud.supabase.co/rest/v1/reading_history?select=article_id%2Clast_read_at%2Carticles%28id%2Ctitle%2Cslug%2Cexcerpt%2Cimage_url%2Cview_count%2Cpublished_at%2Cis_featured%2Ccategory_id%2Ccategories%28id%2Cname%2Cslug%29%29&user_id=eq.413875c0-7254-4eb2-8fbe-5425779e04da&order=last_read_at.desc&limit=10 400 (Bad Request)
+(anonymous) @ index-4cmxhZZg.js:718
+(anonymous) @ index-4cmxhZZg.js:718
+l @ index-4cmxhZZg.js:718
+Promise.then
+d @ index-4cmxhZZg.js:718
+(anonymous) @ index-4cmxhZZg.js:718
+QM @ index-4cmxhZZg.js:718
+(anonymous) @ index-4cmxhZZg.js:718
+then @ index-4cmxhZZg.js:713
+index-4cmxhZZg.js:1089 Error fetching reading history: {code: 'PGRST200', details: "Searched for a foreign key relationship between 'r…n the schema 'public', but no matches were found.", hint: null, message: "Could not find a relationship between 'reading_history' and 'articles' in the schema cache"}code: "PGRST200"details: "Searched for a foreign key relationship between 'reading_history' and 'articles' in the schema 'public', but no matches were found."hint: nullmessage: "Could not find a relationship between 'reading_history' and 'articles' in the schema cache"[[Prototype]]: Object
+overrideMethod @ hook.js:608
+j5 @ index-4cmxhZZg.js:1089
+await in j5
+(anonymous) @ index-4cmxhZZg.js:815
+await in (anonymous)
+(anonymous) @ index-4cmxhZZg.js:815
+jf @ index-4cmxhZZg.js:40
+$l @ index-4cmxhZZg.js:40
+(anonymous) @ index-4cmxhZZg.js:40
+N @ index-4cmxhZZg.js:25
+S @ index-4cmxhZZg.js:25
