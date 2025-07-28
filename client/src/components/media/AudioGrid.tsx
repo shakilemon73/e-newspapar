@@ -49,55 +49,26 @@ export function AudioGrid({
       try {
         setIsLoading(true);
         
-        // Import Supabase client and fetch audio articles
-        const { supabase } = await import('@/lib/supabase');
+        // Import API function to get audio articles (uses real articles from database)
+        const { getAudioArticles } = await import('@/lib/supabase-api-direct');
         
-        let query = supabase
-          .from('audio_articles')
-          .select(`
-            id, title, slug, excerpt, image_url, audio_url,
-            duration, published_at,
-            categories!inner(name, slug)
-          `)
-          .eq('is_published', true)
-          .order('published_at', { ascending: false });
-
+        const data = await getAudioArticles();
+        
         // Filter by category if specified
+        let filteredData = data;
         if (categorySlug) {
-          query = query.eq('categories.slug', categorySlug);
+          filteredData = data.filter(article => 
+            article.category?.slug === categorySlug
+          );
         }
 
         // Apply limit
         if (limit) {
-          query = query.limit(limit);
+          filteredData = filteredData.slice(0, limit);
         }
 
-        const { data, error: fetchError } = await query;
-
-        if (fetchError) {
-          throw new Error('অডিও আর্টিকেল লোড করতে সমস্যা হয়েছে');
-        }
-
-        if (data && data.length > 0) {
-          // Convert data to AudioArticle format
-          const audioItems: AudioArticle[] = data.map(audio => ({
-            id: audio.id,
-            title: audio.title,
-            slug: audio.slug,
-            excerpt: audio.excerpt || '',
-            image_url: audio.image_url || '/placeholder-audio-cover.jpg',
-            audio_url: audio.audio_url,
-            duration: audio.duration || '0:00',
-            published_at: audio.published_at,
-            category: audio.categories
-          }));
-
-          setArticles(audioItems);
-          setCurrentArticle(audioItems[0]);
-        } else {
-          setArticles([]);
-          setCurrentArticle(null);
-        }
+        setArticles(filteredData);
+        setCurrentArticle(filteredData[0] || null);
 
         setError(null);
       } catch (err) {

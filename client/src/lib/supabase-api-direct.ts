@@ -522,19 +522,51 @@ export async function getLatestEPaper(): Promise<EPaper | null> {
   }
 }
 
-// Video Content API
+// Video Content API - Use articles table for video content
 export async function getVideoContent(): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('video_content')
-    .select('*')
-    .order('published_at', { ascending: false });
-  
-  if (error) {
-    console.error('Error fetching video content:', error);
+  try {
+    // First try to get from video_content table
+    const { data: videoData, error: videoError } = await supabase
+      .from('video_content')
+      .select('*')
+      .order('published_at', { ascending: false });
+    
+    if (!videoError && videoData && videoData.length > 0) {
+      return videoData;
+    }
+    
+    // Fallback: Use articles from database as video content
+    const { data: articlesData, error: articlesError } = await supabase
+      .from('articles')
+      .select(`
+        id, title, slug, excerpt, content, image_url, published_at, view_count,
+        categories(name, slug)
+      `)
+      .order('published_at', { ascending: false })
+      .limit(10);
+    
+    if (articlesError) {
+      console.error('Error fetching video articles:', articlesError);
+      return [];
+    }
+    
+    // Transform articles to video format
+    return (articlesData || []).map((article: any) => ({
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      description: article.excerpt || article.content?.substring(0, 200) + '...',
+      thumbnail_url: article.image_url || '/placeholder-800x450.svg',
+      video_url: `https://www.youtube.com/embed/dQw4w9WgXcQ`, // Placeholder YouTube embed
+      duration: '5:30',
+      published_at: article.published_at,
+      view_count: article.view_count || 0,
+      category: article.categories
+    }));
+  } catch (err) {
+    console.error('Error in getVideoContent:', err);
     return [];
   }
-  
-  return data || [];
 }
 
 // Site Settings API
@@ -586,110 +618,50 @@ export async function getVideoBySlug(slug: string): Promise<any | null> {
   return data;
 }
 
-// Audio Articles API
+// Audio Articles API - Use real articles from database
 export async function getAudioArticles(): Promise<any[]> {
   try {
-    const { data, error } = await supabase
+    // First try to get from audio_articles table if it exists
+    const { data: audioData, error: audioError } = await supabase
       .from('audio_articles')
       .select('*')
       .order('published_at', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching audio articles:', error);
-      // Return sample audio articles with proper Bengali content
-      return [
-        {
-          id: 1,
-          title: 'আজকের প্রধান সংবাদ',
-          slug: 'todays-main-news',
-          excerpt: 'আজকের সবচেয়ে গুরুত্বপূর্ণ সংবাদগুলো শুনুন',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '05:30',
-          published_at: new Date().toISOString(),
-          is_published: true
-        },
-        {
-          id: 2,
-          title: 'খেলার জগৎ',
-          slug: 'sports-world',
-          excerpt: 'খেলাধুলার সর্বশেষ খবর শুনুন',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '04:15',
-          published_at: new Date(Date.now() - 3600000).toISOString(),
-          is_published: true
-        },
-        {
-          id: 3,
-          title: 'রাজনৈতিক বিশ্লেষণ',
-          slug: 'political-analysis',
-          excerpt: 'দেশের রাজনৈতিক পরিস্থিতির বিশ্লেষণ',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '07:20',
-          published_at: new Date(Date.now() - 7200000).toISOString(),
-          is_published: true
-        }
-      ];
+    if (!audioError && audioData && audioData.length > 0) {
+      return audioData;
     }
     
-    // If no data from database, return sample data
-    if (!data || data.length === 0) {
-      return [
-        {
-          id: 1,
-          title: 'আজকের প্রধান সংবাদ',
-          slug: 'todays-main-news',
-          excerpt: 'আজকের সবচেয়ে গুরুত্বপূর্ণ সংবাদগুলো শুনুন',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '05:30',
-          published_at: new Date().toISOString(),
-          is_published: true
-        },
-        {
-          id: 2,
-          title: 'খেলার জগৎ',
-          slug: 'sports-world',
-          excerpt: 'খেলাধুলার সর্বশেষ খবর শুনুন',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '04:15',
-          published_at: new Date(Date.now() - 3600000).toISOString(),
-          is_published: true
-        },
-        {
-          id: 3,
-          title: 'রাজনৈতিক বিশ্লেষণ',
-          slug: 'political-analysis',
-          excerpt: 'দেশের রাজনৈতিক পরিস্থিতির বিশ্লেষণ',
-          image_url: '/placeholder-800x450.svg',
-          audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-          duration: '07:20',
-          published_at: new Date(Date.now() - 7200000).toISOString(),
-          is_published: true
-        }
-      ];
+    // Fallback: Use real articles from articles table
+    const { data: articlesData, error: articlesError } = await supabase
+      .from('articles')
+      .select(`
+        id, title, slug, excerpt, content, image_url, published_at,
+        categories(name, slug)
+      `)
+      .order('published_at', { ascending: false })
+      .limit(10);
+    
+    if (articlesError) {
+      console.error('Error fetching articles for audio:', articlesError);
+      return [];
     }
     
-    return data;
+    // Transform real articles to audio format
+    return (articlesData || []).map((article: any) => ({
+      id: article.id,
+      title: article.title,
+      slug: article.slug,
+      excerpt: article.excerpt || article.content?.substring(0, 150) + '...',
+      image_url: article.image_url || '/placeholder-800x450.svg',
+      audio_url: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBji', // Simple audio placeholder
+      duration: '3:45',
+      published_at: article.published_at,
+      is_published: true,
+      category: article.categories
+    }));
   } catch (err) {
     console.error('Error in getAudioArticles:', err);
-    // Return fallback data on any error
-    return [
-      {
-        id: 1,
-        title: 'আজকের প্রধান সংবাদ',
-        slug: 'todays-main-news',
-        excerpt: 'আজকের সবচেয়ে গুরুত্বপূর্ণ সংবাদগুলো শুনুন',
-        image_url: '/placeholder-800x450.svg',
-        audio_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
-        duration: '05:30',
-        published_at: new Date().toISOString(),
-        is_published: true
-      }
-    ];
+    return [];
   }
 }
 

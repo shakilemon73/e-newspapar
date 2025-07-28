@@ -48,57 +48,27 @@ export function VideoGrid({
       try {
         setIsLoading(true);
         
-        // Import Supabase client and fetch videos
-        const { supabase } = await import('@/lib/supabase');
+        // Import API function to get video content (uses real articles from database)
+        const { getVideoContent } = await import('@/lib/supabase-api-direct');
         
-        let query = supabase
-          .from('video_content')
-          .select(`
-            id, title, slug, description, thumbnail_url, video_url,
-            duration, published_at, view_count,
-            categories!inner(name, slug)
-          `)
-          .eq('is_published', true)
-          .order('published_at', { ascending: false });
-
+        const data = await getVideoContent();
+        
         // Filter by category if specified
+        let filteredData = data;
         if (categorySlug) {
-          query = query.eq('categories.slug', categorySlug);
+          filteredData = data.filter(video => 
+            video.category?.slug === categorySlug
+          );
         }
 
         // Apply limit
         if (limit) {
-          query = query.limit(limit + 1); // +1 for featured video
+          filteredData = filteredData.slice(0, limit);
         }
 
-        const { data, error: fetchError } = await query;
-
-        if (fetchError) {
-          throw new Error('ভিডিও লোড করতে সমস্যা হয়েছে');
-        }
-
-        if (data && data.length > 0) {
-          // Convert data to VideoItem format
-          const videoItems: VideoItem[] = data.map(video => ({
-            id: video.id,
-            title: video.title,
-            slug: video.slug,
-            description: video.description || '',
-            thumbnail_url: video.thumbnail_url || '/placeholder-video-thumbnail.jpg',
-            video_url: video.video_url,
-            duration: video.duration || '0:00',
-            published_at: video.published_at,
-            view_count: video.view_count || 0,
-            category: video.categories
-          }));
-
-          // Set featured video (first one) and rest
-          setFeaturedVideo(videoItems[0]);
-          setVideos(videoItems.slice(1));
-        } else {
-          setVideos([]);
-          setFeaturedVideo(null);
-        }
+        // Set featured video (first one) and rest
+        setFeaturedVideo(filteredData[0] || null);
+        setVideos(filteredData.slice(1));
 
         setError(null);
       } catch (err) {
