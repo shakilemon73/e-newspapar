@@ -1,11 +1,20 @@
 {
-  "buildCommand": "npm run build:static",
-  "outputDirectory": "dist",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
+    }
+  ],
   "installCommand": "npm install",
-  
+  "buildCommand": "npm run build",
+
   "headers": [
     {
-      "source": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|ico|svg|woff2?))",
+      "source": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|ico|svg))",
       "headers": [
         {
           "key": "Cache-Control",
@@ -14,10 +23,13 @@
       ]
     }
   ],
-  
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api|assets).*)",
       "destination": "/index.html"
     }
   ]

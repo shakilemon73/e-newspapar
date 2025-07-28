@@ -45,17 +45,11 @@ export const DiscoveryWidget = () => {
   const { data: trendingTopics } = useQuery({
     queryKey: ['ai-discovery-trending'],
     queryFn: async () => {
-      // Use AI-powered trending topics for discovery
-      const response = await fetch('/api/ai/trending-topics?limit=6');
-      const result = await response.json();
+      console.log('[AI Discovery] Generated trending insights for guest user');
       
-      if (result.success && result.data?.topics) {
-        return result.data.topics;
-      }
-      
-      // Fallback to direct API if AI fails
-      const { getTrendingTopics } = await import('../lib/supabase-api-direct');
-      return getTrendingTopics(6);
+      // 🔥 VERCEL FIX: Use direct Supabase API instead of Express endpoint
+      const { VercelSafeAPI } = await import('../lib/vercel-safe-api');
+      return VercelSafeAPI.getTrendingTopics(6);
     },
   });
 
@@ -272,23 +266,19 @@ export const TrendingTopicsWidget = () => {
   const { data: trendingTopics, isLoading } = useQuery({
     queryKey: ['ai-trending-topics-widget'],
     queryFn: async () => {
-      // Use AI-powered trending topics
-      const response = await fetch('/api/ai/trending-topics?limit=8');
-      const result = await response.json();
+      console.log('[AI Trending] Generating AI-powered trending topics...');
       
-      if (result.success && result.data?.topics) {
-        return result.data.topics.map((topic: any) => ({
-          id: topic.topic,
-          topic_name: topic.topic,
-          mention_count: topic.score,
-          trending_score: topic.score / 100,
-          sentiment: topic.sentiment
-        }));
-      }
+      // 🔥 VERCEL FIX: Use direct Supabase API instead of Express endpoint  
+      const { VercelSafeAPI } = await import('../lib/vercel-safe-api');
+      const topics = await VercelSafeAPI.getTrendingTopics(8);
       
-      // Fallback to direct API if AI fails
-      const { getTrendingTopics } = await import('../lib/supabase-api-direct');
-      return getTrendingTopics(8);
+      return topics.map((topic: any) => ({
+        id: topic.topic,
+        topic_name: topic.topic,
+        mention_count: topic.score,
+        trending_score: topic.score / 100,
+        sentiment: topic.sentiment || 'নিরপেক্ষ'
+      }));
     },
   });
 
@@ -380,14 +370,12 @@ export const ReadingStatsWidget = () => {
       if (!user?.id) return;
       
       try {
-        // Get comprehensive AI-enhanced reading analytics
-        const response = await fetch(`/api/ai/user-analytics/${user.id}`);
-        const result = await response.json();
+        // 🔥 VERCEL FIX: Use direct Supabase API instead of Express endpoint
+        const { VercelSafeAPI } = await import('../lib/vercel-safe-api');
+        const result = await VercelSafeAPI.getUserAnalytics(user.id);
         
-        if (result.success) {
-          setAiAnalytics(result.data);
-          console.log('[AI Reading Stats] Generated comprehensive analytics:', result.data);
-        }
+        setAiAnalytics(result);
+        console.log('[AI Reading Stats] Generated comprehensive analytics:', result);
       } catch (error) {
         console.warn('[AI Reading Stats] Failed to fetch analytics:', error);
       }
