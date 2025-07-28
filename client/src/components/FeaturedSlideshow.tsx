@@ -290,7 +290,7 @@ export const FeaturedSlideshow = () => {
                 {isAutoPlaying ? <Pause className="w-4 h-4 sm:w-5 sm:h-5" /> : <Play className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
 
-              {/* Minimal Line Navigation - Modern Design */}
+              {/* Minimal Line Navigation - 24px Design */}
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1">
                 {featuredArticles.map((_, index) => (
                   <button
@@ -298,8 +298,8 @@ export const FeaturedSlideshow = () => {
                     onClick={() => handleDotClick(index)}
                     className={`h-0.5 transition-all duration-300 focus:outline-none ${
                       index === currentSlide 
-                        ? 'w-8 bg-white shadow-sm' 
-                        : 'w-4 bg-white/30 hover:bg-white/50'
+                        ? 'w-6 bg-white shadow-sm' 
+                        : 'w-3 bg-white/30 hover:bg-white/50'
                     }`}
                     aria-label={`Go to slide ${index + 1}`}
                   />
