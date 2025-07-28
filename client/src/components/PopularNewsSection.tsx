@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
-import { getMostReadArticles } from '@/lib/real-view-tracker';
+import { getAIPopularArticles } from '@/lib/vercel-safe-ai-service';
 
 interface Category {
   id: number;
@@ -16,8 +16,14 @@ interface Article {
   excerpt?: string;
   image_url?: string;
   published_at: string;
-  daily_views: number;
-  total_views: number;
+  view_count: number;
+  ai_score?: number;
+  ai_ranking_factors?: {
+    views: number;
+    freshness: number;
+    title_quality: number;
+  };
+  categories?: Category;
   category?: Category;
 }
 
@@ -30,33 +36,38 @@ export const PopularNewsSection = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMostReadArticles = async () => {
+    const fetchAIPopularArticles = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        console.log(`[PopularNews] Fetching ${timeRange} most read articles with real view counts`);
+        console.log(`[PopularNews AI] Fetching ${timeRange} AI-ranked articles`);
 
-        // Use real view tracking system instead of AI recommendations
-        const articles = await getMostReadArticles(6, timeRange);
+        // Use your existing AI algorithm for popular articles
+        const result = await getAIPopularArticles(timeRange, 6);
         
-        if (articles && articles.length > 0) {
-          setPopularArticles(articles);
-          console.log(`[PopularNews] Found ${articles.length} most read articles for ${timeRange}:`, 
-            articles.map(a => `${a.title} (${a.daily_views} daily, ${a.total_views} total)`));
+        if (result.success && result.data.articles && result.data.articles.length > 0) {
+          // Transform the AI articles to match our interface
+          const transformedArticles = result.data.articles.map(article => ({
+            ...article,
+            category: Array.isArray(article.categories) ? article.categories[0] : article.categories
+          }));
+          setPopularArticles(transformedArticles);
+          console.log(`[PopularNews AI] Found ${result.data.articles.length} AI-ranked articles for ${timeRange}:`, 
+            result.data.articles.map(a => `${a.title} (AI Score: ${a.ai_score?.toFixed(2)}, Views: ${a.view_count})`));
         } else {
           setError('কোনো জনপ্রিয় সংবাদ পাওয়া যায়নি');
         }
 
       } catch (err: any) {
-        console.error('[PopularNews] Error fetching most read articles:', err);
+        console.error('[PopularNews AI] Error fetching AI popular articles:', err);
         setError('জনপ্রিয় সংবাদ লোড করতে সমস্যা হয়েছে');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchMostReadArticles();
+    fetchAIPopularArticles();
   }, [timeRange]);
 
   const handleTimeRangeChange = (newRange: TimeRange) => {
@@ -173,7 +184,7 @@ export const PopularNewsSection = () => {
                   <h4 className="font-semibold text-foreground leading-tight line-clamp-2 flex-1">
                     {article.title}
                   </h4>
-                  {article.daily_views > 10 && (
+                  {article.ai_score && article.ai_score > 3 && (
                     <div className="flex-shrink-0 ml-2">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
                         🔥 ট্রেন্ডিং
@@ -195,7 +206,7 @@ export const PopularNewsSection = () => {
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
                         <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
                       </svg>
-                      {timeRange === 'daily' ? `${article.daily_views} আজ` : `${article.total_views} মোট`} পঠিত
+                      {article.view_count} পঠিত {article.ai_score && `(AI: ${article.ai_score.toFixed(1)})`}
                     </span>
 
                     <span>•</span>

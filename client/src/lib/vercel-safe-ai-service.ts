@@ -10,11 +10,11 @@ import { supabase } from './supabase';
 // AI POPULAR ARTICLES (Replaces /api/ai/popular-articles)
 // =======================================================
 
-export async function getAIPopularArticles(timeRange: 'daily' | 'weekly' = 'daily', limit: number = 6) {
+export async function getAIPopularArticles(timeRange: 'daily' | 'weekly' | 'monthly' = 'daily', limit: number = 6) {
   try {
     console.log(`[AI Popular] Generating ${timeRange} popular articles with AI ranking...`);
     
-    const hoursBack = timeRange === 'daily' ? 24 : 168; // 24h or 7 days
+    const hoursBack = timeRange === 'daily' ? 24 : timeRange === 'weekly' ? 168 : 720; // 24h, 7 days, or 30 days
     const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000).toISOString();
     
     const { data: articles, error } = await supabase
