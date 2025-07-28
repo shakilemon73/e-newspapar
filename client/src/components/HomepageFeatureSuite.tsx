@@ -30,6 +30,9 @@ import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 
 // আবিষ্কার করুন (Discovery) Widget
 export const DiscoveryWidget = () => {
+  const { user } = useSupabaseAuth();
+  const [aiInsights, setAiInsights] = useState<any>(null);
+  
   const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
@@ -39,10 +42,10 @@ export const DiscoveryWidget = () => {
   });
 
   const { data: trendingTopics } = useQuery({
-    queryKey: ['ai-trending-topics'],
+    queryKey: ['ai-discovery-trending'],
     queryFn: async () => {
-      // Use AI-powered trending topics
-      const response = await fetch('/api/ai/trending-topics?limit=10');
+      // Use AI-powered trending topics for discovery
+      const response = await fetch('/api/ai/trending-topics?limit=6');
       const result = await response.json();
       
       if (result.success && result.data?.topics) {
@@ -51,9 +54,42 @@ export const DiscoveryWidget = () => {
       
       // Fallback to direct API if AI fails
       const { getTrendingTopics } = await import('../lib/supabase-api-direct');
-      return getTrendingTopics();
+      return getTrendingTopics(6);
     },
   });
+
+  // AI-powered personalized content discovery
+  useEffect(() => {
+    const fetchAIInsights = async () => {
+      try {
+        if (user?.id) {
+          // Get AI recommendations for discovery
+          const response = await fetch(`/api/ai/recommendations/${user.id}?limit=3&type=discovery`);
+          const result = await response.json();
+          
+          if (result.success) {
+            setAiInsights(result.data);
+            console.log('[AI Discovery] Generated personalized insights:', result.data);
+          }
+        } else {
+          // Get general AI insights for non-logged users
+          const response = await fetch('/api/ai/popular-articles?timeRange=weekly&limit=3');
+          const result = await response.json();
+          
+          if (result.success) {
+            setAiInsights({ 
+              articles: result.data.articles,
+              type: 'popular'
+            });
+          }
+        }
+      } catch (error) {
+        console.warn('[AI Discovery] Failed to fetch insights:', error);
+      }
+    };
+
+    fetchAIInsights();
+  }, [user?.id]);
 
   if (isLoading) {
     return (
@@ -99,22 +135,53 @@ export const DiscoveryWidget = () => {
             </div>
           </div>
 
-          {/* Trending Topics */}
+          {/* AI-Powered Trending Topics */}
           <div>
-            <h4 className="font-medium text-sm text-muted-foreground mb-2">ট্রেন্ডিং</h4>
+            <h4 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-1">
+              ট্রেন্ডিং
+              <Badge variant="outline" className="text-xs">AI</Badge>
+            </h4>
             <div className="space-y-2">
-              {trendingTopics?.slice(0, 4).map((topic: any) => (
-                <div key={topic.id} className="flex items-center justify-between">
-                  <Badge variant="secondary" className="text-xs">
-                    #{topic.topic_name}
+              {trendingTopics?.slice(0, 4).map((topic: any, index: number) => (
+                <div key={topic.id || index} className="flex items-center justify-between p-1 rounded hover:bg-muted/50">
+                  <Badge 
+                    variant={topic.sentiment === 'ইতিবাচক' ? 'default' : topic.sentiment === 'নেতিবাচক' ? 'destructive' : 'secondary'} 
+                    className="text-xs"
+                  >
+                    #{topic.topic_name || topic.topic}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
-                    {topic.mention_count} উল্লেখ
+                    {topic.mention_count || topic.score} স্কোর
                   </span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* AI Personal Insights */}
+          {aiInsights && (
+            <div>
+              <h4 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                {user ? 'আপনার জন্য' : 'জনপ্রিয়'}
+                <Badge variant="outline" className="text-xs">AI</Badge>
+              </h4>
+              <div className="space-y-2">
+                {aiInsights.articles?.slice(0, 2).map((article: any, index: number) => (
+                  <Link key={article.id || index} href={`/article/${article.slug}`}>
+                    <div className="p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+                      <p className="text-xs font-medium line-clamp-2">{article.title}</p>
+                      {article.aiScore && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="w-3 h-3 text-yellow-500" />
+                          <span className="text-xs text-muted-foreground">{article.aiScore} AI স্কোর</span>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
           <Link href="/search">
             <Button className="w-full" size="sm">
@@ -223,6 +290,8 @@ export const TrendingTopicsWidget = () => {
 // আপনার পড়ার পরিসংখ্যান (Reading Statistics) Widget
 export const ReadingStatsWidget = () => {
   const { user } = useSupabaseAuth();
+  const [aiAnalytics, setAiAnalytics] = useState<any>(null);
+  
   const { data: stats, isLoading } = useQuery({
     queryKey: ['user-stats', user?.id],
     queryFn: async () => {
@@ -232,6 +301,28 @@ export const ReadingStatsWidget = () => {
     },
     enabled: !!user,
   });
+
+  // AI-powered reading behavior analysis
+  useEffect(() => {
+    const fetchAIAnalytics = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Get AI-enhanced reading analytics
+        const response = await fetch(`/api/ai/user-analytics/${user.id}`);
+        const result = await response.json();
+        
+        if (result.success) {
+          setAiAnalytics(result.data);
+          console.log('[AI Reading Stats] Generated analytics:', result.data);
+        }
+      } catch (error) {
+        console.warn('[AI Reading Stats] Failed to fetch analytics:', error);
+      }
+    };
+
+    fetchAIAnalytics();
+  }, [user?.id]);
 
   if (!user) {
     return (
@@ -295,6 +386,7 @@ export const ReadingStatsWidget = () => {
         <CardTitle className="flex items-center text-lg">
           <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
           আপনার পড়ার পরিসংখ্যান
+          <Badge variant="outline" className="text-xs ml-2">AI বিশ্লেষণ</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -341,6 +433,58 @@ export const ReadingStatsWidget = () => {
               <span className="text-sm font-medium">{userStats.categories_explored}</span>
             </div>
           </div>
+
+          {/* AI Analytics Insights */}
+          {aiAnalytics && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-1">
+                  AI অন্তর্দৃষ্টি
+                  <Badge variant="outline" className="text-xs">নতুন</Badge>
+                </h4>
+                
+                {aiAnalytics.readingPattern && (
+                  <div className="p-2 bg-muted/30 rounded">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Eye className="w-3 h-3 text-blue-500" />
+                      <span className="text-xs font-medium">পড়ার প্যাটার্ন</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{aiAnalytics.readingPattern}</p>
+                  </div>
+                )}
+                
+                {aiAnalytics.preferredTopics && (
+                  <div className="p-2 bg-muted/30 rounded">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Heart className="w-3 h-3 text-red-500" />
+                      <span className="text-xs font-medium">পছন্দের বিষয়</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {aiAnalytics.preferredTopics.slice(0, 3).map((topic: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {aiAnalytics.engagementScore && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span className="text-sm">সম্পৃক্ততা স্কোর</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Progress value={aiAnalytics.engagementScore} className="w-16 h-2" />
+                      <span className="text-xs font-medium">{aiAnalytics.engagementScore}%</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
 
           <Link href="/dashboard">
             <Button className="w-full" size="sm">

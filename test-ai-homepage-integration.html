@@ -126,6 +126,12 @@
                 <button class="btn" onclick="testAIArticleProcessing()">Test Article Processing</button>
                 <div id="ai-processing-result" class="result"></div>
             </div>
+            
+            <div class="endpoint-test">
+                <h4>6. AI User Analytics</h4>
+                <button class="btn" onclick="testAIUserAnalytics()">Test User Analytics</button>
+                <div id="ai-user-analytics-result" class="result"></div>
+            </div>
         </div>
 
         <!-- Component Integration Test -->
@@ -159,6 +165,18 @@
                 <h4>✅ BreakingNewsTicker</h4>
                 <p>জরুরিত্বভিত্তিক AI অগ্রাধিকার এবং স্মার্ট সাজানো</p>
                 <div class="status success">Integrated ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ DiscoveryWidget</h4>
+                <p>AI-চালিত কন্টেন্ট আবিষ্কার এবং ব্যক্তিগত সুপারিশ</p>
+                <div class="status success">Enhanced ✓</div>
+            </div>
+            
+            <div class="ai-feature">
+                <h4>✅ ReadingStatsWidget</h4>
+                <p>ব্যবহারকারীর আচরণ বিশ্লেষণ এবং AI অন্তর্দৃষ্টি</p>
+                <div class="status success">Enhanced ✓</div>
             </div>
         </div>
 
@@ -311,6 +329,26 @@
             updateTestSummary();
         }
 
+        async function testAIUserAnalytics() {
+            const resultDiv = document.getElementById('ai-user-analytics-result');
+            resultDiv.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/ai/user-analytics/test-user-123');
+                const result = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <strong>Status:</strong> ${response.ok ? 'Success ✅' : 'Failed ❌'}<br>
+                    <strong>Response:</strong> ${JSON.stringify(result, null, 2)}
+                `;
+                testResults.userAnalytics = response.ok;
+            } catch (error) {
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                testResults.userAnalytics = false;
+            }
+            updateTestSummary();
+        }
+
         function updateTestSummary() {
             const summaryDiv = document.getElementById('test-summary');
             const totalTests = Object.keys(testResults).length;
@@ -339,6 +377,7 @@
                 setTimeout(() => testAITrendingTopics(), 2000);
                 setTimeout(() => testAICategoryInsights(), 3000);
                 setTimeout(() => testAIArticleProcessing(), 4000);
+                setTimeout(() => testAIUserAnalytics(), 5000);
             }, 1000);
         };
     </script>
