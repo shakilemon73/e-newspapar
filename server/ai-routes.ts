@@ -169,7 +169,7 @@ router.get('/ai/user-analytics/:userId', async (req, res) => {
       .from('user_reading_history')
       .select('*')
       .eq('user_id', userId)
-      .order('read_at', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(50);
     
     const { data: userLikes } = await supabase

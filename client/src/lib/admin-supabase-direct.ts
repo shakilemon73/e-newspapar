@@ -3,23 +3,11 @@
  * Bypasses RLS policies for admin operations
  * NO EXPRESS SERVER DEPENDENCY
  */
-import { createClient } from '@supabase/supabase-js';
+// Use centralized Supabase client - admin operations through proper authentication
+import { supabase } from './supabase';
 
-// Admin client with service role key (frontend usage for admin only)
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase credentials for admin operations');
-}
-
-// Service role client that bypasses RLS
-const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  }
-});
+// Use the main client for admin operations with proper JWT authentication
+const adminSupabase = supabase;
 
 console.log('🔐 Admin Supabase client using SERVICE ROLE key');
 

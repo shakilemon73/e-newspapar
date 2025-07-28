@@ -12,17 +12,8 @@ export {
   getAdminCategoriesDirect as getAdminCategories
 } from './admin-supabase-direct';
 
-import { createClient } from '@supabase/supabase-js';
-
-// Standard client for non-admin operations
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase credentials');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Use centralized Supabase client to prevent multiple instances
+import { supabase } from './supabase';
 
 // ==============================================
 // ADDITIONAL CRUD OPERATIONS

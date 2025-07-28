@@ -1009,12 +1009,9 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
   try {
     console.log('[getUserReadingHistory] Fetching reading history for user:', userId);
     
-    // Try reading_history table first
-    let historyData = null;
-    let historyError = null;
-
-    const { data: data1, error: error1 } = await supabase
-      .from('reading_history')
+    // Use correct table name: user_reading_history
+    const { data, error } = await supabase
+      .from('user_reading_history')
       .select(`
         article_id,
         last_read_at,
@@ -1035,49 +1032,16 @@ export async function getUserReadingHistory(userId: string, limit = 10): Promise
       .order('last_read_at', { ascending: false })
       .limit(limit);
 
-    if (error1 && error1.code === '42P01') {
-      // Try user_reading_history table instead
-      console.log('[getUserReadingHistory] reading_history not found, trying user_reading_history');
-      
-      const { data: data2, error: error2 } = await supabase
-        .from('user_reading_history')
-        .select(`
-          article_id,
-          last_read_at,
-          articles(
-            id,
-            title,
-            slug,
-            excerpt,
-            image_url,
-            view_count,
-            published_at,
-            is_featured,
-            category_id,
-            categories(id, name, slug)
-          )
-        `)
-        .eq('user_id', userId)
-        .order('last_read_at', { ascending: false })
-        .limit(limit);
-
-      historyData = data2;
-      historyError = error2;
-    } else {
-      historyData = data1;
-      historyError = error1;
-    }
-
-    if (historyError && historyError.code !== 'PGRST116') {
-      console.error('Error fetching reading history:', historyError);
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching reading history:', error);
       return [];
     }
 
     // If we have actual reading history data, return it
-    if (historyData && historyData.length > 0) {
-      const articles = historyData
-        .map(item => item.articles)
-        .filter(article => article !== null);
+    if (data && data.length > 0) {
+      const articles = data
+        .map((item: any) => item.articles)
+        .filter((article: any) => article !== null);
       
       console.log(`[getUserReadingHistory] Found ${articles.length} articles in reading history`);
       return transformArticleData(articles);

@@ -203,7 +203,7 @@ export class ReadingHistoryService {
       }
 
       const { data, error } = await supabase
-        .from('reading_history')
+        .from('user_reading_history')
         .select(`
           article_id,
           last_read_at,
