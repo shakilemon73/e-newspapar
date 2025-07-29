@@ -1742,26 +1742,68 @@ const ArticleDetail = () => {
                     </div>
                   </div>
                   
-                  {/* Enhanced Article Image */}
+                  {/* Enhanced Article Image with Metadata */}
                   <div className="relative group">
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden rounded-lg">
                       <img 
                         src={article.imageUrl || article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=600&fit=crop&auto=format&q=80'} 
-                        alt={article.title}
+                        alt={article.image_metadata?.caption || article.title}
                         className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=600&fit=crop&auto=format&q=80';
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                     
-                    {/* Image Caption */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                      <p className="text-white text-sm opacity-90">
-                        {article.title}
-                      </p>
+                    {/* Enhanced Image Caption with Metadata */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+                      <div className="text-white space-y-2">
+                        {/* Image Caption */}
+                        <h4 className="text-sm font-medium leading-tight">
+                          {article.image_metadata?.caption || article.title}
+                        </h4>
+                        
+                        {/* Image Metadata */}
+                        {(article.image_metadata?.place || article.image_metadata?.date || article.image_metadata?.photographer) && (
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
+                            {article.image_metadata?.place && (
+                              <div className="flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                </svg>
+                                <span>{article.image_metadata.place}</span>
+                              </div>
+                            )}
+                            
+                            {article.image_metadata?.date && (
+                              <div className="flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                </svg>
+                                <span>{article.image_metadata.date}</span>
+                              </div>
+                            )}
+                            
+                            {article.image_metadata?.photographer && (
+                              <div className="flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                </svg>
+                                <span>{article.image_metadata.photographer}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Image ID for Admin Reference */}
+                        {article.image_metadata?.id && (
+                          <div className="text-xs text-white/60 font-mono">
+                            ID: {article.image_metadata.id}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 

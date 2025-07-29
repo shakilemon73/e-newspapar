@@ -21,6 +21,12 @@ import { supabase } from './supabase';
 
 export async function updateArticle(id: number, updates: any) {
   try {
+    // Transform image metadata for database storage
+    if (updates.image_metadata) {
+      // Ensure image_metadata is properly formatted as JSON
+      updates.image_metadata = JSON.stringify(updates.image_metadata);
+    }
+
     const { data, error } = await supabase
       .from('articles')
       .update(updates)

@@ -68,7 +68,14 @@ const articleFormSchema = z.object({
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
   is_featured: z.boolean().optional().default(false),
-  published_at: z.string().optional()
+  published_at: z.string().optional(),
+  image_metadata: z.object({
+    caption: z.string().optional(),
+    place: z.string().optional(),
+    date: z.string().optional(),
+    photographer: z.string().optional(),
+    id: z.string().optional()
+  }).optional()
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -138,7 +145,14 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
-      published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      image_metadata: {
+        caption: article?.image_metadata?.caption || '',
+        place: article?.image_metadata?.place || '',
+        date: article?.image_metadata?.date || '',
+        photographer: article?.image_metadata?.photographer || '',
+        id: article?.image_metadata?.id || ''
+      }
     },
   });
 
@@ -534,7 +548,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                     <div className="space-y-6">
                       <FormField
                         control={form.control}
-                        name="imageUrl"
+                        name="image_url"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
@@ -569,6 +583,110 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                         </div>
                       )}
 
+                      {/* Image Metadata Section */}
+                      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+                        <CardHeader>
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            <ImageIcon className="h-4 w-4" />
+                            ছবির বিস্তারিত তথ্য (Image Metadata)
+                          </CardTitle>
+                          <CardDescription>
+                            ছবির সাথে প্রদর্শিত হবে এমন অতিরিক্ত তথ্য যোগ করুন
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="image_metadata.caption"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>ছবির শিরোনাম (Caption)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="ছবিটি সম্পর্কে সংক্ষিপ্ত বর্ণনা..."
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="image_metadata.place"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>স্থান (Place)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="ঢাকা, বাংলাদেশ"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="image_metadata.date"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>তারিখ (Date)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      type="date"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="image_metadata.photographer"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>ফটোগ্রাফার (Photographer)</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="ছবি তোলার ব্যক্তির নাম..."
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={form.control}
+                            name="image_metadata.id"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>ছবির আইডি (Image ID)</FormLabel>
+                                <FormDescription>
+                                  অ্যাডমিন রেফারেন্সের জন্য একটি অনন্য আইডি (উদাহরণ: IMG-001, NEWS-2024-001)
+                                </FormDescription>
+                                <FormControl>
+                                  <Input
+                                    placeholder="IMG-2024-001"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </CardContent>
+                      </Card>
+
                       <Card className="bg-muted/50">
                         <CardHeader>
                           <CardTitle className="text-sm flex items-center gap-2">
@@ -582,6 +700,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                             <li>Supported formats: JPG, PNG, WebP</li>
                             <li>Maximum file size: 2MB</li>
                             <li>Use high-quality images for better engagement</li>
+                            <li>Add metadata for better organization and display</li>
                           </ul>
                         </CardContent>
                       </Card>

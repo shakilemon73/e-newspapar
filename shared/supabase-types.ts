@@ -17,6 +17,13 @@ export interface Article {
   content: string;
   image_url?: string;
   imageUrl?: string; // Compatibility field
+  image_metadata?: {
+    caption?: string;
+    place?: string;
+    date?: string;
+    photographer?: string;
+    id?: string;
+  };
   author?: string;
   category_id: number;
   categoryId?: number; // Compatibility field
