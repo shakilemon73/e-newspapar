@@ -23,6 +23,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -342,8 +348,9 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto">
-      <div className="w-full max-w-7xl min-h-screen bg-background border-x">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
+        <div className="w-full h-full bg-background">
         {/* Modern Header - Research Based Design */}
         <div className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center justify-between px-6 py-4">
@@ -1059,7 +1066,8 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
             </div>
           </form>
         </Form>
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

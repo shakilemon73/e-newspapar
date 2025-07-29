@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { ImprovedContentEditor } from '@/components/admin/ImprovedContentEditor';
+import { ContentEditor } from '@/components/admin/ContentEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -538,7 +538,7 @@ export default function ArticlesAdminPage() {
       </div>
 
       {/* Content Editor Modal */}
-      <ImprovedContentEditor
+      <ContentEditor
         isOpen={isEditorOpen}
         onClose={() => {
           setIsEditorOpen(false);
