@@ -42,8 +42,7 @@ export async function createArticleServerSide(articleData: {
         category_id: articleData.category_id,
         is_featured: articleData.is_featured || false,
         published_at: articleData.published_at || new Date().toISOString(),
-        view_count: 0,
-        author: 'Admin'
+        view_count: 0
       })
       .select()
       .single();
