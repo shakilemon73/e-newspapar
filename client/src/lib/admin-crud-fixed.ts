@@ -44,68 +44,21 @@ export async function createArticle(articleData: {
   slug?: string;
   published_at?: string;
 }) {
-  try {
-    // Format dates properly
-    const formattedData = {
-      ...articleData,
-      published_at: articleData.published_at ? 
-        formatDateForDatabase(articleData.published_at) : 
-        new Date().toISOString(),
-      is_featured: articleData.is_featured || false
-    };
-
-    const response = await apiRequest('/api/admin/articles', {
-      method: 'POST',
-      body: JSON.stringify(formattedData),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    return response;
-  } catch (error) {
-    console.error('Error creating article:', error);
-    throw error;
-  }
+  // Use direct Supabase instead of Express API
+  const { createArticleDirect } = await import('./admin-direct-supabase');
+  return createArticleDirect(articleData);
 }
 
 export async function updateArticle(id: number, updates: any) {
-  try {
-    const formattedUpdates = {
-      ...updates,
-      updated_at: new Date().toISOString()
-    };
-
-    if (updates.published_at) {
-      formattedUpdates.published_at = formatDateForDatabase(updates.published_at);
-    }
-
-    const response = await apiRequest(`/api/admin/articles/${id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(formattedUpdates),
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    return response;
-  } catch (error) {
-    console.error('Error updating article:', error);
-    throw error;
-  }
+  // Use direct Supabase instead of Express API
+  const { updateArticleDirect } = await import('./admin-direct-supabase');
+  return updateArticleDirect(id, updates);
 }
 
 export async function deleteArticle(id: number) {
-  try {
-    const response = await apiRequest(`/api/admin/articles/${id}`, {
-      method: 'DELETE'
-    });
-    
-    return response;
-  } catch (error) {
-    console.error('Error deleting article:', error);
-    throw error;
-  }
+  // Use direct Supabase instead of Express API
+  const { deleteArticleDirect } = await import('./admin-direct-supabase');
+  return deleteArticleDirect(id);
 }
 
 // ========================================
