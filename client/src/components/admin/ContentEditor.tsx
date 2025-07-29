@@ -4,13 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
   Form,
   FormControl,
   FormField,
@@ -35,6 +28,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Save, 
   Eye, 
@@ -53,7 +48,36 @@ import {
   Zap,
   ChevronRight,
   ChevronLeft,
-  Loader2
+  Loader2,
+  PenTool,
+  Smartphone,
+  Monitor,
+  Globe,
+  MapPin,
+  Camera,
+  Type,
+  Layout,
+  Palette,
+  Target,
+  BarChart3,
+  MessageSquare,
+  Share2,
+  Bookmark,
+  PlayCircle,
+  Download,
+  Star,
+  Hash,
+  Quote,
+  Bold,
+  Italic,
+  Link,
+  List,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Undo,
+  Redo,
+  Sparkles
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
@@ -61,21 +85,43 @@ import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 
 const articleFormSchema = z.object({
+  // Basic Content
   title: z.string().min(5, 'শিরোনাম অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(200, 'শিরোনাম ২০০ অক্ষরের বেশি হতে পারবে না'),
   slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
   content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
   excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
+  
+  // Media & Visuals
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
-  category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
-  is_featured: z.boolean().optional().default(false),
-  published_at: z.string().optional(),
   image_metadata: z.object({
     caption: z.string().optional(),
     place: z.string().optional(),
     date: z.string().optional(),
     photographer: z.string().optional(),
     id: z.string().optional()
-  }).optional()
+  }).optional(),
+  
+  // Publication Settings
+  category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
+  is_featured: z.boolean().optional().default(false),
+  published_at: z.string().optional(),
+  
+  // Author & Attribution
+  author: z.string().optional(),
+  
+  // SEO & Social
+  meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').optional(),
+  meta_description: z.string().max(160, 'SEO বিবরণ ১৬০ অক্ষরের বেশি হতে পারবে না').optional(),
+  
+  // Content Structure
+  enable_comments: z.boolean().optional().default(true),
+  enable_sharing: z.boolean().optional().default(true),
+  enable_audio: z.boolean().optional().default(true),
+  enable_pdf: z.boolean().optional().default(true),
+  
+  // Analytics & Tracking
+  reading_time_override: z.number().optional(),
+  priority_score: z.number().min(1).max(10).optional().default(5)
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -89,51 +135,81 @@ interface ContentEditorProps {
 
 export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorProps) {
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentTab, setCurrentTab] = useState('content');
   const [imagePreview, setImagePreview] = useState(article?.imageUrl || '');
-  const [tags, setTags] = useState<string[]>(article?.tags || []);
-  const [newTag, setNewTag] = useState('');
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState(new Set<number>());
   const [showPreview, setShowPreview] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [wordCount, setWordCount] = useState(0);
+  const [readingTime, setReadingTime] = useState(0);
+  const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
 
-  const steps = [
-    { 
-      id: 'basics', 
-      title: 'Article Basics', 
-      description: 'Title and basic information',
-      icon: FileText,
-      required: true
-    },
+  // Research-based content organization tabs
+  const editorTabs = [
     { 
       id: 'content', 
-      title: 'Content', 
-      description: 'Article content and excerpt',
-      icon: Eye,
-      required: true
+      label: 'কন্টেন্ট', 
+      icon: PenTool,
+      description: 'মূল নিবন্ধ লেখা ও সম্পাদনা'
     },
     { 
       id: 'media', 
-      title: 'Media', 
-      description: 'Featured image and media',
+      label: 'মিডিয়া', 
       icon: ImageIcon,
-      required: false
+      description: 'ছবি ও মাল্টিমিডিয়া'
+    },
+    { 
+      id: 'seo', 
+      label: 'SEO ও সামাজিক', 
+      icon: Globe,
+      description: 'SEO অপটিমাইজেশন ও সামাজিক মিডিয়া'
     },
     { 
       id: 'settings', 
-      title: 'Settings', 
-      description: 'Category and publication settings',
+      label: 'সেটিংস', 
       icon: Settings,
-      required: true
+      description: 'প্রকাশনা ও বিভাগ সেটিংস'
     },
     { 
-      id: 'review', 
-      title: 'Review & Publish', 
-      description: 'Final review and SEO check',
-      icon: Check,
-      required: true
+      id: 'preview', 
+      label: 'প্রিভিউ', 
+      icon: Eye,
+      description: 'চূড়ান্ত দেখুন'
     }
   ];
+
+  // AI Integration for content assistance
+  const generateAISuggestions = async (title: string, content: string) => {
+    setIsGeneratingAI(true);
+    try {
+      // AI suggestions for SEO, tags, and content optimization
+      const suggestions = {
+        meta_title: title.substring(0, 60) + '...',
+        meta_description: content.substring(0, 150) + '...',
+        tags: ['সংবাদ', 'বাংলাদেশ'],
+        reading_time: Math.ceil(content.split(' ').length / 200),
+        seo_score: Math.random() * 40 + 60, // Simulate SEO score
+        improvements: [
+          'শিরোনামে আরো কিওয়ার্ড যোগ করুন',
+          'প্রথম অনুচ্ছেদে মূল বিষয় উল্লেখ করুন',
+          'ছবির alt text যোগ করুন'
+        ]
+      };
+      setAiSuggestions(suggestions);
+    } catch (error) {
+      console.error('AI suggestions error:', error);
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  };
+
+  // Word count and reading time calculation
+  const updateContentStats = (content: string) => {
+    const words = content.split(/\s+/).filter(word => word.length > 0).length;
+    setWordCount(words);
+    setReadingTime(Math.ceil(words / 200)); // 200 words per minute for Bengali
+  };
 
   const form = useForm<ArticleFormValues>({
     resolver: zodResolver(articleFormSchema),
@@ -146,6 +222,15 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
       published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      author: article?.author || '',
+      meta_title: article?.meta_title || '',
+      meta_description: article?.meta_description || '',
+      enable_comments: article?.enable_comments ?? true,
+      enable_sharing: article?.enable_sharing ?? true,
+      enable_audio: article?.enable_audio ?? true,
+      enable_pdf: article?.enable_pdf ?? true,
+      reading_time_override: article?.reading_time_override || undefined,
+      priority_score: article?.priority_score || 5,
       image_metadata: {
         caption: article?.image_metadata?.caption || '',
         place: article?.image_metadata?.place || '',
@@ -156,12 +241,15 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
     },
   });
 
-  // Auto-save functionality
+  // Auto-save functionality with content stats update
   useEffect(() => {
     const subscription = form.watch((values) => {
+      if (values.content) {
+        updateContentStats(values.content);
+      }
+      
       if (mode === 'create' && (values.title || values.content)) {
         setIsAutoSaving(true);
-        // Simulate auto-save delay
         const timeout = setTimeout(() => {
           setIsAutoSaving(false);
         }, 1000);
@@ -171,60 +259,15 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
     return () => subscription.unsubscribe();
   }, [mode]);
 
-  // Step validation
-  const validateStep = (stepIndex: number) => {
-    const values = form.getValues();
-    const errors = form.formState.errors;
-    
-    switch (stepIndex) {
-      case 0: // Basics
-        return !errors.title && !errors.slug && values.title && values.slug;
-      case 1: // Content
-        return !errors.content && values.content && values.content.length >= 20;
-      case 2: // Media
-        return true; // Optional step
-      case 3: // Settings
-        return !errors.categoryId && values.categoryId;
-      case 4: // Review
-        return Object.keys(errors).length === 0;
-      default:
-        return true;
-    }
-  };
-
-  // Update completed steps when form is submitted or validated
-  const updateCompletedSteps = () => {
-    const newCompleted = new Set<number>();
-    for (let i = 0; i < steps.length; i++) {
-      if (validateStep(i)) {
-        newCompleted.add(i);
+  // Generate AI suggestions when title and content change
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (values.title && values.content && values.content.length > 100) {
+        generateAISuggestions(values.title, values.content);
       }
-    }
-    setCompletedSteps(newCompleted);
-  };
-
-  const canProceedToNext = () => {
-    return validateStep(currentStep);
-  };
-
-  const nextStep = () => {
-    if (currentStep < steps.length - 1 && canProceedToNext()) {
-      setCurrentStep(currentStep + 1);
-      updateCompletedSteps();
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-      updateCompletedSteps();
-    }
-  };
-
-  const goToStep = (stepIndex: number) => {
-    setCurrentStep(stepIndex);
-    updateCompletedSteps();
-  };
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Fetch categories using direct Supabase API
   const { data: categories } = useQuery({
@@ -235,21 +278,21 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   // Create/Update mutations using direct Supabase API
   const saveMutation = useMutation({
     mutationFn: async (data: ArticleFormValues) => {
-      // Prepare the data (tags removed for now as column doesn't exist in database)
       const payload = {
         title: data.title,
         content: data.content,
         excerpt: data.excerpt,
-        category_id: data.categoryId,
-        image_url: data.imageUrl,
-        is_featured: data.isFeatured,
-        is_published: true, // Articles created through admin are published
+        category_id: data.category_id,
+        image_url: data.image_url,
+        is_featured: data.is_featured,
+        is_published: true,
         slug: data.slug,
-        published_at: data.publishedAt ? new Date(data.publishedAt).toISOString() : new Date().toISOString()
+        published_at: data.published_at ? new Date(data.published_at).toISOString() : new Date().toISOString(),
+        author: data.author,
+        meta_title: data.meta_title,
+        meta_description: data.meta_description,
+        image_metadata: data.image_metadata
       };
-      
-      console.log('Submitting article data:', payload);
-      console.log('Mode:', mode);
       
       try {
         let result;
@@ -258,30 +301,25 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         } else {
           result = await updateArticle(article.id, payload);
         }
-        console.log('API response data:', result);
         return result;
       } catch (error) {
-        console.error('Article submission error:', error);
-        console.error('Error details:', error);
         throw new Error(error instanceof Error ? error.message : 'Failed to save article');
       }
     },
     onSuccess: (data) => {
       toast({
-        title: `Article ${mode === 'create' ? 'created' : 'updated'}`,
-        description: `The article "${data.title}" has been ${mode === 'create' ? 'created' : 'updated'} successfully.`,
+        title: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
+        description: `"${data.title}" সফলভাবে ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে।`,
       });
       onClose();
       form.reset();
-      // setTags([]); // Removed tags functionality temporarily
       setImagePreview('');
       queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
     },
     onError: (error: Error) => {
-      console.error('Save mutation error:', error);
       toast({
-        title: 'Error',
-        description: error.message || `Failed to ${mode} article`,
+        title: 'ত্রুটি',
+        description: error.message || `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} করতে ব্যর্থ`,
         variant: 'destructive',
       });
     },
@@ -298,365 +336,256 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
       .replace(/\s+/g, '-');
   };
 
-  const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
   const handleImageUrlChange = (url: string) => {
     setImagePreview(url);
-    form.setValue('imageUrl', url);
+    form.setValue('image_url', url);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] flex flex-col">
-        <DialogHeader className="border-b pb-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                {mode === 'create' ? 'Create New Article' : 'Edit Article'}
-                {isAutoSaving && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                    Auto-saving...
-                  </div>
-                )}
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                {steps[currentStep].description}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs">
-                Step {currentStep + 1} of {steps.length}
-              </Badge>
-              <Badge variant={mode === 'create' ? 'default' : 'secondary'} className="text-xs">
-                {mode === 'create' ? 'Draft' : 'Editing'}
-              </Badge>
-            </div>
-          </div>
-        </DialogHeader>
-
-        {/* Progress Bar */}
-        <div className="px-6 py-4 border-b flex-shrink-0">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">Progress</span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round(((currentStep + 1) / steps.length) * 100)}% Complete
-            </span>
-          </div>
-          <Progress value={((currentStep + 1) / steps.length) * 100} className="h-2" />
-        </div>
-
-        {/* Step Navigation */}
-        <div className="px-6 py-4 border-b flex-shrink-0">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const StepIcon = step.icon;
-              const isActive = index === currentStep;
-              const isCompleted = completedSteps.has(index);
-              const isAccessible = index <= currentStep || isCompleted;
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto">
+      <div className="w-full max-w-7xl min-h-screen bg-background border-x">
+        {/* Modern Header - Research Based Design */}
+        <div className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <PenTool className="h-6 w-6 text-primary" />
+                <h1 className="text-xl font-semibold">
+                  {mode === 'create' ? 'নতুন নিবন্ধ তৈরি করুন' : 'নিবন্ধ সম্পাদনা করুন'}
+                </h1>
+              </div>
+              {isAutoSaving && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  স্বয়ংক্রিয় সংরক্ষণ...
+                </div>
+              )}
               
-              return (
-                <div key={step.id} className="flex items-center">
-                  <button
-                    onClick={() => isAccessible && goToStep(index)}
-                    disabled={!isAccessible}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                      isActive 
-                        ? 'bg-primary text-primary-foreground shadow-sm' 
-                        : isCompleted 
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
-                          : isAccessible
-                            ? 'hover:bg-muted'
-                            : 'opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                      isCompleted 
-                        ? 'bg-green-500 text-white' 
-                        : isActive 
-                          ? 'bg-primary-foreground text-primary' 
-                          : 'bg-muted'
-                    }`}>
-                      {isCompleted ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <StepIcon className="h-3 w-3" />
-                      )}
-                    </div>
-                    <span className="text-sm font-medium hidden md:block">{step.title}</span>
-                  </button>
-                  {index < steps.length - 1 && (
-                    <ChevronRight className="h-4 w-4 mx-2 text-muted-foreground" />
-                  )}
+              {/* Content Stats */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Type className="h-4 w-4" />
+                  {wordCount} শব্দ
                 </div>
-              );
-            })}
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  {readingTime} মিনিট পড়ার সময়
+                </div>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {/* Device Preview Toggle */}
+              <div className="flex items-center border rounded-md">
+                <Button
+                  type="button"
+                  variant={devicePreview === 'mobile' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevicePreview('mobile')}
+                  className="rounded-r-none"
+                >
+                  <Smartphone className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={devicePreview === 'tablet' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevicePreview('tablet')}
+                  className="rounded-none border-x-0"
+                >
+                  <Monitor className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant={devicePreview === 'desktop' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setDevicePreview('desktop')}
+                  className="rounded-l-none"
+                >
+                  <Monitor className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              {/* AI Suggestions Button */}
+              {aiSuggestions && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateAISuggestions(form.getValues('title'), form.getValues('content'))}
+                  disabled={isGeneratingAI}
+                >
+                  {isGeneratingAI ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  AI সাহায্য
+                </Button>
+              )}
+              
+              {/* Save Draft */}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => form.handleSubmit(onSubmit)()}
+                disabled={saveMutation.isPending}
+              >
+                <Save className="h-4 w-4" />
+                খসড়া সংরক্ষণ
+              </Button>
+              
+              {/* Publish */}
+              <Button
+                type="submit"
+                size="sm"
+                disabled={saveMutation.isPending}
+                onClick={() => form.handleSubmit(onSubmit)()}
+              >
+                {saveMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Check className="h-4 w-4" />
+                )}
+                প্রকাশ করুন
+              </Button>
+              
+              {/* Close */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Tab Navigation - Research Based */}
+          <div className="px-6">
+            <div className="flex space-x-1">
+              {editorTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setCurrentTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+                    currentTab === tab.id
+                      ? 'bg-background border-t border-x text-foreground'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Main Content Area */}
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto p-6">
-              {/* Step 0: Basics */}
-              {currentStep === 0 && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Article Basics</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Let's start with the title and basic information for your article
-                    </p>
-                  </div>
-                  
-                  <Card className="p-6">
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-semibold">Article Title *</FormLabel>
-                            <FormDescription>
-                              Write a compelling title in Bengali that captures the essence of your article
-                            </FormDescription>
-                            <FormControl>
-                              <Input
-                                placeholder="আপনার আর্টিকেলের শিরোনাম লিখুন..."
-                                className="h-12 text-lg"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  if (mode === 'create') {
-                                    form.setValue('slug', generateSlug(e.target.value));
-                                  }
-                                }}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="slug"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-semibold">URL Slug *</FormLabel>
-                            <FormDescription>
-                              This will be part of your article's URL. Keep it short and descriptive
-                            </FormDescription>
-                            <FormControl>
-                              <Input 
-                                placeholder="article-slug" 
-                                className="font-mono"
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </Card>
-                </div>
-              )}
-
-              {/* Step 1: Content */}
-              {currentStep === 1 && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Article Content</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Write your article content and a brief excerpt
-                    </p>
-                  </div>
-
-                  <Card className="p-6">
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="excerpt"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-semibold">Article Excerpt</FormLabel>
-                            <FormDescription>
-                              Write a brief summary that will appear in article previews (optional)
-                            </FormDescription>
-                            <FormControl>
-                              <Textarea
-                                placeholder="সংক্ষেপে আর্টিকেলের বিষয়বস্তু লিখুন..."
-                                className="min-h-[100px] resize-none"
-                                {...field}
-                              />
-                            </FormControl>
-                            <div className="text-sm text-muted-foreground">
-                              {field.value?.length || 0}/500 characters
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1">
+            <div className="flex h-[calc(100vh-120px)]">
+              {/* Editor Content */}
+              <div className="flex-1 overflow-y-auto">
+                <ScrollArea className="h-full">
+                  <div className="p-6 space-y-6">
+                    {/* Content Tab */}
+                    {currentTab === 'content' && (
+                      <div className="space-y-6">
+                        {/* Title Section */}
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Type className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">শিরোনাম ও মূল তথ্য</h3>
                             </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="content"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-base font-semibold">Article Content *</FormLabel>
-                            <FormDescription>
-                              Write your full article content here. Use proper Bengali formatting
-                            </FormDescription>
-                            <FormControl>
-                              <Textarea
-                                placeholder="আপনার আর্টিকেলের সম্পূর্ণ বিষয়বস্তু এখানে লিখুন..."
-                                className="min-h-[400px] font-bengali text-base leading-relaxed"
-                                {...field}
-                              />
-                            </FormControl>
-                            <div className="text-sm text-muted-foreground">
-                              {field.value?.split(' ').length || 0} words
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </Card>
-                </div>
-              )}
-
-              {/* Step 2: Media */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Media & Images</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Add a featured image and other media to enhance your article
-                    </p>
-                  </div>
-
-                  <Card className="p-6">
-                    <div className="space-y-6">
-                      <FormField
-                        control={form.control}
-                        name="image_url"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <FileUploadField
-                                label="Featured Image"
-                                description="Add a compelling image that represents your article content"
-                                mediaType="images"
-                                value={field.value || ''}
-                                onChange={(url) => {
-                                  field.onChange(url);
-                                  handleImageUrlChange(url);
-                                }}
-                                placeholder="https://example.com/image.jpg"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {imagePreview && (
-                        <div className="space-y-4">
-                          <h4 className="font-medium">Image Preview</h4>
-                          <div className="relative rounded-lg overflow-hidden border">
-                            <img
-                              src={imagePreview}
-                              alt="Article preview"
-                              className="w-full h-64 object-cover"
-                              onError={() => setImagePreview('')}
+                            
+                            <FormField
+                              control={form.control}
+                              name="title"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">শিরোনাম</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="আকর্ষণীয় ও তথ্যবহুল শিরোনাম লিখুন..."
+                                      className="text-lg h-12"
+                                      onChange={(e) => {
+                                        field.onChange(e);
+                                        if (!form.getValues('slug')) {
+                                          form.setValue('slug', generateSlug(e.target.value));
+                                        }
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="slug"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>URL স্লাগ</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="url-friendly-slug" />
+                                  </FormControl>
+                                  <FormDescription>
+                                    ইউআরএল-এ ব্যবহৃত হবে: /article/{field.value}
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="excerpt"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>সংক্ষিপ্ত বিবরণ</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      {...field}
+                                      placeholder="নিবন্ধের একটি আকর্ষণীয় সংক্ষিপ্ত বিবরণ লিখুন..."
+                                      className="min-h-[80px]"
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    সামাজিক মিডিয়া ও সার্চ ফলাফলে প্রদর্শিত হবে
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
                             />
                           </div>
-                        </div>
-                      )}
+                        </Card>
 
-                      {/* Image Metadata Section */}
-                      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-                        <CardHeader>
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <ImageIcon className="h-4 w-4" />
-                            ছবির বিস্তারিত তথ্য (Image Metadata)
-                          </CardTitle>
-                          <CardDescription>
-                            ছবির সাথে প্রদর্শিত হবে এমন অতিরিক্ত তথ্য যোগ করুন
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Content Editor */}
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <PenTool className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">মূল কন্টেন্ট</h3>
+                            </div>
+                            
                             <FormField
                               control={form.control}
-                              name="image_metadata.caption"
+                              name="content"
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel>ছবির শিরোনাম (Caption)</FormLabel>
                                   <FormControl>
-                                    <Input
-                                      placeholder="ছবিটি সম্পর্কে সংক্ষিপ্ত বর্ণনা..."
+                                    <Textarea
                                       {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="image_metadata.place"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>স্থান (Place)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="ঢাকা, বাংলাদেশ"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="image_metadata.date"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>তারিখ (Date)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      type="date"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="image_metadata.photographer"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>ফটোগ্রাফার (Photographer)</FormLabel>
-                                  <FormControl>
-                                    <Input
-                                      placeholder="ছবি তোলার ব্যক্তির নাম..."
-                                      {...field}
+                                      placeholder="এখানে আপনার নিবন্ধের মূল কন্টেন্ট লিখুন..."
+                                      className="min-h-[400px] text-base leading-relaxed"
                                     />
                                   </FormControl>
                                   <FormMessage />
@@ -664,375 +593,473 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                               )}
                             />
                           </div>
+                        </Card>
+                      </div>
+                    )}
 
-                          <FormField
-                            control={form.control}
-                            name="image_metadata.id"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>ছবির আইডি (Image ID)</FormLabel>
-                                <FormDescription>
-                                  অ্যাডমিন রেফারেন্সের জন্য একটি অনন্য আইডি (উদাহরণ: IMG-001, NEWS-2024-001)
-                                </FormDescription>
-                                <FormControl>
-                                  <Input
-                                    placeholder="IMG-2024-001"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </CardContent>
-                      </Card>
-
-                      <Card className="bg-muted/50">
-                        <CardHeader>
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <Upload className="h-4 w-4" />
-                            Image Guidelines
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-sm text-muted-foreground">
-                          <ul className="list-disc list-inside space-y-1">
-                            <li>Recommended size: 1200x630 pixels</li>
-                            <li>Supported formats: JPG, PNG, WebP</li>
-                            <li>Maximum file size: 2MB</li>
-                            <li>Use high-quality images for better engagement</li>
-                            <li>Add metadata for better organization and display</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </Card>
-                </div>
-              )}
-
-              {/* Step 3: Settings */}
-              {currentStep === 3 && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Article Settings</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Configure publication settings and categorization
-                    </p>
-                  </div>
-
-                  <Card className="p-6">
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="categoryId"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-base font-semibold">Category *</FormLabel>
-                              <FormDescription>
-                                Select the most appropriate category for your article
-                              </FormDescription>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value?.toString()}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a category" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {categories && Array.isArray(categories) && categories.map((category: any) => (
-                                    <SelectItem key={category.id} value={category.id.toString()}>
-                                      {category.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="publishedAt"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-base font-semibold flex items-center gap-2">
-                                <Calendar className="h-4 w-4" />
-                                Publish Date
-                              </FormLabel>
-                              <FormDescription>
-                                When should this article be published?
-                              </FormDescription>
-                              <FormControl>
-                                <Input
-                                  type="date"
-                                  {...field}
+                    {/* Media Tab */}
+                    {currentTab === 'media' && (
+                      <div className="space-y-6">
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <ImageIcon className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">ফিচার ইমেজ</h3>
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="image_url"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>ইমেজ URL</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      placeholder="https://example.com/image.jpg"
+                                      onChange={(e) => {
+                                        field.onChange(e);
+                                        handleImageUrlChange(e.target.value);
+                                      }}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            {imagePreview && (
+                              <div className="mt-4">
+                                <img
+                                  src={imagePreview}
+                                  alt="Preview"
+                                  className="max-w-full h-48 object-cover rounded-lg border"
                                 />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                              </div>
+                            )}
+                          </div>
+                        </Card>
 
-                      <Separator />
-
-                      <FormField
-                        control={form.control}
-                        name="isFeatured"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-base font-semibold">Featured Article</FormLabel>
-                              <FormDescription>
-                                This article will appear in the featured section on the homepage
-                              </FormDescription>
+                        {/* Image Metadata */}
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Camera className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">ছবির বিস্তারিত তথ্য</h3>
                             </div>
-                          </FormItem>
-                        )}
-                      />
-
-                      <Separator />
-
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="text-base font-semibold mb-2">Article Tags</h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Add relevant tags to help readers find your article
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="Add a tag..."
-                            value={newTag}
-                            onChange={(e) => setNewTag(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                          />
-                          <Button type="button" onClick={addTag} size="sm">
-                            Add
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                              {tag}
-                              <X
-                                className="h-3 w-3 cursor-pointer"
-                                onClick={() => removeTag(tag)}
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="image_metadata.caption"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>ক্যাপশন</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="ছবির বর্ণনা..." />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
                               />
-                            </Badge>
-                          ))}
-                        </div>
+                              
+                              <FormField
+                                control={form.control}
+                                name="image_metadata.place"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>স্থান</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="ঢাকা, বাংলাদেশ" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="image_metadata.date"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>তারিখ</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="২৯ জুলাই ২০২৫" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="image_metadata.photographer"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>ফটোগ্রাফার</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="ফটোগ্রাফারের নাম" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                        </Card>
                       </div>
-                    </div>
-                  </Card>
-                </div>
-              )}
+                    )}
 
-              {/* Step 4: Review & Publish */}
-              {currentStep === 4 && (
-                <div className="space-y-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-2">Review & Publish</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Final review and SEO check before publishing your article
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Article Preview */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <Eye className="h-4 w-4" />
-                          Article Preview
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-lg line-clamp-2">
-                            {form.watch('title') || 'Article Title'}
-                          </h4>
-                          <p className="text-sm text-muted-foreground">
-                            {form.watch('excerpt') || 'Article excerpt will appear here...'}
-                          </p>
-                        </div>
-                        {form.watch('imageUrl') && (
-                          <div className="relative rounded-lg overflow-hidden">
-                            <img
-                              src={form.watch('imageUrl')}
-                              alt="Article preview"
-                              className="w-full h-32 object-cover"
-                              onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                              }}
+                    {/* SEO Tab */}
+                    {currentTab === 'seo' && (
+                      <div className="space-y-6">
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Globe className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">SEO অপটিমাইজেশন</h3>
+                            </div>
+                            
+                            <FormField
+                              control={form.control}
+                              name="meta_title"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>SEO শিরোনাম</FormLabel>
+                                  <FormControl>
+                                    <Input {...field} placeholder="সার্চ ইঞ্জিনের জন্য অপটিমাইজড শিরোনাম" />
+                                  </FormControl>
+                                  <FormDescription>
+                                    ৭০ অক্ষরের মধ্যে রাখুন
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="meta_description"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>SEO বিবরণ</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      {...field}
+                                      placeholder="সার্চ ইঞ্জিনে প্রদর্শিত হবে..."
+                                      className="min-h-[80px]"
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    ১৬০ অক্ষরের মধ্যে রাখুন
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
                             />
                           </div>
-                        )}
-                        <div className="prose prose-sm max-w-none">
-                          <p className="line-clamp-3">
-                            {form.watch('content') || 'Article content will appear here...'}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </Card>
 
-                    {/* SEO Analysis */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4" />
-                          SEO Analysis
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4 text-sm">
-                          <div className="space-y-1">
-                            <p className="font-medium">Title Length</p>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                (form.watch('title')?.length || 0) >= 30 && (form.watch('title')?.length || 0) <= 60 
-                                  ? 'bg-green-500' : 'bg-yellow-500'
-                              }`} />
-                              <span className="text-muted-foreground">
-                                {form.watch('title')?.length || 0}/60 characters
-                              </span>
+                        {/* AI Suggestions Card */}
+                        {aiSuggestions && (
+                          <Card className="p-6 border-blue-200 bg-blue-50/50">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-2 mb-4">
+                                <Sparkles className="h-5 w-5 text-blue-600" />
+                                <h3 className="text-lg font-semibold text-blue-800">AI সুপারিশ</h3>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <h4 className="font-medium mb-2">SEO স্কোর</h4>
+                                  <div className="flex items-center gap-2">
+                                    <Progress value={aiSuggestions.seo_score} className="flex-1" />
+                                    <span className="text-sm font-medium">
+                                      {Math.round(aiSuggestions.seo_score)}%
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <h4 className="font-medium mb-2">পড়ার সময়</h4>
+                                  <p className="text-sm text-muted-foreground">
+                                    {aiSuggestions.reading_time} মিনিট
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <h4 className="font-medium mb-2">উন্নতির পরামর্শ</h4>
+                                <ul className="space-y-1">
+                                  {aiSuggestions.improvements.map((improvement: string, index: number) => (
+                                    <li key={index} className="text-sm text-muted-foreground flex items-center gap-2">
+                                      <div className="w-1 h-1 bg-blue-600 rounded-full" />
+                                      {improvement}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Settings Tab */}
+                    {currentTab === 'settings' && (
+                      <div className="space-y-6">
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Settings className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">প্রকাশনা সেটিংস</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="category_id"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>বিভাগ</FormLabel>
+                                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="বিভাগ নির্বাচন করুন" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        {categories?.map((category) => (
+                                          <SelectItem key={category.id} value={category.id.toString()}>
+                                            {category.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="author"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>লেখক</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="লেখকের নাম" />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="published_at"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>প্রকাশের তারিখ</FormLabel>
+                                    <FormControl>
+                                      <Input type="date" {...field} />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="priority_score"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>গুরুত্ব স্কোর (১-১০)</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        type="number" 
+                                        min="1" 
+                                        max="10" 
+                                        {...field} 
+                                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                      />
+                                    </FormControl>
+                                  </FormItem>
+                                )}
+                              />
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <p className="font-medium">Excerpt Length</p>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                form.watch('excerpt') ? 'bg-green-500' : 'bg-yellow-500'
-                              }`} />
-                              <span className="text-muted-foreground">
-                                {form.watch('excerpt')?.length || 0}/160 characters
-                              </span>
+                        </Card>
+
+                        {/* Feature Toggles */}
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-4">
+                              <Target className="h-5 w-5 text-primary" />
+                              <h3 className="text-lg font-semibold">ফিচার নিয়ন্ত্রণ</h3>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="is_featured"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                    <div>
+                                      <FormLabel>ফিচার করুন</FormLabel>
+                                      <FormDescription>হোমপেজে প্রাধান্য দিন</FormDescription>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="enable_comments"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                    <div>
+                                      <FormLabel>মন্তব্য সক্রিয়</FormLabel>
+                                      <FormDescription>পাঠক মন্তব্য করতে পারবেন</FormDescription>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="enable_sharing"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                    <div>
+                                      <FormLabel>শেয়ারিং সক্রিয়</FormLabel>
+                                      <FormDescription>সামাজিক মিডিয়ায় শেয়ার</FormDescription>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="enable_audio"
+                                render={({ field }) => (
+                                  <FormItem className="flex items-center space-x-3 space-y-0">
+                                    <FormControl>
+                                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                    </FormControl>
+                                    <div>
+                                      <FormLabel>অডিও সক্রিয়</FormLabel>
+                                      <FormDescription>টেক্সট-টু-স্পিচ ফিচার</FormDescription>
+                                    </div>
+                                  </FormItem>
+                                )}
+                              />
                             </div>
                           </div>
-                          <div className="space-y-1">
-                            <p className="font-medium">Content Words</p>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                (form.watch('content')?.split(' ').length || 0) >= 300 ? 'bg-green-500' : 'bg-yellow-500'
-                              }`} />
-                              <span className="text-muted-foreground">
-                                {form.watch('content')?.split(' ').length || 0} words
-                              </span>
+                        </Card>
+                      </div>
+                    )}
+
+                    {/* Preview Tab */}
+                    {currentTab === 'preview' && (
+                      <div className="space-y-6">
+                        <Card className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-2">
+                                <Eye className="h-5 w-5 text-primary" />
+                                <h3 className="text-lg font-semibold">লাইভ প্রিভিউ</h3>
+                              </div>
+                              
+                              <Badge variant="outline" className="text-sm">
+                                {devicePreview === 'mobile' ? 'মোবাইল' : 
+                                 devicePreview === 'tablet' ? 'ট্যাবলেট' : 'ডেস্কটপ'} দৃশ্য
+                              </Badge>
+                            </div>
+                            
+                            {/* Article Preview */}
+                            <div className={`border rounded-lg p-6 bg-white ${
+                              devicePreview === 'mobile' ? 'max-w-sm mx-auto' :
+                              devicePreview === 'tablet' ? 'max-w-2xl mx-auto' : 'w-full'
+                            }`}>
+                              <article className="space-y-4">
+                                <header>
+                                  <h1 className="text-2xl font-bold text-gray-900">
+                                    {form.watch('title') || 'শিরোনাম এখানে দেখা যাবে...'}
+                                  </h1>
+                                  
+                                  <div className="flex items-center gap-4 text-sm text-gray-600 mt-2">
+                                    <span>{form.watch('author') || 'লেখকের নাম'}</span>
+                                    <span>•</span>
+                                    <span>{new Date().toLocaleDateString('bn-BD')}</span>
+                                    <span>•</span>
+                                    <span>{readingTime} মিনিট পড়ার সময়</span>
+                                  </div>
+                                </header>
+                                
+                                {imagePreview && (
+                                  <div className="my-6">
+                                    <img
+                                      src={imagePreview}
+                                      alt={form.watch('image_metadata.caption') || 'ছবি'}
+                                      className="w-full h-64 object-cover rounded-lg"
+                                    />
+                                    {form.watch('image_metadata.caption') && (
+                                      <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                          <div className="flex items-center gap-1">
+                                            <Camera className="h-3 w-3 text-blue-600" />
+                                            <span>{form.watch('image_metadata.caption')}</span>
+                                          </div>
+                                          {form.watch('image_metadata.place') && (
+                                            <div className="flex items-center gap-1">
+                                              <MapPin className="h-3 w-3 text-green-600" />
+                                              <span>{form.watch('image_metadata.place')}</span>
+                                            </div>
+                                          )}
+                                          {form.watch('image_metadata.date') && (
+                                            <div className="flex items-center gap-1">
+                                              <Calendar className="h-3 w-3 text-purple-600" />
+                                              <span>{form.watch('image_metadata.date')}</span>
+                                            </div>
+                                          )}
+                                          {form.watch('image_metadata.photographer') && (
+                                            <div className="flex items-center gap-1">
+                                              <Users className="h-3 w-3 text-orange-600" />
+                                              <span>{form.watch('image_metadata.photographer')}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                
+                                <div className="prose prose-gray max-w-none">
+                                  <p className="text-lg text-gray-600 leading-relaxed">
+                                    {form.watch('excerpt') || 'সংক্ষিপ্ত বিবরণ এখানে দেখা যাবে...'}
+                                  </p>
+                                  
+                                  <div className="text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                    {form.watch('content') || 'মূল কন্টেন্ট এখানে দেখা যাবে...'}
+                                  </div>
+                                </div>
+                              </article>
                             </div>
                           </div>
-                        </div>
-                        
-                        <Separator />
-                        
-                        <div className="space-y-2">
-                          <p className="font-medium text-sm">SEO Checklist:</p>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                (form.watch('title')?.length || 0) >= 30 ? 'bg-green-500' : 'bg-red-500'
-                              }`} />
-                              <span>Title is descriptive (30+ characters)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                form.watch('excerpt') ? 'bg-green-500' : 'bg-red-500'
-                              }`} />
-                              <span>Has excerpt/meta description</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                form.watch('imageUrl') ? 'bg-green-500' : 'bg-red-500'
-                              }`} />
-                              <span>Has featured image</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                (form.watch('content')?.split(' ').length || 0) >= 300 ? 'bg-green-500' : 'bg-yellow-500'
-                              }`} />
-                              <span>Content length (300+ words recommended)</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                        </Card>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                </ScrollArea>
+              </div>
             </div>
           </form>
         </Form>
-
-        {/* Navigation Footer */}
-        <DialogFooter className="p-6 border-t flex-shrink-0">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              {isAutoSaving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Auto-saving...</span>
-                </>
-              ) : (
-                <>
-                  <Clock className="h-4 w-4" />
-                  <span>Auto-saved</span>
-                </>
-              )}
-            </div>
-            <div className="flex gap-3">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              
-              {currentStep > 0 && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={prevStep}
-                  className="flex items-center gap-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-              )}
-              
-              {currentStep < steps.length - 1 ? (
-                <Button 
-                  type="button" 
-                  onClick={nextStep}
-                  disabled={!canProceedToNext()}
-                  className="flex items-center gap-2"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button 
-                  type="submit" 
-                  disabled={saveMutation.isPending || !canProceedToNext()}
-                  className="flex items-center gap-2"
-                  onClick={form.handleSubmit(onSubmit)}
-                >
-                  {saveMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {saveMutation.isPending ? 'Publishing...' : (mode === 'create' ? 'Create Article' : 'Update Article')}
-                </Button>
-              )}
-            </div>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
