@@ -221,7 +221,7 @@ export default function ArticlesAdminPage() {
       title_col: "Title",
       category_col: "Category",
       status_col: "Status",
-      published_col: "Published Date",
+      published_col: "Published",
       views_col: "Views",
       actions_col: "Actions"
     }
@@ -340,6 +340,204 @@ export default function ArticlesAdminPage() {
           </div>
         </div>
 
+
+
+        {/* Search and Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              {currentLanguage === 'bn' ? 'অনুসন্ধান ও ফিল্টার' : 'Search & Filters'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder={t.searchPlaceholder}
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={selectedCategory} onValueChange={(value) => handleFilterChange('category', value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder={t.allCategories} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.allCategories}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={selectedStatus} onValueChange={(value) => handleFilterChange('status', value)}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder={t.allStatus} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.allStatus}</SelectItem>
+                  <SelectItem value="published">{t.published}</SelectItem>
+                  <SelectItem value="draft">{t.draft}</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button onClick={() => refetch()} variant="outline">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {currentLanguage === 'bn' ? 'রিফ্রেশ' : 'Refresh'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Articles Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{currentLanguage === 'bn' ? 'নিবন্ধ তালিকা' : 'Articles List'}</CardTitle>
+            <CardDescription>
+              {(articlesData as any)?.totalCount || 0} {currentLanguage === 'bn' ? 'টি নিবন্ধ পাওয়া গেছে' : 'articles found'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">{t.loading}</span>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center py-8 text-red-500">
+                <AlertCircle className="h-8 w-8 mr-2" />
+                {currentLanguage === 'bn' ? 'নিবন্ধ লোড করতে ব্যর্থ' : 'Failed to load articles'}
+              </div>
+            ) : !(articlesData as any)?.articles?.length ? (
+              <div className="flex items-center justify-center py-8 text-muted-foreground">
+                <BookOpen className="h-8 w-8 mr-2" />
+                {t.noArticles}
+              </div>
+            ) : (
+              <div className="rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[300px]">{t.title_col}</TableHead>
+                      <TableHead>{t.category_col}</TableHead>
+                      <TableHead>{t.status_col}</TableHead>
+                      <TableHead>{t.published_col}</TableHead>
+                      <TableHead className="text-center">{t.views_col}</TableHead>
+                      <TableHead className="text-center">{t.actions_col}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(articlesData as any).articles.map((article: any) => (
+                      <TableRow key={article.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="font-medium line-clamp-2">{article.title}</div>
+                            {article.excerpt && (
+                              <div className="text-sm text-muted-foreground line-clamp-1">
+                                {article.excerpt}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2">
+                              {article.is_featured && (
+                                <Badge variant="secondary" className="text-xs">
+                                  <Star className="h-3 w-3 mr-1" />
+                                  {t.featured}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">
+                            {article.categories?.name || 'Uncategorized'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={article.is_published ? "default" : "secondary"}
+                            className={cn(
+                              article.is_published 
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                                : "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                            )}
+                          >
+                            {article.is_published ? t.published : t.draft}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DateFormatter date={article.published_at} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            {article.view_count || 0}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>{t.actions_col}</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleEdit(article)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                {t.edit}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => handleDelete(article)}
+                                className="text-red-600 focus:text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t.delete}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Pagination */}
+        {(articlesData as any)?.totalPages && (articlesData as any).totalPages > 1 && (
+          <div className="flex justify-center gap-2">
+            <Button
+              variant="outline"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            >
+              {currentLanguage === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
+            </Button>
+            <span className="flex items-center px-4">
+              {currentPage} / {(articlesData as any).totalPages}
+            </span>
+            <Button
+              variant="outline"
+              disabled={currentPage === (articlesData as any).totalPages}
+              onClick={() => setCurrentPage(prev => Math.min((articlesData as any).totalPages || 1, prev + 1))}
+            >
+              {currentLanguage === 'bn' ? 'পরবর্তী' : 'Next'}
+            </Button>
+          </div>
+        )}
+          </>
+        )}
+      </div>
+
         {/* Conditional Content Based on Current View */}
         {currentView === 'editor' ? (
           <ContentEditor
@@ -392,218 +590,6 @@ export default function ArticlesAdminPage() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Search and Filters */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5" />
-                  {currentLanguage === 'bn' ? 'অনুসন্ধান ও ফিল্টার' : 'Search & Filters'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col lg:flex-row gap-4">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                    <Input
-                      placeholder={t.searchPlaceholder}
-                      value={searchTerm}
-                      onChange={(e) => handleSearch(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-4">
-                    <Select value={selectedCategory} onValueChange={(value) => handleFilterChange('category', value)}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder={t.allCategories} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t.allCategories}</SelectItem>
-                        {categories.map((category: any) => (
-                          <SelectItem key={category.id} value={category.id.toString()}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={selectedStatus} onValueChange={(value) => handleFilterChange('status', value)}>
-                      <SelectTrigger className="w-40">
-                        <SelectValue placeholder={t.allStatus} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">{t.allStatus}</SelectItem>
-                        <SelectItem value="published">{t.published}</SelectItem>
-                        <SelectItem value="draft">{t.draft}</SelectItem>
-                        <SelectItem value="featured">{t.featured}</SelectItem>
-                      </SelectContent>
-                    </Select>
-
-                    <Button
-                      variant="outline"
-                      onClick={() => refetch()}
-                      disabled={isLoading}
-                      className="flex items-center gap-2"
-                    >
-                      <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-                      {currentLanguage === 'bn' ? 'রিফ্রেশ' : 'Refresh'}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Articles Table */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    {currentLanguage === 'bn' ? 'নিবন্ধ তালিকা' : 'Articles List'}
-                  </span>
-                  {(articlesData as any)?.totalCount && (
-                    <Badge variant="secondary">
-                      {currentLanguage === 'bn' ? 'মোট' : 'Total'}: {(articlesData as any).totalCount}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                    <span className="ml-2">{t.loading}</span>
-                  </div>
-                ) : error ? (
-                  <div className="text-center py-8 text-red-600">
-                    {currentLanguage === 'bn' ? 'ডেটা লোড করতে ব্যর্থ' : 'Failed to load data'}
-                  </div>
-                ) : (articlesData as any)?.articles?.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    {t.noArticles}
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t.title_col}</TableHead>
-                          <TableHead>{t.category_col}</TableHead>
-                          <TableHead>{t.status_col}</TableHead>
-                          <TableHead>{t.published_col}</TableHead>
-                          <TableHead>{t.views_col}</TableHead>
-                          <TableHead className="text-right">{t.actions_col}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {(articlesData as any)?.articles?.map((article: Article) => (
-                          <TableRow key={article.id}>
-                            <TableCell className="font-medium">
-                              <div className="flex items-center gap-2">
-                                {article.is_featured && (
-                                  <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                )}
-                                <span className="truncate max-w-md">{article.title}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">
-                                {article.categories?.name || 'N/A'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge 
-                                variant={article.is_published ? "success" : "secondary"}
-                                className={article.is_published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
-                              >
-                                {article.is_published ? (
-                                  <CheckCircle className="h-3 w-3 mr-1" />
-                                ) : (
-                                  <Clock className="h-3 w-3 mr-1" />
-                                )}
-                                {article.is_published ? t.published : t.draft}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <DateFormatter 
-                                  date={article.published_at} 
-                                  language={currentLanguage}
-                                  showTime={false}
-                                />
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                                <span>{article.view_count || 0}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuLabel>
-                                    {currentLanguage === 'bn' ? 'কার্যক্রম' : 'Actions'}
-                                  </DropdownMenuLabel>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() => handleEdit(article)}
-                                    className="flex items-center gap-2"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                    {t.edit}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDelete(article)}
-                                    className="flex items-center gap-2 text-red-600"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                    {t.delete}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Pagination */}
-            {(articlesData as any)?.totalPages && (articlesData as any).totalPages > 1 && (
-              <div className="flex justify-center gap-2">
-                <Button
-                  variant="outline"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                >
-                  {currentLanguage === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
-                </Button>
-                <span className="flex items-center px-4">
-                  {currentPage} / {(articlesData as any).totalPages}
-                </span>
-                <Button
-                  variant="outline"
-                  disabled={currentPage === (articlesData as any).totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min((articlesData as any).totalPages || 1, prev + 1))}
-                >
-                  {currentLanguage === 'bn' ? 'পরবর্তী' : 'Next'}
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
