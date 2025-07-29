@@ -369,19 +369,28 @@ export async function createArticleDirect(articleData: {
 
     console.log('Creating article with service role key...');
     
+    // Prepare article data with image metadata
+    const insertData = {
+      title: articleData.title,
+      slug: slug,
+      content: articleData.content,
+      excerpt: articleData.excerpt,
+      image_url: articleData.image_url,
+      category_id: articleData.category_id,
+      is_featured: articleData.is_featured || false,
+      view_count: 0,
+      published_at: articleData.published_at || new Date().toISOString()
+    };
+
+    // Add image metadata if provided
+    if (articleData.image_metadata) {
+      console.log('✅ Including image metadata:', articleData.image_metadata);
+      insertData.image_metadata = articleData.image_metadata;
+    }
+
     const { data, error } = await adminSupabase
       .from('articles')
-      .insert({
-        title: articleData.title,
-        slug: slug,
-        content: articleData.content,
-        excerpt: articleData.excerpt,
-        image_url: articleData.image_url,
-        category_id: articleData.category_id,
-        is_featured: articleData.is_featured || false,
-        view_count: 0,
-        published_at: articleData.published_at || new Date().toISOString()
-      })
+      .insert(insertData)
       .select()
       .single();
 

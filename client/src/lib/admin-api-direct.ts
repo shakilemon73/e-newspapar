@@ -21,10 +21,11 @@ import { supabase } from './supabase';
 
 export async function updateArticle(id: number, updates: any) {
   try {
-    // Transform image metadata for database storage
-    if (updates.image_metadata) {
-      // Ensure image_metadata is properly formatted as JSON
-      updates.image_metadata = JSON.stringify(updates.image_metadata);
+    console.log('🔄 Updating article with data:', updates);
+    
+    // Handle image metadata - Supabase will automatically handle JSON conversion
+    if (updates.image_metadata && typeof updates.image_metadata === 'object') {
+      console.log('✅ Image metadata included:', updates.image_metadata);
     }
 
     const { data, error } = await supabase
@@ -34,7 +35,12 @@ export async function updateArticle(id: number, updates: any) {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Article update error:', error);
+      throw error;
+    }
+    
+    console.log('✅ Article updated successfully:', data.id);
     return data;
   } catch (error) {
     console.error('Error updating article:', error);
