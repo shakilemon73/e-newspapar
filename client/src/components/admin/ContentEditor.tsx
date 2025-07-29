@@ -129,6 +129,7 @@ const articleFormSchema = z.object({
   slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
   content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
   excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
+  summary: z.string().max(1000, 'সংক্ষিপ্ত বিবরণ ১০০০ অক্ষরের বেশি হতে পারবে না').optional(),
   
   // Media & Visuals
   image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
@@ -140,27 +141,61 @@ const articleFormSchema = z.object({
     id: z.string().optional()
   }).optional(),
   
+  // Multimedia Content
+  media_urls: z.array(z.string().url()).optional(),
+  video_urls: z.array(z.string().url()).optional(),
+  mixed_media: z.array(z.object({
+    type: z.enum(['image', 'video']),
+    url: z.string().url(),
+    thumbnail: z.string().url().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    duration: z.string().optional()
+  })).optional(),
+  
   // Publication Settings
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
   is_featured: z.boolean().optional().default(false),
+  is_breaking: z.boolean().optional().default(false),
+  is_urgent: z.boolean().optional().default(false),
   published_at: z.string().optional(),
+  scheduled_publish_at: z.string().optional(),
   
   // Author & Attribution
   author: z.string().optional(),
+  author_id: z.coerce.number().optional(),
+  
+  // Tags & Classification
+  tags: z.array(z.string()).optional(),
+  custom_tags: z.string().optional(),
   
   // SEO & Social
   meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').optional(),
   meta_description: z.string().max(160, 'SEO বিবরণ ১৬০ অক্ষরের বেশি হতে পারবে না').optional(),
+  social_image: z.string().url().optional().or(z.literal('')),
   
-  // Content Structure
+  // Content Structure & Features
   enable_comments: z.boolean().optional().default(true),
   enable_sharing: z.boolean().optional().default(true),
   enable_audio: z.boolean().optional().default(true),
   enable_pdf: z.boolean().optional().default(true),
+  enable_notifications: z.boolean().optional().default(false),
+  enable_newsletter: z.boolean().optional().default(false),
   
   // Analytics & Tracking
   reading_time_override: z.number().optional(),
-  priority_score: z.number().min(1).max(10).optional().default(5)
+  priority_score: z.number().min(1).max(10).optional().default(5),
+  track_reading_progress: z.boolean().optional().default(true),
+  
+  // Advanced Settings
+  content_warning: z.string().optional(),
+  age_restriction: z.enum(['none', '13+', '16+', '18+']).optional().default('none'),
+  regional_restriction: z.array(z.string()).optional(),
+  
+  // Publication Workflow
+  status: z.enum(['draft', 'review', 'scheduled', 'published']).optional().default('draft'),
+  review_notes: z.string().optional(),
+  editor_notes: z.string().optional()
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -267,19 +302,39 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       slug: article?.slug || '',
       content: article?.content || '',
       excerpt: article?.excerpt || '',
+      summary: article?.summary || '',
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
       is_featured: article?.is_featured ?? false,
+      is_breaking: article?.is_breaking ?? false,
+      is_urgent: article?.is_urgent ?? false,
       enable_comments: article?.enable_comments ?? true,
       enable_sharing: article?.enable_sharing ?? true,
       enable_audio: article?.enable_audio ?? true,
       enable_pdf: article?.enable_pdf ?? true,
+      enable_notifications: article?.enable_notifications ?? false,
+      enable_newsletter: article?.enable_newsletter ?? false,
       priority_score: article?.priority_score ?? 5,
       published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      scheduled_publish_at: article?.scheduled_publish_at || '',
       author: article?.author || '',
+      author_id: article?.author_id || undefined,
+      tags: article?.tags || [],
+      custom_tags: article?.custom_tags || '',
       meta_title: article?.meta_title || '',
       meta_description: article?.meta_description || '',
+      social_image: article?.social_image || '',
       reading_time_override: article?.reading_time_override || undefined,
+      track_reading_progress: article?.track_reading_progress ?? true,
+      content_warning: article?.content_warning || '',
+      age_restriction: article?.age_restriction || 'none',
+      regional_restriction: article?.regional_restriction || [],
+      status: article?.status || 'draft',
+      review_notes: article?.review_notes || '',
+      editor_notes: article?.editor_notes || '',
+      media_urls: article?.media_urls || [],
+      video_urls: article?.video_urls || [],
+      mixed_media: article?.mixed_media || [],
       image_metadata: {
         caption: article?.image_metadata?.caption || '',
         place: article?.image_metadata?.place || '',
@@ -659,6 +714,52 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                               </FormItem>
                             )}
                           />
+
+                          {/* Summary Field */}
+                          <FormField
+                            control={form.control}
+                            name="summary"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">AI সংক্ষিপ্ত বিবরণ</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                    {...field}
+                                    placeholder="AI দ্বারা তৈরি বিস্তারিত সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)..."
+                                    className="min-h-[100px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl resize-none"
+                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-gray-600 dark:text-gray-400">
+                                  নিবন্ধ বিশ্লেষণ বিভাগে দেখানো হবে
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {/* Custom Tags Field */}
+                          <FormField
+                            control={form.control}
+                            name="custom_tags"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">কাস্টম ট্যাগ</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="ট্যাগ1, ট্যাগ2, ট্যাগ3... (কমা দিয়ে আলাদা করুন)"
+                                    className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
+                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-gray-600 dark:text-gray-400">
+                                  নিবন্ধের সাথে প্রাসঙ্গিক কীওয়ার্ড যোগ করুন
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
                       
@@ -812,6 +913,49 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                               </FormItem>
                             )}
                           />
+
+                          <FormField
+                            control={form.control}
+                            name="social_image"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">সামাজিক মিডিয়া ছবি</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="https://example.com/social-image.jpg"
+                                    className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-purple-600 dark:text-purple-400">
+                                  Facebook, Twitter এ শেয়ারের জন্য আলাদা ছবি (1200x630px)
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="content_warning"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">কন্টেন্ট সতর্কতা</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    placeholder="সংবেদনশীল বিষয়বস্তুর জন্য সতর্কতা (ঐচ্ছিক)"
+                                    className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
+                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-purple-600 dark:text-purple-400">
+                                  নিবন্ধ পড়ার আগে পাঠকদের সতর্ক করবে
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                         </div>
                       </div>
                     </div>
@@ -888,6 +1032,27 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                                     className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
                                   />
                                 </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name="scheduled_publish_at"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">নির্ধারিত প্রকাশনা</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="datetime-local" 
+                                    {...field}
+                                    className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
+                                  />
+                                </FormControl>
+                                <FormDescription className="text-orange-600 dark:text-orange-400">
+                                  ভবিষ্যতের তারিখ ও সময় নির্ধারণ করুন
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -975,6 +1140,54 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                                   <div>
                                     <FormLabel className="text-base font-medium text-gray-900 dark:text-white">অডিও সক্রিয়</FormLabel>
                                     <FormDescription className="text-gray-600 dark:text-gray-400">টেক্সট-টু-স্পিচ ফিচার</FormDescription>
+                                  </div>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="is_breaking"
+                              render={({ field }) => (
+                                <FormItem className="flex items-center justify-between space-y-0">
+                                  <div>
+                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ব্রেকিং নিউজ</FormLabel>
+                                    <FormDescription className="text-gray-600 dark:text-gray-400">জরুরি সংবাদ হিসেবে চিহ্নিত</FormDescription>
+                                  </div>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="is_urgent"
+                              render={({ field }) => (
+                                <FormItem className="flex items-center justify-between space-y-0">
+                                  <div>
+                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">জরুরি সংবাদ</FormLabel>
+                                    <FormDescription className="text-gray-600 dark:text-gray-400">উচ্চ অগ্রাধিকার প্রদান</FormDescription>
+                                  </div>
+                                  <FormControl>
+                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={form.control}
+                              name="enable_notifications"
+                              render={({ field }) => (
+                                <FormItem className="flex items-center justify-between space-y-0">
+                                  <div>
+                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">পুশ নোটিফিকেশন</FormLabel>
+                                    <FormDescription className="text-gray-600 dark:text-gray-400">প্রকাশের সময় নোটিফিকেশন পাঠান</FormDescription>
                                   </div>
                                   <FormControl>
                                     <Switch checked={field.value} onCheckedChange={field.onChange} />
