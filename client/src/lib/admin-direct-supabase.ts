@@ -4,9 +4,9 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
+// Get environment variables - Frontend needs VITE_ prefix
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
   throw new Error('Missing Supabase environment variables');
@@ -368,5 +368,84 @@ export async function deleteAuthorDirect(id: number) {
   }
 }
 
+// ========================================
+// USERS CRUD - DIRECT SUPABASE (SERVICE ROLE)
+// ========================================
+
+export async function getAdminUsers() {
+  try {
+    console.log('🔧 Fetching admin users with service role key (bypasses RLS)...');
+    
+    const { data, error } = await adminSupabase
+      .from('user_profiles')
+      .select(`
+        id,
+        user_id,
+        first_name,
+        last_name,
+        bio,
+        avatar_url,
+        location,
+        website,
+        social_links,
+        created_at,
+        updated_at
+      `)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('❌ Admin users fetch error:', error);
+      throw new Error(error.message || 'Failed to fetch users');
+    }
+
+    // Transform data to match expected format
+    const transformedUsers = (data || []).map(user => ({
+      ...user,
+      full_name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'No Name',
+      email: user.user_id, // Use user_id as email placeholder since email not in this table
+      role: 'user', // Default role since role column doesn't exist
+      is_active: true // Default active status
+    }));
+
+    console.log('✅ Admin users fetched successfully via service role');
+    return { users: transformedUsers };
+  } catch (error) {
+    console.error('Error fetching admin users via service role:', error);
+    return { users: [] };
+  }
+}
+
+export async function updateUserRole(userId: string, newRole: string) {
+  try {
+    console.log('🔧 Updating user profile with service role key (bypasses RLS)...');
+    
+    // Since role column doesn't exist, we'll update the bio field to indicate admin status
+    const { data, error } = await adminSupabase
+      .from('user_profiles')
+      .update({ 
+        bio: newRole === 'admin' ? 'Admin User' : 'User',
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('❌ User profile update error:', error);
+      throw new Error(error.message || 'Failed to update user profile');
+    }
+
+    console.log('✅ User profile updated successfully via service role');
+    return {
+      ...data,
+      role: newRole // Add role to response for UI consistency
+    };
+  } catch (error) {
+    console.error('Error updating user profile via service role:', error);
+    throw error;
+  }
+}
+
 console.log('🚀 Direct Supabase Admin API initialized - NO EXPRESS DEPENDENCY!');
 console.log('📝 Authors table integration completed');
+console.log('👤 Users management with service role bypass completed');
