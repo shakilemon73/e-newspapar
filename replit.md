@@ -16,6 +16,8 @@ This is a comprehensive Bengali news website built with modern web technologies,
 
 **AI PUBLIC ACCESS ENABLED (January 25, 2025)**: Enabled AI functionality for all users (not just admins) based on user request. AI processing features now available to everyone.
 
+**RESEARCH-BASED IMAGE METADATA DISPLAY COMPLETED (July 29, 2025)**: Implemented comprehensive image metadata functionality with professional under-image caption display. Enhanced ContentEditor.tsx with Bengali interface for metadata input (ছবির বিস্তারিত তথ্য section). Added image_metadata JSONB column to articles table. Updated ArticleDetail.tsx with research-based metadata display showing caption, place, date, photographer, and ID in professional grid layout with colored icons. Admin can now add detailed image information through content editor with proper database storage and elegant frontend display.
+
 **NATURAL AI ANALYSIS DISPLAY COMPLETED (July 28, 2025)**: Implemented clean "নিবন্ধ বিশ্লেষণ" section displaying AI-processed analysis results (reading time, sentiment, complexity, auto-tags, insights) without mentioning AI generation. Users see natural analysis details like "পড়ার সময়", "নিরপেক্ষ", "সহজ", "মূল বিষয়" while backend AI processing continues seamlessly. Enhanced ArticleSummary alignment with "প্রবন্ধের সারসংক্ষেপ দেখুন" properly positioned.
 
 **LIGHT MODE DEFAULT ENABLED (July 25, 2025)**: Changed default theme from system preference to light mode. Users now see light mode by default instead of following their system theme preference.

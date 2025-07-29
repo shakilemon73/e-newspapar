@@ -1742,67 +1742,101 @@ const ArticleDetail = () => {
                     </div>
                   </div>
                   
-                  {/* Enhanced Article Image with Metadata */}
-                  <div className="relative group">
-                    <div className="overflow-hidden rounded-lg">
+                  {/* Professional Article Image with Research-Based Metadata */}
+                  <div className="mb-8">
+                    <div className="overflow-hidden rounded-lg shadow-lg">
                       <img 
                         src={article.imageUrl || article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=600&fit=crop&auto=format&q=80'} 
                         alt={article.image_metadata?.caption || article.title}
-                        className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-300 hover:scale-[1.02]"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=600&fit=crop&auto=format&q=80';
                         }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
                     
-                    {/* Enhanced Image Caption with Metadata */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
-                      <div className="text-white space-y-2">
-                        {/* Image Caption */}
-                        <h4 className="text-sm font-medium leading-tight">
-                          {article.image_metadata?.caption || article.title}
-                        </h4>
-                        
-                        {/* Image Metadata */}
-                        {(article.image_metadata?.place || article.image_metadata?.date || article.image_metadata?.photographer) && (
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-white/80">
+                    {/* Under-Image Research-Based Metadata Caption */}
+                    <div className="mt-3 bg-gradient-to-r from-muted/50 to-muted/30 border-l-4 border-primary/60 rounded-r-md p-4 space-y-3">
+                      {/* Primary Caption */}
+                      <div className="space-y-1">
+                        <p className="text-sm leading-relaxed text-foreground font-medium" style={{ fontFamily: 'SolaimanLipi, Kalpurush, system-ui' }}>
+                          {article.image_metadata?.caption || `${article.title} - সংগৃহীত ছবি`}
+                        </p>
+                      </div>
+                      
+                      {/* Research Metadata Grid */}
+                      {(article.image_metadata?.place || article.image_metadata?.date || article.image_metadata?.photographer || article.image_metadata?.id) && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-border/40">
+                          {/* Location & Date */}
+                          <div className="space-y-2">
                             {article.image_metadata?.place && (
-                              <div className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                <span>{article.image_metadata.place}</span>
+                              <div className="flex items-start gap-2">
+                                <div className="mt-0.5 p-1 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                                  <svg className="w-3 h-3 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground font-medium">স্থান:</span>
+                                  <p className="text-sm text-foreground" style={{ fontFamily: 'SolaimanLipi, Kalpurush, system-ui' }}>{article.image_metadata.place}</p>
+                                </div>
                               </div>
                             )}
                             
                             {article.image_metadata?.date && (
-                              <div className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                </svg>
-                                <span>{article.image_metadata.date}</span>
+                              <div className="flex items-start gap-2">
+                                <div className="mt-0.5 p-1 bg-green-100 dark:bg-green-900/30 rounded-full">
+                                  <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground font-medium">তারিখ:</span>
+                                  <p className="text-sm text-foreground">{article.image_metadata.date}</p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Photographer & ID */}
+                          <div className="space-y-2">
+                            {article.image_metadata?.photographer && (
+                              <div className="flex items-start gap-2">
+                                <div className="mt-0.5 p-1 bg-orange-100 dark:bg-orange-900/30 rounded-full">
+                                  <svg className="w-3 h-3 text-orange-600 dark:text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground font-medium">ফটোগ্রাফার:</span>
+                                  <p className="text-sm text-foreground" style={{ fontFamily: 'SolaimanLipi, Kalpurush, system-ui' }}>{article.image_metadata.photographer}</p>
+                                </div>
                               </div>
                             )}
                             
-                            {article.image_metadata?.photographer && (
-                              <div className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                                </svg>
-                                <span>{article.image_metadata.photographer}</span>
+                            {article.image_metadata?.id && (
+                              <div className="flex items-start gap-2">
+                                <div className="mt-0.5 p-1 bg-purple-100 dark:bg-purple-900/30 rounded-full">
+                                  <svg className="w-3 h-3 text-purple-600 dark:text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-muted-foreground font-medium">ছবি আইডি:</span>
+                                  <p className="text-xs text-muted-foreground font-mono">{article.image_metadata.id}</p>
+                                </div>
                               </div>
                             )}
                           </div>
-                        )}
-                        
-                        {/* Image ID for Admin Reference */}
-                        {article.image_metadata?.id && (
-                          <div className="text-xs text-white/60 font-mono">
-                            ID: {article.image_metadata.id}
-                          </div>
-                        )}
+                        </div>
+                      )}
+                      
+                      {/* Attribution Footer */}
+                      <div className="pt-2 border-t border-border/30">
+                        <p className="text-xs text-muted-foreground italic">
+                          গবেষণা ভিত্তিক তথ্য সহ সংবাদচিত্র • Bengali News ডেস্ক
+                        </p>
                       </div>
                     </div>
                   </div>
