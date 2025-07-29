@@ -23,12 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -133,13 +128,13 @@ const articleFormSchema = z.object({
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
 
 interface ContentEditorProps {
-  isOpen: boolean;
-  onClose: () => void;
   article?: any;
   mode: 'create' | 'edit';
+  onSave?: () => void;
+  onCancel?: () => void;
 }
 
-export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorProps) {
+export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditorProps) {
   const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState('content');
   const [imagePreview, setImagePreview] = useState(article?.imageUrl || '');
@@ -317,7 +312,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         title: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
         description: `"${data.title}" সফলভাবে ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে।`,
       });
-      onClose();
+      onSave?.();
       form.reset();
       setImagePreview('');
       queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
@@ -348,9 +343,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] p-0 overflow-hidden">
-        <div className="w-full h-full bg-background">
+    <div className="w-full bg-background">
         {/* Modern Header - Research Based Design */}
         <div className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-10">
           <div className="flex items-center justify-between px-6 py-4">
@@ -459,14 +452,15 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
                 প্রকাশ করুন
               </Button>
               
-              {/* Close */}
+              {/* Cancel */}
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={onClose}
+                onClick={onCancel}
               >
                 <X className="h-4 w-4" />
+                বাতিল
               </Button>
             </div>
           </div>
@@ -495,7 +489,7 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
         {/* Main Content Area */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1">
-            <div className="flex h-[calc(100vh-120px)]">
+            <div className="flex min-h-[600px]">
               {/* Editor Content */}
               <div className="flex-1 overflow-y-auto">
                 <ScrollArea className="h-full">
@@ -1066,8 +1060,6 @@ export function ContentEditor({ isOpen, onClose, article, mode }: ContentEditorP
             </div>
           </form>
         </Form>
-        </div>
-      </DialogContent>
-    </Dialog>
+    </div>
   );
 }

@@ -88,7 +88,7 @@ export default function ArticlesAdminPage() {
   const [, setLocation] = useLocation();
   
   // State management
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [showEditor, setShowEditor] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
   const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -232,13 +232,23 @@ export default function ArticlesAdminPage() {
   const handleCreateNew = () => {
     setEditingArticle(null);
     setEditorMode('create');
-    setIsEditorOpen(true);
+    setShowEditor(true);
   };
 
   const handleEdit = (article: Article) => {
     setEditingArticle(article);
     setEditorMode('edit');
-    setIsEditorOpen(true);
+    setShowEditor(true);
+  };
+
+  const handleEditorSave = () => {
+    setShowEditor(false);
+    setEditingArticle(null);
+  };
+
+  const handleEditorCancel = () => {
+    setShowEditor(false);
+    setEditingArticle(null);
   };
 
   const handleDelete = (article: Article) => {
@@ -537,16 +547,17 @@ export default function ArticlesAdminPage() {
         )}
       </div>
 
-      {/* Content Editor Modal */}
-      <ContentEditor
-        isOpen={isEditorOpen}
-        onClose={() => {
-          setIsEditorOpen(false);
-          setEditingArticle(null);
-        }}
-        article={editingArticle}
-        mode={editorMode}
-      />
+      {/* Conditional Content Editor */}
+      {showEditor && (
+        <div className="mt-6">
+          <ContentEditor
+            article={editingArticle}
+            mode={editorMode}
+            onSave={handleEditorSave}
+            onCancel={handleEditorCancel}
+          />
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
