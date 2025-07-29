@@ -51,6 +51,7 @@ export async function createArticleDirect(articleData: {
   is_featured?: boolean;
   slug?: string;
   published_at?: string;
+  author_id?: number;
 }) {
   try {
     const slug = articleData.slug || generateSlug(articleData.title);
@@ -64,11 +65,16 @@ export async function createArticleDirect(articleData: {
         excerpt: articleData.excerpt,
         image_url: articleData.image_url,
         category_id: articleData.category_id,
+        author_id: articleData.author_id || 1, // Default to first author (Admin)
         is_featured: articleData.is_featured || false,
         published_at: articleData.published_at || new Date().toISOString(),
         view_count: 0
       })
-      .select()
+      .select(`
+        *,
+        authors(name, slug),
+        categories(name, slug)
+      `)
       .single();
 
     if (error) {
@@ -252,4 +258,115 @@ export async function createVideoDirect(videoData: {
   }
 }
 
+// ========================================
+// AUTHORS CRUD - DIRECT SUPABASE
+// ========================================
+
+export async function getAuthorsDirect() {
+  try {
+    const { data, error } = await adminSupabase
+      .from('authors')
+      .select('*')
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) {
+      console.error('Direct Supabase error fetching authors:', error);
+      throw new Error(error.message || 'Failed to fetch authors');
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching authors via direct Supabase:', error);
+    return [];
+  }
+}
+
+export async function createAuthorDirect(authorData: {
+  name: string;
+  slug?: string;
+  email?: string;
+  bio?: string;
+  avatar_url?: string;
+  social_links?: any;
+}) {
+  try {
+    const slug = authorData.slug || generateSlug(authorData.name);
+
+    const { data, error } = await adminSupabase
+      .from('authors')
+      .insert({
+        name: authorData.name,
+        slug: slug,
+        email: authorData.email,
+        bio: authorData.bio,
+        avatar_url: authorData.avatar_url,
+        social_links: authorData.social_links || {},
+        is_active: true
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Direct Supabase error creating author:', error);
+      throw new Error(error.message || 'Failed to create author');
+    }
+
+    console.log('✅ Author created successfully via direct Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('Error creating author via direct Supabase:', error);
+    throw error;
+  }
+}
+
+export async function updateAuthorDirect(id: number, updates: any) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('authors')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Direct Supabase error updating author:', error);
+      throw new Error(error.message || 'Failed to update author');
+    }
+
+    console.log('✅ Author updated successfully via direct Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('Error updating author via direct Supabase:', error);
+    throw error;
+  }
+}
+
+export async function deleteAuthorDirect(id: number) {
+  try {
+    // Soft delete by setting is_active to false
+    const { data, error } = await adminSupabase
+      .from('authors')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Direct Supabase error deactivating author:', error);
+      throw new Error(error.message || 'Failed to deactivate author');
+    }
+
+    console.log('✅ Author deactivated successfully via direct Supabase:', data);
+    return data;
+  } catch (error) {
+    console.error('Error deactivating author via direct Supabase:', error);
+    throw error;
+  }
+}
+
 console.log('🚀 Direct Supabase Admin API initialized - NO EXPRESS DEPENDENCY!');
+console.log('📝 Authors table integration completed');
