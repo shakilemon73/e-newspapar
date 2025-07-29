@@ -3,13 +3,27 @@
  * Bypasses RLS policies for admin operations
  * NO EXPRESS SERVER DEPENDENCY
  */
-// Use centralized Supabase client - admin operations through proper authentication
-import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
 
-// Use the main client for admin operations with proper JWT authentication
-const adminSupabase = supabase;
+// Create admin client with service role key for frontend admin operations
+const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://mrjukcqspvhketnfzmud.supabase.co';
+const supabaseServiceKey = import.meta.env?.VITE_SUPABASE_SERVICE_KEY || import.meta.env?.SUPABASE_SERVICE_ROLE_KEY;
 
-console.log('🔐 Admin Supabase client using SERVICE ROLE key');
+if (!supabaseServiceKey) {
+  console.error('❌ CRITICAL: Service role key not found in environment variables');
+  console.error('Available env vars:', Object.keys(import.meta.env));
+  throw new Error('Service role key required for admin operations');
+}
+
+// Admin client with service role key - bypasses RLS policies
+const adminSupabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+console.log('🔐 Admin Supabase client created with SERVICE ROLE key - bypasses RLS');
 
 /**
  * Create user_storage table for localStorage migration
@@ -356,6 +370,7 @@ export async function createArticleDirect(articleData: {
   excerpt?: string;
   category_id: number;
   image_url?: string;
+  image_metadata?: any;
   is_featured?: boolean;
   slug?: string;
   published_at?: string;
@@ -370,7 +385,7 @@ export async function createArticleDirect(articleData: {
     console.log('Creating article with service role key...');
     
     // Prepare article data with image metadata
-    const insertData = {
+    const insertData: any = {
       title: articleData.title,
       slug: slug,
       content: articleData.content,
