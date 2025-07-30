@@ -202,7 +202,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
   const debouncedAutoSave = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout;
-      return (data: ArticleFormValues) => {
+      return (data: any) => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
           if (mode === 'edit' && article?.id) {
@@ -224,7 +224,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
   }, []);
 
   // OPTIMIZED: Form with proper TypeScript types
-  const form = useForm<ArticleFormValues>({
+  const form = useForm({
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
       title: article?.title || '',
@@ -281,7 +281,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
         updateContentStats(data.content);
       }
       if (mode === 'edit') {
-        debouncedAutoSave(data as ArticleFormValues);
+        debouncedAutoSave(data as any);
       }
     });
     return () => subscription.unsubscribe();
@@ -289,7 +289,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
 
   // Save mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: ArticleFormValues) => {
+    mutationFn: async (data: any) => {
       if (mode === 'create') {
         return createArticle(data);
       } else {
@@ -313,7 +313,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     },
   });
 
-  const onSubmit = (data: ArticleFormValues) => {
+  const onSubmit = (data: any) => {
     saveMutation.mutate(data);
   };
 
@@ -613,9 +613,12 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                           }}
                         />
                       </FormControl>
-                      <FormDescription className="flex items-center justify-between text-gray-600 dark:text-gray-400 mt-3">
-                        <span>বাংলা বা ইংরেজি উভয় ভাষায় লিখতে পারেন</span>
-                        <div className="flex items-center space-x-4 text-sm">
+                      <FormDescription className="text-gray-600 dark:text-gray-400">
+                        বাংলা বা ইংরেজি উভয় ভাষায় লিখতে পারেন
+                      </FormDescription>
+                      <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 mt-2 text-sm">
+                        <span></span>
+                        <div className="flex items-center space-x-4">
                           <span className="flex items-center space-x-1">
                             <Type className="h-4 w-4" />
                             <span>{wordCount} শব্দ</span>
@@ -625,7 +628,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                             <span>{readingTime} মিনিট</span>
                           </span>
                         </div>
-                      </FormDescription>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}

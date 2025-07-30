@@ -1,0 +1,85 @@
+Warning: validateDOMNesting(...): <div> cannot appear as a descendant of &lt;p&gt;.
+    at div
+    at p
+    at https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:158:6
+    at div
+    at https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:71:6
+    at Controller (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/chunk-K33UWL3X.js?v=ee6816d0:295:35)
+    at FormField (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:32:6)
+    at div
+    at _c9 (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at form
+    at FormProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/chunk-K33UWL3X.js?v=ee6816d0:102:11)
+    at div
+    at div
+    at ContentEditor (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/admin/ContentEditor.tsx:134:33)
+    at div
+    at div
+    at div
+    at main
+    at div
+    at EnhancedAdminLayout (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/admin/EnhancedAdminLayout.tsx:255:39)
+    at ArticlesAdminPage (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/pages/admin/ArticlesAdminPage.tsx:77:21)
+    at AdminRouteGuard (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:85:28)
+    at Route (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/wouter.js?v=ee6816d0:206:16)
+    at Switch (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/wouter.js?v=ee6816d0:262:17)
+    at AdminRouter (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:131:22)
+    at div
+    at SupabaseAdminAuthProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/hooks/use-supabase-admin-auth.tsx:22:45)
+    at AuthProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/hooks/use-supabase-auth.tsx:22:32)
+    at SiteSettingsProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/contexts/SiteSettingsContext.tsx:36:40)
+    at LanguageProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/contexts/LanguageContext.tsx:20:36)
+    at ThemeProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ThemeProvider.tsx:20:33)
+    at div
+    at AdminErrorBoundary (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:665:31)
+    at AdminApp (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:675:3)
+    at App (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/App.tsx?v=vss-MIEhF3t9rXbSWq9WI:25:22)
+    at QueryClientProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=ee6816d0:2934:3)
+    at _a (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/react-helmet-async.js?v=ee6816d0:550:5)
+at div
+at p
+at https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:158:6
+at div
+at https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:71:6
+at Controller (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/chunk-K33UWL3X.js?v=ee6816d0:295:35)
+at FormField (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/form.tsx:32:6)
+at div
+at _c9 (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/card.tsx:114:12)
+at div
+at _c (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ui/card.tsx:20:11)
+at div
+at form
+at FormProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/chunk-K33UWL3X.js?v=ee6816d0:102:11)
+at div
+at div
+at ContentEditor (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/admin/ContentEditor.tsx:134:33)
+at div
+at div
+at div
+at main
+at div
+at EnhancedAdminLayout (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/admin/EnhancedAdminLayout.tsx:255:39)
+at ArticlesAdminPage (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/pages/admin/ArticlesAdminPage.tsx:77:21)
+at AdminRouteGuard (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:85:28)
+at Route (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/wouter.js?v=ee6816d0:206:16)
+at Switch (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/wouter.js?v=ee6816d0:262:17)
+at AdminRouter (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:131:22)
+at div
+at SupabaseAdminAuthProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/hooks/use-supabase-admin-auth.tsx:22:45)
+at AuthProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/hooks/use-supabase-auth.tsx:22:32)
+at SiteSettingsProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/contexts/SiteSettingsContext.tsx:36:40)
+at LanguageProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/contexts/LanguageContext.tsx:20:36)
+at ThemeProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/components/ThemeProvider.tsx:20:33)
+at div
+at AdminErrorBoundary (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:665:31)
+at AdminApp (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/AdminApp.tsx:675:3)
+at App (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/src/App.tsx?v=vss-MIEhF3t9rXbSWq9WI:25:22)
+at QueryClientProvider (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/@tanstack_react-query.js?v=ee6816d0:2934:3)
+at _a (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/node_modules/.vite/deps/react-helmet-async.js?v=ee6816d0:550:5)
+at t.value (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://08a6b1ce-c14d-4061-af94-6caae64c818e-00-2kuxgd2fiqnxn.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
