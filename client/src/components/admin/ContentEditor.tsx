@@ -119,7 +119,6 @@ const articleFormSchema = z.object({
   editor_notes: z.string().default(''),
   scheduled_publish_at: z.string().default(''),
   reading_time_override: z.number().optional(),
-  age_restriction: z.enum(['none', '13+', '16+', '18+']).default('none'),
   regional_restriction: z.array(z.string()).default([]),
   media_urls: z.array(z.string()).default([]),
   video_urls: z.array(z.string()).default([]),
@@ -256,7 +255,6 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       reading_time_override: article?.reading_time_override || undefined,
       track_reading_progress: article?.track_reading_progress ?? true,
       content_warning: article?.content_warning || '',
-      age_restriction: article?.age_restriction || 'none',
       regional_restriction: article?.regional_restriction || [],
       status: article?.status || 'draft',
       review_notes: article?.review_notes || '',
@@ -465,29 +463,71 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                 {renderStepContent()}
               </div>
 
-              {/* DESKTOP: All Steps Content */}
-              <div className="hidden lg:block space-y-6">
-                {editorSteps.map((step, index) => (
-                  <div key={step.id}>
-                    {renderStepContentById(step.id)}
+              {/* DESKTOP: Progress Bar */}
+              <div className="hidden lg:block mb-8">
+                <div className="flex items-center space-x-2 mb-6">
+                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-emerald-500 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${((currentStep + 1) / editorSteps.length) * 100}%` }}
+                    ></div>
                   </div>
-                ))}
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {currentStep + 1} / {editorSteps.length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  {editorSteps.map((step, index) => (
+                    <span key={step.id} className={index <= currentStep ? 'text-emerald-600' : ''}>
+                      {step.title}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* DESKTOP: Current Step Content Only */}
+              <div className="hidden lg:block">
+                {renderStepContent()}
               </div>
 
               {/* DESKTOP ACTION BUTTONS */}
-              <div className="hidden lg:flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="hidden lg:flex justify-between p-6 border-t border-gray-200 dark:border-gray-700">
                 <Button
-                  type="submit"
-                  disabled={saveMutation.isPending}
-                  className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                  disabled={currentStep === 0}
+                  className="flex items-center space-x-2"
                 >
-                  {saveMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4" />
-                  )}
-                  <span>প্রকাশ করুন</span>
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>পূর্ববর্তী</span>
                 </Button>
+                
+                <div className="flex space-x-3">
+                  {currentStep < editorSteps.length - 1 ? (
+                    <Button
+                      type="button"
+                      onClick={() => setCurrentStep(currentStep + 1)}
+                      className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
+                    >
+                      <span>পরবর্তী</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button
+                      type="submit"
+                      disabled={saveMutation.isPending}
+                      className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
+                    >
+                      {saveMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
+                      <span>প্রকাশ করুন</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* MOBILE-OPTIMIZED ACTION BUTTONS */}
