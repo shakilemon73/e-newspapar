@@ -60,7 +60,7 @@ import {
   Minimize2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
+import { createArticle, updateArticle, getAdminCategories, getAdminAuthors } from '@/lib/admin-api-direct';
 import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 
@@ -99,8 +99,7 @@ const articleFormSchema = z.object({
   published_at: z.string().default(new Date().toISOString().split('T')[0]),
   
   // Author info
-  author: z.string().default(''),
-  author_id: z.coerce.number().optional(),
+  author_id: z.coerce.number().min(1, 'অনুগ্রহ করে একজন লেখক নির্বাচন করুন'),
   
   // SEO fields
   meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').default(''),
@@ -186,7 +185,7 @@ export function ContentEditorRedesigned({ article, mode, onSave, onCancel }: Con
       title: 'সেটিংস',
       description: 'বিভাগ ও প্রকাশনা',
       icon: Settings,
-      fields: ['category_id', 'author', 'published_at', 'status'],
+      fields: ['category_id', 'author_id', 'published_at', 'status'],
       color: 'orange'
     },
     {
@@ -207,10 +206,15 @@ export function ContentEditorRedesigned({ article, mode, onSave, onCancel }: Con
     }
   ];
 
-  // Categories query
+  // Categories and Authors queries
   const { data: categories } = useQuery({
     queryKey: ['/api/admin/categories'],
     queryFn: getAdminCategories,
+  });
+
+  const { data: authors } = useQuery({
+    queryKey: ['/api/admin/authors'],
+    queryFn: getAdminAuthors,
   });
 
   // OPTIMIZED: Form with proper TypeScript types
@@ -236,8 +240,7 @@ export function ContentEditorRedesigned({ article, mode, onSave, onCancel }: Con
       priority_score: article?.priority_score ?? 5,
       published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       scheduled_publish_at: article?.scheduled_publish_at || '',
-      author: article?.author || '',
-      author_id: article?.author_id || undefined,
+      author_id: article?.author_id || article?.authors?.id || 1,
       tags: article?.tags || [],
       custom_tags: article?.custom_tags || '',
       meta_title: article?.meta_title || '',
@@ -772,17 +775,24 @@ export function ContentEditorRedesigned({ article, mode, onSave, onCancel }: Con
                 
                 <FormField
                   control={form.control}
-                  name="author"
+                  name="author_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">লেখক</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="লেখকের নাম"
-                          className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                        />
-                      </FormControl>
+                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">লেখক *</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl">
+                            <SelectValue placeholder="একজন লেখক নির্বাচন করুন" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {authors?.map((author) => (
+                            <SelectItem key={author.id} value={author.id.toString()}>
+                              {author.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

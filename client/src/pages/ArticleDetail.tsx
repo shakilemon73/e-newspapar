@@ -1390,7 +1390,7 @@ const ArticleDetail = () => {
     slug: article.slug,
     published_at: article.published_at,
     category: article.category,
-    author: article.author || ' সংবাদদাতা'
+    author: article.authors?.name || article.author || ' সংবাদদাতা'
   });
 
   const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
@@ -1404,7 +1404,7 @@ const ArticleDetail = () => {
         image={article.image_url || '/og-image.svg'}
         url={shareUrl}
         type="article"
-        author={article.author}
+        author={article.authors?.name || article.author}
         publishedTime={article.published_at}
         modifiedTime={article.updated_at}
         section={article.category?.name}

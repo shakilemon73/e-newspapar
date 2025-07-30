@@ -374,6 +374,8 @@ export async function createArticleDirect(articleData: {
   is_featured?: boolean;
   slug?: string;
   published_at?: string;
+  author?: string;
+  author_id?: number;
 }) {
   try {
     const slug = articleData.slug || articleData.title
@@ -397,6 +399,14 @@ export async function createArticleDirect(articleData: {
       published_at: articleData.published_at || new Date().toISOString()
     };
 
+    // Handle author - prefer author_id if provided, otherwise use default author
+    if (articleData.author_id) {
+      insertData.author_id = articleData.author_id;
+    } else {
+      // Use default author ID 1 (Admin) if no author_id provided
+      insertData.author_id = 1;
+    }
+
     // Add image metadata if provided
     if (articleData.image_metadata) {
       console.log('✅ Including image metadata:', articleData.image_metadata);
@@ -406,7 +416,18 @@ export async function createArticleDirect(articleData: {
     const { data, error } = await adminSupabase
       .from('articles')
       .insert(insertData)
-      .select()
+      .select(`
+        *,
+        authors (
+          id,
+          name,
+          slug,
+          email,
+          bio,
+          avatar_url,
+          is_active
+        )
+      `)
       .single();
 
     if (error) {
@@ -661,7 +682,16 @@ export async function getAdminArticlesDirect(options: {
       .from('articles')
       .select(`
         *,
-        categories(id, name, slug)
+        categories(id, name, slug),
+        authors(
+          id,
+          name,
+          slug,
+          email,
+          bio,
+          avatar_url,
+          is_active
+        )
       `, { count: 'exact' });
 
     // Apply filters
@@ -720,6 +750,29 @@ export async function getAdminCategoriesDirect() {
     return data || [];
   } catch (error) {
     console.error('Error fetching admin categories:', error);
+    return [];
+  }
+}
+
+export async function getAdminAuthorsDirect() {
+  try {
+    console.log('Fetching admin authors with service role key...');
+    
+    const { data, error } = await adminSupabase
+      .from('authors')
+      .select('*')
+      .eq('is_active', true)
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Supabase admin error:', error);
+      throw new Error(error.message || 'Failed to fetch authors');
+    }
+
+    console.log('✅ Admin authors fetched successfully');
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching admin authors:', error);
     return [];
   }
 }
@@ -962,11 +1015,32 @@ export async function updateArticleDirect(id: number, updates: any) {
   try {
     console.log('Updating article with service role key...');
     
+    // Handle author updates - prefer author_id if provided
+    if (updates.author_id) {
+      // Remove author string field if author_id is provided
+      delete updates.author;
+    } else if (updates.author && !updates.author_id) {
+      // Use default author ID 1 (Admin) if only author string provided
+      updates.author_id = 1;
+      delete updates.author;
+    }
+    
     const { data, error } = await adminSupabase
       .from('articles')
       .update(updates)
       .eq('id', id)
-      .select()
+      .select(`
+        *,
+        authors (
+          id,
+          name,
+          slug,
+          email,
+          bio,
+          avatar_url,
+          is_active
+        )
+      `)
       .single();
 
     if (error) {

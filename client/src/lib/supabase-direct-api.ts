@@ -48,6 +48,14 @@ export const articlesAPI = {
             id,
             name,
             slug
+          ),
+          authors (
+            id,
+            name,
+            slug,
+            bio,
+            avatar_url,
+            is_active
           )
         `)
         .order('published_at', { ascending: false });
@@ -82,6 +90,14 @@ export const articlesAPI = {
             id,
             name,
             slug
+          ),
+          authors (
+            id,
+            name,
+            slug,
+            bio,
+            avatar_url,
+            is_active
           )
         `)
         .eq('slug', slug)
@@ -106,6 +122,14 @@ export const articlesAPI = {
             id,
             name,
             slug
+          ),
+          authors (
+            id,
+            name,
+            slug,
+            bio,
+            avatar_url,
+            is_active
           )
         `)
         .order('view_count', { ascending: false })
@@ -130,6 +154,14 @@ export const articlesAPI = {
             id,
             name,
             slug
+          ),
+          authors (
+            id,
+            name,
+            slug,
+            bio,
+            avatar_url,
+            is_active
           )
         `)
         .order('published_at', { ascending: false })

@@ -9,7 +9,8 @@ export {
   createVideoContentDirect as createVideoContent,
   createCategoryDirect as createCategory,
   getAdminArticlesDirect as getAdminArticles,
-  getAdminCategoriesDirect as getAdminCategories
+  getAdminCategoriesDirect as getAdminCategories,
+  getAdminAuthorsDirect as getAdminAuthors
 } from './admin-supabase-direct';
 
 // Use centralized Supabase client to prevent multiple instances

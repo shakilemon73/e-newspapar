@@ -11,6 +11,19 @@ export interface Achievement {
   created_at?: string;
 }
 
+export interface Author {
+  id: number;
+  name: string;
+  slug: string;
+  email?: string;
+  bio?: string;
+  avatar_url?: string;
+  social_links?: object;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Article {
   id: number;
   title: string;
@@ -18,7 +31,8 @@ export interface Article {
   excerpt: string;
   content: string;
   image_url?: string;
-  author?: string;
+  author?: string; // For backward compatibility - derived from author relationship
+  author_id?: number; // Foreign key to authors table
   category_id: number;
   is_featured: boolean;
   view_count: number;
@@ -27,6 +41,15 @@ export interface Article {
   created_at?: string;
   updated_at?: string;
   category?: Category;
+  image_metadata?: {
+    caption?: string;
+    place?: string;
+    date?: string;
+    photographer?: string;
+    id?: string;
+  };
+  // Author relationship
+  authors?: Author;
 }
 
 export interface BreakingNews {
