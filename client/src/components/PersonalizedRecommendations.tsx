@@ -117,6 +117,7 @@ export const PersonalizedRecommendations = () => {
     fetchRecommendations();
   }, [user]);
 
+  // Use centralized date formatting
   const formatDate = (dateString: string) => {
     return getRelativeTimeInBengali(dateString);
   };

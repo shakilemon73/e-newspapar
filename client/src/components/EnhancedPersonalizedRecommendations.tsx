@@ -185,15 +185,9 @@ export const EnhancedPersonalizedRecommendations = () => {
     trackInteraction(article.id, 'like');
   };
 
+  // Use centralized date formatting instead of custom logic
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'কয়েক মিনিট আগে';
-    if (diffInHours < 24) return `${diffInHours} ঘন্টা আগে`;
-    if (diffInHours < 48) return 'গতকাল';
-    return date.toLocaleDateString('bn-BD');
+    return getRelativeTimeInBengali(dateString);
   };
 
   const getRecommendationBadgeColor = (score: number) => {

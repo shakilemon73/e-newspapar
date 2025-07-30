@@ -90,14 +90,9 @@ export const TrendingAnalyticsDashboard = () => {
     }
   };
 
+  // Use centralized date formatting for consistency
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 60) return `${diffInMinutes} মিনিট আগে`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} ঘন্টা আগে`;
-    return date.toLocaleDateString('bn-BD');
+    return getRelativeTimeInBengali(dateString);
   };
 
   const getTrendingIcon = (score: number) => {

@@ -21,11 +21,16 @@ async function apiRequest(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-// Proper date formatting function
+// Import the centralized timestamp utilities
+import { createUTCTimestamp, normalizeSupabaseTimestamp } from './utils/dates';
+
+// Proper date formatting function for database operations
 export function formatDateForDatabase(date: string | Date): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  if (!date) return createUTCTimestamp();
+  
+  const d = typeof date === 'string' ? normalizeSupabaseTimestamp(date) : date;
   if (isNaN(d.getTime())) {
-    return new Date().toISOString();
+    return createUTCTimestamp();
   }
   return d.toISOString();
 }
