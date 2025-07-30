@@ -465,6 +465,15 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                 {renderStepContent()}
               </div>
 
+              {/* DESKTOP: All Steps Content */}
+              <div className="hidden lg:block space-y-6">
+                {editorSteps.map((step, index) => (
+                  <div key={step.id}>
+                    {renderStepContentById(step.id)}
+                  </div>
+                ))}
+              </div>
+
               {/* MOBILE-OPTIMIZED ACTION BUTTONS */}
               <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 -mx-4">
                 <div className="flex items-center justify-between space-x-3">
@@ -517,9 +526,25 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       </div>
     );
 
+    // STEP CONTENT RENDERER FOR DESKTOP (ALL STEPS)
+    function renderStepContentById(stepId: string) {
+      switch (stepId) {
+        case 'basic':
+        case 'content':
+        case 'media':
+        case 'settings':
+        case 'seo':
+        case 'publish':
+          return renderStepContent(stepId);
+        default:
+          return null;
+      }
+    }
+
     // STEP CONTENT RENDERER
-    function renderStepContent() {
-      const step = editorSteps[currentStep];
+    function renderStepContent(forceStepId?: string) {
+      const step = forceStepId ? editorSteps.find(s => s.id === forceStepId) : editorSteps[currentStep];
+      if (!step) return null;
       
       switch (step.id) {
         case 'basic':
