@@ -72,7 +72,8 @@ interface Article {
   image_url?: string;
   category_id: number;
   is_featured: boolean;
-  is_published: boolean;
+  status?: string; // 'draft', 'published', 'review', 'scheduled'
+  is_published?: boolean; // Calculated from status
   view_count: number;
   published_at: string;
   created_at: string;
@@ -303,14 +304,11 @@ export default function ArticlesAdminPage() {
     setCurrentPage(1); // Reset to first page when filtering
   };
 
-  // Statistics calculation with debug logging
+  // Statistics calculation with both status field options
   const stats = (articlesData as any)?.articles ? {
     total: (articlesData as any).totalCount,
-    published: (articlesData as any).articles.filter((a: any) => {
-      console.log(`Article ${a.id}: is_published = ${a.is_published} (type: ${typeof a.is_published})`);
-      return a.is_published === true;
-    }).length,
-    drafts: (articlesData as any).articles.filter((a: any) => a.is_published !== true).length,
+    published: (articlesData as any).articles.filter((a: any) => a.status === 'published' || a.is_published === true).length,
+    drafts: (articlesData as any).articles.filter((a: any) => a.status !== 'published' && a.is_published !== true).length,
     featured: (articlesData as any).articles.filter((a: any) => a.is_featured === true).length
   } : { total: 0, published: 0, drafts: 0, featured: 0 };
 
@@ -539,14 +537,18 @@ export default function ArticlesAdminPage() {
                             <TableCell>
                               <Badge 
                                 variant="secondary"
-                                className={article.is_published === true ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200"}
+                                className={
+                                  (article.status === 'published' || article.is_published === true) 
+                                    ? "bg-green-100 text-green-800 border-green-200" 
+                                    : "bg-orange-100 text-orange-800 border-orange-200"
+                                }
                               >
-                                {article.is_published === true ? (
+                                {(article.status === 'published' || article.is_published === true) ? (
                                   <CheckCircle className="h-3 w-3 mr-1" />
                                 ) : (
                                   <Clock className="h-3 w-3 mr-1" />
                                 )}
-                                {article.is_published === true ? t.published : t.draft}
+                                {(article.status === 'published' || article.is_published === true) ? t.published : t.draft}
                               </Badge>
                             </TableCell>
                             <TableCell>
