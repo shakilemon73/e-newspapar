@@ -1,4 +1,4 @@
-// Bengali date formatting utilities - Fixed timestamp calculation
+// Bengali date formatting utilities - Fixed timestamp calculation with debugging
 export const getRelativeTimeInBengali = (dateString: string | Date | number): string => {
   if (!dateString) return 'কিছুক্ষণ আগে';
   
@@ -14,7 +14,7 @@ export const getRelativeTimeInBengali = (dateString: string | Date | number): st
       date = new Date(dateString);
       
       // If the date string doesn't have timezone info, treat it as UTC
-      if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+')) {
+      if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-', 10)) {
         date = new Date(dateString + 'Z');
       }
     } else {
@@ -26,6 +26,18 @@ export const getRelativeTimeInBengali = (dateString: string | Date | number): st
     // Use UTC time for consistent calculations
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
+    
+    // Debug specific problematic articles (temporarily)
+    if (typeof dateString === 'string' && dateString.includes('রোনালদো')) {
+      console.log('🐛 Debugging রোনালদো article timestamp:', {
+        original: dateString,
+        parsedDate: date.toISOString(),
+        currentTime: now.toISOString(),
+        diffMs,
+        diffHours: Math.floor(diffMs / (1000 * 60 * 60)),
+        diffMinutes: Math.floor(diffMs / (1000 * 60))
+      });
+    }
     
     // Handle future dates (shouldn't happen but just in case)
     if (diffMs < 0) return 'ভবিষ্যতে';
@@ -163,9 +175,47 @@ export const debugTimestamp = (timestamp: string | Date | number, label: string 
   console.group(`🕒 ${label} Debug`);
   console.log('Original:', timestamp);
   console.log('Type:', typeof timestamp);
-  console.log('Parsed Date:', new Date(timestamp as any));
-  console.log('Is Valid:', !isNaN(new Date(timestamp as any).getTime()));
-  console.log('Relative Time:', getRelativeTimeInBengali(timestamp));
+  
+  const parsedDate = new Date(timestamp as any);
+  const now = new Date();
+  const diffMs = now.getTime() - parsedDate.getTime();
+  
+  console.log('Parsed Date:', parsedDate);
+  console.log('Current Time:', now);
+  console.log('Is Valid:', !isNaN(parsedDate.getTime()));
+  console.log('Difference (ms):', diffMs);
+  console.log('Difference (minutes):', Math.floor(diffMs / (1000 * 60)));
+  console.log('Difference (hours):', Math.floor(diffMs / (1000 * 60 * 60)));
+  console.log('Relative Time Result:', getRelativeTimeInBengali(timestamp));
   console.log('Bengali Date:', formatBengaliDate(timestamp));
   console.groupEnd();
+};
+
+// Add a function to check if timestamp is in the future or has timezone issues
+export const checkTimestampIssue = (timestamp: string | Date | number): { 
+  issue: string | null, 
+  normalizedDate: Date,
+  timeDifference: number 
+} => {
+  const parsedDate = typeof timestamp === 'string' ? normalizeSupabaseTimestamp(timestamp) : new Date(timestamp as any);
+  const now = new Date();
+  const diffMs = now.getTime() - parsedDate.getTime();
+  
+  let issue = null;
+  
+  if (isNaN(parsedDate.getTime())) {
+    issue = 'Invalid date';
+  } else if (diffMs < 0) {
+    issue = 'Future date';
+  } else if (diffMs > 24 * 60 * 60 * 1000 * 365) {
+    issue = 'Date too old (>1 year)';
+  } else if (Math.abs(diffMs) < 1000) {
+    issue = 'Time difference too small';
+  }
+  
+  return {
+    issue,
+    normalizedDate: parsedDate,
+    timeDifference: diffMs
+  };
 };

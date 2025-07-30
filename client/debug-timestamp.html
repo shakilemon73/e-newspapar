@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timestamp Debug Tool</title>
+</head>
+<body>
+    <h1>Timestamp Debug Tool</h1>
+    <div id="results"></div>
+
+    <script>
+        // Test different timestamp scenarios
+        const now = new Date();
+        const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000);
+        const twentyOneHoursAgo = new Date(now.getTime() - 21 * 60 * 60 * 1000);
+
+        const results = document.getElementById('results');
+        
+        results.innerHTML = `
+            <h2>Current Analysis:</h2>
+            <p><strong>Current Time:</strong> ${now.toISOString()}</p>
+            <p><strong>30 Minutes Ago:</strong> ${thirtyMinutesAgo.toISOString()}</p>
+            <p><strong>21 Hours Ago:</strong> ${twentyOneHoursAgo.toISOString()}</p>
+            
+            <h3>The Problem:</h3>
+            <p>If your article shows "২১ ঘন্টা আগে" but was posted 30 minutes ago, it means:</p>
+            <ul>
+                <li>The database timestamp is: <strong>${twentyOneHoursAgo.toISOString()}</strong></li> 
+                <li>But it should be: <strong>${thirtyMinutesAgo.toISOString()}</strong></li>
+            </ul>
+            
+            <h3>Solution:</h3>
+            <p>We need to update the article's published_at timestamp in the database to the correct value.</p>
+        `;
+    </script>
+</body>
+</html>
