@@ -474,8 +474,24 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                 ))}
               </div>
 
+              {/* DESKTOP ACTION BUTTONS */}
+              <div className="hidden lg:flex justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+                <Button
+                  type="submit"
+                  disabled={saveMutation.isPending}
+                  className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
+                >
+                  {saveMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
+                  <span>প্রকাশ করুন</span>
+                </Button>
+              </div>
+
               {/* MOBILE-OPTIMIZED ACTION BUTTONS */}
-              <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 -mx-4">
+              <div className="lg:hidden sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 -mx-4">
                 <div className="flex items-center justify-between space-x-3">
                   {/* Previous Step */}
                   <Button

@@ -33,7 +33,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin-supabase-direct';
 import { createArticle, updateArticle, deleteArticle } from '@/lib/admin-crud-fixed';
-import { DateFormatter } from '@/components/DateFormatter';
+import { DateFormatter, formatDate } from '@/components/DateFormatter';
+import { getRelativeTimeInBengali, formatBengaliDate } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
@@ -228,6 +229,26 @@ export default function ArticlesAdminPage() {
   };
 
   const t = texts[currentLanguage];
+
+  // Date formatting function
+  const formatArticleDate = (dateString: string, language: 'bn' | 'en'): string => {
+    if (!dateString) return language === 'bn' ? 'অজানা তারিখ' : 'Unknown date';
+    
+    try {
+      if (language === 'bn') {
+        return formatBengaliDate(dateString);
+      } else {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+    } catch (error) {
+      return language === 'bn' ? 'অজানা তারিখ' : 'Unknown date';
+    }
+  };
 
   // Event handlers
   const handleCreateNew = () => {
@@ -514,8 +535,8 @@ export default function ArticlesAdminPage() {
                             </TableCell>
                             <TableCell>
                               <Badge 
-                                variant={article.is_published ? "success" : "secondary"}
-                                className={article.is_published ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                                variant="secondary"
+                                className={article.is_published ? "bg-green-100 text-green-800 border-green-200" : "bg-orange-100 text-orange-800 border-orange-200"}
                               >
                                 {article.is_published ? (
                                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -528,11 +549,9 @@ export default function ArticlesAdminPage() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                                <DateFormatter 
-                                  date={article.published_at} 
-                                  language={currentLanguage}
-                                  showTime={false}
-                                />
+                                <span className="text-sm">
+                                  {formatArticleDate(article.published_at || article.created_at, currentLanguage)}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>
