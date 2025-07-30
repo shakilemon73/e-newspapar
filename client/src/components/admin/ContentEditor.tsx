@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -23,179 +23,114 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Save, 
   Eye, 
   Clock, 
   Image as ImageIcon, 
-  Tag, 
-  Calendar,
-  TrendingUp,
-  Users,
-  Upload,
+  Settings,
   X,
   Check,
-  AlertCircle,
   FileText,
-  Settings,
-  Zap,
-  ChevronRight,
-  ChevronLeft,
   Loader2,
   PenTool,
   Smartphone,
+  Tablet,
   Monitor,
   Globe,
-  MapPin,
-  Camera,
   Type,
-  Layout,
-  Palette,
-  Target,
-  BarChart3,
-  MessageSquare,
-  Share2,
-  Bookmark,
-  PlayCircle,
-  Download,
-  Star,
-  Hash,
-  Quote,
-  Bold,
-  Italic,
-  Link,
-  List,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  Undo,
-  Redo,
-  Sparkles,
-  Moon,
-  Sun,
-  Tablet,
-  Minimize2,
-  Maximize2,
-  RotateCw,
-  Layers,
-  Contrast,
-  Volume2,
-  Headphones,
-  QrCode,
-  Share,
-  Heart,
-  MessageCircle,
-  Lightbulb,
-  Shield,
-  CheckCircle2,
   Wand2,
-  Sliders,
-  Filter,
+  RefreshCw,
   ArrowLeft,
   ArrowRight,
-  MoreHorizontal,
-  Plus,
-  Minus,
-  RefreshCw,
-  Trash2,
-  Copy,
-  Move,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-  Focus,
-  Newspaper,
-  FileImage,
-  Video,
-  Mic,
-  Archive
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
 import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 
+// FIXED: Comprehensive form schema with proper types
 const articleFormSchema = z.object({
-  // Basic Content
+  // Core content fields - required
   title: z.string().min(5, 'শিরোনাম অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(200, 'শিরোনাম ২০০ অক্ষরের বেশি হতে পারবে না'),
   slug: z.string().min(5, 'স্লাগ অবশ্যই ৫টি অক্ষরের বেশি হতে হবে').max(100, 'স্লাগ ১০০ অক্ষরের বেশি হতে পারবে না'),
   content: z.string().min(20, 'কন্টেন্ট অবশ্যই ২০টি অক্ষরের বেশি হতে হবে'),
-  excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').optional(),
-  summary: z.string().max(1000, 'সংক্ষিপ্ত বিবরণ ১০০০ অক্ষরের বেশি হতে পারবে না').optional(),
   
-  // Media & Visuals
-  image_url: z.string().url('অনুগ্রহ করে একটি বৈধ URL দিন').optional().or(z.literal('')),
+  // Optional content fields with defaults
+  excerpt: z.string().max(500, 'সারাংশ ৫০০ অক্ষরের বেশি হতে পারবে না').default(''),
+  summary: z.string().max(1000, 'সংক্ষিপ্ত বিবরণ ১০০০ অক্ষরের বেশি হতে পারবে না').default(''),
+  
+  // Media fields
+  image_url: z.string().default(''),
   image_metadata: z.object({
-    caption: z.string().optional(),
-    place: z.string().optional(),
-    date: z.string().optional(),
-    photographer: z.string().optional(),
-    id: z.string().optional()
-  }).optional(),
+    caption: z.string().default(''),
+    place: z.string().default(''),
+    date: z.string().default(''),
+    photographer: z.string().default(''),
+    id: z.string().default('')
+  }).default({
+    caption: '',
+    place: '',
+    date: '',
+    photographer: '',
+    id: ''
+  }),
   
-  // Multimedia Content
-  media_urls: z.array(z.string().url()).optional(),
-  video_urls: z.array(z.string().url()).optional(),
-  mixed_media: z.array(z.object({
-    type: z.enum(['image', 'video']),
-    url: z.string().url(),
-    thumbnail: z.string().url().optional(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    duration: z.string().optional()
-  })).optional(),
-  
-  // Publication Settings
+  // Publication settings
   category_id: z.coerce.number().min(1, 'অনুগ্রহ করে একটি বিভাগ নির্বাচন করুন'),
-  is_featured: z.boolean().optional().default(false),
-  is_breaking: z.boolean().optional().default(false),
-  is_urgent: z.boolean().optional().default(false),
-  published_at: z.string().optional(),
-  scheduled_publish_at: z.string().optional(),
+  is_featured: z.boolean().default(false),
+  is_breaking: z.boolean().default(false),
+  is_urgent: z.boolean().default(false),
+  published_at: z.string().default(new Date().toISOString().split('T')[0]),
   
-  // Author & Attribution
-  author: z.string().optional(),
+  // Author info
+  author: z.string().default(''),
   author_id: z.coerce.number().optional(),
   
-  // Tags & Classification
-  tags: z.array(z.string()).optional(),
-  custom_tags: z.string().optional(),
+  // SEO fields
+  meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').default(''),
+  meta_description: z.string().max(160, 'SEO বিবরণ ১৬০ অক্ষরের বেশি হতে পারবে না').default(''),
+  social_image: z.string().default(''),
   
-  // SEO & Social
-  meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').optional(),
-  meta_description: z.string().max(160, 'SEO বিবরণ ১৬০ অক্ষরের বেশি হতে পারবে না').optional(),
-  social_image: z.string().url().optional().or(z.literal('')),
+  // Feature toggles
+  enable_comments: z.boolean().default(true),
+  enable_sharing: z.boolean().default(true),
+  enable_audio: z.boolean().default(true),
+  enable_pdf: z.boolean().default(true),
+  enable_notifications: z.boolean().default(false),
+  enable_newsletter: z.boolean().default(false),
   
-  // Content Structure & Features
-  enable_comments: z.boolean().optional().default(true),
-  enable_sharing: z.boolean().optional().default(true),
-  enable_audio: z.boolean().optional().default(true),
-  enable_pdf: z.boolean().optional().default(true),
-  enable_notifications: z.boolean().optional().default(false),
-  enable_newsletter: z.boolean().optional().default(false),
+  // Status - required enum
+  status: z.enum(['draft', 'review', 'scheduled', 'published']).default('draft'),
   
-  // Analytics & Tracking
+  // Additional fields
+  tags: z.array(z.string()).default([]),
+  custom_tags: z.string().default(''),
+  content_warning: z.string().default(''),
+  priority_score: z.number().min(1).max(10).default(5),
+  track_reading_progress: z.boolean().default(true),
+  review_notes: z.string().default(''),
+  editor_notes: z.string().default(''),
+  scheduled_publish_at: z.string().default(''),
   reading_time_override: z.number().optional(),
-  priority_score: z.number().min(1).max(10).optional().default(5),
-  track_reading_progress: z.boolean().optional().default(true),
-  
-  // Advanced Settings
-  content_warning: z.string().optional(),
-  age_restriction: z.enum(['none', '13+', '16+', '18+']).optional().default('none'),
-  regional_restriction: z.array(z.string()).optional(),
-  
-  // Publication Workflow
-  status: z.enum(['draft', 'review', 'scheduled', 'published']).optional().default('draft'),
-  review_notes: z.string().optional(),
-  editor_notes: z.string().optional()
+  age_restriction: z.enum(['none', '13+', '16+', '18+']).default('none'),
+  regional_restriction: z.array(z.string()).default([]),
+  media_urls: z.array(z.string()).default([]),
+  video_urls: z.array(z.string()).default([]),
+  mixed_media: z.array(z.object({
+    type: z.enum(['image', 'video']),
+    url: z.string(),
+    thumbnail: z.string().default(''),
+    title: z.string().default(''),
+    description: z.string().default(''),
+    duration: z.string().default('')
+  })).default([])
 });
 
 type ArticleFormValues = z.infer<typeof articleFormSchema>;
@@ -207,94 +142,88 @@ interface ContentEditorProps {
   onCancel?: () => void;
 }
 
+// MOBILE-FIRST REDESIGNED CONTENT EDITOR
 export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditorProps) {
   const { toast } = useToast();
-  const [currentTab, setCurrentTab] = useState('content');
-  const [imagePreview, setImagePreview] = useState(article?.imageUrl || '');
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isCompactMode, setIsCompactMode] = useState(true); // Mobile-first compact mode
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
-  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
-  const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
 
-  // World-class content organization tabs - based on top 50 websites research
-  const editorTabs = [
-    { 
-      id: 'content', 
-      label: 'কন্টেন্ট', 
-      icon: PenTool,
-      description: 'মূল নিবন্ধ লেখা ও সম্পাদনা',
-      color: 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800',
-      iconColor: 'text-emerald-600 dark:text-emerald-400'
+  // MOBILE-OPTIMIZED STEP-BY-STEP APPROACH
+  const editorSteps = [
+    {
+      id: 'basic',
+      title: 'মূল তথ্য',
+      description: 'শিরোনাম ও বিষয়বস্তু',
+      icon: FileText,
+      color: 'emerald'
     },
-    { 
-      id: 'media', 
-      label: 'মিডিয়া', 
+    {
+      id: 'media',
+      title: 'ছবি ও মিডিয়া',
+      description: 'ফিচার ইমেজ যোগ করুন',
       icon: ImageIcon,
-      description: 'ছবি ও মাল্টিমিডিয়া সংযুক্তি',
-      color: 'bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800',
-      iconColor: 'text-blue-600 dark:text-blue-400'
+      color: 'blue'
     },
-    { 
-      id: 'seo', 
-      label: 'SEO ও সামাজিক', 
-      icon: Globe,
-      description: 'অনুসন্ধান ও সামাজিক অপটিমাইজেশন',
-      color: 'bg-purple-50 dark:bg-purple-950 border-purple-200 dark:border-purple-800',
-      iconColor: 'text-purple-600 dark:text-purple-400'
-    },
-    { 
-      id: 'settings', 
-      label: 'সেটিংস', 
+    {
+      id: 'settings',
+      title: 'সেটিংস',
+      description: 'বিভাগ ও প্রকাশনা',
       icon: Settings,
-      description: 'প্রকাশনা ও বিভাগীয় নিয়ন্ত্রণ',
-      color: 'bg-orange-50 dark:bg-orange-950 border-orange-200 dark:border-orange-800',
-      iconColor: 'text-orange-600 dark:text-orange-400'
+      color: 'orange'
     },
-    { 
-      id: 'preview', 
-      label: 'প্রিভিউ', 
+    {
+      id: 'seo',
+      title: 'SEO',
+      description: 'অনুসন্ধান অপটিমাইজেশন',
+      icon: Globe,
+      color: 'purple'
+    },
+    {
+      id: 'preview',
+      title: 'প্রিভিউ',
+      description: 'চূড়ান্ত পূর্বরূপ',
       icon: Eye,
-      description: 'চূড়ান্ত পূর্বরূপ দেখুন',
-      color: 'bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800',
-      iconColor: 'text-indigo-600 dark:text-indigo-400'
+      color: 'indigo'
     }
   ];
 
-  // AI Integration for content assistance
-  const generateAISuggestions = async (title: string, content: string) => {
-    setIsGeneratingAI(true);
-    try {
-      // AI suggestions for SEO, tags, and content optimization
-      const suggestions = {
-        meta_title: title.substring(0, 60) + '...',
-        meta_description: content.substring(0, 150) + '...',
-        tags: ['সংবাদ', 'বাংলাদেশ'],
-        reading_time: Math.ceil(content.split(' ').length / 200),
-        seo_score: Math.random() * 40 + 60, // Simulate SEO score
-        improvements: [
-          'শিরোনামে আরো কিওয়ার্ড যোগ করুন',
-          'প্রথম অনুচ্ছেদে মূল বিষয় উল্লেখ করুন',
-          'ছবির alt text যোগ করুন'
-        ]
-      };
-      setAiSuggestions(suggestions);
-    } catch (error) {
-      console.error('AI suggestions error:', error);
-    } finally {
-      setIsGeneratingAI(false);
-    }
-  };
+  // Categories query
+  const { data: categories } = useQuery({
+    queryKey: ['/api/admin/categories'],
+    queryFn: getAdminCategories,
+  });
 
-  // Word count and reading time calculation
-  const updateContentStats = (content: string) => {
+  // PERFORMANCE: Debounced auto-save
+  const debouncedAutoSave = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (data: ArticleFormValues) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (mode === 'edit' && article?.id) {
+            setIsAutoSaving(true);
+            // Auto-save logic here
+            setTimeout(() => setIsAutoSaving(false), 1000);
+          }
+        }, 2000);
+      };
+    })(),
+    [mode, article?.id]
+  );
+
+  // PERFORMANCE: Memoized word count calculation
+  const updateContentStats = useCallback((content: string) => {
     const words = content.split(/\s+/).filter(word => word.length > 0).length;
     setWordCount(words);
     setReadingTime(Math.ceil(words / 200)); // 200 words per minute for Bengali
-  };
+  }, []);
 
+  // OPTIMIZED: Form with proper TypeScript types
   const form = useForm<ArticleFormValues>({
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
@@ -345,84 +274,39 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     },
   });
 
-  // Auto-save functionality with content stats update
+  // Watch form changes for auto-save and analytics
   useEffect(() => {
-    const subscription = form.watch((values) => {
-      if (values.content) {
-        updateContentStats(values.content);
+    const subscription = form.watch((data) => {
+      if (data.content) {
+        updateContentStats(data.content);
       }
-      
-      if (mode === 'create' && (values.title || values.content)) {
-        setIsAutoSaving(true);
-        const timeout = setTimeout(() => {
-          setIsAutoSaving(false);
-        }, 1000);
-        return () => clearTimeout(timeout);
+      if (mode === 'edit') {
+        debouncedAutoSave(data as ArticleFormValues);
       }
     });
     return () => subscription.unsubscribe();
-  }, [mode]);
+  }, [form.watch, updateContentStats, debouncedAutoSave, mode]);
 
-  // Generate AI suggestions when title and content change
-  useEffect(() => {
-    const subscription = form.watch((values) => {
-      if (values.title && values.content && values.content.length > 100) {
-        generateAISuggestions(values.title, values.content);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  // Fetch categories using direct Supabase API
-  const { data: categories } = useQuery({
-    queryKey: ['admin-categories'],
-    queryFn: () => getAdminCategories(),
-  });
-
-  // Create/Update mutations using direct Supabase API
+  // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: ArticleFormValues) => {
-      const payload = {
-        title: data.title,
-        content: data.content,
-        excerpt: data.excerpt,
-        category_id: data.category_id,
-        image_url: data.image_url,
-        is_featured: data.is_featured,
-        is_published: true,
-        slug: data.slug,
-        published_at: data.published_at ? new Date(data.published_at).toISOString() : new Date().toISOString(),
-        author: data.author,
-        meta_title: data.meta_title,
-        meta_description: data.meta_description,
-        image_metadata: data.image_metadata
-      };
-      
-      try {
-        let result;
-        if (mode === 'create') {
-          result = await createArticle(payload);
-        } else {
-          result = await updateArticle(article.id, payload);
-        }
-        return result;
-      } catch (error) {
-        throw new Error(error instanceof Error ? error.message : 'Failed to save article');
+      if (mode === 'create') {
+        return createArticle(data);
+      } else {
+        return updateArticle(article.id, data);
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast({
-        title: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
-        description: `"${data.title}" সফলভাবে ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে।`,
+        title: '✅ সফল',
+        description: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
       });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/articles'] });
       onSave?.();
-      form.reset();
-      setImagePreview('');
-      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
     },
     onError: (error: Error) => {
       toast({
-        title: 'ত্রুটি',
+        title: '❌ ত্রুটি',
         description: error.message || `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} করতে ব্যর্থ`,
         variant: 'destructive',
       });
@@ -441,9 +325,11 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
   };
 
   const handleImageUrlChange = (url: string) => {
-    setImagePreview(url);
     form.setValue('image_url', url);
   };
+
+  const currentStepData = editorSteps[currentStep];
+  const progressPercentage = ((currentStep + 1) / editorSteps.length) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-gray-800">
@@ -530,787 +416,523 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                     </Button>
                   ))}
                 </div>
-                
-                {/* Quick Actions - Modern Design */}
-                <div className="flex items-center space-x-2">
-                  {/* AI Assistant Button */}
-                  {aiSuggestions && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => generateAISuggestions(form.getValues('title'), form.getValues('content'))}
-                      disabled={isGeneratingAI}
-                      className="hidden sm:flex items-center space-x-2 h-9 px-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/50 dark:hover:to-indigo-900/50"
-                    >
-                      {isGeneratingAI ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
-                      ) : (
-                        <Wand2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                      )}
-                      <span className="text-purple-700 dark:text-purple-300 font-medium">AI সাহায্য</span>
-                    </Button>
-                  )}
-                  
-                  {/* Preview Toggle */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPreview(!showPreview)}
-                    className="hidden md:flex items-center space-x-2 h-9 px-4"
-                  >
-                    <Eye className="h-4 w-4" />
-                    <span>প্রিভিউ</span>
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Main Content Area - World-Class Tabs Design */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* MOBILE-FIRST CONTENT AREA */}
+        <div className="max-w-4xl mx-auto p-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               
-              {/* Enhanced Tab Navigation - Modern Design */}
-              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="border-b border-gray-200 dark:border-gray-700">
-                  <nav className="flex space-x-1 p-2" aria-label="Tabs">
-                    {editorTabs.map((tab) => {
-                      const Icon = tab.icon;
-                      const isActive = currentTab === tab.id;
-                      return (
-                        <button
-                          key={tab.id}
-                          type="button"
-                          onClick={() => setCurrentTab(tab.id)}
-                          className={`group relative flex items-center space-x-3 px-6 py-4 text-sm font-medium rounded-xl transition-all duration-200 hover:scale-105 ${
-                            isActive
-                              ? `${tab.color} ${tab.iconColor} shadow-sm ring-1 ring-gray-200 dark:ring-gray-700`
-                              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
-                          }`}
-                          aria-current={isActive ? 'page' : undefined}
-                        >
-                          <div className={`p-2 rounded-lg transition-colors ${
-                            isActive 
-                              ? 'bg-white dark:bg-gray-800 shadow-sm' 
-                              : 'bg-gray-100 dark:bg-gray-700 group-hover:bg-gray-200 dark:group-hover:bg-gray-600'
-                          }`}>
-                            <Icon className={`h-4 w-4 ${isActive ? tab.iconColor : 'text-gray-500 dark:text-gray-400'}`} />
-                          </div>
-                          <div className="flex flex-col items-start">
-                            <span className={`font-semibold ${isActive ? 'text-gray-900 dark:text-white' : ''}`}>
-                              {tab.label}
-                            </span>
-                            <span className={`text-xs ${isActive ? 'text-gray-600 dark:text-gray-300' : 'text-gray-500 dark:text-gray-400'}`}>
-                              {tab.description}
-                            </span>
-                          </div>
-                          {isActive && (
-                            <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-emerald-500 to-blue-500"></div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </nav>
-                </div>
-                
-                {/* Tab Content Area - World-Class Content Forms */}
-                <div className="p-8 space-y-8">
-                  {/* Content Tab - Mobile-First Design with Bengali Typography */}
-                  {currentTab === 'content' && (
-                    <div className="space-y-8">
-                      {/* Title & Basic Info Card */}
-                      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl p-8 border border-emerald-200 dark:border-emerald-800">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-emerald-100 dark:bg-emerald-900/50 rounded-xl">
-                            <Type className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-100">শিরোনাম ও মূল তথ্য</h3>
-                            <p className="text-sm text-emerald-700 dark:text-emerald-300">আকর্ষণীয় শিরোনাম ও বিবরণ যোগ করুন</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-6">
-                          {/* Title Field - Enhanced for Bengali */}
-                          <FormField
-                            control={form.control}
-                            name="title"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
-                                  <span>শিরোনাম</span>
-                                  <span className="text-red-500">*</span>
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="আকর্ষণীয় ও তথ্যবহুল শিরোনাম লিখুন..."
-                                    className="text-xl h-16 bg-white dark:bg-gray-800 border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 dark:focus:border-emerald-400 rounded-xl shadow-sm font-medium"
-                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
-                                    onChange={(e) => {
-                                      field.onChange(e);
-                                      if (!form.getValues('slug')) {
-                                        form.setValue('slug', generateSlug(e.target.value));
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-emerald-600 dark:text-emerald-400">
-                                  SEO অপ্টিমাইজেশনের জন্য ৫০-৬০ অক্ষরের মধ্যে রাখুন
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* URL Slug Field */}
-                          <FormField
-                            control={form.control}
-                            name="slug"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">URL স্লাগ</FormLabel>
-                                <FormControl>
-                                  <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                      <span className="text-gray-500 dark:text-gray-400 text-sm">/article/</span>
-                                    </div>
-                                    <Input 
-                                      {...field} 
-                                      placeholder="url-friendly-slug"
-                                      className="pl-20 h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
-                                    />
-                                  </div>
-                                </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400">
-                                  ইংরেজি অক্ষর, সংখ্যা এবং হাইফেন ব্যবহার করুন
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {/* Excerpt Field */}
-                          <FormField
-                            control={form.control}
-                            name="excerpt"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">সংক্ষিপ্ত বিবরণ</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    {...field}
-                                    placeholder="নিবন্ধের একটি আকর্ষণীয় সংক্ষিপ্ত বিবরণ লিখুন যা পাঠকদের সম্পূর্ণ নিবন্ধ পড়তে উৎসাহিত করবে..."
-                                    className="min-h-[120px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl resize-none"
-                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400">
-                                  সামাজিক মিডিয়া ও অনুসন্ধান ফলাফলে দেখানো হবে
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Summary Field */}
-                          <FormField
-                            control={form.control}
-                            name="summary"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">AI সংক্ষিপ্ত বিবরণ</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    {...field}
-                                    placeholder="AI দ্বারা তৈরি বিস্তারিত সংক্ষিপ্ত বিবরণ (ঐচ্ছিক)..."
-                                    className="min-h-[100px] bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl resize-none"
-                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400">
-                                  নিবন্ধ বিশ্লেষণ বিভাগে দেখানো হবে
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {/* Custom Tags Field */}
-                          <FormField
-                            control={form.control}
-                            name="custom_tags"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">কাস্টম ট্যাগ</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="ট্যাগ1, ট্যাগ2, ট্যাগ3... (কমা দিয়ে আলাদা করুন)"
-                                    className="h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
-                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-gray-600 dark:text-gray-400">
-                                  নিবন্ধের সাথে প্রাসঙ্গিক কীওয়ার্ড যোগ করুন
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Content Editor Card */}
-                      <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-700 shadow-lg">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
-                            <PenTool className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">মূল নিবন্ধ</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">আপনার গল্প বিস্তারিতভাবে লিখুন</p>
-                          </div>
-                        </div>
-                        
-                        <FormField
-                          control={form.control}
-                          name="content"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Textarea
-                                  {...field}
-                                  placeholder="এখানে আপনার নিবন্ধের মূল বিষয়বস্তু লিখুন। 
-
-আপনি যেকোনো তথ্য, মতামত, গল্প বা বিশ্লেষণ যোগ করতে পারেন। পাঠকদের জন্য সহজবোধ্য ও আকর্ষণীয় ভাষা ব্যবহার করুন।
-
-অনুচ্ছেদ আলাদা করতে দুইবার এন্টার চাপুন।"
-                                  className="min-h-[500px] text-lg leading-relaxed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl resize-none"
-                                  style={{ 
-                                    fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif',
-                                    lineHeight: '1.8'
-                                  }}
-                                />
-                              </FormControl>
-                              <FormDescription className="flex items-center justify-between text-gray-600 dark:text-gray-400 mt-3">
-                                <span>বাংলা বা ইংরেজি উভয় ভাষায় লিখতে পারেন</span>
-                                <div className="flex items-center space-x-4 text-sm">
-                                  <span className="flex items-center space-x-1">
-                                    <Type className="h-4 w-4" />
-                                    <span>{wordCount} শব্দ</span>
-                                  </span>
-                                  <span className="flex items-center space-x-1">
-                                    <Clock className="h-4 w-4" />
-                                    <span>{readingTime} মিনিট</span>
-                                  </span>
-                                </div>
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Media Tab - Professional Image Management */}
-                  {currentTab === 'media' && (
-                    <div className="space-y-8">
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-blue-100 dark:bg-blue-900/50 rounded-xl">
-                            <ImageIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">মূল ছবি ও মিডিয়া</h3>
-                            <p className="text-sm text-blue-700 dark:text-blue-300">নিবন্ধের জন্য আকর্ষণীয় ছবি যোগ করুন</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-6">
-                          <FormField
-                            control={form.control}
-                            name="image_url"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">ফিচার ইমেজ</FormLabel>
-                                <FormControl>
-                                  <FileUploadField
-                                    value={field.value}
-                                    onChange={handleImageUrlChange}
-                                    preview={imagePreview}
-                                    className="h-64 border-2 border-dashed border-blue-300 dark:border-blue-700 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-blue-600 dark:text-blue-400">
-                                  JPG, PNG বা WebP ফরম্যাট, সর্বোচ্চ 5MB। ১২০০x৬৭৫ পিক্সেল সুপারিশ।
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* SEO Tab - Advanced Optimization */}
-                  {currentTab === 'seo' && (
-                    <div className="space-y-8">
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-2xl p-8 border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-purple-100 dark:bg-purple-900/50 rounded-xl">
-                            <Globe className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-purple-900 dark:text-purple-100">SEO ও সামাজিক অপটিমাইজেশন</h3>
-                            <p className="text-sm text-purple-700 dark:text-purple-300">অনুসন্ধান ও সামাজিক মিডিয়ার জন্য অপ্টিমাইজ করুন</p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-6">
-                          <FormField
-                            control={form.control}
-                            name="meta_title"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Title</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="SEO অপ্টিমাইজড শিরোনাম (৫০-৬০ অক্ষর)"
-                                    className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-purple-600 dark:text-purple-400">
-                                  Google এর অনুসন্ধান ফলাফলে দেখানো হবে
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="meta_description"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Description</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                    {...field}
-                                    placeholder="নিবন্ধের সংক্ষিপ্ত বিবরণ যা অনুসন্ধান ফলাফলে দেখানো হবে (১৫০-১৬০ অক্ষর)"
-                                    className="min-h-[100px] bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl resize-none"
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-purple-600 dark:text-purple-400">
-                                  সামাজিক মিডিয়া শেয়ারিংয়েও ব্যবহৃত হবে
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="social_image"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">সামাজিক মিডিয়া ছবি</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="https://example.com/social-image.jpg"
-                                    className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-purple-600 dark:text-purple-400">
-                                  Facebook, Twitter এ শেয়ারের জন্য আলাদা ছবি (1200x630px)
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="content_warning"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">কন্টেন্ট সতর্কতা</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    placeholder="সংবেদনশীল বিষয়বস্তুর জন্য সতর্কতা (ঐচ্ছিক)"
-                                    className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
-                                    style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-purple-600 dark:text-purple-400">
-                                  নিবন্ধ পড়ার আগে পাঠকদের সতর্ক করবে
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Settings Tab - Publication Controls */}
-                  {currentTab === 'settings' && (
-                    <div className="space-y-8">
-                      <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 rounded-2xl p-8 border border-orange-200 dark:border-orange-800">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-orange-100 dark:bg-orange-900/50 rounded-xl">
-                            <Settings className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-orange-900 dark:text-orange-100">প্রকাশনা সেটিংস</h3>
-                            <p className="text-sm text-orange-700 dark:text-orange-300">বিভাগ ও প্রকাশনার নিয়ন্ত্রণ</p>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField
-                            control={form.control}
-                            name="category_id"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">বিভাগ</FormLabel>
-                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                                  <FormControl>
-                                    <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl">
-                                      <SelectValue placeholder="একটি বিভাগ নির্বাচন করুন" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {categories?.map((category) => (
-                                      <SelectItem key={category.id} value={category.id.toString()}>
-                                        {category.name}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="author"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">লেখক</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="লেখকের নাম"
-                                    className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="published_at"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">প্রকাশের তারিখ</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="date" 
-                                    {...field}
-                                    className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form.control}
-                            name="scheduled_publish_at"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">নির্ধারিত প্রকাশনা</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="datetime-local" 
-                                    {...field}
-                                    className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormDescription className="text-orange-600 dark:text-orange-400">
-                                  ভবিষ্যতের তারিখ ও সময় নির্ধারণ করুন
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="priority_score"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium text-gray-900 dark:text-white">গুরুত্ব স্কোর (১-১০)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    min="1" 
-                                    max="10" 
-                                    {...field} 
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                    className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        {/* Feature Toggles - Modern Switch Design */}
-                        <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">ফিচার নিয়ন্ত্রণ</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <FormField
-                              control={form.control}
-                              name="is_featured"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ফিচার করুন</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">হোমপেজে প্রাধান্য দিন</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="enable_comments"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">মন্তব্য সক্রিয়</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">পাঠক মন্তব্য করতে পারবেন</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="enable_sharing"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">শেয়ারিং সক্রিয়</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">সামাজিক মিডিয়ায় শেয়ার</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="enable_audio"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">অডিও সক্রিয়</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">টেক্সট-টু-স্পিচ ফিচার</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="is_breaking"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ব্রেকিং নিউজ</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">জরুরি সংবাদ হিসেবে চিহ্নিত</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="is_urgent"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">জরুরি সংবাদ</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">উচ্চ অগ্রাধিকার প্রদান</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-
-                            <FormField
-                              control={form.control}
-                              name="enable_notifications"
-                              render={({ field }) => (
-                                <FormItem className="flex items-center justify-between space-y-0">
-                                  <div>
-                                    <FormLabel className="text-base font-medium text-gray-900 dark:text-white">পুশ নোটিফিকেশন</FormLabel>
-                                    <FormDescription className="text-gray-600 dark:text-gray-400">প্রকাশের সময় নোটিফিকেশন পাঠান</FormDescription>
-                                  </div>
-                                  <FormControl>
-                                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Preview Tab */}
-                  {currentTab === 'preview' && (
-                    <div className="space-y-8">
-                      <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 rounded-2xl p-8 border border-indigo-200 dark:border-indigo-800">
-                        <div className="flex items-center space-x-3 mb-6">
-                          <div className="p-3 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl">
-                            <Eye className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-100">লাইভ প্রিভিউ</h3>
-                            <p className="text-sm text-indigo-700 dark:text-indigo-300">পাঠকরা কীভাবে দেখবেন তা দেখুন</p>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-white dark:bg-gray-900 rounded-xl p-8 border border-gray-200 dark:border-gray-700 shadow-sm">
-                          <div className="prose prose-lg max-w-none dark:prose-invert">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                              {form.watch('title') || 'নিবন্ধের শিরোনাম'}
-                            </h1>
-                            
-                            {form.watch('image_url') && (
-                              <img 
-                                src={form.watch('image_url')} 
-                                alt={form.watch('title')} 
-                                className="w-full h-64 object-cover rounded-lg mb-6"
-                              />
-                            )}
-                            
-                            <div className="text-gray-600 dark:text-gray-400 mb-6">
-                              {form.watch('excerpt') || 'নিবন্ধের সংক্ষিপ্ত বিবরণ এখানে দেখানো হবে।'}
-                            </div>
-                            
-                            <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
-                              {form.watch('content') || 'নিবন্ধের মূল বিষয়বস্তু এখানে দেখানো হবে।'}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* World-Class Action Bar - Fixed Bottom */}
-              <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-6 shadow-lg">
-                <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
-                  <div className="flex items-center space-x-4">
-                    {/* AI Assistant */}
-                    {aiSuggestions && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => generateAISuggestions(form.getValues('title'), form.getValues('content'))}
-                        disabled={isGeneratingAI}
-                        className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border-purple-200 dark:border-purple-700 hover:from-purple-100 hover:to-indigo-100 dark:hover:from-purple-900/50 dark:hover:to-indigo-900/50"
-                      >
-                        {isGeneratingAI ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-purple-600 dark:text-purple-400" />
-                        ) : (
-                          <Wand2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                        )}
-                        <span className="text-purple-700 dark:text-purple-300 font-medium">AI সাহায্য</span>
-                      </Button>
-                    )}
-                    
-                    {/* Cancel Button */}
+              {/* MOBILE: Step Navigation */}
+              <div className="flex overflow-x-auto pb-2 space-x-2 lg:hidden">
+                {editorSteps.map((step, index) => {
+                  const Icon = step.icon;
+                  const isActive = currentStep === index;
+                  const isCompleted = index < currentStep;
+                  
+                  return (
                     <Button
+                      key={step.id}
                       type="button"
-                      variant="ghost"
-                      onClick={onCancel}
-                      className="flex items-center space-x-2"
+                      variant={isActive ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCurrentStep(index)}
+                      className={`flex-shrink-0 min-w-fit h-12 px-4 ${
+                        isActive 
+                          ? `bg-${step.color}-500 hover:bg-${step.color}-600 text-white` 
+                          : isCompleted 
+                            ? `border-${step.color}-300 text-${step.color}-700 dark:text-${step.color}-300`
+                            : ''
+                      }`}
                     >
-                      <X className="h-4 w-4" />
-                      <span>বাতিল</span>
+                      <div className="flex items-center space-x-2">
+                        <Icon className="h-4 w-4" />
+                        <div className="text-left">
+                          <div className="text-sm font-medium">{step.title}</div>
+                          <div className="text-xs opacity-75">{step.description}</div>
+                        </div>
+                      </div>
                     </Button>
+                  );
+                })}
+              </div>
+
+              {/* MOBILE: Current Step Content */}
+              <div className="lg:hidden">
+                {renderStepContent()}
+              </div>
+
+              {/* MOBILE-OPTIMIZED ACTION BUTTONS */}
+              <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4 -mx-4">
+                <div className="flex items-center justify-between space-x-3">
+                  {/* Previous Step */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                    disabled={currentStep === 0}
+                    className="flex items-center space-x-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">পূর্ববর্তী</span>
+                  </Button>
+                  
+                  {/* Step indicator */}
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {currentStepData.title}
                   </div>
                   
-                  <div className="flex items-center space-x-3">
-                    {/* Save Draft */}
+                  {/* Next Step / Save */}
+                  {currentStep < editorSteps.length - 1 ? (
                     <Button
                       type="button"
-                      variant="outline"
-                      onClick={() => form.handleSubmit(onSubmit)()}
-                      disabled={saveMutation.isPending}
-                      className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => setCurrentStep(currentStep + 1)}
+                      className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
                     >
-                      <Save className="h-4 w-4" />
-                      <span>খসড়া সংরক্ষণ</span>
+                      <span className="hidden sm:inline">পরবর্তী</span>
+                      <ArrowRight className="h-4 w-4" />
                     </Button>
-                    
-                    {/* Publish Button - Primary Action */}
+                  ) : (
                     <Button
                       type="submit"
-                      onClick={() => form.handleSubmit(onSubmit)()}
                       disabled={saveMutation.isPending}
-                      className="flex items-center space-x-2 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                      className="flex items-center space-x-2 bg-emerald-500 hover:bg-emerald-600"
                     >
                       {saveMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Check className="h-4 w-4" />
                       )}
-                      <span className="font-semibold">প্রকাশ করুন</span>
+                      <span>প্রকাশ করুন</span>
                     </Button>
-                  </div>
+                  )}
                 </div>
               </div>
             </form>
           </Form>
         </div>
-    </div>
-  );
+      </div>
+    );
+
+    // STEP CONTENT RENDERER
+    function renderStepContent() {
+      const step = editorSteps[currentStep];
+      
+      switch (step.id) {
+        case 'basic':
+          return (
+            <Card className="border-emerald-200 dark:border-emerald-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-emerald-900 dark:text-emerald-100">
+                  <FileText className="h-5 w-5" />
+                  <span>মূল তথ্য</span>
+                </CardTitle>
+                <CardDescription>নিবন্ধের শিরোনাম ও বিষয়বস্তু যোগ করুন</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Title Field */}
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                        <span>শিরোনাম</span>
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="আকর্ষণীয় ও তথ্যবহুল শিরোনাম লিখুন..."
+                          className="text-xl h-16 bg-white dark:bg-gray-800 border-emerald-300 dark:border-emerald-700 focus:border-emerald-500 dark:focus:border-emerald-400 rounded-xl shadow-sm font-medium"
+                          style={{ fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif' }}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            if (!form.getValues('slug')) {
+                              form.setValue('slug', generateSlug(e.target.value));
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-emerald-600 dark:text-emerald-400">
+                        SEO অপ্টিমাইজেশনের জন্য ৫০-৬০ অক্ষরের মধ্যে রাখুন
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* URL Slug Field */}
+                <FormField
+                  control={form.control}
+                  name="slug"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">URL স্লাগ</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span className="text-gray-500 dark:text-gray-400 text-sm">/article/</span>
+                          </div>
+                          <Input 
+                            {...field} 
+                            placeholder="url-friendly-slug"
+                            className="pl-20 h-12 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
+                          />
+                        </div>
+                      </FormControl>
+                      <FormDescription className="text-gray-600 dark:text-gray-400">
+                        ইংরেজি অক্ষর, সংখ্যা এবং হাইফেন ব্যবহার করুন
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Content Field */}
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                        <span>মূল বিষয়বস্তু</span>
+                        <span className="text-red-500">*</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="এখানে আপনার নিবন্ধের মূল বিষয়বস্তু লিখুন..."
+                          className="min-h-[400px] text-lg leading-relaxed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl resize-none"
+                          style={{ 
+                            fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif',
+                            lineHeight: '1.8'
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription className="flex items-center justify-between text-gray-600 dark:text-gray-400 mt-3">
+                        <span>বাংলা বা ইংরেজি উভয় ভাষায় লিখতে পারেন</span>
+                        <div className="flex items-center space-x-4 text-sm">
+                          <span className="flex items-center space-x-1">
+                            <Type className="h-4 w-4" />
+                            <span>{wordCount} শব্দ</span>
+                          </span>
+                          <span className="flex items-center space-x-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{readingTime} মিনিট</span>
+                          </span>
+                        </div>
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          );
+        
+        case 'media':
+          return (
+            <Card className="border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-blue-900 dark:text-blue-100">
+                  <ImageIcon className="h-5 w-5" />
+                  <span>ছবি ও মিডিয়া</span>
+                </CardTitle>
+                <CardDescription>নিবন্ধের জন্য আকর্ষণীয় ছবি যোগ করুন</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="image_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">ফিচার ইমেজ</FormLabel>
+                      <FormControl>
+                        <FileUploadField
+                          label=""
+                          value={field.value}
+                          onChange={handleImageUrlChange}
+                          description="JPG, PNG বা WebP ফরম্যাট, সর্বোচ্চ 5MB। ১২০০x৬৭৫ পিক্সেল সুপারিশ।"
+                          accept="image/*"
+                          maxSize="5MB"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {/* Image Metadata */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="image_metadata.caption"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ছবির ক্যাপশন</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="ছবির বিবরণ..." />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="image_metadata.photographer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ফটোগ্রাফার</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="ফটোগ্রাফারের নাম..." />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          );
+        
+        case 'settings':
+          return (
+            <Card className="border-orange-200 dark:border-orange-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-orange-900 dark:text-orange-100">
+                  <Settings className="h-5 w-5" />
+                  <span>প্রকাশনা সেটিংস</span>
+                </CardTitle>
+                <CardDescription>বিভাগ ও প্রকাশনার নিয়ন্ত্রণ</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="category_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">বিভাগ *</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl">
+                              <SelectValue placeholder="একটি বিভাগ নির্বাচন করুন" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories?.map((category) => (
+                              <SelectItem key={category.id} value={category.id.toString()}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="author"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">লেখক</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            placeholder="লেখকের নাম"
+                            className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="published_at"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">প্রকাশের তারিখ</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field}
+                            className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">অবস্থা</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl">
+                              <SelectValue placeholder="অবস্থা নির্বাচন করুন" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="draft">খসড়া</SelectItem>
+                            <SelectItem value="review">পর্যালোচনা</SelectItem>
+                            <SelectItem value="scheduled">নির্ধারিত</SelectItem>
+                            <SelectItem value="published">প্রকাশিত</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {/* Feature toggles */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900 dark:text-white">বিশেষ বৈশিষ্ট্য</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="is_featured"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between space-y-0">
+                          <div>
+                            <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ফিচার নিবন্ধ</FormLabel>
+                            <FormDescription className="text-gray-600 dark:text-gray-400">হোমপেজে তুলে ধরুন</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="is_breaking"
+                      render={({ field }) => (
+                        <FormItem className="flex items-center justify-between space-y-0">
+                          <div>
+                            <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ব্রেকিং নিউজ</FormLabel>
+                            <FormDescription className="text-gray-600 dark:text-gray-400">জরুরি সংবাদ হিসেবে চিহ্নিত করুন</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        
+        case 'seo':
+          return (
+            <Card className="border-purple-200 dark:border-purple-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-purple-900 dark:text-purple-100">
+                  <Globe className="h-5 w-5" />
+                  <span>SEO ও সামাজিক অপটিমাইজেশন</span>
+                </CardTitle>
+                <CardDescription>অনুসন্ধান ও সামাজিক মিডিয়ার জন্য অপ্টিমাইজ করুন</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="meta_title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="SEO অপ্টিমাইজড শিরোনাম (৫০-৬০ অক্ষর)"
+                          className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-purple-600 dark:text-purple-400">
+                        Google এর অনুসন্ধান ফলাফলে দেখানো হবে
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="meta_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="নিবন্ধের সংক্ষিপ্ত বিবরণ যা অনুসন্ধান ফলাফলে দেখানো হবে (১৫০-১৬০ অক্ষর)"
+                          className="min-h-[100px] bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl resize-none"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-purple-600 dark:text-purple-400">
+                        সামাজিক মিডিয়া শেয়ারিংয়েও ব্যবহৃত হবে
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          );
+        
+        case 'preview':
+          return (
+            <Card className="border-indigo-200 dark:border-indigo-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-indigo-900 dark:text-indigo-100">
+                  <Eye className="h-5 w-5" />
+                  <span>লাইভ প্রিভিউ</span>
+                </CardTitle>
+                <CardDescription>পাঠকরা কীভাবে দেখবেন তা দেখুন</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-white dark:bg-gray-900 rounded-xl p-8 border border-gray-200 dark:border-gray-700 shadow-sm">
+                  <div className="prose prose-lg max-w-none dark:prose-invert">
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                      {form.watch('title') || 'নিবন্ধের শিরোনাম'}
+                    </h1>
+                    
+                    {form.watch('image_url') && (
+                      <img 
+                        src={form.watch('image_url')} 
+                        alt={form.watch('title')} 
+                        className="w-full h-64 object-cover rounded-lg mb-6"
+                      />
+                    )}
+                    
+                    <div className="text-gray-600 dark:text-gray-400 mb-6">
+                      {form.watch('excerpt') || 'নিবন্ধের সংক্ষিপ্ত বিবরণ এখানে দেখানো হবে।'}
+                    </div>
+                    
+                    <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
+                      {form.watch('content') || 'নিবন্ধের মূল বিষয়বস্তু এখানে দেখানো হবে।'}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        
+        default:
+          return null;
+      }
+    }
 }
