@@ -256,7 +256,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       track_reading_progress: article?.track_reading_progress ?? true,
       content_warning: article?.content_warning || '',
       regional_restriction: article?.regional_restriction || [],
-      status: article?.status || 'draft',
+      status: article?.status || 'published',
       review_notes: article?.review_notes || '',
       editor_notes: article?.editor_notes || '',
       media_urls: article?.media_urls || [],

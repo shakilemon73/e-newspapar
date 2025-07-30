@@ -73,11 +73,15 @@ interface Article {
   category_id: number;
   is_featured: boolean;
   status?: string; // 'draft', 'published', 'review', 'scheduled'
-  is_published?: boolean; // Calculated from status
+  is_published?: boolean; // Boolean flag for compatibility
   view_count: number;
   published_at: string;
   created_at: string;
   updated_at: string;
+  ai_processed?: boolean;
+  ai_processed_at?: string;
+  image_metadata?: any;
+  author_id?: number;
   categories?: {
     id: number;
     name: string;
@@ -549,6 +553,10 @@ export default function ArticlesAdminPage() {
                                   <Clock className="h-3 w-3 mr-1" />
                                 )}
                                 {(article.status === 'published' || article.is_published === true) ? t.published : t.draft}
+                                {/* Debug info to help you verify status values */}
+                                <span className="ml-1 text-xs opacity-60" title={`status: ${article.status}, is_published: ${article.is_published}`}>
+                                  📋
+                                </span>
                               </Badge>
                             </TableCell>
                             <TableCell>
