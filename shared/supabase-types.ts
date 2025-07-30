@@ -27,6 +27,7 @@ export interface Article {
   author?: string;
   category_id: number;
   categoryId?: number; // Compatibility field
+  is_published: boolean; // CRITICAL: Added missing field that was causing status display issues
   is_featured: boolean;
   isFeatured?: boolean; // Compatibility field
   view_count: number;
