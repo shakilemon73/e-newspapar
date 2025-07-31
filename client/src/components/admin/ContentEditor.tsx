@@ -48,12 +48,19 @@ import {
   ArrowLeft,
   ArrowRight,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Sparkles,
+  User,
+  Calendar,
+  Zap,
+  Brain
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
 import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
+import { contentEditorAI, type TitleSuggestion, type ArticleSummary, type SEOSuggestions } from '@/lib/content-editor-ai';
+import { getActiveAuthors, type Author } from '@/lib/authors-api';
 
 // FIXED: Comprehensive form schema with proper types
 const articleFormSchema = z.object({
@@ -87,11 +94,11 @@ const articleFormSchema = z.object({
   is_featured: z.boolean().default(false),
   is_breaking: z.boolean().default(false),
   is_urgent: z.boolean().default(false),
-  published_at: z.string().default(new Date().toISOString().split('T')[0]),
+  published_at: z.string().default(''),
   
-  // Author info
+  // Author info - Fixed to connect with Supabase authors table
   author: z.string().default(''),
-  author_id: z.coerce.number().optional(),
+  author_id: z.coerce.number().min(1, 'অনুগ্রহ করে একজন লেখক নির্বাচন করুন'),
   
   // SEO fields
   meta_title: z.string().max(70, 'SEO শিরোনাম ৭০ অক্ষরের বেশি হতে পারবে না').default(''),
@@ -151,6 +158,12 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
   const [wordCount, setWordCount] = useState(0);
   const [readingTime, setReadingTime] = useState(0);
   const [devicePreview, setDevicePreview] = useState<'mobile' | 'tablet' | 'desktop'>('mobile');
+  
+  // AI Enhancement States
+  const [titleSuggestions, setTitleSuggestions] = useState<TitleSuggestion[]>([]);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [isGeneratingSEO, setIsGeneratingSEO] = useState(false);
+  const [autoSEOEnabled, setAutoSEOEnabled] = useState(true);
 
   // MOBILE-OPTIMIZED STEP-BY-STEP APPROACH
   const editorSteps = [
@@ -197,6 +210,12 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     queryFn: getAdminCategories,
   });
 
+  // Authors query - Fixed to load from Supabase authors table
+  const { data: authors } = useQuery({
+    queryKey: ['authors'],
+    queryFn: getActiveAuthors,
+  });
+
   // PERFORMANCE: Debounced auto-save
   const debouncedAutoSave = useCallback(
     (() => {
@@ -222,7 +241,112 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     setReadingTime(Math.ceil(words / 200)); // 200 words per minute for Bengali
   }, []);
 
-  // OPTIMIZED: Form with proper TypeScript types
+  // AI Enhancement Functions
+  const generateTitleSuggestions = useCallback(async (content: string) => {
+    if (content.length < 50) return;
+    try {
+      const suggestions = await contentEditorAI.suggestTitles(content);
+      setTitleSuggestions(suggestions);
+    } catch (error) {
+      console.error('Title suggestions error:', error);
+    }
+  }, []);
+
+  const generateArticleSummary = useCallback(async () => {
+    const content = form.getValues('content');
+    const title = form.getValues('title');
+    
+    if (!content || content.length < 50) {
+      toast({
+        title: "অপর্যাপ্ত কন্টেন্ট",
+        description: "সারসংক্ষেপ তৈরি করতে আরো কন্টেন্ট প্রয়োজন",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    try {
+      const summary = await contentEditorAI.generateSummary(content, title);
+      form.setValue('excerpt', summary.summary);
+      
+      toast({
+        title: "সারসংক্ষেপ তৈরি হয়েছে",
+        description: `${summary.keyPoints.length}টি মূল বিষয় সহ সারসংক্ষেপ তৈরি হয়েছে`,
+      });
+    } catch (error) {
+      toast({
+        title: "সারসংক্ষেপ তৈরি করা যায়নি",
+        description: "অনুগ্রহ করে পুনরায় চেষ্টা করুন",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSummary(false);
+    }
+  }, [form, toast]);
+
+  const generateSEOContent = useCallback(async () => {
+    const title = form.getValues('title');
+    const content = form.getValues('content');
+    
+    if (!title || !content) {
+      toast({
+        title: "অপূর্ণ তথ্য",
+        description: "SEO তৈরি করতে শিরোনাম ও কন্টেন্ট প্রয়োজন",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingSEO(true);
+    try {
+      const seoData = await contentEditorAI.generateSEO(title, content);
+      
+      form.setValue('meta_title', seoData.metaTitle);
+      form.setValue('meta_description', seoData.metaDescription);
+      
+      toast({
+        title: "SEO তৈরি হয়েছে",
+        description: `${seoData.keywords.length}টি কীওয়ার্ড সহ SEO তৈরি হয়েছে`,
+      });
+    } catch (error) {
+      toast({
+        title: "SEO তৈরি করা যায়নি",
+        description: "অনুগ্রহ করে পুনরায় চেষ্টা করুন",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingSEO(false);
+    }
+  }, [form, toast]);
+
+  const handleBreakingNewsToggle = useCallback(async (enabled: boolean) => {
+    if (enabled) {
+      const title = form.getValues('title');
+      const content = form.getValues('content');
+      
+      if (title && content) {
+        try {
+          const breakingData = await contentEditorAI.analyzeBreakingNews(title, content);
+          
+          if (breakingData.urgency === 'high') {
+            form.setValue('title', breakingData.suggestedTitle);
+            form.setValue('priority_score', 10);
+            form.setValue('enable_notifications', true);
+            
+            toast({
+              title: "ব্রেকিং নিউজ সেটআপ",
+              description: `উচ্চ জরুরি (${breakingData.urgency}) হিসেবে চিহ্নিত`,
+            });
+          }
+        } catch (error) {
+          console.error('Breaking news analysis error:', error);
+        }
+      }
+    }
+  }, [form, toast]);
+
+  // OPTIMIZED: Form with proper TypeScript types and Bangladesh timezone
   const form = useForm({
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
@@ -233,6 +357,8 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       summary: article?.summary || '',
       image_url: article?.image_url || '',
       category_id: article?.category_id || 1,
+      author_id: article?.author_id || 1,
+      published_at: article?.published_at || contentEditorAI.getBangladeshDateTime(),
       is_featured: article?.is_featured ?? false,
       is_breaking: article?.is_breaking ?? false,
       is_urgent: article?.is_urgent ?? false,
@@ -243,10 +369,8 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       enable_notifications: article?.enable_notifications ?? false,
       enable_newsletter: article?.enable_newsletter ?? false,
       priority_score: article?.priority_score ?? 5,
-      published_at: article?.published_at ? new Date(article.published_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
       scheduled_publish_at: article?.scheduled_publish_at || '',
       author: article?.author || '',
-      author_id: article?.author_id || undefined,
       tags: article?.tags || [],
       custom_tags: article?.custom_tags || '',
       meta_title: article?.meta_title || '',
@@ -673,6 +797,29 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                   )}
                 />
 
+                {/* AI Title Suggestions */}
+                {titleSuggestions.length > 0 && (
+                  <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <Sparkles className="h-4 w-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900 dark:text-blue-100">AI শিরোনাম পরামর্শ</span>
+                    </div>
+                    <div className="space-y-2">
+                      {titleSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => form.setValue('title', suggestion.title)}
+                          className="w-full text-left p-3 bg-white dark:bg-gray-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/50 border border-gray-200 dark:border-gray-700 transition-colors"
+                        >
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">{suggestion.title}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{suggestion.reason}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Content Field */}
                 <FormField
                   control={form.control}
@@ -692,13 +839,23 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                             fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif',
                             lineHeight: '1.8'
                           }}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            // Generate title suggestions when content changes
+                            if (e.target.value.length > 100) {
+                              generateTitleSuggestions(e.target.value);
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormDescription className="text-gray-600 dark:text-gray-400">
                         বাংলা বা ইংরেজি উভয় ভাষায় লিখতে পারেন
                       </FormDescription>
                       <div className="flex items-center justify-between text-gray-600 dark:text-gray-400 mt-2 text-sm">
-                        <span></span>
+                        <div className="flex items-center space-x-4">
+                          <span>{wordCount} শব্দ</span>
+                          <span>{readingTime} মিনিট পড়ার সময়</span>
+                        </div>
                         <div className="flex items-center space-x-4">
                           <span className="flex items-center space-x-1">
                             <Type className="h-4 w-4" />
@@ -710,6 +867,50 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                           </span>
                         </div>
                       </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* AI-Enhanced Excerpt Field */}
+                <FormField
+                  control={form.control}
+                  name="excerpt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
+                          সারসংক্ষেপ (এক্সারপ্ট)
+                        </FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateArticleSummary}
+                          disabled={isGeneratingSummary}
+                          className="flex items-center space-x-2"
+                        >
+                          {isGeneratingSummary ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Wand2 className="h-4 w-4" />
+                          )}
+                          <span>AI সারসংক্ষেপ</span>
+                        </Button>
+                      </div>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="নিবন্ধের সংক্ষিপ্ত বিবরণ লিখুন বা AI দিয়ে তৈরি করুন..."
+                          className="min-h-[120px] text-base leading-relaxed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
+                          style={{ 
+                            fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif'
+                          }}
+                        />
+                      </FormControl>
+                      <FormDescription className="text-gray-600 dark:text-gray-400">
+                        150-160 অক্ষরের মধ্যে রাখুন। সোশ্যাল মিডিয়ায় প্রদর্শিত হবে।
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -819,37 +1020,80 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                     )}
                   />
                   
+                  {/* Enhanced Author Selection with Supabase Integration */}
                   <FormField
                     control={form.control}
-                    name="author"
+                    name="author_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">লেখক</FormLabel>
-                        <FormControl>
-                          <Input 
-                            {...field} 
-                            placeholder="লেখকের নাম"
-                            className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                          />
-                        </FormControl>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white flex items-center space-x-2">
+                          <User className="h-4 w-4" />
+                          <span>লেখক *</span>
+                        </FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl">
+                              <SelectValue placeholder="একজন লেখক নির্বাচন করুন" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {authors?.map((author) => (
+                              <SelectItem key={author.id} value={author.id.toString()}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{author.name}</span>
+                                  {author.email && (
+                                    <span className="text-xs text-gray-500">({author.email})</span>
+                                  )}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-gray-600 dark:text-gray-400">
+                          Supabase authors টেবিল থেকে লেখক নির্বাচন করুন
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   
+                  {/* Enhanced Bangladesh Timezone Date/Time */}
                   <FormField
                     control={form.control}
                     name="published_at"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">প্রকাশের তারিখ</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="date" 
-                            {...field}
-                            className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
-                          />
-                        </FormControl>
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white flex items-center space-x-2">
+                          <Calendar className="h-4 w-4" />
+                          <span>প্রকাশের তারিখ ও সময়</span>
+                        </FormLabel>
+                        <div className="space-y-2">
+                          <FormControl>
+                            <Input 
+                              type="datetime-local" 
+                              {...field}
+                              className="h-12 bg-white dark:bg-gray-800 border-orange-300 dark:border-orange-700 rounded-xl"
+                            />
+                          </FormControl>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-400">
+                              বাংলাদেশ সময়: {field.value ? contentEditorAI.formatBengaliDate(field.value) : 'নির্বাচিত নয়'}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => field.onChange(contentEditorAI.getBangladeshDateTime())}
+                              className="text-xs"
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              এখন
+                            </Button>
+                          </div>
+                        </div>
+                        <FormDescription className="text-gray-600 dark:text-gray-400">
+                          Asia/Dhaka টাইমজোন অনুযায়ী স্বয়ংক্রিয় সেট হয়েছে
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -906,11 +1150,22 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                       render={({ field }) => (
                         <FormItem className="flex items-center justify-between space-y-0">
                           <div>
-                            <FormLabel className="text-base font-medium text-gray-900 dark:text-white">ব্রেকিং নিউজ</FormLabel>
-                            <FormDescription className="text-gray-600 dark:text-gray-400">জরুরি সংবাদ হিসেবে চিহ্নিত করুন</FormDescription>
+                            <FormLabel className="text-base font-medium text-gray-900 dark:text-white flex items-center space-x-2">
+                              <Zap className="h-4 w-4" />
+                              <span>ব্রেকিং নিউজ</span>
+                            </FormLabel>
+                            <FormDescription className="text-gray-600 dark:text-gray-400">
+                              AI স্বয়ংক্রিয় সেটআপ সহ জরুরি সংবাদ
+                            </FormDescription>
                           </div>
                           <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            <Switch 
+                              checked={field.value} 
+                              onCheckedChange={(checked) => {
+                                field.onChange(checked);
+                                handleBreakingNewsToggle(checked);
+                              }} 
+                            />
                           </FormControl>
                         </FormItem>
                       )}
@@ -932,12 +1187,45 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                 <CardDescription>অনুসন্ধান ও সামাজিক মিডিয়ার জন্য অপ্টিমাইজ করুন</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* AI Auto-Generate Toggle */}
+                <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center space-x-3">
+                    <Sparkles className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <span className="font-medium text-purple-900 dark:text-purple-100">AI SEO অটো-জেনারেশন</span>
+                      <p className="text-sm text-purple-700 dark:text-purple-300">কন্টেন্ট বিশ্লেষণ করে SEO ট্যাগ তৈরি করুন</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={autoSEOEnabled} 
+                    onCheckedChange={setAutoSEOEnabled}
+                  />
+                </div>
+
+                {/* AI-Enhanced Meta Title */}
                 <FormField
                   control={form.control}
                   name="meta_title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Title</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Title</FormLabel>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateSEOContent}
+                          disabled={isGeneratingSEO}
+                          className="flex items-center space-x-2"
+                        >
+                          {isGeneratingSEO ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Brain className="h-4 w-4" />
+                          )}
+                          <span>AI তৈরি করুন</span>
+                        </Button>
+                      </div>
                       <FormControl>
                         <Input
                           {...field}
@@ -953,6 +1241,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                   )}
                 />
                 
+                {/* AI-Enhanced Meta Description */}
                 <FormField
                   control={form.control}
                   name="meta_description"
