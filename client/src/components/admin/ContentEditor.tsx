@@ -29,7 +29,8 @@ import { Progress } from '@/components/ui/progress';
 import { Switch } from '@/components/ui/switch';
 import { 
   Save, 
-  Eye, 
+  Eye,
+  EyeOff, 
   Clock, 
   Image as ImageIcon, 
   Settings,
@@ -381,6 +382,53 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     }
   }, [form, toast]);
 
+  // AUTOMATIC AI PROCESSING: Real-time content analysis
+  const [isAutoProcessing, setIsAutoProcessing] = useState(false);
+  const [autoProcessingEnabled, setAutoProcessingEnabled] = useState(true);
+  
+  // Real-time automatic summarization and SEO generation
+  const processContentAutomatically = useCallback(async (content: string, title: string) => {
+    if (!autoProcessingEnabled || !content || content.length < 100 || isAutoProcessing) return;
+    
+    setIsAutoProcessing(true);
+    try {
+      // Generate automatic summary (160-200 words)
+      const summaryResult = await contentEditorAI.generateAutomaticSummary(content, title);
+      form.setValue('excerpt', summaryResult.summary);
+      
+      // Auto-generate Meta Title
+      if (title) {
+        const autoMetaTitle = contentEditorAI.generateAutoMetaTitle(title);
+        form.setValue('meta_title', autoMetaTitle);
+      }
+      
+      // Auto-generate Meta Description from summary
+      if (summaryResult.summary) {
+        const autoMetaDescription = contentEditorAI.generateAutoMetaDescription(summaryResult.summary);
+        form.setValue('meta_description', autoMetaDescription);
+      }
+      
+    } catch (error) {
+      console.error('Automatic AI processing error:', error);
+    } finally {
+      setIsAutoProcessing(false);
+    }
+  }, [form, autoProcessingEnabled, isAutoProcessing]);
+
+  // Debounced automatic processing
+  const debouncedAutoProcess = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (content: string, title: string) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          processContentAutomatically(content, title);
+        }, 3000); // Process after 3 seconds of no typing
+      };
+    })(),
+    [processContentAutomatically]
+  );
+
   // Calculate word count and reading time using existing state
   const currentWordCount = useMemo(() => {
     const content = form.watch('content') || '';
@@ -394,6 +442,16 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     setReadingTime(time); // Update the state  
     return time;
   }, [currentWordCount]);
+
+  // Watch for content and title changes to trigger automatic processing
+  useEffect(() => {
+    const content = form.watch('content');
+    const title = form.watch('title');
+    
+    if (content && title && content.length > 100) {
+      debouncedAutoProcess(content, title);
+    }
+  }, [form.watch('content'), form.watch('title'), debouncedAutoProcess]);
 
   // Watch form changes for auto-save and analytics
   useEffect(() => {
@@ -871,7 +929,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                   )}
                 />
 
-                {/* AI-Enhanced Excerpt Field */}
+                {/* AUTOMATIC AI-Enhanced Excerpt Field */}
                 <FormField
                   control={form.control}
                   name="excerpt"
@@ -881,26 +939,39 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                         <FormLabel className="text-lg font-semibold text-gray-900 dark:text-white">
                           সারসংক্ষেপ (এক্সারপ্ট)
                         </FormLabel>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={generateArticleSummary}
-                          disabled={isGeneratingSummary}
-                          className="flex items-center space-x-2"
-                        >
-                          {isGeneratingSummary ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Wand2 className="h-4 w-4" />
-                          )}
-                          <span>AI সারসংক্ষেপ</span>
-                        </Button>
+                        {/* AUTOMATIC PROCESSING INDICATOR */}
+                        <div className="flex items-center space-x-2">
+                          {isAutoProcessing ? (
+                            <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span className="text-sm">AI স্বয়ংক্রিয় তৈরি করছে...</span>
+                            </div>
+                          ) : autoProcessingEnabled ? (
+                            <div className="flex items-center space-x-2 text-emerald-600 dark:text-emerald-400">
+                              <Sparkles className="h-4 w-4" />
+                              <span className="text-sm">AI স্বয়ংক্রিয় সক্রিয়</span>
+                            </div>
+                          ) : null}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAutoProcessingEnabled(!autoProcessingEnabled)}
+                            className="flex items-center space-x-2"
+                          >
+                            {autoProcessingEnabled ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                            <span>{autoProcessingEnabled ? 'চালু' : 'বন্ধ'}</span>
+                          </Button>
+                        </div>
                       </div>
                       <FormControl>
                         <Textarea
                           {...field}
-                          placeholder="নিবন্ধের সংক্ষিপ্ত বিবরণ লিখুন বা AI দিয়ে তৈরি করুন..."
+                          placeholder="160-200 শব্দের স্বয়ংক্রিয় সারসংক্ষেপ তৈরি হবে..."
                           className="min-h-[120px] text-base leading-relaxed bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 rounded-xl"
                           style={{ 
                             fontFamily: 'SolaimanLipi, Kalpurush, "Noto Sans Bengali", sans-serif'
@@ -908,7 +979,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                         />
                       </FormControl>
                       <FormDescription className="text-gray-600 dark:text-gray-400">
-                        150-160 অক্ষরের মধ্যে রাখুন। সোশ্যাল মিডিয়ায় প্রদর্শিত হবে।
+                        160-200 শব্দ। মূল বিষয়বস্তু লেখার ৩ সেকেন্ড পর স্বয়ংক্রিয় তৈরি হবে।
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -1201,7 +1272,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                   />
                 </div>
 
-                {/* AI-Enhanced Meta Title */}
+                {/* AUTOMATIC AI-Enhanced Meta Title */}
                 <FormField
                   control={form.control}
                   name="meta_title"
@@ -1209,26 +1280,15 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                     <FormItem>
                       <div className="flex items-center justify-between">
                         <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Title</FormLabel>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={generateSEOContent}
-                          disabled={isGeneratingSEO}
-                          className="flex items-center space-x-2"
-                        >
-                          {isGeneratingSEO ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Brain className="h-4 w-4" />
-                          )}
-                          <span>AI তৈরি করুন</span>
-                        </Button>
+                        <div className="flex items-center space-x-2 text-purple-600 dark:text-purple-400">
+                          <Sparkles className="h-4 w-4" />
+                          <span className="text-sm">স্বয়ংক্রিয় তৈরি</span>
+                        </div>
                       </div>
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="SEO অপ্টিমাইজড শিরোনাম (৫০-৬০ অক্ষর)"
+                          placeholder="শিরোনাম থেকে স্বয়ংক্রিয় তৈরি হবে (৫০-৬০ অক্ষর)"
                           className="h-12 bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl"
                         />
                       </FormControl>
@@ -1240,17 +1300,23 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
                   )}
                 />
                 
-                {/* AI-Enhanced Meta Description */}
+                {/* AUTOMATIC AI-Enhanced Meta Description */}
                 <FormField
                   control={form.control}
                   name="meta_description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Description</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel className="text-base font-medium text-gray-900 dark:text-white">Meta Description</FormLabel>
+                        <div className="flex items-center space-x-2 text-purple-600 dark:text-purple-400">
+                          <Sparkles className="h-4 w-4" />
+                          <span className="text-sm">সারসংক্ষেপ থেকে স্বয়ংক্রিয়</span>
+                        </div>
+                      </div>
                       <FormControl>
                         <Textarea
                           {...field}
-                          placeholder="নিবন্ধের সংক্ষিপ্ত বিবরণ যা অনুসন্ধান ফলাফলে দেখানো হবে (১৫০-১৬০ অক্ষর)"
+                          placeholder="সারসংক্ষেপ থেকে স্বয়ংক্রিয় তৈরি হবে (১৫০-১৬০ অক্ষর)"
                           className="min-h-[100px] bg-white dark:bg-gray-800 border-purple-300 dark:border-purple-700 rounded-xl resize-none"
                         />
                       </FormControl>
