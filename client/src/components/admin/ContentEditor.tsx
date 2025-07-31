@@ -241,7 +241,42 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     setReadingTime(Math.ceil(words / 200)); // 200 words per minute for Bengali
   }, []);
 
-  // AI Enhancement Functions
+  // OPTIMIZED: Form with proper TypeScript types and Bangladesh timezone - MOVED UP
+  const form = useForm({
+    resolver: zodResolver(articleFormSchema),
+    defaultValues: {
+      title: article?.title || '',
+      slug: article?.slug || '',
+      content: article?.content || '',
+      excerpt: article?.excerpt || '',
+      summary: article?.summary || '',
+      image_url: article?.image_url || '',
+      category_id: article?.category_id || 1,
+      author_id: article?.author_id || 1,
+      published_at: article?.published_at || contentEditorAI.getBangladeshDateTime(),
+      is_featured: article?.is_featured ?? false,
+      is_breaking: article?.is_breaking ?? false,
+      is_urgent: article?.is_urgent ?? false,
+      enable_comments: article?.enable_comments ?? true,
+      enable_sharing: article?.enable_sharing ?? true,
+      enable_audio: article?.enable_audio ?? true,
+      enable_pdf: article?.enable_pdf ?? true,
+      enable_notifications: article?.enable_notifications ?? false,
+      enable_newsletter: article?.enable_newsletter ?? false,
+      priority_score: article?.priority_score ?? 5,
+      scheduled_publish_at: article?.scheduled_publish_at || '',
+      author: article?.author || '',
+      tags: article?.tags || [],
+      custom_tags: article?.custom_tags || '',
+      meta_title: article?.meta_title || '',
+      meta_description: article?.meta_description || '',
+      meta_keywords: article?.meta_keywords || '',
+      status: article?.status || 'draft',
+      image_metadata: article?.image_metadata || {},
+    },
+  });
+
+  // AI Enhancement Functions - NOW AFTER FORM INITIALIZATION
   const generateTitleSuggestions = useCallback(async (content: string) => {
     if (content.length < 50) return;
     try {
@@ -346,55 +381,19 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
     }
   }, [form, toast]);
 
-  // OPTIMIZED: Form with proper TypeScript types and Bangladesh timezone
-  const form = useForm({
-    resolver: zodResolver(articleFormSchema),
-    defaultValues: {
-      title: article?.title || '',
-      slug: article?.slug || '',
-      content: article?.content || '',
-      excerpt: article?.excerpt || '',
-      summary: article?.summary || '',
-      image_url: article?.image_url || '',
-      category_id: article?.category_id || 1,
-      author_id: article?.author_id || 1,
-      published_at: article?.published_at || contentEditorAI.getBangladeshDateTime(),
-      is_featured: article?.is_featured ?? false,
-      is_breaking: article?.is_breaking ?? false,
-      is_urgent: article?.is_urgent ?? false,
-      enable_comments: article?.enable_comments ?? true,
-      enable_sharing: article?.enable_sharing ?? true,
-      enable_audio: article?.enable_audio ?? true,
-      enable_pdf: article?.enable_pdf ?? true,
-      enable_notifications: article?.enable_notifications ?? false,
-      enable_newsletter: article?.enable_newsletter ?? false,
-      priority_score: article?.priority_score ?? 5,
-      scheduled_publish_at: article?.scheduled_publish_at || '',
-      author: article?.author || '',
-      tags: article?.tags || [],
-      custom_tags: article?.custom_tags || '',
-      meta_title: article?.meta_title || '',
-      meta_description: article?.meta_description || '',
-      social_image: article?.social_image || '',
-      reading_time_override: article?.reading_time_override || undefined,
-      track_reading_progress: article?.track_reading_progress ?? true,
-      content_warning: article?.content_warning || '',
-      regional_restriction: article?.regional_restriction || [],
-      status: article?.status || 'published',
-      review_notes: article?.review_notes || '',
-      editor_notes: article?.editor_notes || '',
-      media_urls: article?.media_urls || [],
-      video_urls: article?.video_urls || [],
-      mixed_media: article?.mixed_media || [],
-      image_metadata: {
-        caption: article?.image_metadata?.caption || '',
-        place: article?.image_metadata?.place || '',
-        date: article?.image_metadata?.date || '',
-        photographer: article?.image_metadata?.photographer || '',
-        id: article?.image_metadata?.id || ''
-      }
-    },
-  });
+  // Calculate word count and reading time using existing state
+  const currentWordCount = useMemo(() => {
+    const content = form.watch('content') || '';
+    const count = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+    setWordCount(count); // Update the state
+    return count;
+  }, [form.watch('content')]);
+
+  const currentReadingTime = useMemo(() => {
+    const time = Math.ceil(currentWordCount / 200); // 200 Bengali words per minute
+    setReadingTime(time); // Update the state  
+    return time;
+  }, [currentWordCount]);
 
   // Watch form changes for auto-save and analytics
   useEffect(() => {
