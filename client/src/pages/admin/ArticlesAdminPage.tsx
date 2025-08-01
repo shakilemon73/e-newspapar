@@ -175,6 +175,38 @@ export default function ArticlesAdminPage() {
     },
   });
 
+  // Status toggle mutation
+  const statusToggleMutation = useMutation({
+    mutationFn: async ({ id, currentStatus }: { id: number, currentStatus: boolean }) => {
+      const newStatus = currentStatus ? 'draft' : 'published';
+      const newIsPublished = !currentStatus;
+      
+      return await adminSupabaseAPI.articles.update(id, {
+        status: newStatus,
+        is_published: newIsPublished,
+        published_at: newIsPublished ? new Date().toISOString() : null
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: currentLanguage === 'bn' ? "স্ট্যাটাস পরিবর্তিত" : "Status Changed",
+        description: currentLanguage === 'bn' ? "নিবন্ধের স্ট্যাটাস সফলভাবে পরিবর্তিত হয়েছে" : "Article status has been successfully changed",
+      });
+      // Invalidate and refetch article-related queries
+      queryClient.invalidateQueries({ 
+        predicate: (query) => query.queryKey[0] === 'admin-articles'
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: currentLanguage === 'bn' ? "ত্রুটি" : "Error",
+        description: currentLanguage === 'bn' ? "স্ট্যাটাস পরিবর্তন করতে ব্যর্থ" : "Failed to change status",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Language texts
   const texts = {
     bn: {
@@ -296,6 +328,14 @@ export default function ArticlesAdminPage() {
     if (articleToDelete) {
       deleteMutation.mutate(articleToDelete.id);
     }
+  };
+
+  const handleStatusToggle = (article: Article) => {
+    const currentStatus = article.status === 'published' || article.is_published;
+    statusToggleMutation.mutate({ 
+      id: article.id, 
+      currentStatus 
+    });
   };
 
   const handleSearch = (value: string) => {
@@ -539,7 +579,7 @@ export default function ArticlesAdminPage() {
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline">
-                                {article.categories?.name || 'N/A'}
+                                {article.category?.name || 'N/A'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -595,6 +635,20 @@ export default function ArticlesAdminPage() {
                                   >
                                     <Edit className="h-4 w-4" />
                                     {t.edit}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleStatusToggle(article)}
+                                    className="flex items-center gap-2 text-blue-600"
+                                  >
+                                    {(article.status === 'published' || article.is_published) ? (
+                                      <Clock className="h-4 w-4" />
+                                    ) : (
+                                      <CheckCircle className="h-4 w-4" />
+                                    )}
+                                    {(article.status === 'published' || article.is_published) ? 
+                                      (currentLanguage === 'bn' ? 'খসড়ায় পরিবর্তন' : 'Change to Draft') : 
+                                      (currentLanguage === 'bn' ? 'প্রকাশ করুন' : 'Publish')
+                                    }
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleDelete(article)}
