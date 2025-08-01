@@ -29,20 +29,34 @@ export async function updateArticle(id: number, updates: any) {
       console.log('✅ Image metadata included:', updates.image_metadata);
     }
 
+    // First check if article exists
+    const { data: existingArticle, error: checkError } = await supabase
+      .from('articles')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingArticle) {
+      throw new Error(`Article with ID ${id} not found`);
+    }
+
     const { data, error } = await supabase
       .from('articles')
       .update(updates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('❌ Article update error:', error);
       throw error;
     }
+
+    if (!data || data.length === 0) {
+      throw new Error('No article was updated');
+    }
     
-    console.log('✅ Article updated successfully:', data.id);
-    return data;
+    console.log('✅ Article updated successfully:', data[0].id);
+    return data[0];
   } catch (error) {
     console.error('Error updating article:', error);
     throw error;
@@ -97,6 +111,17 @@ export async function updateBreakingNews(id: number, updates: any) {
     // Import admin client with service role key
     const { default: adminSupabase } = await import('./admin-supabase-direct');
     
+    // First check if breaking news exists
+    const { data: existingNews, error: checkError } = await adminSupabase
+      .from('breaking_news')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingNews) {
+      throw new Error(`Breaking news with ID ${id} not found`);
+    }
+    
     // Only update fields that exist in the schema: content, is_active
     const validUpdates: any = {};
     if (updates.content !== undefined) validUpdates.content = updates.content;
@@ -106,16 +131,19 @@ export async function updateBreakingNews(id: number, updates: any) {
       .from('breaking_news')
       .update(validUpdates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Admin breaking news update error:', error);
       throw new Error(error.message || 'Failed to update breaking news');
     }
+
+    if (!data || data.length === 0) {
+      throw new Error('No breaking news was updated');
+    }
     
     console.log('✅ Breaking news updated successfully');
-    return data;
+    return data[0];
   } catch (error) {
     console.error('Error updating breaking news:', error);
     throw error;
@@ -167,16 +195,19 @@ export async function createBreakingNews(newsData: {
         is_active: newsData.is_active !== false
         // Note: priority, updated_at, title fields don't exist in the actual schema
       })
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Admin breaking news create error:', error);
       throw new Error(error.message || 'Failed to create breaking news');
     }
 
-    console.log('✅ Breaking news created successfully:', data);
-    return data;
+    if (!data || data.length === 0) {
+      throw new Error('No breaking news was created');
+    }
+
+    console.log('✅ Breaking news created successfully:', data[0]);
+    return data[0];
   } catch (error) {
     console.error('Error creating breaking news:', error);
     throw error;
@@ -206,15 +237,30 @@ export async function getAdminVideos() {
 
 export async function updateVideoContent(id: number, updates: any) {
   try {
+    // First check if video exists
+    const { data: existingVideo, error: checkError } = await supabase
+      .from('video_content')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingVideo) {
+      throw new Error(`Video with ID ${id} not found`);
+    }
+
     const { data, error } = await supabase
       .from('video_content')
       .update(updates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) throw error;
-    return data;
+    
+    if (!data || data.length === 0) {
+      throw new Error('No video was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating video:', error);
     throw error;
@@ -239,15 +285,30 @@ export async function deleteVideoContent(id: number) {
 // Category additional operations  
 export async function updateCategory(id: number, updates: any) {
   try {
+    // First check if category exists
+    const { data: existingCategory, error: checkError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingCategory) {
+      throw new Error(`Category with ID ${id} not found`);
+    }
+
     const { data, error } = await supabase
       .from('categories')
       .update(updates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) throw error;
-    return data;
+    
+    if (!data || data.length === 0) {
+      throw new Error('No category was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating category:', error);
     throw error;
@@ -344,15 +405,30 @@ export async function getAdminEPapers() {
 
 export async function updateEPaper(id: number, updates: any) {
   try {
+    // First check if e-paper exists
+    const { data: existingEPaper, error: checkError } = await supabase
+      .from('epapers')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingEPaper) {
+      throw new Error(`E-Paper with ID ${id} not found`);
+    }
+
     const { data, error } = await supabase
       .from('epapers')
       .update(updates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) throw error;
-    return data;
+    
+    if (!data || data.length === 0) {
+      throw new Error('No e-paper was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating e-paper:', error);
     throw error;
@@ -397,15 +473,30 @@ export async function getAdminAudioArticles() {
 
 export async function updateAudioArticle(id: number, updates: any) {
   try {
+    // First check if audio article exists
+    const { data: existingAudio, error: checkError } = await supabase
+      .from('audio_articles')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingAudio) {
+      throw new Error(`Audio article with ID ${id} not found`);
+    }
+
     const { data, error } = await supabase
       .from('audio_articles')
       .update(updates)
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) throw error;
-    return data;
+    
+    if (!data || data.length === 0) {
+      throw new Error('No audio article was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating audio article:', error);
     throw error;
@@ -471,15 +562,30 @@ export async function getAdminUsers(options: {
 
 export async function updateUserRole(userId: string, role: string) {
   try {
+    // First check if user exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', userId)
+      .single();
+
+    if (checkError || !existingUser) {
+      throw new Error(`User with ID ${userId} not found`);
+    }
+
     const { data, error } = await supabase
       .from('user_profiles')
       .update({ role })
       .eq('id', userId)
-      .select()
-      .single();
+      .select();
 
     if (error) throw error;
-    return data;
+    
+    if (!data || data.length === 0) {
+      throw new Error('No user was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating user role:', error);
     throw error;
@@ -500,7 +606,8 @@ export async function createSocialPost(postData: {
     
     const { data, error } = await adminSupabase
       .from('social_media_posts')
-      .insert({
+      // Check for existence first
+    .insert({
         content: postData.content,
         platform: postData.platform || 'general',
         scheduled_for: postData.scheduled_for || new Date().toISOString(),
@@ -649,7 +756,8 @@ export async function sendPushNotification(notificationData: {
   try {
     const { data, error } = await supabase
       .from('push_notifications')
-      .insert({
+      // Check for existence first
+    .insert({
         title: notificationData.title,
         message: notificationData.message,
         target: notificationData.target || 'all',
@@ -760,7 +868,8 @@ export async function createEmailTemplate(templateData: {
     
     const { data, error } = await adminSupabase
       .from('email_templates')
-      .insert({
+      // Check for existence first
+    .insert({
         name: templateData.name,
         subject: templateData.subject,
         content: templateData.content,
@@ -797,7 +906,8 @@ export async function createAdvertisement(adData: {
     
     const { data, error } = await adminSupabase
       .from('advertisements')
-      .insert({
+      // Check for existence first
+    .insert({
         title: adData.title,
         content: adData.content,
         image_url: adData.image_url,
@@ -922,7 +1032,8 @@ export async function createWeatherData(weatherData: {
     
     const { data, error } = await adminSupabase
       .from('weather')
-      .insert({
+      // Check for existence first
+    .insert({
         city: weatherData.city,
         temperature: weatherData.temperature || 25,
         condition: weatherData.condition || 'Clear',
@@ -1020,7 +1131,8 @@ export async function createVideo(videoData: {
     
     const { data, error } = await adminSupabase
       .from('video_content')
-      .insert({
+      // Check for existence first
+    .insert({
         title: videoData.title,
         description: videoData.description || '',
         video_url: videoData.video_url || '',
@@ -1060,7 +1172,8 @@ export async function createEPaper(epaperData: {
     
     const { data, error } = await adminSupabase
       .from('epapers')
-      .insert({
+      // Check for existence first
+    .insert({
         title: epaperData.title,
         edition_date: epaperData.edition_date || new Date().toISOString(),
         pdf_url: epaperData.pdf_url || '',
@@ -1099,7 +1212,8 @@ export async function createAudioArticle(audioData: {
     
     const { data, error } = await adminSupabase
       .from('audio_articles')
-      .insert({
+      // Check for existence first
+    .insert({
         title: audioData.title,
         content: audioData.content || '',
         audio_url: audioData.audio_url || '',

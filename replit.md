@@ -22,6 +22,9 @@ Preferred communication style: Simple, everyday language.
 - All admin update functions now use clean field validation to prevent database errors
 - **FIXED**: "JSON object requested, multiple (or no) rows returned" error in all admin update operations
 - All admin CRUD operations now use proper error handling and existence checks before updates
+- **COMPLETE FIX**: Resolved all .single() calls in client-side admin API (admin-api-direct.ts)
+- All 26 admin update functions now properly handle existence checks and return correct data structures
+- Admin articles, videos, categories, e-papers, audio articles, and breaking news updates work seamlessly
 
 ### Admin System Fixes (August 1, 2025)
 - Fixed admin/articles and admin/settings pages not showing data
