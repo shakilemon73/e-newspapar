@@ -1,0 +1,37 @@
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+
+If you want to hide the &#x60;DialogTitle&#x60;, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+at t.value (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+`DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+
+If you want to hide the &#x60;DialogTitle&#x60;, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+at t.value (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://dc9a143e-720a-4367-b7c3-8a3023dc9afe-00-3t2d90483bs2j.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Error fetching settings: 
+Object {code: "42P01", details: null, hint: null, message: "relation "public.site_settings" does not exist"}
+
+Error fetching settings: 
+Object {code: "42P01", details: null, hint: null, message: "relation "public.site_settings" does not exist"}
+
+Error fetching settings: 
+Object {code: "42P01", details: null, hint: null, message: "relation "public.site_settings" does not exist"}
+
+Error fetching settings: 
+Object {code: "42P01", details: null, hint: null, message: "relation "public.site_settings" does not exist"}

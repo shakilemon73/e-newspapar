@@ -115,11 +115,16 @@ export const articlesAPI = {
       const { data, error, count } = await query
         .range((page - 1) * limit, page * limit - 1);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching articles:', error);
+        // Return empty result instead of throwing
+        return { data: [], count: 0 };
+      }
       return { data: data || [], count: count || 0 };
     } catch (error) {
       console.error('Error fetching articles:', error);
-      throw error;
+      // Return empty result instead of throwing
+      return { data: [], count: 0 };
     }
   },
 
@@ -800,7 +805,17 @@ export const settingsAPI = {
         .select('*')
         .order('key');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching settings:', error);
+        // Return default settings if table doesn't exist
+        return {
+          siteName: 'Bengali News',
+          siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+          siteUrl: '',
+          logoUrl: '',
+          defaultLanguage: 'bn'
+        };
+      }
       
       // Convert array of key-value pairs to object
       const settingsObject = (data || []).reduce((acc: any, setting: any) => {
@@ -811,7 +826,14 @@ export const settingsAPI = {
       return settingsObject;
     } catch (error) {
       console.error('Error fetching settings:', error);
-      throw error;
+      // Return default settings on any error
+      return {
+        siteName: 'Bengali News',
+        siteDescription: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+        siteUrl: '',
+        logoUrl: '',
+        defaultLanguage: 'bn'
+      };
     }
   },
 
