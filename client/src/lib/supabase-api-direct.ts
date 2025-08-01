@@ -180,6 +180,8 @@ export async function getArticles(params: {
       category_id,
       categories(id, name, slug)
     `)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false });
 
   if (params.featured) {
@@ -220,7 +222,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
   try {
     console.log(`[getArticleBySlug] Searching for article with slug: "${slug}"`);
     
-    // First try exact slug match
+    // First try exact slug match - PUBLISHED ONLY
     let { data, error } = await supabase
       .from('articles')
       .select(`
@@ -237,6 +239,8 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
         categories(id, name, slug)
       `)
       .eq('slug', slug)
+      .eq('is_published', true)
+      .eq('status', 'published')
       .single();
 
     // If exact match fails, try fuzzy matching by generating slug from title
@@ -257,7 +261,9 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
           is_featured,
           category_id,
           categories(id, name, slug)
-        `);
+        `)
+        .eq('is_published', true)
+        .eq('status', 'published');
       
       if (searchError) {
         console.error('Error in fallback search:', searchError);
@@ -322,6 +328,8 @@ export async function getPopularArticles(limit = 5): Promise<Article[]> {
         category_id,
         categories(id, name, slug)
       `)
+      .eq('is_published', true)
+      .eq('status', 'published')
       .order('view_count', { ascending: false })
       .limit(limit);
     
@@ -370,6 +378,8 @@ export async function getLatestArticles(limit = 10): Promise<Article[]> {
         category_id,
         categories(id, name, slug)
       `)
+      .eq('is_published', true)
+      .eq('status', 'published')
       .order('published_at', { ascending: false })
       .limit(limit);
 
@@ -410,6 +420,8 @@ export async function getFeaturedArticles(limit = 5): Promise<Article[]> {
       categories(id, name, slug)
     `)
     .eq('is_featured', true)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
     .limit(limit);
 
