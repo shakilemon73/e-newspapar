@@ -17,15 +17,15 @@ if (result.error) console.log('Dotenv error:', result.error);
 // SECURITY: Environment variables only - no hardcoded fallbacks
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_KEY;
 
 // SECURITY: Strict validation of environment variables
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
   console.error('Environment variables status:');
   console.error('VITE_SUPABASE_URL:', supabaseUrl ? 'Set' : 'Missing');
   console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'Set' : 'Missing');
-  console.error('SUPABASE_SERVICE_ROLE_KEY:', supabaseServiceKey ? 'Set' : 'Missing');
-  throw new Error('🚨 SECURITY ERROR: Missing critical environment variables. Set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY');
+  console.error('VITE_SUPABASE_SERVICE_KEY:', supabaseServiceKey ? 'Set' : 'Missing');
+  throw new Error('🚨 SECURITY ERROR: Missing critical environment variables. Set VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, and VITE_SUPABASE_SERVICE_KEY');
 }
 
 // Public client using anonymous key (for public operations with RLS)

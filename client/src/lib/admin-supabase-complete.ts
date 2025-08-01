@@ -5,12 +5,16 @@
  */
 import { createClient } from '@supabase/supabase-js';
 
-// Get environment variables
+// Get environment variables - Fixed naming consistency
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !serviceKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('Missing Supabase environment variables:', {
+    supabaseUrl: !!supabaseUrl,
+    serviceKey: !!serviceKey
+  });
+  throw new Error('Missing Supabase environment variables for admin operations');
 }
 
 // Create admin client with service role key (bypasses RLS)
@@ -323,12 +327,22 @@ export const categoriesAPI = {
 export const videosAPI = {
   async getAll() {
     try {
+      // Try video_content table first (most likely)
       const { data, error } = await adminSupabase
-        .from('videos')
+        .from('video_content')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // Fallback to videos table if it exists
+        const { data: fallbackData, error: fallbackError } = await adminSupabase
+          .from('videos')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (fallbackError) throw error; // Throw original error
+        return fallbackData || [];
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching videos:', error);
@@ -340,9 +354,21 @@ export const videosAPI = {
     try {
       const slug = videoData.slug || generateSlug(videoData.title);
       
+      // Map common field names to proper database schema
+      const insertData = {
+        title: videoData.title,
+        slug: slug,
+        description: videoData.description,
+        video_url: videoData.videoUrl || videoData.video_url,
+        thumbnail_url: videoData.thumbnailUrl || videoData.thumbnail_url,
+        duration: videoData.duration,
+        views: 0,
+        published_at: videoData.published_at || new Date().toISOString()
+      };
+      
       const { data, error } = await adminSupabase
-        .from('videos')
-        .insert({ ...videoData, slug })
+        .from('video_content')
+        .insert(insertData)
         .select()
         .single();
 
@@ -356,9 +382,17 @@ export const videosAPI = {
 
   async update(id: number, updates: any) {
     try {
+      // Map common field names to proper database schema
+      const updateData = {
+        ...updates,
+        video_url: updates.videoUrl || updates.video_url,
+        thumbnail_url: updates.thumbnailUrl || updates.thumbnail_url,
+        updated_at: new Date().toISOString()
+      };
+      
       const { data, error } = await adminSupabase
-        .from('videos')
-        .update(updates)
+        .from('video_content')
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -374,7 +408,7 @@ export const videosAPI = {
   async delete(id: number) {
     try {
       const { error } = await adminSupabase
-        .from('videos')
+        .from('video_content')
         .delete()
         .eq('id', id);
 
@@ -634,7 +668,10 @@ export const socialMediaAPI = {
     try {
       const { data, error } = await adminSupabase
         .from('social_media_posts')
-        .insert(postData)
+        .insert({
+          ...postData,
+          published_at: postData.published_at || new Date().toISOString()
+        })
         .select()
         .single();
 
@@ -650,7 +687,10 @@ export const socialMediaAPI = {
     try {
       const { data, error } = await adminSupabase
         .from('social_media_posts')
-        .update(updates)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', id)
         .select()
         .single();

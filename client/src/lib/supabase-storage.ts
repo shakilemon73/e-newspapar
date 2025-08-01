@@ -19,7 +19,7 @@ export type MediaType = 'image' | 'video' | 'audio' | 'document' | 'pdf';
 
 // File upload class for admin components
 export class SupabaseStorage {
-  static async uploadFile(file: File, mediaType: MediaType): Promise<{ url: string; path: string }> {
+  static async uploadFile(file: File, mediaType: MediaType): Promise<{ success: boolean; url?: string; path?: string; error?: string }> {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -30,7 +30,10 @@ export class SupabaseStorage {
         .upload(filePath, file);
 
       if (error) {
-        throw new Error(`Upload failed: ${error.message}`);
+        return {
+          success: false,
+          error: `Upload failed: ${error.message}`
+        };
       }
 
       const { data: urlData } = supabase.storage
@@ -38,12 +41,16 @@ export class SupabaseStorage {
         .getPublicUrl(filePath);
 
       return {
+        success: true,
         url: urlData.publicUrl,
         path: filePath
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('File upload error:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message || 'Unknown upload error'
+      };
     }
   }
 }

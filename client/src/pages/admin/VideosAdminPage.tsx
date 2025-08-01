@@ -377,7 +377,7 @@ export default function VideosAdminPage() {
                   <FileUploadField
                     label="Video File"
                     description="Upload video file or provide URL"
-                    mediaType="videos"
+                    mediaType="video"
                     value={videoUrl}
                     onChange={setVideoUrl}
                     placeholder="https://example.com/video.mp4"
@@ -385,7 +385,7 @@ export default function VideosAdminPage() {
                   <FileUploadField
                     label="Thumbnail Image"
                     description="Upload thumbnail image or provide URL"
-                    mediaType="images"
+                    mediaType="image"
                     value={thumbnailUrl}
                     onChange={setThumbnailUrl}
                     placeholder="https://example.com/thumbnail.jpg"
