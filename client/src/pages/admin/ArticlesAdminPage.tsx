@@ -132,13 +132,23 @@ export default function ArticlesAdminPage() {
       sortBy,
       sortOrder
     }],
-    queryFn: () => adminSupabaseAPI.articles.getAll(
-      currentPage,
-      pageSize,
-      searchTerm,
-      selectedCategory === 'all' ? '' : selectedCategory
-    ),
-
+    queryFn: async () => {
+      console.log('🔄 ArticlesAdminPage: Calling API with params:', {
+        currentPage,
+        pageSize,
+        searchTerm,
+        selectedCategory
+      });
+      const result = await adminSupabaseAPI.articles.getAll(
+        currentPage,
+        pageSize,
+        searchTerm,
+        selectedCategory === 'all' ? '' : selectedCategory
+      );
+      console.log('🔍 ArticlesAdminPage: API result:', result);
+      return result;
+    },
+    retry: 1
   });
 
   // Delete mutation
@@ -302,12 +312,12 @@ export default function ArticlesAdminPage() {
     setCurrentPage(1); // Reset to first page when filtering
   };
 
-  // Statistics calculation with both status field options
-  const stats = (articlesData as any)?.articles ? {
-    total: (articlesData as any).totalCount,
-    published: (articlesData as any).articles.filter((a: any) => a.status === 'published' || a.is_published === true).length,
-    drafts: (articlesData as any).articles.filter((a: any) => a.status !== 'published' && a.is_published !== true).length,
-    featured: (articlesData as any).articles.filter((a: any) => a.is_featured === true).length
+  // Statistics calculation with corrected data structure
+  const stats = (articlesData as any)?.data ? {
+    total: (articlesData as any).count || (articlesData as any).data.length,
+    published: (articlesData as any).data.filter((a: any) => a.status === 'published' || a.is_published === true).length,
+    drafts: (articlesData as any).data.filter((a: any) => a.status !== 'published' && a.is_published !== true).length,
+    featured: (articlesData as any).data.filter((a: any) => a.is_featured === true).length
   } : { total: 0, published: 0, drafts: 0, featured: 0 };
 
   return (
@@ -482,9 +492,9 @@ export default function ArticlesAdminPage() {
                     <BookOpen className="h-5 w-5" />
                     {currentLanguage === 'bn' ? 'নিবন্ধ তালিকা' : 'Articles List'}
                   </span>
-                  {(articlesData as any)?.totalCount && (
+                  {(articlesData as any)?.count && (
                     <Badge variant="secondary">
-                      {currentLanguage === 'bn' ? 'মোট' : 'Total'}: {(articlesData as any).totalCount}
+                      {currentLanguage === 'bn' ? 'মোট' : 'Total'}: {(articlesData as any).count}
                     </Badge>
                   )}
                 </CardTitle>
@@ -499,7 +509,7 @@ export default function ArticlesAdminPage() {
                   <div className="text-center py-8 text-red-600">
                     {currentLanguage === 'bn' ? 'ডেটা লোড করতে ব্যর্থ' : 'Failed to load data'}
                   </div>
-                ) : (articlesData as any)?.articles?.length === 0 ? (
+                ) : (articlesData as any)?.data?.length === 0 ? (
                   <div className="text-center py-8 text-muted-foreground">
                     {t.noArticles}
                   </div>
@@ -517,7 +527,7 @@ export default function ArticlesAdminPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(articlesData as any)?.articles?.map((article: Article) => (
+                        {(articlesData as any)?.data?.map((article: Article) => (
                           <TableRow key={article.id}>
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
