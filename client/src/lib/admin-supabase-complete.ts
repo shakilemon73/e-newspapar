@@ -122,7 +122,7 @@ export const articlesAPI = {
       // If we have articles, fetch category names separately to avoid join issues
       if (data && data.length > 0) {
         try {
-          const categoryIds = [...new Set(data.map(article => article.category_id).filter(Boolean))];
+          const categoryIds = Array.from(new Set(data.map(article => article.category_id).filter(Boolean)));
           const { data: categories } = await adminSupabase
             .from('categories')
             .select('id, name, slug')
