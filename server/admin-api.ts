@@ -238,6 +238,18 @@ export async function createBreakingNewsServerSide(newsData: {
 
 export async function updateArticleServerSide(id: number, updates: any) {
   try {
+    // First check if article exists
+    const { data: existingArticle, error: checkError } = await adminSupabase
+      .from('articles')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingArticle) {
+      throw new Error(`Article with ID ${id} not found`);
+    }
+
+    // Now update the article
     const { data, error } = await adminSupabase
       .from('articles')
       .update({
@@ -245,15 +257,19 @@ export async function updateArticleServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating article:', error);
       throw new Error(error.message || 'Failed to update article');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No article was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating article server-side:', error);
     throw error;
@@ -283,6 +299,18 @@ export async function deleteArticleServerSide(id: number) {
 
 export async function updateVideoServerSide(id: number, updates: any) {
   try {
+    // First check if video exists
+    const { data: existingVideo, error: checkError } = await adminSupabase
+      .from('video_content')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingVideo) {
+      throw new Error(`Video with ID ${id} not found`);
+    }
+
+    // Now update the video
     const { data, error } = await adminSupabase
       .from('video_content')
       .update({
@@ -290,15 +318,19 @@ export async function updateVideoServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating video:', error);
       throw new Error(error.message || 'Failed to update video');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No video was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating video server-side:', error);
     throw error;
@@ -326,6 +358,18 @@ export async function deleteVideoServerSide(id: number) {
 
 export async function updateCategoryServerSide(id: number, updates: any) {
   try {
+    // First check if category exists
+    const { data: existingCategory, error: checkError } = await adminSupabase
+      .from('categories')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingCategory) {
+      throw new Error(`Category with ID ${id} not found`);
+    }
+
+    // Now update the category
     const { data, error } = await adminSupabase
       .from('categories')
       .update({
@@ -333,15 +377,19 @@ export async function updateCategoryServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating category:', error);
       throw new Error(error.message || 'Failed to update category');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No category was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating category server-side:', error);
     throw error;
@@ -369,6 +417,18 @@ export async function deleteCategoryServerSide(id: number) {
 
 export async function updateEPaperServerSide(id: number, updates: any) {
   try {
+    // First check if e-paper exists
+    const { data: existingEPaper, error: checkError } = await adminSupabase
+      .from('epapers')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingEPaper) {
+      throw new Error(`E-Paper with ID ${id} not found`);
+    }
+
+    // Now update the e-paper
     const { data, error } = await adminSupabase
       .from('epapers')
       .update({
@@ -376,15 +436,19 @@ export async function updateEPaperServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating e-paper:', error);
       throw new Error(error.message || 'Failed to update e-paper');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No e-paper was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating e-paper server-side:', error);
     throw error;
@@ -412,6 +476,18 @@ export async function deleteEPaperServerSide(id: number) {
 
 export async function updateAudioArticleServerSide(id: number, updates: any) {
   try {
+    // First check if audio article exists
+    const { data: existingAudio, error: checkError } = await adminSupabase
+      .from('audio_articles')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingAudio) {
+      throw new Error(`Audio article with ID ${id} not found`);
+    }
+
+    // Now update the audio article
     const { data, error } = await adminSupabase
       .from('audio_articles')
       .update({
@@ -419,15 +495,19 @@ export async function updateAudioArticleServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating audio article:', error);
       throw new Error(error.message || 'Failed to update audio article');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No audio article was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating audio article server-side:', error);
     throw error;
@@ -454,6 +534,18 @@ export async function deleteAudioArticleServerSide(id: number) {
 }
 export async function updateBreakingNewsServerSide(id: number, updates: any) {
   try {
+    // First check if breaking news exists
+    const { data: existingNews, error: checkError } = await adminSupabase
+      .from('breaking_news')
+      .select('id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingNews) {
+      throw new Error(`Breaking news with ID ${id} not found`);
+    }
+
+    // Now update the breaking news
     const { data, error } = await adminSupabase
       .from('breaking_news')
       .update({
@@ -461,15 +553,19 @@ export async function updateBreakingNewsServerSide(id: number, updates: any) {
         updated_at: new Date().toISOString()
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Supabase error updating breaking news:', error);
       throw new Error(error.message || 'Failed to update breaking news');
     }
 
-    return data;
+    // Return the first (and should be only) updated record
+    if (!data || data.length === 0) {
+      throw new Error('No breaking news was updated');
+    }
+
+    return data[0];
   } catch (error) {
     console.error('Error updating breaking news server-side:', error);
     throw error;

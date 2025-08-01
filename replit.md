@@ -20,6 +20,8 @@ Preferred communication style: Simple, everyday language.
 - Fixed "could not find column in schema cache" errors in admin edit functions
 - Implemented proper field validation and schema mapping for all admin APIs
 - All admin update functions now use clean field validation to prevent database errors
+- **FIXED**: "JSON object requested, multiple (or no) rows returned" error in all admin update operations
+- All admin CRUD operations now use proper error handling and existence checks before updates
 
 ### Admin System Fixes (August 1, 2025)
 - Fixed admin/articles and admin/settings pages not showing data
