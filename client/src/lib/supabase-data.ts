@@ -8,6 +8,8 @@ export const getArticles = async (limit = 10, offset = 0) => {
       *,
       category:categories(*)
     `)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
@@ -27,6 +29,8 @@ export const getArticleBySlug = async (slug: string) => {
       category:categories(*)
     `)
     .eq('slug', slug)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .single();
 
   if (error) {
@@ -56,6 +60,8 @@ export const getArticlesByCategory = async (categorySlug: string, limit = 10, of
       category:categories(*)
     `)
     .eq('category_id', category.id)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
     .range(offset, offset + limit - 1);
 

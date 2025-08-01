@@ -125,7 +125,7 @@ export async function getPopularArticles(limit = 5) {
   })) || [];
 }
 
-// Latest Articles API - Fixed column mapping
+// Latest Articles API - Fixed column mapping + DRAFT FILTER
 export async function getLatestArticles(limit = 10) {
   const { data, error } = await supabase
     .from('articles')
@@ -139,6 +139,8 @@ export async function getLatestArticles(limit = 10) {
       published_at,
       categories(id, name, slug)
     `)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
     .limit(limit);
 

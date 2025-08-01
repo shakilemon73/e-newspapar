@@ -154,6 +154,8 @@ export async function searchArticles(searchQuery: string, limit = 20, offset = 0
         published_at,
         categories(id, name, slug)
       `)
+      .eq('is_published', true)
+      .eq('status', 'published')
       .or(`title.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%,excerpt.ilike.%${searchQuery}%`)
       .order('published_at', { ascending: false })
       .range(offset, offset + limit - 1);

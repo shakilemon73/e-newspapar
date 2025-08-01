@@ -81,7 +81,7 @@ interface Article {
   ai_processed_at?: string;
   image_metadata?: any;
   author_id?: number;
-  categories?: {
+  category?: {
     id: number;
     name: string;
     slug: string;
@@ -192,11 +192,20 @@ export default function ArticlesAdminPage() {
         title: currentLanguage === 'bn' ? "স্ট্যাটাস পরিবর্তিত" : "Status Changed",
         description: currentLanguage === 'bn' ? "নিবন্ধের স্ট্যাটাস সফলভাবে পরিবর্তিত হয়েছে" : "Article status has been successfully changed",
       });
-      // Invalidate and refetch article-related queries
+      // Force immediate cache invalidation and refetch for real-time updates
       queryClient.invalidateQueries({ 
         predicate: (query) => query.queryKey[0] === 'admin-articles'
       });
+      queryClient.refetchQueries({ 
+        predicate: (query) => query.queryKey[0] === 'admin-articles'
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.refetchQueries({ queryKey: ['admin-dashboard-stats'] });
+      
+      // Also invalidate public article queries to prevent draft articles from showing
+      queryClient.invalidateQueries({ queryKey: ['articles'] });
+      queryClient.invalidateQueries({ queryKey: ['latest-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['popular-articles'] });
     },
     onError: (error: any) => {
       toast({
@@ -331,10 +340,10 @@ export default function ArticlesAdminPage() {
   };
 
   const handleStatusToggle = (article: Article) => {
-    const currentStatus = article.status === 'published' || article.is_published;
+    const currentStatus = article.status === 'published' || article.is_published === true;
     statusToggleMutation.mutate({ 
       id: article.id, 
-      currentStatus 
+      currentStatus: currentStatus || false
     });
   };
 

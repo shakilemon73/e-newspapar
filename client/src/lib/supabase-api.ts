@@ -22,6 +22,8 @@ export async function getArticles(params: {
       is_featured,
       categories(id, name, slug)
     `)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false });
 
   if (params.featured) {
@@ -76,6 +78,8 @@ export async function getArticleById(id: number) {
       categories(id, name, slug)
     `)
     .eq('id', id)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .single();
 
   if (error) {
@@ -101,6 +105,8 @@ export async function getLatestArticles(limit = 10) {
       is_featured,
       categories(id, name, slug)
     `)
+    .eq('is_published', true)
+    .eq('status', 'published')
     .order('published_at', { ascending: false })
     .limit(limit);
 
