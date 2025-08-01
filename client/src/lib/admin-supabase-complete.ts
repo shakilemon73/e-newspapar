@@ -256,15 +256,19 @@ export const articlesAPI = {
 
   async delete(id: number) {
     try {
+      console.log('🗑️ Deleting article with service role key (bypasses RLS)...');
+      
       const { error } = await adminSupabase
         .from('articles')
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
+      if (error) {
+        console.error('❌ Article deletion error:', error);
+        throw error;
       }
+      
+      console.log('✅ Article deleted successfully');
       return { success: true };
     } catch (error) {
       console.error('Error deleting article:', error);
@@ -381,9 +385,6 @@ export const breakingNewsAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting breaking news:', error);
@@ -487,9 +488,6 @@ export const categoriesAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -623,9 +621,6 @@ export const videosAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting video:', error);
@@ -722,9 +717,6 @@ export const epapersAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting e-paper:', error);
@@ -824,9 +816,6 @@ export const audioArticlesAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting audio article:', error);
@@ -885,9 +874,6 @@ export const usersAPI = {
         .eq('user_id', userId);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -1027,9 +1013,6 @@ export const socialMediaAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting social media post:', error);
@@ -1109,9 +1092,6 @@ export const footerPagesAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting footer page:', error);
@@ -1266,9 +1246,6 @@ export const weatherAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting weather data:', error);
@@ -1331,9 +1308,6 @@ export const commentsAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -1415,9 +1389,6 @@ export const emailNotificationsAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting subscriber:', error);
@@ -1495,9 +1466,6 @@ export const seoAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting SEO meta tag:', error);
@@ -1801,9 +1769,6 @@ export const advertisingAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting advertisement:', error);
@@ -1925,9 +1890,6 @@ export const authorsAPI = {
         .eq('id', id);
 
       if (error) throw error;
-      if (!data || data.length === 0) {
-        throw new Error('No data returned from operation');
-      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting author:', error);
