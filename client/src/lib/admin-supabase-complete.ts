@@ -81,6 +81,9 @@ export const dashboardAPI = {
         .limit(10);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching recent activity:', error);
@@ -179,16 +182,19 @@ export const articlesAPI = {
       const { data, error } = await adminSupabase
         .from('articles')
         .insert(articleToInsert)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('❌ Article creation error:', error);
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create article - no data returned');
+      }
       
       console.log('✅ Article created successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error creating article:', error);
       throw error;
@@ -224,8 +230,7 @@ export const articlesAPI = {
         .from('articles')
         .update(cleanUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('❌ Article update error details:', {
@@ -236,9 +241,13 @@ export const articlesAPI = {
         });
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        throw new Error(`Article with ID ${id} not found or could not be updated`);
+      }
       
       console.log('✅ Article updated successfully via service role');
-      return data;
+      return data[0]; // Return the first (and should be only) updated record
     } catch (error) {
       console.error('Error updating article:', error);
       throw error;
@@ -253,6 +262,9 @@ export const articlesAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting article:', error);
@@ -273,6 +285,9 @@ export const breakingNewsAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching breaking news:', error);
@@ -299,11 +314,16 @@ export const breakingNewsAPI = {
       const { data, error } = await adminSupabase
         .from('breaking_news')
         .insert(cleanData)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create breaking news - no data returned');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating breaking news:', error);
       throw error;
@@ -330,8 +350,7 @@ export const breakingNewsAPI = {
         .from('breaking_news')
         .update(cleanUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('❌ Breaking news update error:', {
@@ -341,9 +360,13 @@ export const breakingNewsAPI = {
         });
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        throw new Error(`Breaking news with ID ${id} not found or could not be updated`);
+      }
       
       console.log('✅ Breaking news updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating breaking news:', error);
       throw error;
@@ -358,6 +381,9 @@ export const breakingNewsAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting breaking news:', error);
@@ -378,6 +404,9 @@ export const categoriesAPI = {
         .order('name');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -392,11 +421,16 @@ export const categoriesAPI = {
       const { data, error } = await adminSupabase
         .from('categories')
         .insert({ ...categoryData, slug })
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create category - no data returned');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating category:', error);
       throw error;
@@ -426,16 +460,19 @@ export const categoriesAPI = {
         .from('categories')
         .update(cleanUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('❌ Category update error:', error);
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        throw new Error(`Category with ID ${id} not found or could not be updated`);
+      }
       
       console.log('✅ Category updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating category:', error);
       throw error;
@@ -450,6 +487,9 @@ export const categoriesAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -506,11 +546,16 @@ export const videosAPI = {
       const { data, error } = await adminSupabase
         .from('video_content')
         .insert(insertData)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create video - no data returned');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating video:', error);
       throw error;
@@ -551,16 +596,19 @@ export const videosAPI = {
         .from('video_content')
         .update(cleanUpdates)
         .eq('id', id)
-        .select()
-        .single();
+        .select();
 
       if (error) {
         console.error('❌ Video update error:', error);
         throw error;
       }
+
+      if (!data || data.length === 0) {
+        throw new Error(`Video with ID ${id} not found or could not be updated`);
+      }
       
       console.log('✅ Video updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating video:', error);
       throw error;
@@ -575,6 +623,9 @@ export const videosAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting video:', error);
@@ -595,6 +646,9 @@ export const epapersAPI = {
         .order('publish_date', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching e-papers:', error);
@@ -607,11 +661,16 @@ export const epapersAPI = {
       const { data, error } = await adminSupabase
         .from('epapers')
         .insert(epaperData)
-        .select()
-        .single();
+        .select();
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      if (!data || data.length === 0) {
+        throw new Error('Failed to create e-paper - no data returned');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating e-paper:', error);
       throw error;
@@ -640,7 +699,7 @@ export const epapersAPI = {
         .update(cleanUpdates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) {
         console.error('❌ E-paper update error:', error);
@@ -648,7 +707,7 @@ export const epapersAPI = {
       }
       
       console.log('✅ E-paper updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating e-paper:', error);
       throw error;
@@ -663,6 +722,9 @@ export const epapersAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting e-paper:', error);
@@ -683,6 +745,9 @@ export const audioArticlesAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching audio articles:', error);
@@ -696,10 +761,13 @@ export const audioArticlesAPI = {
         .from('audio_articles')
         .insert(audioData)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating audio article:', error);
       throw error;
@@ -733,7 +801,7 @@ export const audioArticlesAPI = {
         .update(cleanUpdates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) {
         console.error('❌ Audio article update error:', error);
@@ -741,7 +809,7 @@ export const audioArticlesAPI = {
       }
       
       console.log('✅ Audio article updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating audio article:', error);
       throw error;
@@ -756,6 +824,9 @@ export const audioArticlesAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting audio article:', error);
@@ -776,6 +847,9 @@ export const usersAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -790,10 +864,13 @@ export const usersAPI = {
         .update(updates)
         .eq('user_id', userId)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating user:', error);
       throw error;
@@ -808,6 +885,9 @@ export const usersAPI = {
         .eq('user_id', userId);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -828,6 +908,9 @@ export const analyticsAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching page views:', error);
@@ -844,6 +927,9 @@ export const analyticsAPI = {
         .limit(20);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching article stats:', error);
@@ -864,6 +950,9 @@ export const socialMediaAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching social media posts:', error);
@@ -880,10 +969,13 @@ export const socialMediaAPI = {
           published_at: postData.published_at || new Date().toISOString()
         })
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating social media post:', error);
       throw error;
@@ -912,7 +1004,7 @@ export const socialMediaAPI = {
         .update(cleanUpdates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) {
         console.error('❌ Social media post update error:', error);
@@ -920,7 +1012,7 @@ export const socialMediaAPI = {
       }
       
       console.log('✅ Social media post updated successfully');
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error updating social media post:', error);
       throw error;
@@ -935,6 +1027,9 @@ export const socialMediaAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting social media post:', error);
@@ -955,6 +1050,9 @@ export const footerPagesAPI = {
         .order('order_position');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching footer pages:', error);
@@ -970,10 +1068,13 @@ export const footerPagesAPI = {
         .from('footer_pages')
         .insert({ ...pageData, slug })
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating footer page:', error);
       throw error;
@@ -987,10 +1088,13 @@ export const footerPagesAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating footer page:', error);
       throw error;
@@ -1005,6 +1109,9 @@ export const footerPagesAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting footer page:', error);
@@ -1062,10 +1169,13 @@ export const settingsAPI = {
         .from('site_settings')
         .upsert({ key, value })
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating setting:', error);
       throw error;
@@ -1099,6 +1209,9 @@ export const weatherAPI = {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching weather data:', error);
@@ -1112,10 +1225,13 @@ export const weatherAPI = {
         .from('weather')
         .insert(weatherData)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating weather data:', error);
       throw error;
@@ -1129,10 +1245,13 @@ export const weatherAPI = {
         .update(weatherData)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating weather:', error);
       throw error;
@@ -1147,6 +1266,9 @@ export const weatherAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting weather data:', error);
@@ -1171,6 +1293,9 @@ export const commentsAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -1185,10 +1310,13 @@ export const commentsAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating comment:', error);
       throw error;
@@ -1203,6 +1331,9 @@ export const commentsAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -1223,6 +1354,9 @@ export const trendingAnalyticsAPI = {
         .order('score', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching trending topics:', error);
@@ -1237,10 +1371,13 @@ export const trendingAnalyticsAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating trending topic:', error);
       throw error;
@@ -1260,6 +1397,9 @@ export const emailNotificationsAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching subscribers:', error);
@@ -1275,6 +1415,9 @@ export const emailNotificationsAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting subscriber:', error);
@@ -1295,6 +1438,9 @@ export const seoAPI = {
         .order('page_path');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching SEO meta tags:', error);
@@ -1308,10 +1454,13 @@ export const seoAPI = {
         .from('seo_meta_tags')
         .insert(metaData)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating SEO meta tag:', error);
       throw error;
@@ -1325,10 +1474,13 @@ export const seoAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating SEO meta tag:', error);
       throw error;
@@ -1343,6 +1495,9 @@ export const seoAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting SEO meta tag:', error);
@@ -1363,6 +1518,9 @@ export const searchManagementAPI = {
         .order('count', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching search queries:', error);
@@ -1379,6 +1537,9 @@ export const searchManagementAPI = {
         .limit(10);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error searching articles:', error);
@@ -1422,6 +1583,9 @@ export const databaseAPI = {
         .select('*');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { data, tableName, timestamp: new Date().toISOString() };
     } catch (error) {
       console.error('Error backing up table:', error);
@@ -1444,6 +1608,9 @@ export const performanceAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching performance metrics:', error);
@@ -1460,6 +1627,9 @@ export const performanceAPI = {
         .limit(1);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { 
         database: 'healthy',
         timestamp: new Date().toISOString(),
@@ -1489,6 +1659,9 @@ export const securityAPI = {
         .limit(100);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching security logs:', error);
@@ -1502,10 +1675,13 @@ export const securityAPI = {
         .from('security_logs')
         .insert(logData)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating security log:', error);
       throw error;
@@ -1525,6 +1701,9 @@ export const algorithmsAPI = {
         .order('name');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching algorithm settings:', error);
@@ -1539,10 +1718,13 @@ export const algorithmsAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating algorithm setting:', error);
       throw error;
@@ -1562,6 +1744,9 @@ export const advertisingAPI = {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching advertisements:', error);
@@ -1575,10 +1760,13 @@ export const advertisingAPI = {
         .from('advertisements')
         .insert(adData)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating advertisement:', error);
       throw error;
@@ -1592,10 +1780,13 @@ export const advertisingAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating advertisement:', error);
       throw error;
@@ -1610,6 +1801,9 @@ export const advertisingAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting advertisement:', error);
@@ -1630,6 +1824,9 @@ export const mobileAppAPI = {
         .order('setting_key');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching mobile app settings:', error);
@@ -1643,10 +1840,13 @@ export const mobileAppAPI = {
         .from('mobile_app_settings')
         .upsert({ setting_key: key, setting_value: value })
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating mobile app setting:', error);
       throw error;
@@ -1666,6 +1866,9 @@ export const authorsAPI = {
         .order('name');
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return data || [];
     } catch (error) {
       console.error('Error fetching authors:', error);
@@ -1681,10 +1884,13 @@ export const authorsAPI = {
         .from('authors')
         .insert({ ...authorData, slug })
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error creating author:', error);
       throw error;
@@ -1698,10 +1904,13 @@ export const authorsAPI = {
         .update(updates)
         .eq('id', id)
         .select()
-        .single();
+        
 
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
+      return data[0];
     } catch (error) {
       console.error('Error updating author:', error);
       throw error;
@@ -1716,6 +1925,9 @@ export const authorsAPI = {
         .eq('id', id);
 
       if (error) throw error;
+      if (!data || data.length === 0) {
+        throw new Error('No data returned from operation');
+      }
       return { success: true };
     } catch (error) {
       console.error('Error deleting author:', error);
