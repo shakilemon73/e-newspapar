@@ -509,7 +509,13 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
         title: '✅ সফল',
         description: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/articles'] });
+      
+      // Invalidate all related queries to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-recent-activity'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/articles'] }); // Legacy fallback
+      
       onSave?.();
     },
     onError: (error: Error) => {
