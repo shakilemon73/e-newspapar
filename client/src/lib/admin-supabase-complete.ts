@@ -95,6 +95,9 @@ export const dashboardAPI = {
 export const articlesAPI = {
   async getAll(page = 1, limit = 20, search = '', category = '') {
     try {
+      console.log('🔍 Fetching articles with admin service role key...');
+      
+      // First try with joins
       let query = adminSupabase
         .from('articles')
         .select(`
@@ -116,14 +119,36 @@ export const articlesAPI = {
         .range((page - 1) * limit, page * limit - 1);
 
       if (error) {
-        console.error('Error fetching articles:', error);
-        // Return empty result instead of throwing
-        return { data: [], count: 0 };
+        console.error('Error fetching articles with joins:', error);
+        
+        // Fallback: Try without joins
+        try {
+          console.log('🔄 Trying articles without joins...');
+          const fallbackQuery = adminSupabase
+            .from('articles')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .range((page - 1) * limit, page * limit - 1);
+
+          const fallbackResult = await fallbackQuery;
+          
+          if (fallbackResult.error) {
+            console.error('Fallback query also failed:', fallbackResult.error);
+            return { data: [], count: 0 };
+          }
+          
+          console.log('✅ Articles fetched successfully without joins:', fallbackResult.data?.length || 0);
+          return { data: fallbackResult.data || [], count: fallbackResult.count || 0 };
+        } catch (fallbackError) {
+          console.error('Fallback fetch failed:', fallbackError);
+          return { data: [], count: 0 };
+        }
       }
+      
+      console.log('✅ Articles fetched successfully with joins:', data?.length || 0);
       return { data: data || [], count: count || 0 };
     } catch (error) {
-      console.error('Error fetching articles:', error);
-      // Return empty result instead of throwing
+      console.error('Error in articles getAll:', error);
       return { data: [], count: 0 };
     }
   },
