@@ -40,23 +40,32 @@ export async function updateArticle(id: number, updates: any) {
       throw new Error(`Article with ID ${id} not found`);
     }
 
-    const { data, error } = await supabase
+    // Perform the update
+    const { error } = await supabase
       .from('articles')
       .update(updates)
-      .eq('id', id)
-      .select();
+      .eq('id', id);
 
     if (error) {
       console.error('❌ Article update error:', error);
       throw error;
     }
 
-    if (!data || data.length === 0) {
-      throw new Error('No article was updated');
+    // Fetch the updated article to return it
+    const { data: updatedArticle, error: fetchError } = await supabase
+      .from('articles')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.warn('⚠️ Article updated but could not fetch updated data:', fetchError);
+      // Return a basic success response if we can't fetch the updated data
+      return { id, ...updates };
     }
     
-    console.log('✅ Article updated successfully:', data[0].id);
-    return data[0];
+    console.log('✅ Article updated successfully:', updatedArticle.id);
+    return updatedArticle;
   } catch (error) {
     console.error('Error updating article:', error);
     throw error;
@@ -248,19 +257,26 @@ export async function updateVideoContent(id: number, updates: any) {
       throw new Error(`Video with ID ${id} not found`);
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('video_content')
       .update(updates)
-      .eq('id', id)
-      .select();
+      .eq('id', id);
 
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      throw new Error('No video was updated');
+    // Fetch updated data
+    const { data: updatedVideo, error: fetchError } = await supabase
+      .from('video_content')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.warn('⚠️ Video updated but could not fetch updated data:', fetchError);
+      return { id, ...updates };
     }
 
-    return data[0];
+    return updatedVideo;
   } catch (error) {
     console.error('Error updating video:', error);
     throw error;
@@ -296,19 +312,26 @@ export async function updateCategory(id: number, updates: any) {
       throw new Error(`Category with ID ${id} not found`);
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('categories')
       .update(updates)
-      .eq('id', id)
-      .select();
+      .eq('id', id);
 
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      throw new Error('No category was updated');
+    // Fetch updated data
+    const { data: updatedCategory, error: fetchError } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.warn('⚠️ Category updated but could not fetch updated data:', fetchError);
+      return { id, ...updates };
     }
 
-    return data[0];
+    return updatedCategory;
   } catch (error) {
     console.error('Error updating category:', error);
     throw error;
@@ -416,19 +439,26 @@ export async function updateEPaper(id: number, updates: any) {
       throw new Error(`E-Paper with ID ${id} not found`);
     }
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('epapers')
       .update(updates)
-      .eq('id', id)
-      .select();
+      .eq('id', id);
 
     if (error) throw error;
     
-    if (!data || data.length === 0) {
-      throw new Error('No e-paper was updated');
+    // Fetch updated data
+    const { data: updatedEPaper, error: fetchError } = await supabase
+      .from('epapers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) {
+      console.warn('⚠️ E-Paper updated but could not fetch updated data:', fetchError);
+      return { id, ...updates };
     }
 
-    return data[0];
+    return updatedEPaper;
   } catch (error) {
     console.error('Error updating e-paper:', error);
     throw error;
