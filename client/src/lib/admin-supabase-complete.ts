@@ -97,14 +97,10 @@ export const articlesAPI = {
     try {
       console.log('🔍 Fetching articles with admin service role key...');
       
-      // First try with joins
+      // Use a simplified approach without joins to avoid permission issues
       let query = adminSupabase
         .from('articles')
-        .select(`
-          *,
-          authors(name, slug),
-          categories(name, slug)
-        `)
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
 
       if (search) {
@@ -119,36 +115,40 @@ export const articlesAPI = {
         .range((page - 1) * limit, page * limit - 1);
 
       if (error) {
-        console.error('Error fetching articles with joins:', error);
-        
-        // Fallback: Try without joins
+        console.error('❌ Error fetching articles:', error);
+        return { data: [], count: 0 };
+      }
+      
+      // If we have articles, fetch category names separately to avoid join issues
+      if (data && data.length > 0) {
         try {
-          console.log('🔄 Trying articles without joins...');
-          const fallbackQuery = adminSupabase
-            .from('articles')
-            .select('*', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .range((page - 1) * limit, page * limit - 1);
+          const categoryIds = [...new Set(data.map(article => article.category_id).filter(Boolean))];
+          const { data: categories } = await adminSupabase
+            .from('categories')
+            .select('id, name, slug')
+            .in('id', categoryIds);
 
-          const fallbackResult = await fallbackQuery;
-          
-          if (fallbackResult.error) {
-            console.error('Fallback query also failed:', fallbackResult.error);
-            return { data: [], count: 0 };
-          }
-          
-          console.log('✅ Articles fetched successfully without joins:', fallbackResult.data?.length || 0);
-          return { data: fallbackResult.data || [], count: fallbackResult.count || 0 };
-        } catch (fallbackError) {
-          console.error('Fallback fetch failed:', fallbackError);
-          return { data: [], count: 0 };
+          // Add category names to articles
+          const articlesWithCategories = data.map(article => {
+            const category = categories?.find(cat => cat.id === article.category_id);
+            return {
+              ...article,
+              category: category ? { name: category.name, slug: category.slug } : null
+            };
+          });
+
+          console.log('✅ Articles fetched successfully with categories:', articlesWithCategories.length);
+          return { data: articlesWithCategories, count: count || 0 };
+        } catch (categoryError) {
+          console.warn('⚠️ Failed to fetch categories, returning articles without category names:', categoryError);
+          return { data, count: count || 0 };
         }
       }
       
-      console.log('✅ Articles fetched successfully with joins:', data?.length || 0);
+      console.log('✅ Articles fetched successfully:', data?.length || 0);
       return { data: data || [], count: count || 0 };
     } catch (error) {
-      console.error('Error in articles getAll:', error);
+      console.error('❌ Error in articles getAll:', error);
       return { data: [], count: 0 };
     }
   },
