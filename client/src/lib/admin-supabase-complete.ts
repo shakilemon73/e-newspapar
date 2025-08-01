@@ -324,10 +324,7 @@ export const breakingNewsAPI = {
         }
       });
       
-      // Always update the timestamp if the column exists
-      if (updates.updated_at !== undefined) {
-        cleanUpdates.updated_at = new Date().toISOString();
-      }
+      // Remove any timestamp fields - they don't exist in breaking_news table
 
       const { data, error } = await adminSupabase
         .from('breaking_news')
