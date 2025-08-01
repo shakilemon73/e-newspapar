@@ -33,6 +33,12 @@ class EnhancedStorage {
       return;
     }
 
+    // Skip storage operations for admin pages to avoid permission conflicts
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+      console.log('Admin page detected - skipping user storage operation');
+      return;
+    }
+
     try {
       const { error } = await supabase.rpc('upsert_user_storage', {
         p_user_id: this.currentUserId,
@@ -41,12 +47,14 @@ class EnhancedStorage {
       });
 
       if (error) {
-        console.error('Error storing data in Supabase:', error);
-        throw error;
+        console.warn('Error storing data in Supabase (non-critical):', error.message);
+        // Don't throw error - make it non-blocking
+        return;
       }
     } catch (err) {
-      console.error('Storage setItem failed:', err);
-      throw err;
+      console.warn('Storage setItem failed (non-critical):', err);
+      // Don't throw error - make it non-blocking  
+      return;
     }
   }
 

@@ -126,7 +126,7 @@ export const articlesAPI = {
           console.log('🔄 Trying articles without joins...');
           const fallbackQuery = adminSupabase
             .from('articles')
-            .select('*')
+            .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
             .range((page - 1) * limit, page * limit - 1);
 
