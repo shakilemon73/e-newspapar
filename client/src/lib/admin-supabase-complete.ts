@@ -497,22 +497,47 @@ export const videosAPI = {
 
   async update(id: number, updates: any) {
     try {
-      // Map common field names to proper database schema
-      const updateData = {
-        ...updates,
-        video_url: updates.videoUrl || updates.video_url,
-        thumbnail_url: updates.thumbnailUrl || updates.thumbnail_url,
-        updated_at: new Date().toISOString()
-      };
+      console.log('🔧 Updating video with service role key (bypasses RLS)...');
       
+      // Clean the updates object for video_content table
+      const cleanUpdates: any = {};
+      const validFields = ['title', 'slug', 'description', 'video_url', 'thumbnail_url', 'duration', 'published_at', 'view_count'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Handle field name mapping
+      if (updates.videoUrl && !cleanUpdates.video_url) {
+        cleanUpdates.video_url = updates.videoUrl;
+      }
+      if (updates.thumbnailUrl && !cleanUpdates.thumbnail_url) {
+        cleanUpdates.thumbnail_url = updates.thumbnailUrl;
+      }
+      
+      // Auto-generate slug if title is being updated but slug isn't provided
+      if (cleanUpdates.title && !cleanUpdates.slug) {
+        cleanUpdates.slug = generateSlug(cleanUpdates.title);
+      }
+      
+      // Always update the timestamp
+      cleanUpdates.updated_at = new Date().toISOString();
+
       const { data, error } = await adminSupabase
         .from('video_content')
-        .update(updateData)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Video update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Video updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating video:', error);
@@ -573,14 +598,34 @@ export const epapersAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating e-paper with service role key (bypasses RLS)...');
+      
+      // Clean the updates object for epapers table
+      const cleanUpdates: any = {};
+      const validFields = ['title', 'publish_date', 'image_url', 'pdf_url', 'is_latest', 'description'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Always update the timestamp
+      cleanUpdates.updated_at = new Date().toISOString();
+
       const { data, error } = await adminSupabase
         .from('epapers')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ E-paper update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ E-paper updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating e-paper:', error);
@@ -641,14 +686,39 @@ export const audioArticlesAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating audio article with service role key (bypasses RLS)...');
+      
+      // Clean the updates object for audio_articles table
+      const cleanUpdates: any = {};
+      const validFields = ['title', 'slug', 'excerpt', 'image_url', 'audio_url', 'duration', 'published_at'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Auto-generate slug if title is being updated but slug isn't provided
+      if (cleanUpdates.title && !cleanUpdates.slug) {
+        cleanUpdates.slug = generateSlug(cleanUpdates.title);
+      }
+      
+      // Always update the timestamp
+      cleanUpdates.updated_at = new Date().toISOString();
+
       const { data, error } = await adminSupabase
         .from('audio_articles')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Audio article update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Audio article updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating audio article:', error);
@@ -800,17 +870,34 @@ export const socialMediaAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating social media post with service role key (bypasses RLS)...');
+      
+      // Clean the updates object for social_media_posts table
+      const cleanUpdates: any = {};
+      const validFields = ['platform', 'content', 'image_url', 'link_url', 'status', 'published_at', 'engagement_metrics'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Always update the timestamp
+      cleanUpdates.updated_at = new Date().toISOString();
+
       const { data, error } = await adminSupabase
         .from('social_media_posts')
-        .update({
-          ...updates,
-          updated_at: new Date().toISOString()
-        })
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Social media post update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Social media post updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating social media post:', error);

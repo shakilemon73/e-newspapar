@@ -17,6 +17,9 @@ Preferred communication style: Simple, everyday language.
 - All admin functions now working properly with direct Supabase integration
 - Service role key properly configured for admin operations
 - All TypeScript errors resolved
+- Fixed "could not find column in schema cache" errors in admin edit functions
+- Implemented proper field validation and schema mapping for all admin APIs
+- All admin update functions now use clean field validation to prevent database errors
 
 ### Admin System Fixes (August 1, 2025)
 - Fixed admin/articles and admin/settings pages not showing data
