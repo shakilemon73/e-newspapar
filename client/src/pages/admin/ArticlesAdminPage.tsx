@@ -31,8 +31,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin-supabase-direct';
-import { createArticle, updateArticle, deleteArticle } from '@/lib/admin-crud-fixed';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { DateFormatter, formatDate } from '@/components/DateFormatter';
 import { getRelativeTimeInBengali, formatBengaliDate } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';
@@ -114,7 +113,7 @@ export default function ArticlesAdminPage() {
   // Fetch categories for filter
   const { data: categories = [] } = useQuery({
     queryKey: ['admin-categories'],
-    queryFn: getAdminCategoriesDirect,
+    queryFn: adminSupabaseAPI.categories.getAll,
   });
 
   // Fetch articles with filters
@@ -133,23 +132,18 @@ export default function ArticlesAdminPage() {
       sortBy,
       sortOrder
     }],
-    queryFn: () => getAdminArticlesDirect({
-      page: currentPage,
-      limit: pageSize,
-      search: searchTerm,
-      category: selectedCategory === 'all' ? undefined : selectedCategory,
-      sortBy,
-      sortOrder
-    }),
+    queryFn: () => adminSupabaseAPI.articles.getAll(
+      currentPage,
+      pageSize,
+      searchTerm,
+      selectedCategory === 'all' ? '' : selectedCategory
+    ),
 
   });
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const { deleteArticleDirect } = await import('@/lib/admin-supabase-direct');
-      return deleteArticleDirect(id);
-    },
+    mutationFn: (id: number) => adminSupabaseAPI.articles.delete(id),
     onSuccess: () => {
       toast({
         title: currentLanguage === 'bn' ? "নিবন্ধ মুছে ফেলা হয়েছে" : "Article Deleted",
@@ -446,7 +440,7 @@ export default function ArticlesAdminPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">{t.allCategories}</SelectItem>
-                        {categories.map((category: any) => (
+                        {categories?.map((category: any) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
                           </SelectItem>

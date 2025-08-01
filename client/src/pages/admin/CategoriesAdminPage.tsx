@@ -18,7 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminCategoriesDirect, createCategoryDirect, deleteCategoryDirect, updateCategoryDirect } from '@/lib/admin-supabase-direct';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 // Using useQueryClient hook for query invalidation
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -107,7 +107,7 @@ export default function CategoriesAdminPage() {
   // Fetch categories using direct Supabase API
   const { data: categories, isLoading, error } = useQuery({
     queryKey: ['admin-categories'],
-    queryFn: () => getAdminCategoriesDirect(),
+    queryFn: adminSupabaseAPI.categories.getAll,
   });
 
   // Fetch articles to count per category
@@ -129,9 +129,9 @@ export default function CategoriesAdminPage() {
   const saveMutation = useMutation({
     mutationFn: async (data: CategoryFormValues) => {
       if (mode === 'create') {
-        return await createCategoryDirect(data);
+        return await adminSupabaseAPI.categories.create(data);
       } else {
-        return await updateCategoryDirect(selectedCategory.id, data);
+        return await adminSupabaseAPI.categories.update(selectedCategory.id, data);
       }
     },
     onSuccess: () => {

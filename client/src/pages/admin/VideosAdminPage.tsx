@@ -21,7 +21,7 @@ import {
   Users
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { getAdminVideos, createVideoContent, updateVideoContent, deleteVideoContent } from '@/lib/admin-api-direct';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -63,7 +63,7 @@ export default function VideosAdminPage() {
   // Fetch videos using direct Supabase API
   const { data: videosData, isLoading, error } = useQuery({
     queryKey: ['admin-videos'],
-    queryFn: () => getAdminVideos(),
+    queryFn: adminSupabaseAPI.videos.getAll,
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
@@ -72,7 +72,7 @@ export default function VideosAdminPage() {
 
   // Create video mutation using direct Supabase API
   const createVideoMutation = useMutation({
-    mutationFn: (videoData: any) => createVideoContent(videoData),
+    mutationFn: (videoData: any) => adminSupabaseAPI.videos.create(videoData),
     onSuccess: () => {
       // Invalidate and refetch video-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-videos'] });
@@ -96,7 +96,7 @@ export default function VideosAdminPage() {
 
   // Update video mutation using direct Supabase API
   const updateVideoMutation = useMutation({
-    mutationFn: ({ id, ...videoData }: any) => updateVideoContent(id, videoData),
+    mutationFn: ({ id, ...videoData }: any) => adminSupabaseAPI.videos.update(id, videoData),
     onSuccess: () => {
       // Invalidate and refetch video-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-videos'] });

@@ -27,12 +27,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  getAdminComments, 
-  updateCommentStatus, 
-  deleteCommentAdmin, 
-  replyToComment 
-} from '@/lib/admin-supabase-direct';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,

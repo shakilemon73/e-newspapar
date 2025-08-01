@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { getAdminSocialPosts, createSocialPost, updateSocialPost, deleteSocialPost } from '@/lib/admin-api-direct';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { useToast } from '@/hooks/use-toast';
 
 interface SocialMediaPost {

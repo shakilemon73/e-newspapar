@@ -24,7 +24,7 @@ import {
   Save,
   X
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 
 interface TeamMember {
   id: number;

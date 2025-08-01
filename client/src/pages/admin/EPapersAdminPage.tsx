@@ -24,23 +24,21 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  getAdminEPapers,
-  createEPaper,
-  updateEPaper,
-  deleteEPaper,
-  setLatestEPaper,
-  toggleEPaperPublishStatus,
-  generateEPaperFromArticles,
-  getArticlesForEPaper,
-  type EPaperGenerationOptions,
-  type EPaperData
-} from '@/lib/epaper-admin-api';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-// Use EPaperData from the API module
-type EPaper = EPaperData;
+interface EPaper {
+  id: number;
+  title: string;
+  publish_date: string;
+  image_url?: string;
+  pdf_url?: string;
+  is_latest: boolean;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 export default function EPapersAdminPage() {
   const { toast } = useToast();
