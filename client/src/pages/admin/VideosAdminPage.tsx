@@ -68,7 +68,7 @@ export default function VideosAdminPage() {
   });
 
   // Extract videos array from the response
-  const videos = videosData?.videos || [];
+  const videos = videosData || [];
 
   // Create video mutation using direct Supabase API
   const createVideoMutation = useMutation({

@@ -73,16 +73,16 @@ export default function SocialMediaAdminPage() {
   // Fetch social media posts using direct Supabase API
   const { data: socialData, isLoading, error } = useQuery({
     queryKey: ['admin-social-posts'],
-    queryFn: () => getAdminSocialPosts(),
+    queryFn: adminSupabaseAPI.socialMedia.getAll,
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Extract social posts array from the response
-  const socialPosts = socialData?.posts || [];
+  const socialPosts = socialData || [];
 
   // Create social media post mutation
   const createPostMutation = useMutation({
-    mutationFn: (postData: any) => createSocialPost(postData),
+    mutationFn: (postData: any) => adminSupabaseAPI.socialMedia.create(postData),
     onSuccess: () => {
       // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });
@@ -106,7 +106,7 @@ export default function SocialMediaAdminPage() {
 
   // Update social media post mutation
   const updatePostMutation = useMutation({
-    mutationFn: ({ id, ...postData }: any) => updateSocialPost(id, postData),
+    mutationFn: ({ id, ...postData }: any) => adminSupabaseAPI.socialMedia.update(id, postData),
     onSuccess: () => {
       // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });

@@ -158,7 +158,7 @@ export default function CategoriesAdminPage() {
 
   // Delete mutation using direct Supabase API
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteCategoryDirect(id),
+    mutationFn: (id: number) => adminSupabaseAPI.categories.delete(id),
     onSuccess: () => {
       // Invalidate and refetch category-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-categories'] });

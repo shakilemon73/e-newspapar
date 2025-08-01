@@ -100,7 +100,7 @@ export default function UsersAdminPage() {
   const { data: usersData, isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     retry: false,
-    queryFn: () => getAdminUsers(),
+    queryFn: adminSupabaseAPI.users.getAll,
   });
 
   // Extract users array from the response
@@ -112,7 +112,7 @@ export default function UsersAdminPage() {
     retry: false,
     queryFn: async () => {
       try {
-        const stats = await getAdminUsers();
+        const stats = await adminSupabaseAPI.users.getAll();
         if (stats && stats.users) {
           const usersData = stats.users;
           const totalUsers = usersData.length;
@@ -155,7 +155,7 @@ export default function UsersAdminPage() {
 
   // Update user role mutation using direct Supabase API
   const updateRoleMutation = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: string }) => updateUserRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: string }) => adminSupabaseAPI.users.updateRole(userId, role),
     onSuccess: () => {
       toast({
         title: 'User role updated',

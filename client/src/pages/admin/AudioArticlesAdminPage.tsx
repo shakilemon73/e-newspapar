@@ -64,16 +64,16 @@ export default function AudioArticlesAdminPage() {
   // Fetch audio articles using direct Supabase API
   const { data: audioData, isLoading, error } = useQuery({
     queryKey: ['admin-audio-articles'],
-    queryFn: () => getAdminAudioArticles(),
+    queryFn: adminSupabaseAPI.audioArticles.getAll,
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Extract audio articles array from the response
-  const audioArticles = audioData?.audioArticles || [];
+  const audioArticles = audioData || [];
 
   // Create audio article mutation using direct Supabase API
   const createAudioMutation = useMutation({
-    mutationFn: (audioData: any) => createAudioArticle(audioData),
+    mutationFn: (audioData: any) => adminSupabaseAPI.audioArticles.create(audioData),
     onSuccess: () => {
       // Invalidate and refetch audio article-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-audio-articles'] });
@@ -99,7 +99,7 @@ export default function AudioArticlesAdminPage() {
   // Update audio article mutation
   const updateAudioMutation = useMutation({
     mutationFn: async ({ id, ...audioData }: any) => {
-      return await updateAudioArticle(id, audioData);
+      return await adminSupabaseAPI.audioArticles.update(id, audioData);
     },
     onSuccess: () => {
       // Invalidate and refetch audio article-related queries

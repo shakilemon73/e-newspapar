@@ -118,10 +118,7 @@ export default function BreakingNewsAdminPage() {
   // Fetch breaking news using direct Supabase API
   const { data: breakingNews, isLoading, error } = useQuery({
     queryKey: ['admin-breaking-news'],
-    queryFn: async () => {
-      const { getBreakingNews } = await import('../../lib/admin-api-direct');
-      return await getBreakingNews();
-    },
+    queryFn: adminSupabaseAPI.breakingNews.getAll,
   });
 
   // Fetch articles for selection
@@ -145,9 +142,9 @@ export default function BreakingNewsAdminPage() {
       };
       
       if (mode === 'create') {
-        return await createBreakingNews(payload);
+        return await adminSupabaseAPI.breakingNews.create(payload);
       } else {
-        return await updateBreakingNews(selectedNews.id, payload);
+        return await adminSupabaseAPI.breakingNews.update(selectedNews.id, payload);
       }
     },
     onSuccess: () => {
@@ -174,7 +171,7 @@ export default function BreakingNewsAdminPage() {
 
   // Delete mutation using direct Supabase API
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => deleteBreakingNews(id),
+    mutationFn: (id: number) => adminSupabaseAPI.breakingNews.delete(id),
     onSuccess: () => {
       // Invalidate and refetch breaking news queries
       queryClient.invalidateQueries({ queryKey: ['admin-breaking-news'] });
@@ -200,7 +197,7 @@ export default function BreakingNewsAdminPage() {
   // Toggle active status mutation using direct Supabase API
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) => 
-      updateBreakingNews(id, { is_active }),
+      adminSupabaseAPI.breakingNews.update(id, { is_active }),
     onSuccess: () => {
       // Invalidate and refetch breaking news queries
       queryClient.invalidateQueries({ queryKey: ['admin-breaking-news'] });

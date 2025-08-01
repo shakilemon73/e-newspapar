@@ -88,11 +88,11 @@ export default function EPapersAdminPage() {
   // Fetch e-papers using direct admin API
   const { data: epapersData, isLoading, error } = useQuery({
     queryKey: ['admin-epapers'],
-    queryFn: () => getAdminEPapers(),
+    queryFn: adminSupabaseAPI.epapers.getAll,
   });
 
   // Extract e-papers array from the response
-  const epapers = epapersData?.epapers || [];
+  const epapers = epapersData || [];
 
   // Fetch available categories for generation
   const { data: categories } = useQuery({
@@ -108,13 +108,9 @@ export default function EPapersAdminPage() {
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       if (isEditing && selectedEpaper) {
-        const result = await updateEPaper(selectedEpaper.id!, data);
-        if (!result.success) throw new Error(result.error);
-        return result;
+        return await adminSupabaseAPI.epapers.update(selectedEpaper.id!, data);
       } else {
-        const result = await createEPaper(data);
-        if (!result.success) throw new Error(result.error);
-        return result;
+        return await adminSupabaseAPI.epapers.create(data);
       }
     },
     onSuccess: () => {
@@ -137,11 +133,7 @@ export default function EPapersAdminPage() {
 
   // Delete mutation using direct admin API
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const result = await deleteEPaper(id);
-      if (!result.success) throw new Error(result.error);
-      return result;
-    },
+    mutationFn: (id: number) => adminSupabaseAPI.epapers.delete(id),
     onSuccess: () => {
       toast({
         title: 'E-paper deleted',
@@ -161,7 +153,7 @@ export default function EPapersAdminPage() {
 
   // Auto Generation mutation
   const generateMutation = useMutation({
-    mutationFn: generateEPaperFromArticles,
+    mutationFn: adminSupabaseAPI.epapers.generate,
     onSuccess: (result) => {
       // Show PDF preview instead of immediately saving
       setGeneratedPdf({
@@ -191,7 +183,7 @@ export default function EPapersAdminPage() {
 
   // Set Latest mutation
   const setLatestMutation = useMutation({
-    mutationFn: setLatestEPaper,
+    mutationFn: (id: number) => adminSupabaseAPI.epapers.setAsLatest(id),
     onSuccess: () => {
       toast({
         title: 'Latest E-paper Updated',
@@ -211,7 +203,7 @@ export default function EPapersAdminPage() {
   // Toggle Publish mutation
   const togglePublishMutation = useMutation({
     mutationFn: ({ id, isPublished }: { id: number; isPublished: boolean }) => 
-      toggleEPaperPublishStatus(id, isPublished),
+      adminSupabaseAPI.epapers.update(id, { is_published: isPublished }),
     onSuccess: () => {
       toast({
         title: 'Publish Status Updated',
