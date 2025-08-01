@@ -64,7 +64,7 @@ export default function SettingsAdminPageMigrated() {
 
   // Update form state when settings are loaded
   useEffect(() => {
-    if (settings) {
+    if (settings && typeof settings === 'object' && !Array.isArray(settings)) {
       setSiteSettings({
         siteName: settings.siteName || '',
         siteDescription: settings.siteDescription || '',

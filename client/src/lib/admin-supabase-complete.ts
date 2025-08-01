@@ -801,7 +801,14 @@ export const settingsAPI = {
         .order('key');
 
       if (error) throw error;
-      return data || [];
+      
+      // Convert array of key-value pairs to object
+      const settingsObject = (data || []).reduce((acc: any, setting: any) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {});
+      
+      return settingsObject;
     } catch (error) {
       console.error('Error fetching settings:', error);
       throw error;

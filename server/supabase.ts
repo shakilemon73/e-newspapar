@@ -17,7 +17,7 @@ if (result.error) console.log('Dotenv error:', result.error);
 // SECURITY: Environment variables only - no hardcoded fallbacks
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_KEY;
+const supabaseServiceKey = process.env.VITE_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // SECURITY: Strict validation of environment variables
 if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceKey) {
