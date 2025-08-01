@@ -504,18 +504,36 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
         throw error;
       }
     },
-    onSuccess: () => {
+    onSuccess: (updatedArticle) => {
+      console.log('🎉 Article save success! Updated article:', updatedArticle);
+      
       toast({
         title: '✅ সফল',
         description: `নিবন্ধ ${mode === 'create' ? 'তৈরি' : 'আপডেট'} হয়েছে`,
       });
       
-      // Invalidate all related queries to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ['admin-articles'] });
+      console.log('🔄 Invalidating cache...');
+      
+      // Invalidate all related queries to refresh the UI - FIXED QUERY KEY PATTERN
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          console.log('🔍 Checking query for invalidation:', query.queryKey);
+          return query.queryKey[0] === 'admin-articles';
+        }
+      });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['admin-recent-activity'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/articles'] }); // Legacy fallback
       
+      console.log('🔄 Force refetching queries...');
+      // Force refetch all article-related queries
+      queryClient.refetchQueries({ 
+        predicate: (query) => {
+          return query.queryKey[0] === 'admin-articles';
+        }
+      });
+      
+      console.log('✅ Cache invalidation complete');
       onSave?.();
     },
     onError: (error: Error) => {
