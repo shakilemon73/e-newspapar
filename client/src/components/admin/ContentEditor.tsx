@@ -57,7 +57,7 @@ import {
   Brain
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createArticle, updateArticle, getAdminCategories } from '@/lib/admin-api-direct';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 import { contentEditorAI, type TitleSuggestion, type ArticleSummary, type SEOSuggestions } from '@/lib/content-editor-ai';
@@ -207,8 +207,8 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
 
   // Categories query
   const { data: categories } = useQuery({
-    queryKey: ['/api/admin/categories'],
-    queryFn: getAdminCategories,
+    queryKey: ['admin-categories'],
+    queryFn: adminSupabaseAPI.categories.getAll,
   });
 
   // Authors query - Fixed to load from Supabase authors table
@@ -495,9 +495,9 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
         console.log('✅ Cleaned article data:', cleanData);
         
         if (mode === 'create') {
-          return await createArticle(cleanData);
+          return await adminSupabaseAPI.articles.create(cleanData);
         } else {
-          return await updateArticle(article.id, cleanData);
+          return await adminSupabaseAPI.articles.update(article.id, cleanData);
         }
       } catch (error) {
         console.error('❌ Save error:', error);
