@@ -120,7 +120,7 @@ export default function VideosAdminPage() {
 
   // Delete video mutation
   const deleteVideoMutation = useMutation({
-    mutationFn: (id: number) => deleteVideoContent(id),
+    mutationFn: (id: number) => adminSupabaseAPI.videos.delete(id),
     onSuccess: () => {
       // Invalidate and refetch video-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-videos'] });

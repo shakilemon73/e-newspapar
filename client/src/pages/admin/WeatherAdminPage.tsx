@@ -73,16 +73,16 @@ export default function WeatherAdminPage() {
   // Fetch weather data from Supabase
   const { data: weatherDataRaw, isLoading, error } = useQuery({
     queryKey: ['admin-weather-data'],
-    queryFn: () => getAdminWeatherData(),
+    queryFn: adminSupabaseAPI.weather.getAll,
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Extract weather data array from the response
-  const weatherData = weatherDataRaw?.weatherData || [];
+  const weatherData = weatherDataRaw || [];
 
   // Create weather mutation
   const createWeatherMutation = useMutation({
-    mutationFn: (weatherData: any) => createWeatherData(weatherData),
+    mutationFn: (weatherData: any) => adminSupabaseAPI.weather.create(weatherData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-weather-data'] });
       toast({
@@ -103,7 +103,7 @@ export default function WeatherAdminPage() {
 
   // Update weather mutation
   const updateWeatherMutation = useMutation({
-    mutationFn: ({ id, ...weatherData }: any) => updateWeatherData(id, weatherData),
+    mutationFn: ({ id, ...weatherData }: any) => adminSupabaseAPI.weather.update(id, weatherData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-weather-data'] });
       toast({

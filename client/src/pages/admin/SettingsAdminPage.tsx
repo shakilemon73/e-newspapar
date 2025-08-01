@@ -29,6 +29,7 @@ import {
   Activity,
   RefreshCw
 } from 'lucide-react';
+import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
 
 export default function SettingsAdminPageMigrated() {
   const { user, loading: authLoading } = useSupabaseAuth();
@@ -58,10 +59,7 @@ export default function SettingsAdminPageMigrated() {
   const { data: settings, isLoading, error } = useQuery({
     queryKey: ['admin-system-settings'],
     enabled: !!user && user.user_metadata?.role === 'admin',
-    queryFn: async () => {
-      const { getSystemSettings } = await import('../../lib/admin-api-direct');
-      return await getSystemSettings();
-    },
+    queryFn: adminSupabaseAPI.settings.getAll,
   });
 
   // Update form state when settings are loaded
@@ -79,16 +77,7 @@ export default function SettingsAdminPageMigrated() {
 
   // Update settings mutation using direct Supabase API
   const updateSettingsMutation = useMutation({
-    mutationFn: async (settingsToUpdate: Record<string, string>) => {
-      const { updateSystemSetting } = await import('../../lib/admin-api-direct');
-      
-      // Update each setting individually
-      const updatePromises = Object.entries(settingsToUpdate).map(([key, value]) =>
-        updateSystemSetting(key, value)
-      );
-      
-      return await Promise.all(updatePromises);
-    },
+    mutationFn: (settingsToUpdate: Record<string, string>) => adminSupabaseAPI.settings.updateMultiple(settingsToUpdate),
     onSuccess: () => {
       toast({
         title: 'Settings updated',

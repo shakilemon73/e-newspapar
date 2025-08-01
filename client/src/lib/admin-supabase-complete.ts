@@ -782,6 +782,20 @@ export const settingsAPI = {
       console.error('Error updating setting:', error);
       throw error;
     }
+  },
+
+  async updateMultiple(settingsToUpdate: Record<string, string>) {
+    try {
+      const updatePromises = Object.entries(settingsToUpdate).map(([key, value]) =>
+        this.update(key, value)
+      );
+      
+      const results = await Promise.all(updatePromises);
+      return results;
+    } catch (error) {
+      console.error('Error updating multiple settings:', error);
+      throw error;
+    }
   }
 };
 
@@ -804,11 +818,28 @@ export const weatherAPI = {
     }
   },
 
-  async update(city: string, weatherData: any) {
+  async create(weatherData: any) {
     try {
       const { data, error } = await adminSupabase
         .from('weather')
-        .upsert({ city, ...weatherData })
+        .insert(weatherData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error creating weather data:', error);
+      throw error;
+    }
+  },
+
+  async update(id: number, weatherData: any) {
+    try {
+      const { data, error } = await adminSupabase
+        .from('weather')
+        .update(weatherData)
+        .eq('id', id)
         .select()
         .single();
 
@@ -816,6 +847,21 @@ export const weatherAPI = {
       return data;
     } catch (error) {
       console.error('Error updating weather:', error);
+      throw error;
+    }
+  },
+
+  async delete(id: number) {
+    try {
+      const { error } = await adminSupabase
+        .from('weather')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting weather data:', error);
       throw error;
     }
   }

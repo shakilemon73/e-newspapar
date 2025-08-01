@@ -130,7 +130,7 @@ export default function SocialMediaAdminPage() {
 
   // Delete social media post mutation
   const deletePostMutation = useMutation({
-    mutationFn: (id: number) => deleteSocialPost(id),
+    mutationFn: (id: number) => adminSupabaseAPI.socialMedia.delete(id),
     onSuccess: () => {
       // Invalidate and refetch social media-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-social-posts'] });

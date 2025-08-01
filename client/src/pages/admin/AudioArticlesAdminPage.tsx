@@ -125,9 +125,7 @@ export default function AudioArticlesAdminPage() {
 
   // Delete audio article mutation
   const deleteAudioMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await deleteAudioArticle(id);
-    },
+    mutationFn: (id: number) => adminSupabaseAPI.audioArticles.delete(id),
     onSuccess: () => {
       // Invalidate and refetch audio article-related queries
       queryClient.invalidateQueries({ queryKey: ['admin-audio-articles'] });
