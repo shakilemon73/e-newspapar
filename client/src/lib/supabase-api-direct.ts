@@ -2578,12 +2578,13 @@ export async function getTeamMembers(): Promise<TeamMember[]> {
 export interface SocialMediaPost {
   id: number;
   platform: string;
-  post_type: string;
   content: string;
-  media_url?: string;
-  external_url?: string;
-  engagement_count: number;
-  is_pinned: boolean;
+  embed_code?: string;
+  post_url?: string;
+  author_name?: string;
+  author_handle?: string;
+  interaction_count?: number;
+  engagement_count?: number;
   published_at: string;
   created_at?: string;
   updated_at?: string;
@@ -2801,10 +2802,9 @@ export async function getPopularPages(limit = 10): Promise<any[]> {
   try {
     const { data, error } = await supabase
       .from('page_views')
-      .select('page_url, page_title, count(*)')
+      .select('page_url, page_title')
       .gt('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) // Last 7 days
-      .group('page_url, page_title')
-      .order('count', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error) {

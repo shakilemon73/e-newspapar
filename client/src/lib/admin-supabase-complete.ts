@@ -499,7 +499,7 @@ export const videosAPI = {
         video_url: videoData.videoUrl || videoData.video_url,
         thumbnail_url: videoData.thumbnailUrl || videoData.thumbnail_url,
         duration: videoData.duration,
-        views: 0,
+        view_count: 0,
         published_at: videoData.published_at || new Date().toISOString()
       };
       
@@ -896,7 +896,7 @@ export const socialMediaAPI = {
       
       // Clean the updates object for social_media_posts table
       const cleanUpdates: any = {};
-      const validFields = ['platform', 'content', 'image_url', 'link_url', 'status', 'published_at', 'engagement_metrics'];
+      const validFields = ['platform', 'content', 'embed_code', 'post_url', 'author_name', 'author_handle', 'interaction_count', 'published_at'];
       
       validFields.forEach(field => {
         if (updates[field] !== undefined && updates[field] !== null) {

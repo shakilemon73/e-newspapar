@@ -128,8 +128,11 @@ export interface SocialMediaPost {
   id: number;
   platform: string;
   content: string;
-  embed_code: string;
+  embed_code?: string;
   post_url?: string;
+  author_name?: string;
+  author_handle?: string;
+  interaction_count?: number;
   published_at: string;
   created_at?: string;
   updated_at?: string;
