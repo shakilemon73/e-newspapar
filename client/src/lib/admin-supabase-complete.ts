@@ -204,7 +204,7 @@ export const articlesAPI = {
       const cleanUpdates: any = {};
       
       // Only include valid fields that exist in the articles table
-      const validFields = ['title', 'slug', 'content', 'excerpt', 'image_url', 'category_id', 'author_id', 'is_featured', 'is_published', 'status', 'published_at', 'view_count'];
+      const validFields = ['title', 'slug', 'content', 'excerpt', 'image_url', 'category_id', 'author_id', 'is_featured', 'is_published', 'status', 'published_at', 'view_count', 'ai_processed'];
       
       validFields.forEach(field => {
         if (updates[field] !== undefined && updates[field] !== null) {
@@ -282,9 +282,23 @@ export const breakingNewsAPI = {
 
   async create(newsData: any) {
     try {
+      // Clean the create data for breaking_news table
+      const cleanData: any = {};
+      const validFields = ['content', 'is_active'];
+      
+      validFields.forEach(field => {
+        if (newsData[field] !== undefined && newsData[field] !== null) {
+          cleanData[field] = newsData[field];
+        }
+      });
+      
+      // Set defaults for required fields
+      if (!cleanData.content) cleanData.content = '';
+      if (cleanData.is_active === undefined) cleanData.is_active = true;
+
       const { data, error } = await adminSupabase
         .from('breaking_news')
-        .insert(newsData)
+        .insert(cleanData)
         .select()
         .single();
 
@@ -300,9 +314,20 @@ export const breakingNewsAPI = {
     try {
       console.log('🔧 Updating breaking news with service role key (bypasses RLS)...');
       
-      // Clean the updates object
-      const cleanUpdates = { ...updates };
-      cleanUpdates.updated_at = new Date().toISOString();
+      // Clean the updates object for breaking_news table
+      const cleanUpdates: any = {};
+      const validFields = ['content', 'is_active']; // Only these fields exist in breaking_news table
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Always update the timestamp if the column exists
+      if (updates.updated_at !== undefined) {
+        cleanUpdates.updated_at = new Date().toISOString();
+      }
 
       const { data, error } = await adminSupabase
         .from('breaking_news')

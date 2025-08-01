@@ -135,10 +135,9 @@ export default function BreakingNewsAdminPage() {
   const saveMutation = useMutation({
     mutationFn: async (data: BreakingNewsFormValues) => {
       const payload = {
-        title: data.content, // Use content as title for breaking news (for function signature)
         content: data.content,
         is_active: data.is_active
-        // Removed priority field since it doesn't exist in the database
+        // Only send fields that exist in breaking_news table
       };
       
       if (mode === 'create') {

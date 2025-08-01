@@ -271,7 +271,7 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
       custom_tags: article?.custom_tags || '',
       meta_title: article?.meta_title || '',
       meta_description: article?.meta_description || '',
-      meta_keywords: article?.meta_keywords || '',
+
       status: article?.status || 'draft',
       image_metadata: article?.image_metadata || {},
     },
@@ -469,10 +469,39 @@ export function ContentEditor({ article, mode, onSave, onCancel }: ContentEditor
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
-      if (mode === 'create') {
-        return createArticle(data);
-      } else {
-        return updateArticle(article.id, data);
+      console.log('💾 Saving article...', data);
+      
+      try {
+        // Clean the data to only include valid database fields
+        const cleanData: any = {};
+        const validFields = ['title', 'slug', 'content', 'excerpt', 'image_url', 'category_id', 'author_id', 'is_featured', 'status', 'published_at'];
+        
+        validFields.forEach(field => {
+          if (data[field] !== undefined && data[field] !== null) {
+            cleanData[field] = data[field];
+          }
+        });
+        
+        // Handle image metadata as JSON
+        if (data.image_metadata && typeof data.image_metadata === 'object') {
+          cleanData.image_metadata = data.image_metadata;
+        }
+        
+        // Set defaults for required fields
+        if (!cleanData.status) cleanData.status = 'draft';
+        if (!cleanData.published_at) cleanData.published_at = new Date().toISOString();
+        if (cleanData.is_featured === undefined) cleanData.is_featured = false;
+        
+        console.log('✅ Cleaned article data:', cleanData);
+        
+        if (mode === 'create') {
+          return await createArticle(cleanData);
+        } else {
+          return await updateArticle(article.id, cleanData);
+        }
+      } catch (error) {
+        console.error('❌ Save error:', error);
+        throw error;
       }
     },
     onSuccess: () => {
