@@ -21,15 +21,34 @@ export type MediaType = 'image' | 'video' | 'audio' | 'document' | 'pdf';
 export class SupabaseStorage {
   static async uploadFile(file: File, mediaType: MediaType): Promise<{ success: boolean; url?: string; path?: string; error?: string }> {
     try {
+      console.log('📁 Starting file upload with service role permissions...');
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${mediaType}s/${fileName}`;
 
+      // Use service role key for uploads to bypass RLS
       const { data, error } = await supabase.storage
         .from('media')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) {
+        console.error('❌ Upload error details:', {
+          message: error.message,
+          statusCode: error.statusCode
+        });
+        
+        // Provide helpful error messages
+        if (error.message.includes('policy')) {
+          return {
+            success: false,
+            error: 'Storage bucket permission error. Please check RLS policies.'
+          };
+        }
+        
         return {
           success: false,
           error: `Upload failed: ${error.message}`
@@ -40,6 +59,8 @@ export class SupabaseStorage {
         .from('media')
         .getPublicUrl(filePath);
 
+      console.log('✅ File uploaded successfully:', filePath);
+      
       return {
         success: true,
         url: urlData.publicUrl,

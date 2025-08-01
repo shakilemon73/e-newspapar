@@ -155,24 +155,39 @@ export const articlesAPI = {
 
   async create(articleData: any) {
     try {
+      console.log('🔧 Creating article with service role key (bypasses RLS)...');
+      
       const slug = articleData.slug || generateSlug(articleData.title);
+      
+      // Ensure required fields are present
+      const articleToInsert = {
+        title: articleData.title,
+        slug,
+        content: articleData.content || '',
+        excerpt: articleData.excerpt || '',
+        image_url: articleData.image_url || null,
+        category_id: articleData.category_id || 1,
+        author_id: articleData.author_id || 1,
+        is_featured: articleData.is_featured || false,
+        is_published: articleData.is_published || false,
+        status: articleData.status || 'draft',
+        published_at: articleData.published_at || new Date().toISOString(),
+        view_count: 0,
+        ai_processed: false
+      };
 
       const { data, error } = await adminSupabase
         .from('articles')
-        .insert({
-          ...articleData,
-          slug,
-          published_at: articleData.published_at || new Date().toISOString(),
-          view_count: 0
-        })
-        .select(`
-          *,
-          authors(name, slug),
-          categories(name, slug)
-        `)
+        .insert(articleToInsert)
+        .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Article creation error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Article created successfully');
       return data;
     } catch (error) {
       console.error('Error creating article:', error);
@@ -182,14 +197,47 @@ export const articlesAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating article with service role key (bypasses RLS)...');
+      console.log('📝 Update data:', updates);
+      
+      // Clean the updates object - remove any undefined/null fields
+      const cleanUpdates: any = {};
+      
+      // Only include valid fields that exist in the articles table
+      const validFields = ['title', 'slug', 'content', 'excerpt', 'image_url', 'category_id', 'author_id', 'is_featured', 'is_published', 'status', 'published_at', 'view_count'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Always update the timestamp
+      cleanUpdates.updated_at = new Date().toISOString();
+      
+      // Auto-generate slug if title is being updated but slug isn't provided
+      if (cleanUpdates.title && !cleanUpdates.slug) {
+        cleanUpdates.slug = generateSlug(cleanUpdates.title);
+      }
+
       const { data, error } = await adminSupabase
         .from('articles')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Article update error details:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
+        throw error;
+      }
+      
+      console.log('✅ Article updated successfully via service role');
       return data;
     } catch (error) {
       console.error('Error updating article:', error);
@@ -250,14 +298,29 @@ export const breakingNewsAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating breaking news with service role key (bypasses RLS)...');
+      
+      // Clean the updates object
+      const cleanUpdates = { ...updates };
+      cleanUpdates.updated_at = new Date().toISOString();
+
       const { data, error } = await adminSupabase
         .from('breaking_news')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Breaking news update error:', {
+          message: error.message,
+          details: error.details,
+          code: error.code
+        });
+        throw error;
+      }
+      
+      console.log('✅ Breaking news updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating breaking news:', error);
@@ -320,14 +383,36 @@ export const categoriesAPI = {
 
   async update(id: number, updates: any) {
     try {
+      console.log('🔧 Updating category with service role key (bypasses RLS)...');
+      
+      // Clean the updates object for categories table
+      const cleanUpdates: any = {};
+      const validFields = ['name', 'slug', 'description'];
+      
+      validFields.forEach(field => {
+        if (updates[field] !== undefined && updates[field] !== null) {
+          cleanUpdates[field] = updates[field];
+        }
+      });
+      
+      // Auto-generate slug if name is being updated but slug isn't provided
+      if (cleanUpdates.name && !cleanUpdates.slug) {
+        cleanUpdates.slug = generateSlug(cleanUpdates.name);
+      }
+
       const { data, error } = await adminSupabase
         .from('categories')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('id', id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Category update error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Category updated successfully');
       return data;
     } catch (error) {
       console.error('Error updating category:', error);
