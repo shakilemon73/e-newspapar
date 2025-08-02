@@ -423,11 +423,6 @@ export async function getAdminComments(status?: string, searchTerm?: string) {
         author_name,
         author_email,
         status,
-        is_reported,
-        reported_reason,
-        admin_reply,
-        admin_reply_by,
-        parent_id,
         created_at,
         updated_at,
         articles:article_id (

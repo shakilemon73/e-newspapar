@@ -115,7 +115,9 @@ export default function CommentManagementPage() {
     commentsDataLength: commentsData?.comments?.length,
     commentsCount: comments.length,
     filterStatus,
-    searchTerm
+    searchTerm,
+    filteredCommentsLength: filteredComments?.length,
+    queryEnabled: !!user && user.user_metadata?.role === 'admin'
   });
 
   const { data: commentStats, isLoading: statsLoading } = useQuery({
@@ -419,15 +421,11 @@ export default function CommentManagementPage() {
                     </TableRow>
                   ) : filteredComments?.length ? (
                     filteredComments.map((comment: any) => (
-                      <TableRow key={comment.id} className={comment.is_reported ? 'bg-red-50 dark:bg-red-950' : ''}>
+                      <TableRow key={comment.id}>
                         <TableCell className="max-w-xs">
                           <div className="space-y-1">
                             <div className="truncate font-medium">{comment.content}</div>
-                            {comment.admin_reply && (
-                              <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-950 p-2 rounded">
-                                <span className="font-medium">Admin Reply:</span> {comment.admin_reply}
-                              </div>
-                            )}
+
                           </div>
                         </TableCell>
                         <TableCell>
@@ -458,24 +456,10 @@ export default function CommentManagementPage() {
                           {getStatusBadge(comment.status)}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center space-x-2">
-                            {comment.is_reported ? (
-                              <Badge variant="destructive" className="text-xs">
-                                <Flag className="h-3 w-3 mr-1" />
-                                রিপোর্ট
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-xs">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                স্বাভাবিক
-                              </Badge>
-                            )}
-                            {comment.reported_reason && (
-                              <div className="text-xs text-red-600 max-w-xs truncate">
-                                {comment.reported_reason}
-                              </div>
-                            )}
-                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            স্বাভাবিক
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -511,17 +495,7 @@ export default function CommentManagementPage() {
                                 জবাব দিন
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() => toggleReportMutation.mutate({ 
-                                  commentId: comment.id, 
-                                  isReported: !comment.is_reported,
-                                  reason: comment.is_reported ? undefined : 'Admin marked as spam'
-                                })}
-                                className={comment.is_reported ? "text-green-600" : "text-orange-600"}
-                              >
-                                <Flag className="h-4 w-4 mr-2" />
-                                {comment.is_reported ? 'রিপোর্ট বাতিল' : 'রিপোর্ট করুন'}
-                              </DropdownMenuItem>
+
                               <DropdownMenuItem
                                 onClick={() => setDeleteConfirmId(comment.id)}
                                 className="text-red-600"
