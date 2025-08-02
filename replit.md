@@ -34,6 +34,10 @@ Preferred communication style: Simple, everyday language.
   - All admin dashboard sections now display authentic Supabase data
   - Server running successfully on port 5000 with complete error handling
   - Migration verified and confirmed working by user on August 2, 2025
+- **VERCEL DEPLOYMENT FIX**: Resolved Vercel deployment error by removing conflicting `builds` property from vercel.json (August 2, 2025)
+  - Fixed "functions property cannot be used in conjunction with builds property" error
+  - Modern Vercel configuration now uses `functions` for edge runtime deployment
+  - All 7 edge functions (article meta, OG image, sitemap, robots, RSS, AMP, health) properly configured
 
 ### Complete Vercel Deployment Suite (August 2, 2025)
 - **ENTERPRISE-GRADE VERCEL SETUP**: Implemented comprehensive production-ready deployment configuration
