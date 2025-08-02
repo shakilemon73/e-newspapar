@@ -6,11 +6,15 @@
 // Main comprehensive admin API (26 sections)
 export { adminSupabaseAPI, dashboardAPI } from './admin-supabase-complete';
 
+// Import dashboardAPI to use in local exports
+import { dashboardAPI } from './admin-supabase-complete';
+
 // Export specific dashboard functions for convenience
 export const getDashboardStats = () => dashboardAPI.getStats();
 
-// Specialized analytics and trending functions  
+// All admin functions from direct Supabase implementation
 export { 
+  // Analytics and trending
   getTrendingAnalytics, 
   getSEOAnalytics, 
   getUserStats, 
@@ -18,48 +22,70 @@ export {
   adminSupabase,
   getAlgorithmStats,
   getUserAnalytics,
+  
+  // Search management
   getSearchAnalytics,
   getSearchHistory,
   getSearchIndex,
   reindexSearch,
+  
+  // SEO management
   generateSitemap,
   updateMetaTag,
+  
+  // Security and access control
   getSecurityAuditLogs,
   getAccessPolicies,
   getSecuritySettings,
   updateSecuritySetting,
+  
+  // Performance monitoring
   getPerformanceMetrics,
   getErrorLogs,
   getApiMetrics,
-  getUXAnalytics
+  getUXAnalytics,
+  
+  // Email management
+  createEmailTemplate,
+  updateEmailTemplate,
+  deleteEmailTemplate,
+  getAdminEmailTemplates,
+  getEmailSettings,
+  updateEmailSettings,
+  getEmailStats,
+  getNewsletterSubscribers,
+  sendNewsletter,
+  
+  // Site settings
+  getSiteSettings,
+  updateSiteSettings,
+  
+  // Database management
+  createDatabaseBackup,
+  restoreDatabaseBackup,
+  getDatabaseHealth,
+  performDatabaseCleanup,
+  getDatabaseStats,
+  
+  // Comment management
+  getAdminComments,
+  updateCommentStatus,
+  deleteCommentAdmin,
+  replyToComment,
+  
+  // Article management (direct functions)
+  getAdminArticlesDirect,
+  getAdminCategoriesDirect,
+  deleteArticleDirect
 } from './admin-supabase-direct';
 
-// Additional utilities and CRUD operations (without conflicts)
+// CRUD operations and utilities
 export { 
   updateArticle, 
   deleteArticle, 
   getBreakingNews, 
-  updateBreakingNews 
-} from './admin-api-direct';
-
-// Re-export specific admin functions from direct files
-export { 
-  getAdminArticlesDirect,
-  getAdminCategoriesDirect,
-  deleteArticleDirect 
-} from './admin-supabase-direct';
-
-// Also export with cleaned names  
-export { 
+  updateBreakingNews,
   getAdminArticles,
   getAdminCategories,
   getAdminAuthors 
 } from './admin-api-direct';
-
-// Comment management functions
-export { 
-  getAdminComments,
-  updateCommentStatus,
-  deleteCommentAdmin,
-  replyToComment
-} from './admin-supabase-direct';
