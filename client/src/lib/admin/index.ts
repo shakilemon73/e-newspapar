@@ -66,11 +66,12 @@ export {
   performDatabaseCleanup,
   getDatabaseStats,
   
-  // Comment management
+  // Enhanced comment management with context
   getAdminComments,
   updateCommentStatus,
-  deleteCommentAdmin,
-  replyToComment,
+  addAdminReply,
+  deleteComment,
+  toggleCommentReport,
   
   // Article management (direct functions)
   getAdminArticlesDirect,

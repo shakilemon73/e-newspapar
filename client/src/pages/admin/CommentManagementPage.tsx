@@ -31,8 +31,9 @@ import { adminSupabaseAPI } from '@/lib/admin';
 import { 
   getAdminComments,
   updateCommentStatus,
-  deleteCommentAdmin,
-  replyToComment
+  deleteComment,
+  addAdminReply,
+  toggleCommentReport
 } from '@/lib/admin';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
@@ -91,10 +92,10 @@ export default function CommentManagementPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // Comments queries using direct Supabase API with admin service role
+  // Enhanced comments queries with filter and search support
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ['admin-comments', filterStatus, searchTerm],
-    queryFn: () => getAdminComments(),
+    queryFn: () => getAdminComments(filterStatus, searchTerm),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
@@ -162,9 +163,10 @@ export default function CommentManagementPage() {
   });
 
   const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: number) => deleteCommentAdmin(commentId),
+    mutationFn: (commentId: number) => deleteComment(commentId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-comment-stats'] });
       toast({
         title: "মন্তব্য মুছে ফেলা হয়েছে",
         description: "মন্তব্য সফলভাবে মুছে ফেলা হয়েছে।",
@@ -182,12 +184,12 @@ export default function CommentManagementPage() {
 
   const replyCommentMutation = useMutation({
     mutationFn: ({ commentId, content }: { commentId: number; content: string }) => 
-      replyToComment(commentId, content, user?.id || ''),
+      addAdminReply(commentId, content, user?.user_metadata?.name || user?.email || 'Admin'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
       toast({
-        title: "উত্তর পাঠানো হয়েছে",
-        description: "মন্তব্যের উত্তর সফলভাবে পাঠানো হয়েছে।",
+        title: "জবাব পাঠানো হয়েছে",
+        description: "আপনার জবাব সফলভাবে পাঠানো হয়েছে।",
       });
       setShowReplyDialog(false);
       setReplyContent('');
@@ -195,17 +197,39 @@ export default function CommentManagementPage() {
     },
     onError: () => {
       toast({
-        title: "উত্তর পাঠানো ব্যর্থ",
-        description: "মন্তব্যের উত্তর পাঠাতে সমস্যা হয়েছে।",
+        title: "জবাব পাঠানো ব্যর্থ",
+        description: "জবাব পাঠাতে সমস্যা হয়েছে।",
         variant: "destructive",
       });
     }
   });
 
-  // Filter comments
+  const toggleReportMutation = useMutation({
+    mutationFn: ({ commentId, isReported, reason }: { commentId: number; isReported: boolean; reason?: string }) => 
+      toggleCommentReport(commentId, isReported, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-comments'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-comment-stats'] });
+      toast({
+        title: "রিপোর্ট স্ট্যাটাস আপডেট",
+        description: "মন্তব্যের রিপোর্ট স্ট্যাটাস আপডেট করা হয়েছে।",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "আপডেট ব্যর্থ",
+        description: "রিপোর্ট স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Extract and filter comments properly with context
   const filteredComments = comments?.filter((comment: any) => {
-    const matchesSearch = comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         comment.authorName?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = !searchTerm.trim() || 
+                         comment.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         comment.author_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         comment.articles?.title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || comment.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -366,36 +390,76 @@ export default function CommentManagementPage() {
                     <TableHead>নিবন্ধ</TableHead>
                     <TableHead>তারিখ</TableHead>
                     <TableHead>অবস্থা</TableHead>
+                    <TableHead>রিপোর্ট</TableHead>
                     <TableHead>কার্যক্রম</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {commentsLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={7} className="text-center py-8">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                       </TableCell>
                     </TableRow>
                   ) : filteredComments?.length ? (
                     filteredComments.map((comment: any) => (
-                      <TableRow key={comment.id}>
+                      <TableRow key={comment.id} className={comment.is_reported ? 'bg-red-50 dark:bg-red-950' : ''}>
                         <TableCell className="max-w-xs">
-                          <div className="truncate">{comment.content}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <span>{comment.authorName || 'নাম নেই'}</span>
+                          <div className="space-y-1">
+                            <div className="truncate font-medium">{comment.content}</div>
+                            {comment.admin_reply && (
+                              <div className="text-xs text-blue-600 bg-blue-50 dark:bg-blue-950 p-2 rounded">
+                                <span className="font-medium">Admin Reply:</span> {comment.admin_reply}
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="max-w-xs truncate">{comment.articleTitle}</div>
+                          <div className="flex flex-col space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">{comment.author_name || 'নামহীন'}</span>
+                            </div>
+                            {comment.author_email && (
+                              <div className="text-xs text-gray-500">{comment.author_email}</div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
-                          <DateFormatter date={comment.createdAt} type="relative" />
+                          <div className="space-y-1">
+                            <div className="font-medium max-w-xs truncate">
+                              {comment.articles?.title || 'নিবন্ধ খুঁজে পাওয়া যায়নি'}
+                            </div>
+                            {comment.articles?.slug && (
+                              <div className="text-xs text-gray-500">/{comment.articles.slug}</div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <DateFormatter date={comment.created_at} type="relative" />
                         </TableCell>
                         <TableCell>
                           {getStatusBadge(comment.status)}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            {comment.is_reported ? (
+                              <Badge variant="destructive" className="text-xs">
+                                <Flag className="h-3 w-3 mr-1" />
+                                রিপোর্ট
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                স্বাভাবিক
+                              </Badge>
+                            )}
+                            {comment.reported_reason && (
+                              <div className="text-xs text-red-600 max-w-xs truncate">
+                                {comment.reported_reason}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -432,6 +496,17 @@ export default function CommentManagementPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
+                                onClick={() => toggleReportMutation.mutate({ 
+                                  commentId: comment.id, 
+                                  isReported: !comment.is_reported,
+                                  reason: comment.is_reported ? undefined : 'Admin marked as spam'
+                                })}
+                                className={comment.is_reported ? "text-green-600" : "text-orange-600"}
+                              >
+                                <Flag className="h-4 w-4 mr-2" />
+                                {comment.is_reported ? 'রিপোর্ট বাতিল' : 'রিপোর্ট করুন'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
                                 onClick={() => setDeleteConfirmId(comment.id)}
                                 className="text-red-600"
                               >
@@ -445,8 +520,20 @@ export default function CommentManagementPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        কোনো মন্তব্য পাওয়া যায়নি
+                      <TableCell colSpan={7} className="text-center py-8">
+                        <div className="flex flex-col items-center space-y-2">
+                          <MessageSquare className="h-8 w-8 text-gray-400" />
+                          <p className="text-gray-500">কোনো মন্তব্য পাওয়া যায়নি</p>
+                          {filterStatus !== 'all' && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setFilterStatus('all')}
+                            >
+                              সব মন্তব্য দেখুন
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   )}

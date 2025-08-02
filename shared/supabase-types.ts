@@ -167,6 +167,24 @@ export interface SavedArticle {
   article?: Article;
 }
 
+export interface ArticleComment {
+  id: number;
+  article_id: number;
+  user_id?: string;
+  author_name: string;
+  author_email?: string;
+  content: string;
+  status: 'pending' | 'approved' | 'rejected';
+  is_reported: boolean;
+  parent_id?: number; // For nested replies
+  reported_reason?: string;
+  admin_reply?: string;
+  admin_reply_by?: string;
+  created_at?: string;
+  updated_at?: string;
+  articles?: Article;
+}
+
 // Insert types (for creating new records)
 export type CategoryInsert = Omit<Category, 'id' | 'created_at' | 'updated_at'>;
 export type ArticleInsert = Omit<Article, 'id' | 'created_at' | 'updated_at' | 'category'>;
@@ -179,6 +197,7 @@ export type UserAchievementInsert = Omit<UserAchievement, 'id' | 'user' | 'achie
 export type VideoContentInsert = Omit<VideoContent, 'id' | 'created_at' | 'updated_at'>;
 export type AudioArticleInsert = Omit<AudioArticle, 'id' | 'created_at' | 'updated_at'>;
 export type SocialMediaPostInsert = Omit<SocialMediaPost, 'id' | 'created_at' | 'updated_at'>;
+export type ArticleCommentInsert = Omit<ArticleComment, 'id' | 'created_at' | 'updated_at' | 'articles'>;
 
 // Update types (for updating existing records)
 export type CategoryUpdate = Partial<CategoryInsert>;
@@ -191,6 +210,7 @@ export type AchievementUpdate = Partial<AchievementInsert>;
 export type VideoContentUpdate = Partial<VideoContentInsert>;
 export type AudioArticleUpdate = Partial<AudioArticleInsert>;
 export type SocialMediaPostUpdate = Partial<SocialMediaPostInsert>;
+export type ArticleCommentUpdate = Partial<ArticleCommentInsert>;
 
 // Missing Admin Tables
 export interface MobileAppConfig {

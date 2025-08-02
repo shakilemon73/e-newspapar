@@ -409,9 +409,9 @@ export async function initializeUserStorageTable(): Promise<void> {
 // COMMENTS MANAGEMENT (Admin Service Role)
 // ==============================================
 
-export async function getAdminComments() {
+export async function getAdminComments(status?: string, searchTerm?: string) {
   try {
-    const { data, error } = await adminSupabase
+    let query = adminSupabase
       .from('article_comments')
       .select(`
         id,
@@ -419,23 +419,51 @@ export async function getAdminComments() {
         user_id,
         content,
         author_name,
+        author_email,
         status,
         is_reported,
+        reported_reason,
+        admin_reply,
+        admin_reply_by,
+        parent_id,
         created_at,
         updated_at,
-        articles(title)
+        articles:article_id (
+          id,
+          title,
+          slug,
+          excerpt
+        )
       `)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Admin comments fetch error:', error);
-      return { comments: [] };
+    // Apply status filter
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
     }
 
-    return { comments: data || [] };
+    // Apply search filter
+    if (searchTerm && searchTerm.trim()) {
+      query = query.or(
+        `content.ilike.%${searchTerm}%,author_name.ilike.%${searchTerm}%`
+      );
+    }
+
+    const { data, error, count } = await query.limit(100);
+
+    if (error) {
+      console.error('Admin comments fetch error:', error);
+      return { comments: [], totalCount: 0 };
+    }
+
+    console.log('✅ Admin comments fetched successfully:', data?.length || 0);
+    return { 
+      comments: data || [], 
+      totalCount: count || data?.length || 0 
+    };
   } catch (error) {
     console.error('Error fetching admin comments:', error);
-    return { comments: [] };
+    return { comments: [], totalCount: 0 };
   }
 }
 
@@ -443,9 +471,23 @@ export async function updateCommentStatus(commentId: number, status: 'approved' 
   try {
     const { data, error } = await adminSupabase
       .from('article_comments')
-      .update({ status })
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
       .eq('id', commentId)
-      .select()
+      .select(`
+        id,
+        article_id,
+        content,
+        author_name,
+        status,
+        updated_at,
+        articles:article_id (
+          title,
+          slug
+        )
+      `)
       .single();
 
     if (error) {
@@ -453,9 +495,110 @@ export async function updateCommentStatus(commentId: number, status: 'approved' 
       throw new Error(error.message || 'Failed to update comment status');
     }
 
+    console.log('✅ Comment status updated:', { commentId, status, articleTitle: data?.articles?.[0]?.title });
     return data;
   } catch (error) {
     console.error('Error updating comment status:', error);
+    throw error;
+  }
+}
+
+export async function addAdminReply(commentId: number, reply: string, adminName: string) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('article_comments')
+      .update({ 
+        admin_reply: reply,
+        admin_reply_by: adminName,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', commentId)
+      .select(`
+        id,
+        content,
+        admin_reply,
+        admin_reply_by,
+        articles:article_id (
+          title,
+          slug
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Admin reply error:', error);
+      throw new Error(error.message || 'Failed to add admin reply');
+    }
+
+    console.log('✅ Admin reply added to comment:', { commentId, articleTitle: data?.articles?.[0]?.title });
+    return data;
+  } catch (error) {
+    console.error('Error adding admin reply:', error);
+    throw error;
+  }
+}
+
+export async function deleteComment(commentId: number) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('article_comments')
+      .delete()
+      .eq('id', commentId)
+      .select(`
+        id,
+        content,
+        author_name,
+        articles:article_id (
+          title,
+          slug
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Comment deletion error:', error);
+      throw new Error(error.message || 'Failed to delete comment');
+    }
+
+    console.log('✅ Comment deleted:', { commentId, articleTitle: data?.articles?.[0]?.title });
+    return data;
+  } catch (error) {
+    console.error('Error deleting comment:', error);
+    throw error;
+  }
+}
+
+export async function toggleCommentReport(commentId: number, isReported: boolean, reason?: string) {
+  try {
+    const { data, error } = await adminSupabase
+      .from('article_comments')
+      .update({ 
+        is_reported: isReported,
+        reported_reason: reason || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', commentId)
+      .select(`
+        id,
+        content,
+        is_reported,
+        reported_reason,
+        articles:article_id (
+          title,
+          slug
+        )
+      `)
+      .single();
+
+    if (error) {
+      console.error('Comment report toggle error:', error);
+      throw new Error(error.message || 'Failed to update report status');
+    }
+
+    console.log('✅ Comment report status updated:', { commentId, isReported, articleTitle: data?.articles?.[0]?.title });
+    return data;
+  } catch (error) {
+    console.error('Error toggling comment report:', error);
     throw error;
   }
 }
