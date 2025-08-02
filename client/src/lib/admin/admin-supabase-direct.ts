@@ -411,6 +411,8 @@ export async function initializeUserStorageTable(): Promise<void> {
 
 export async function getAdminComments(status?: string, searchTerm?: string) {
   try {
+    console.log('🔍 Fetching admin comments with filters:', { status, searchTerm });
+
     let query = adminSupabase
       .from('article_comments')
       .select(`
@@ -440,6 +442,7 @@ export async function getAdminComments(status?: string, searchTerm?: string) {
     // Apply status filter
     if (status && status !== 'all') {
       query = query.eq('status', status);
+      console.log('📋 Applied status filter:', status);
     }
 
     // Apply search filter
@@ -447,22 +450,32 @@ export async function getAdminComments(status?: string, searchTerm?: string) {
       query = query.or(
         `content.ilike.%${searchTerm}%,author_name.ilike.%${searchTerm}%`
       );
+      console.log('🔍 Applied search filter:', searchTerm);
     }
 
     const { data, error, count } = await query.limit(100);
 
     if (error) {
-      console.error('Admin comments fetch error:', error);
+      console.error('❌ Admin comments fetch error:', error);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
       return { comments: [], totalCount: 0 };
     }
 
     console.log('✅ Admin comments fetched successfully:', data?.length || 0);
+    console.log('📊 First comment preview:', data?.[0] ? {
+      id: data[0].id,
+      content: data[0].content?.substring(0, 50) + '...',
+      author: data[0].author_name,
+      status: data[0].status,
+      article_title: data[0].articles?.title
+    } : 'No comments found');
+
     return { 
       comments: data || [], 
       totalCount: count || data?.length || 0 
     };
   } catch (error) {
-    console.error('Error fetching admin comments:', error);
+    console.error('💥 Critical error fetching admin comments:', error);
     return { comments: [], totalCount: 0 };
   }
 }

@@ -93,14 +93,30 @@ export default function CommentManagementPage() {
   }, [authLoading, user, setLocation]);
 
   // Enhanced comments queries with filter and search support
-  const { data: commentsData, isLoading: commentsLoading } = useQuery({
+  const { data: commentsData, isLoading: commentsLoading, error: commentsError } = useQuery({
     queryKey: ['admin-comments', filterStatus, searchTerm],
-    queryFn: () => getAdminComments(filterStatus, searchTerm),
+    queryFn: async () => {
+      console.log('🚀 React Query: Calling getAdminComments with:', { filterStatus, searchTerm });
+      const result = await getAdminComments(filterStatus, searchTerm);
+      console.log('🎯 React Query: getAdminComments returned:', result);
+      return result;
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Extract comments array from the response
   const comments = commentsData?.comments || [];
+
+  // Debug logging
+  console.log('📊 Component state:', {
+    user: user?.user_metadata?.role,
+    commentsLoading,
+    commentsError,
+    commentsDataLength: commentsData?.comments?.length,
+    commentsCount: comments.length,
+    filterStatus,
+    searchTerm
+  });
 
   const { data: commentStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-comment-stats'],
