@@ -25,22 +25,22 @@
   ],
   "functions": {
     "api/sitemap.js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     },
     "api/robots.js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     },
     "api/rss.js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     },
     "api/og-image.js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     },
     "api/health.js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     },
     "api/article/[slug].js": {
-      "runtime": "nodejs18"
+      "runtime": "nodejs18.x"
     }
   },
   "rewrites": [

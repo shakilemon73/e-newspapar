@@ -40,7 +40,7 @@ Preferred communication style: Simple, everyday language.
   - Handles complex project structure with client directory and Vite configuration
   - Verified successful build: 1.67MB bundle, all files present in dist/public
   - Updated vercel.json to use custom build command: "node build-vercel.js"
-  - All API functions properly configured with nodejs18 runtime
+  - All API functions properly configured with nodejs18.x runtime
   - Ready for production deployment with zero configuration errors
 
 ### Complete Vercel Deployment Suite (August 2, 2025)
