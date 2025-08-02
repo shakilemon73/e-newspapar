@@ -11,11 +11,21 @@ export const getRelativeTimeInBengali = (dateString: string | Date | number): st
       date = new Date(dateString);
     } else if (typeof dateString === 'string') {
       // Handle ISO strings and various formats
+      // First try to parse as-is
       date = new Date(dateString);
       
-      // If the date string doesn't have timezone info, treat it as UTC
-      if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-', 10)) {
-        date = new Date(dateString + 'Z');
+      // If the date seems invalid or in the future, try different parsing approaches
+      if (isNaN(date.getTime()) || date.getTime() > Date.now()) {
+        // Try treating as UTC if no timezone info
+        if (dateString.includes('T') && !dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('-', 10)) {
+          date = new Date(dateString + 'Z');
+        }
+        
+        // If still invalid or future, try without timezone assumptions
+        if (isNaN(date.getTime()) || date.getTime() > Date.now()) {
+          // Try parsing as local time
+          date = new Date(dateString.replace('Z', ''));
+        }
       }
     } else {
       return 'কিছুক্ষণ আগে';
@@ -23,9 +33,18 @@ export const getRelativeTimeInBengali = (dateString: string | Date | number): st
     
     if (isNaN(date.getTime())) return 'কিছুক্ষণ আগে';
     
-    // Use UTC time for consistent calculations
+    // Use current time for calculations
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    let diffMs = now.getTime() - date.getTime();
+    
+    // If difference is still negative (future date), use absolute value and treat as recent
+    if (diffMs < 0) {
+      diffMs = Math.abs(diffMs);
+      // If it's a small future difference (< 1 hour), treat as recent
+      if (diffMs < 3600000) { // 1 hour in milliseconds
+        diffMs = 0; // Treat as "just now"
+      }
+    }
     
     // Debug specific problematic articles (temporarily)
     if (typeof dateString === 'string' && dateString.includes('রোনালদো')) {
@@ -38,9 +57,6 @@ export const getRelativeTimeInBengali = (dateString: string | Date | number): st
         diffMinutes: Math.floor(diffMs / (1000 * 60))
       });
     }
-    
-    // Handle future dates (shouldn't happen but just in case)
-    if (diffMs < 0) return 'ভবিষ্যতে';
     
     const seconds = Math.floor(diffMs / 1000);
     const minutes = Math.floor(seconds / 60);

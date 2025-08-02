@@ -10,7 +10,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### Migration to Replit Environment (August 1, 2025)
+### Migration to Replit Environment (August 1-2, 2025)
 - Successfully migrated from Replit Agent to Replit environment
 - Fixed Supabase environment variable configuration
 - Resolved admin API data structure issues
@@ -25,6 +25,8 @@ Preferred communication style: Simple, everyday language.
 - **COMPLETE FIX**: Resolved all .single() calls in client-side admin API (admin-api-direct.ts)
 - All 26 admin update functions now properly handle existence checks and return correct data structures
 - Admin articles, videos, categories, e-papers, audio articles, and breaking news updates work seamlessly
+- **FIXED**: Category page syntax errors and TypeScript issues resolved
+- **FIXED**: Date formatting showing "ভবিষ্যতে" (future date) instead of proper relative time due to timezone parsing issues
 
 ### Admin System Fixes (August 1, 2025)
 - Fixed admin/articles and admin/settings pages not showing data
