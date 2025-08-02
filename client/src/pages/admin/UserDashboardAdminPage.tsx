@@ -57,34 +57,64 @@ export default function UserDashboardAdminPage() {
     }
   }, [authLoading, user, setLocation]);
 
-  // User dashboard analytics queries
+  // User dashboard analytics queries using real Supabase data
   const { data: userStats, isLoading: userStatsLoading } = useQuery({
     queryKey: ['admin-user-stats', selectedTimeRange],
-    queryFn: () => getUserDashboardStats(selectedTimeRange),
+    queryFn: async () => {
+      const { getUserStats } = await import('@/lib/admin-supabase-direct');
+      return await getUserStats();
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  const { data: activeUsers, isLoading: activeUsersLoading } = useQuery({
-    queryKey: ['admin-active-users', selectedTimeRange],
-    queryFn: () => getUserEngagementData(),
+  const { data: userAnalytics, isLoading: activeUsersLoading } = useQuery({
+    queryKey: ['admin-user-analytics', selectedTimeRange],
+    queryFn: async () => {
+      const { getUserAnalytics } = await import('@/lib/admin-supabase-direct');
+      return await getUserAnalytics(selectedTimeRange);
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: readingActivity, isLoading: readingActivityLoading } = useQuery({
     queryKey: ['admin-reading-activity', selectedTimeRange],
-    queryFn: () => getUserEngagementData(),
+    queryFn: async () => {
+      const { getUserAnalytics } = await import('@/lib/admin-supabase-direct');
+      const data = await getUserAnalytics(selectedTimeRange);
+      return data.readingActivity;
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: userAchievements, isLoading: achievementsLoading } = useQuery({
     queryKey: ['admin-user-achievements'],
-    queryFn: () => getUserEngagementData(),
+    queryFn: async () => {
+      // For now, return empty achievements as this feature is not implemented yet
+      return [];
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: savedArticlesStats, isLoading: savedArticlesLoading } = useQuery({
     queryKey: ['admin-saved-articles-stats', selectedTimeRange],
-    queryFn: () => getUserEngagementData(),
+    queryFn: async () => {
+      const { adminSupabase } = await import('@/lib/admin-supabase-direct');
+      // Get saved articles count from Supabase
+      const { data, error } = await adminSupabase
+        .from('saved_articles')
+        .select('id, user_id, created_at')
+        .gte('created_at', new Date(Date.now() - (selectedTimeRange === 'today' ? 86400000 : selectedTimeRange === 'week' ? 604800000 : 2592000000)).toISOString());
+      
+      if (error) {
+        console.error('Saved articles stats error:', error);
+        return { totalSaved: 0, uniqueUsers: 0 };
+      }
+      
+      const totalSaved = data?.length || 0;
+      const uniqueUsers = new Set(data?.map(item => item.user_id)).size;
+      
+      return { totalSaved, uniqueUsers };
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

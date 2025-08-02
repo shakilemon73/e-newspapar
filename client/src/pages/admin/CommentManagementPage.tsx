@@ -97,13 +97,18 @@ export default function CommentManagementPage() {
 
   const { data: commentStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-comment-stats'],
-    queryFn: () => Promise.resolve({
-      total: 245,
-      pending: 12,
-      approved: 220,
-      rejected: 13,
-      reported: 5
-    }),
+    queryFn: async () => {
+      const allComments = await getAdminComments();
+      const comments = allComments?.comments || [];
+      
+      return {
+        total: comments.length,
+        pending: comments.filter(c => c.status === 'pending').length,
+        approved: comments.filter(c => c.status === 'approved').length,
+        rejected: comments.filter(c => c.status === 'rejected').length,
+        reported: comments.filter(c => c.is_reported).length
+      };
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 

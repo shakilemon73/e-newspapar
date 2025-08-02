@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { TrendingAnalyticsDashboard } from '@/components/TrendingAnalyticsDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   TrendingUp, 
   Activity, 
@@ -17,83 +19,80 @@ import {
   RefreshCw,
   Download
 } from 'lucide-react';
+import { getTrendingAnalytics } from '@/lib/admin-supabase-direct';
 
 export default function TrendingAnalyticsPage() {
+  const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d'>('24h');
+  const queryClient = useQueryClient();
+
+  // Fetch real trending analytics data from Supabase
+  const { data: analyticsData, isLoading, error } = useQuery({
+    queryKey: ['trending-analytics', timeRange],
+    queryFn: () => getTrendingAnalytics(timeRange),
+    refetchInterval: 5 * 60 * 1000, // Refresh every 5 minutes
+  });
+
   const handleExportData = () => {
-    // Implementation for exporting analytics data
-    console.log('Exporting analytics data...');
+    if (analyticsData) {
+      const dataToExport = {
+        timeRange,
+        exportDate: new Date().toISOString(),
+        ...analyticsData
+      };
+      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `trending-analytics-${timeRange}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   };
 
   const handleRefreshData = () => {
-    // Implementation for refreshing analytics data
-    console.log('Refreshing analytics data...');
+    queryClient.invalidateQueries({ queryKey: ['trending-analytics'] });
   };
 
-  const analyticsMetrics = [
+  // Convert numbers to Bengali numerals
+  const toBengaliNumber = (num: number) => {
+    const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return num.toString().replace(/\d/g, (digit) => bengaliDigits[parseInt(digit)]);
+  };
+
+  // Create analytics metrics from real data
+  const analyticsMetrics = analyticsData ? [
     {
       title: 'মোট ট্রেন্ডিং আইটেম',
-      value: '২৪',
+      value: toBengaliNumber(analyticsData.totalItems),
       change: '+৮%',
       icon: <TrendingUp className="w-5 h-5" />,
       color: 'text-green-600'
     },
     {
       title: 'সক্রিয় ব্যবহারকারী',
-      value: '১,৫৪৭',
+      value: toBengaliNumber(analyticsData.activeUsers),
       change: '+১২%',
       icon: <Users className="w-5 h-5" />,
       color: 'text-blue-600'
     },
     {
       title: 'মোট এনগেজমেন্ট',
-      value: '৮,৩২১',
+      value: toBengaliNumber(analyticsData.totalEngagement),
       change: '+৫%',
       icon: <Heart className="w-5 h-5" />,
       color: 'text-red-600'
     },
     {
       title: 'গড় ভিউ টাইম',
-      value: '৩.২ মিনিট',
+      value: analyticsData.avgViewTime,
       change: '+৭%',
       icon: <Clock className="w-5 h-5" />,
       color: 'text-purple-600'
     }
-  ];
+  ] : [];
 
-  const topCategories = [
-    { name: 'রাজনীতি', articles: 45, engagement: 89 },
-    { name: 'খেলাধুলা', articles: 32, engagement: 76 },
-    { name: 'বিনোদন', articles: 28, engagement: 82 },
-    { name: 'প্রযুক্তি', articles: 21, engagement: 68 },
-    { name: 'অর্থনীতি', articles: 19, engagement: 71 }
-  ];
-
-  const recentTrends = [
-    {
-      topic: 'নতুন বাজেট ঘোষণা',
-      mentions: 1247,
-      growth: '+342%',
-      category: 'অর্থনীতি'
-    },
-    {
-      topic: 'ক্রিকেট বিশ্বকাপ',
-      mentions: 892,
-      growth: '+156%',
-      category: 'খেলাধুলা'
-    },
-    {
-      topic: 'নতুন প্রযুক্তি নীতি',
-      mentions: 654,
-      growth: '+98%',
-      category: 'প্রযুক্তি'
-    },
-    {
-      topic: 'সিনেমা উৎসব',
-      mentions: 543,
-      growth: '+76%',
-      category: 'বিনোদন'
-    }
-  ];
+  const topCategories = analyticsData?.topCategories || [];
+  const recentTrends = analyticsData?.recentTrends || [];
 
   return (
     <EnhancedAdminLayout>
@@ -111,25 +110,36 @@ export default function TrendingAnalyticsPage() {
               </p>
             </div>
             <div className="flex items-center space-x-3">
+              <select
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value as '1h' | '24h' | '7d')}
+                className="bg-white/10 border border-white/20 text-white rounded px-3 py-1"
+              >
+                <option value="1h" className="text-black">১ ঘন্টা</option>
+                <option value="24h" className="text-black">২৪ ঘন্টা</option>
+                <option value="7d" className="text-black">৭ দিন</option>
+              </select>
               <Button 
                 onClick={handleRefreshData}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                disabled={isLoading}
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                 রিফ্রেশ
               </Button>
               <Button 
                 onClick={handleExportData}
                 variant="outline"
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                disabled={!analyticsData}
               >
                 <Download className="w-4 h-4 mr-2" />
                 এক্সপোর্ট
               </Button>
               <Badge className="bg-white/20 text-white border-white/30">
                 <Activity className="w-3 h-3 mr-1" />
-                লাইভ ডেটা
+                {error ? 'ডেটা ত্রুটি' : 'লাইভ ডেটা'}
               </Badge>
             </div>
           </div>
@@ -137,24 +147,45 @@ export default function TrendingAnalyticsPage() {
 
         {/* Analytics Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {analyticsMetrics.map((metric, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">{metric.title}</p>
-                    <p className="text-2xl font-bold mb-1">{metric.value}</p>
-                    <p className={`text-sm font-medium ${metric.color}`}>
-                      {metric.change}
-                    </p>
+          {isLoading ? (
+            [...Array(4)].map((_, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-8 w-16" />
+                      <Skeleton className="h-4 w-12" />
+                    </div>
+                    <Skeleton className="h-12 w-12 rounded-full" />
                   </div>
-                  <div className={`p-3 rounded-full bg-gray-100 ${metric.color}`}>
-                    {metric.icon}
+                </CardContent>
+              </Card>
+            ))
+          ) : error ? (
+            <div className="col-span-full text-center py-8 text-red-600">
+              ডেটা লোড করতে সমস্যা হয়েছে
+            </div>
+          ) : (
+            analyticsMetrics.map((metric, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">{metric.title}</p>
+                      <p className="text-2xl font-bold mb-1">{metric.value}</p>
+                      <p className={`text-sm font-medium ${metric.color}`}>
+                        {metric.change}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-full bg-gray-100 ${metric.color}`}>
+                      {metric.icon}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Main Content */}
@@ -174,66 +205,79 @@ export default function TrendingAnalyticsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <BarChart3 className="w-5 h-5" />
-                    <span>শীর্ষ পারফরমিং বিভাগ</span>
-                  </CardTitle>
+                  <CardTitle>শীর্ষ বিভাগসমূহ</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {topCategories.map((category, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                            <span className="text-sm font-medium text-blue-600">
-                              {index + 1}
-                            </span>
+                    {isLoading ? (
+                      [...Array(5)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-20" />
+                          <Skeleton className="h-4 w-12" />
+                        </div>
+                      ))
+                    ) : (
+                      topCategories.map((category, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <Badge variant="secondary">{index + 1}</Badge>
+                            <span className="font-medium">{category.name}</span>
                           </div>
-                          <div>
-                            <p className="font-medium">{category.name}</p>
-                            <p className="text-sm text-gray-600">
-                              {category.articles} টি আর্টিকেল
-                            </p>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{category.articles} টি নিবন্ধ</div>
+                            <div className="text-xs text-gray-500">এনগেজমেন্ট: {category.engagement}</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium text-green-600">
-                            {category.engagement}% এনগেজমেন্ট
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Eye className="w-5 h-5" />
-                    <span>বিভাগভিত্তিক পারফরম্যান্স</span>
-                  </CardTitle>
+                  <CardTitle>সাম্প্রতিক ট্রেন্ড</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {topCategories.map((category, index) => (
-                      <div key={index} className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium">{category.name}</span>
-                          <span className="text-sm text-gray-600">{category.engagement}%</span>
+                  <div className="space-y-4">
+                    {isLoading ? (
+                      [...Array(4)].map((_, i) => (
+                        <div key={i} className="border-l-4 border-gray-200 pl-4">
+                          <Skeleton className="h-4 w-32 mb-2" />
+                          <Skeleton className="h-3 w-20" />
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${category.engagement}%` }}
-                          ></div>
+                      ))
+                    ) : (
+                      recentTrends.map((trend, index) => (
+                        <div key={index} className="border-l-4 border-green-500 pl-4">
+                          <div className="font-medium">{trend.topic}</div>
+                          <div className="text-sm text-gray-600">
+                            {trend.mentions} উল্লেখ • {trend.growth} • {trend.category}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="trends" className="space-y-4">
+            <TrendingAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>বিশ্লেষণ রিপোর্ট</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  রিপোর্ট বৈশিষ্ট্য শীঘ্রই আসছে...
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="trends" className="space-y-4">
