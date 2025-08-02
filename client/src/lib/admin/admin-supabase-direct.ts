@@ -880,28 +880,46 @@ export async function getUXAnalytics() {
     const { data, error } = await adminSupabase
       .from('performance_metrics')
       .select('*')
-      .in('metric_name', ['bounce_rate', 'time_on_page', 'pages_per_session'])
+      .in('metric_name', ['bounce_rate', 'session_duration', 'pages_per_session'])
       .gte('timestamp', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('timestamp', { ascending: false });
 
     if (error && error.code !== 'PGRST116') {
-      console.error('UX analytics error:', error);
+      console.error('UX Analytics error:', error);
       return { analytics: {} };
     }
 
     const metrics = data || [];
+    const bounceRateMetrics = metrics.filter(m => m.metric_name === 'bounce_rate');
+    const sessionDurationMetrics = metrics.filter(m => m.metric_name === 'session_duration');
+    const pagesPerSessionMetrics = metrics.filter(m => m.metric_name === 'pages_per_session');
+
     return {
       analytics: {
-        bounceRate: metrics.find(m => m.metric_name === 'bounce_rate')?.metric_value || 45,
-        avgTimeOnPage: metrics.find(m => m.metric_name === 'time_on_page')?.metric_value || 180,
-        pagesPerSession: metrics.find(m => m.metric_name === 'pages_per_session')?.metric_value || 3.2
+        bounceRate: bounceRateMetrics.length > 0 
+          ? Math.round(bounceRateMetrics.reduce((sum, m) => sum + m.metric_value, 0) / bounceRateMetrics.length)
+          : 45,
+        avgTimeOnPage: sessionDurationMetrics.length > 0
+          ? Math.round(sessionDurationMetrics.reduce((sum, m) => sum + m.metric_value, 0) / sessionDurationMetrics.length)
+          : 180,
+        pagesPerSession: pagesPerSessionMetrics.length > 0
+          ? Math.round(pagesPerSessionMetrics.reduce((sum, m) => sum + m.metric_value, 0) / pagesPerSessionMetrics.length * 10) / 10
+          : 3.2
       }
     };
   } catch (error) {
     console.error('Error fetching UX analytics:', error);
-    return { analytics: { bounceRate: 45, avgTimeOnPage: 180, pagesPerSession: 3.2 } };
+    return {
+      analytics: {
+        bounceRate: 45,
+        avgTimeOnPage: 180,
+        pagesPerSession: 3.2
+      }
+    };
   }
 }
+
+// Removed duplicate - using the first implementation above
 
 // ==============================================
 // COMPREHENSIVE DASHBOARD STATISTICS

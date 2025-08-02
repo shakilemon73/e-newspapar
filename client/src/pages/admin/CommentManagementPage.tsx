@@ -104,15 +104,15 @@ export default function CommentManagementPage() {
   const { data: commentStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-comment-stats'],
     queryFn: async () => {
-      const allComments = await getAdminComments();
-      const comments = allComments?.comments || [];
+      const { getDashboardStats } = await import('@/lib/admin');
+      const stats = await getDashboardStats();
       
       return {
-        total: comments.length,
-        pending: comments.filter((c: any) => c.status === 'pending').length,
-        approved: comments.filter((c: any) => c.status === 'approved').length,
-        rejected: comments.filter((c: any) => c.status === 'rejected').length,
-        reported: comments.filter((c: any) => c.is_reported).length
+        total: stats.totalComments || 0,
+        pending: stats.pendingComments || 0,
+        approved: stats.approvedComments || 0,
+        rejected: 0, // Not tracked in current stats
+        reported: stats.reportedComments || 0
       };
     },
     enabled: !!user && user.user_metadata?.role === 'admin',

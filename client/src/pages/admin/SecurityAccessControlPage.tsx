@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useSupabaseAdminAuth } from '@/hooks/use-supabase-admin-auth';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,8 @@ export default function SecurityAccessControlPage() {
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user, isAdmin } = useSupabaseAdminAuth();
+  const { user, loading: authLoading } = useSupabaseAuth();
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   // User roles query using direct Supabase
   const { data: roles, isLoading: rolesLoading } = useQuery({
@@ -229,7 +230,7 @@ export default function SecurityAccessControlPage() {
               <Key className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{securitySettings?.security_score || 85}%</div>
+              <div className="text-2xl font-bold">{securitySettings?.settings?.security_score || 85}%</div>
               <p className="text-xs text-muted-foreground">
                 উচ্চ নিরাপত্তা স্তর
               </p>
@@ -277,7 +278,7 @@ export default function SecurityAccessControlPage() {
                     <div>
                       <Label>অনুমতি</Label>
                       <div className="space-y-2 mt-2">
-                        {availablePermissions?.map((permission: any) => (
+                        {Array.isArray(availablePermissions) && availablePermissions.map((permission: any) => (
                           <div key={permission.id} className="flex items-center space-x-2">
                             <input
                               type="checkbox"
@@ -471,7 +472,7 @@ export default function SecurityAccessControlPage() {
                     </div>
                     <Switch
                       id="two-factor"
-                      checked={securitySettings?.two_factor_required}
+                      checked={securitySettings?.settings?.two_factor_required || false}
                       onCheckedChange={(checked) => 
                         updateSecurityMutation.mutate({
                           ...securitySettings,
@@ -488,7 +489,7 @@ export default function SecurityAccessControlPage() {
                     </div>
                     <Switch
                       id="session-timeout"
-                      checked={securitySettings?.session_timeout_enabled}
+                      checked={securitySettings?.settings?.session_timeout_enabled || false}
                       onCheckedChange={(checked) => 
                         updateSecurityMutation.mutate({
                           ...securitySettings,
@@ -505,7 +506,7 @@ export default function SecurityAccessControlPage() {
                     </div>
                     <Switch
                       id="ip-whitelist"
-                      checked={securitySettings?.ip_whitelist_enabled}
+                      checked={securitySettings?.settings?.ip_whitelist_enabled || false}
                       onCheckedChange={(checked) => 
                         updateSecurityMutation.mutate({
                           ...securitySettings,
@@ -522,7 +523,7 @@ export default function SecurityAccessControlPage() {
                     </div>
                     <Switch
                       id="audit-logging"
-                      checked={securitySettings?.audit_logging_enabled}
+                      checked={securitySettings?.settings?.audit_logging_enabled || false}
                       onCheckedChange={(checked) => 
                         updateSecurityMutation.mutate({
                           ...securitySettings,
@@ -538,7 +539,7 @@ export default function SecurityAccessControlPage() {
                       <Input
                         id="session-duration"
                         type="number"
-                        value={securitySettings?.session_duration || 60}
+                        value={securitySettings?.settings?.session_duration || 60}
                         onChange={(e) => updateSecurityMutation.mutate({
                           ...securitySettings,
                           session_duration: parseInt(e.target.value)
@@ -550,7 +551,7 @@ export default function SecurityAccessControlPage() {
                       <Input
                         id="max-login-attempts"
                         type="number"
-                        value={securitySettings?.max_login_attempts || 5}
+                        value={securitySettings?.settings?.max_login_attempts || 5}
                         onChange={(e) => updateSecurityMutation.mutate({
                           ...securitySettings,
                           max_login_attempts: parseInt(e.target.value)
