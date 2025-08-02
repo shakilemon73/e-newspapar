@@ -26,7 +26,7 @@ import {
   Play,
   Pause
 } from 'lucide-react';
-import { getAdminAdvertisements, createAdvertisement, updateAdvertisement, deleteAdvertisement } from '@/lib/admin-api-direct';
+import { getAdminAdvertisements, createAdvertisement, updateAdvertisement, deleteAdvertisement } from '@/lib/admin';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdvertisementManagementPage() {

@@ -31,7 +31,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 import { DateFormatter, formatDate } from '@/components/DateFormatter';
 import { getRelativeTimeInBengali, formatBengaliDate } from '@/lib/utils/dates';
 import { cn } from '@/lib/utils';

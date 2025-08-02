@@ -21,7 +21,7 @@ import {
   Users
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 import { useToast } from '@/hooks/use-toast';
 import { FileUploadField } from '@/components/admin/FileUploadField';
 import { useLanguage } from '@/contexts/LanguageContext';

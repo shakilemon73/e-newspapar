@@ -94,7 +94,7 @@ class DirectWeatherService {
       if (updates.length > 0) {
         try {
           // Import admin client for weather updates
-          const { default: adminSupabase } = await import('./admin-supabase-direct');
+          const { adminSupabase } = await import('./admin/admin-supabase-direct');
           
           // First, clear existing weather data
           await adminSupabase

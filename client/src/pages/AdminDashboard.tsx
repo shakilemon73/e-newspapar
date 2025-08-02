@@ -29,7 +29,7 @@ import {
   Languages
 } from 'lucide-react';
 import { Link } from 'wouter';
-import { getDashboardStats, getAdminArticles, getAdminCategories } from '@/lib/admin-api-direct';
+import { getDashboardStats, getAdminArticles, getAdminCategories } from '@/lib/admin';
 
 // Modern Dashboard Component with Language Support
 function ModernAdminDashboard() {

@@ -34,7 +34,7 @@ import {
   getEmailStats,
   sendNewsletter,
   updateEmailSettings
-} from '@/lib/admin-supabase-direct';
+} from '@/lib/admin';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EmailNotificationPage() {

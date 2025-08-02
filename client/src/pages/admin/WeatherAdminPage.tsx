@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { useToast } from '@/hooks/use-toast';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 
 interface Weather {
   id: number;

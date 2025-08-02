@@ -19,7 +19,7 @@ import {
   RefreshCw,
   Download
 } from 'lucide-react';
-import { getTrendingAnalytics } from '@/lib/admin-supabase-direct';
+import { getTrendingAnalytics } from '@/lib/admin';
 
 export default function TrendingAnalyticsPage() {
   const [timeRange, setTimeRange] = useState<'1h' | '24h' | '7d'>('24h');

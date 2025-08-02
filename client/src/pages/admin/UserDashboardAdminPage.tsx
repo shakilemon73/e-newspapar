@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DateFormatter } from '@/components/DateFormatter';
-import { getUserDashboardStats, getUserEngagementData } from '@/lib/admin-api-direct';
+import { getUserDashboardStats, getUserEngagementData } from '@/lib/admin';
 import {
   Table,
   TableBody,

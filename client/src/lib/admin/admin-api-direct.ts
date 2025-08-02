@@ -14,7 +14,7 @@ export {
 } from './admin-supabase-direct';
 
 // Use centralized Supabase client to prevent multiple instances
-import { supabase } from './supabase';
+import { supabase } from '../supabase';
 
 // ==============================================
 // ADDITIONAL CRUD OPERATIONS

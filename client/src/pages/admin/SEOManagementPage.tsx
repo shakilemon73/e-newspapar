@@ -29,7 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   getSiteSettings,
   updateSiteSettings 
-} from '@/lib/admin-supabase-direct';
+} from '@/lib/admin';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,

@@ -18,7 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 // Using useQueryClient hook for query invalidation
 import { useLanguage } from '@/contexts/LanguageContext';
 import {

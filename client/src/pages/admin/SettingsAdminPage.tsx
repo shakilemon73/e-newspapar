@@ -29,7 +29,7 @@ import {
   Activity,
   RefreshCw
 } from 'lucide-react';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 
 export default function SettingsAdminPageMigrated() {
   const { user, loading: authLoading } = useSupabaseAuth();

@@ -23,7 +23,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getMobileAppConfig, updateMobileAppConfig, sendPushNotification, getMobileAppAnalytics, getPushNotificationHistory } from '@/lib/admin-api-direct';
+import { getMobileAppConfig, updateMobileAppConfig, sendPushNotification, getMobileAppAnalytics, getPushNotificationHistory } from '@/lib/admin';
 
 export default function MobileAppManagementPage() {
   const [activeTab, setActiveTab] = useState('config');

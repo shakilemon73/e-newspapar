@@ -24,7 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 

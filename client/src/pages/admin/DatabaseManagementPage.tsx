@@ -31,7 +31,7 @@ import {
   getDatabaseBackups,
   createDatabaseBackup,
   restoreDatabaseBackup
-} from '@/lib/admin-supabase-direct';
+} from '@/lib/admin';
 
 export default function DatabaseManagementPage() {
   const { user, loading: authLoading } = useSupabaseAuth();
