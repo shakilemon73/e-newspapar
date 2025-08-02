@@ -87,5 +87,22 @@ export {
   updateBreakingNews,
   getAdminArticles,
   getAdminCategories,
-  getAdminAuthors 
+  getAdminAuthors,
+  
+  // Advertisement management
+  getAdminAdvertisements,
+  createAdvertisement,
+  updateAdvertisement,
+  deleteAdvertisement,
+  
+  // Mobile app management
+  getMobileAppConfig,
+  updateMobileAppConfig,
+  sendPushNotification,
+  getMobileAppAnalytics,
+  getPushNotificationHistory,
+  
+  // User management
+  getAdminUsers,
+  updateUserRole
 } from './admin-api-direct';
