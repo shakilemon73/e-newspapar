@@ -1,30 +1,35 @@
-// AMP (Accelerated Mobile Pages) version of articles for better mobile performance
+// AMP (Accelerated Mobile Pages) Edge Function
 export const config = {
   runtime: 'edge',
 };
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
-
 export default async function handler(request) {
-  const url = new URL(request.url);
-  const pathSegments = url.pathname.split('/');
-  const slug = pathSegments[pathSegments.length - 1];
-  
-  if (!slug) {
-    return new Response('Article not found', { status: 404 });
-  }
-
   try {
-    // Direct Supabase API call using fetch (Edge-compatible)
-    const supabaseQuery = `${supabaseUrl}/rest/v1/articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=id,slug,title,excerpt,content,image_url,published_at,created_at,categories!inner(name,slug)`;
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/');
+    const slug = pathSegments[pathSegments.length - 1];
     
-    const response = await fetch(supabaseQuery, {
+    if (!slug) {
+      return new Response('Article not found', { status: 404 });
+    }
+
+    // Environment variables
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response('Configuration error', { status: 500 });
+    }
+
+    // Direct Supabase REST API call using only Web APIs
+    const apiUrl = `${supabaseUrl}/rest/v1/articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=id,slug,title,excerpt,content,image_url,published_at,created_at`;
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
       headers: {
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        'Content-Type': 'application/json'
       }
     });
 
@@ -33,19 +38,22 @@ export default async function handler(request) {
     }
 
     const articles = await response.json();
-    const article = articles[0];
+    const article = articles?.[0];
 
     if (!article) {
       return new Response('Article not found', { status: 404 });
     }
 
+    // Fallback data for missing fields
     const baseUrl = 'https://www.dainiktni.news';
     const articleUrl = `${baseUrl}/article/${article.slug}`;
-    const publishedTime = article.published_at || article.created_at;
-    const categoryName = article.categories?.name || 'সাধারণ';
+    const publishedTime = article.published_at || article.created_at || new Date().toISOString();
+    const categoryName = 'সাধারণ'; // Default category
     
-    // Clean content for AMP (remove unsupported HTML)
-    let cleanContent = article.content || article.excerpt || '';
+    // Clean content for AMP compliance
+    let cleanContent = article.content || article.excerpt || 'কোন বিস্তারিত তথ্য পাওয়া যায়নি।';
+    
+    // Remove potentially problematic HTML for AMP
     cleanContent = cleanContent
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<iframe[^>]*>[\s\S]*?<\/iframe>/gi, '')
@@ -53,8 +61,10 @@ export default async function handler(request) {
       .replace(/<input[^>]*>/gi, '')
       .replace(/<button[^>]*>[\s\S]*?<\/button>/gi, '')
       .replace(/style\s*=\s*"[^"]*"/gi, '')
-      .replace(/onclick\s*=\s*"[^"]*"/gi, '');
+      .replace(/onclick\s*=\s*"[^"]*"/gi, '')
+      .replace(/javascript:/gi, '');
 
+    // Generate AMP HTML using template literals only
     const ampHtml = `<!doctype html>
 <html ⚡ lang="bn">
 <head>
@@ -64,25 +74,22 @@ export default async function handler(request) {
   <link rel="canonical" href="${articleUrl}">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
   
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="${article.excerpt || cleanContent.substring(0, 160)}">
+  <meta name="description" content="${(article.excerpt || cleanContent).substring(0, 160)}">
   <meta name="author" content="Bengali News Time">
   
-  <!-- Open Graph -->
   <meta property="og:type" content="article">
   <meta property="og:title" content="${article.title}">
-  <meta property="og:description" content="${article.excerpt || cleanContent.substring(0, 160)}">
+  <meta property="og:description" content="${(article.excerpt || cleanContent).substring(0, 160)}">
   <meta property="og:image" content="${article.image_url || baseUrl + '/og-default.svg'}">
   <meta property="og:url" content="${articleUrl}">
   <meta property="og:site_name" content="Bengali News Time">
   
-  <!-- Article Structured Data -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     "headline": "${article.title}",
-    "description": "${article.excerpt || cleanContent.substring(0, 160)}",
+    "description": "${(article.excerpt || cleanContent).substring(0, 160)}",
     "image": "${article.image_url || baseUrl + '/og-default.svg'}",
     "datePublished": "${publishedTime}",
     "dateModified": "${article.updated_at || publishedTime}",
@@ -105,9 +112,7 @@ export default async function handler(request) {
   }
   </script>
   
-  <!-- AMP Custom Styles -->
   <style amp-custom>
-    /* Bengali font imports */
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@300;400;500;600;700&display=swap');
     
     body {
@@ -210,7 +215,6 @@ export default async function handler(request) {
       font-weight: 600;
     }
     
-    /* Responsive design */
     @media (max-width: 768px) {
       .container {
         padding: 16px;
@@ -226,27 +230,22 @@ export default async function handler(request) {
     }
   </style>
   
-  <!-- AMP Boilerplate -->
   <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style>
   <noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <header class="header">
       <a href="${baseUrl}" class="site-title">📰 Bengali News Time</a>
     </header>
     
-    <!-- Article Meta -->
     <div class="article-meta">
-      <a href="${baseUrl}/category/${article.categories?.slug || 'general'}" class="category">${categoryName}</a>
+      <span class="category">${categoryName}</span>
       <p class="publish-date">প্রকাশিত: ${new Date(publishedTime).toLocaleDateString('bn-BD')}</p>
     </div>
     
-    <!-- Article Title -->
     <h1 class="article-title">${article.title}</h1>
     
-    <!-- Article Image -->
     ${article.image_url ? `
     <amp-img 
       src="${article.image_url}" 
@@ -257,12 +256,10 @@ export default async function handler(request) {
       class="article-image">
     </amp-img>` : ''}
     
-    <!-- Article Content -->
     <div class="article-content">
       ${cleanContent}
     </div>
     
-    <!-- Footer -->
     <footer class="footer">
       <p>
         <a href="${articleUrl}" class="footer-link">সম্পূর্ণ নিবন্ধটি পড়ুন</a> |
@@ -280,12 +277,20 @@ export default async function handler(request) {
       status: 200,
       headers: {
         'content-type': 'text/html; charset=utf-8',
-        'cache-control': 'public, max-age=3600, s-maxage=3600'
+        'cache-control': 'public, max-age=3600, s-maxage=3600',
+        'x-robots-tag': 'index, follow'
       }
     });
     
   } catch (error) {
     console.error('AMP generation error:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return new Response(`<!doctype html>
+<html>
+<head><title>Error</title></head>
+<body><h1>Error generating AMP page</h1><p>Please try again later.</p></body>
+</html>`, { 
+      status: 500,
+      headers: { 'content-type': 'text/html' }
+    });
   }
 }
