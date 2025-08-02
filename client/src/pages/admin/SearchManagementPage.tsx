@@ -78,19 +78,28 @@ export default function SearchManagementPage() {
 
   const { data: searchAnalytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['admin-search-analytics'],
-    queryFn: () => Promise.resolve({ analytics: {} }),
+    queryFn: async () => {
+      const { getSearchAnalytics } = await import('@/lib/admin-supabase-direct');
+      return getSearchAnalytics();
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: searchHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['admin-search-history'],
-    queryFn: () => Promise.resolve({ history: [] }),
+    queryFn: async () => {
+      const { getSearchHistory } = await import('@/lib/admin-supabase-direct');
+      return getSearchHistory();
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: searchIndex, isLoading: indexLoading } = useQuery({
     queryKey: ['admin-search-index'],
-    queryFn: () => Promise.resolve({ index: {} }),
+    queryFn: async () => {
+      const { getSearchIndex } = await import('@/lib/admin-supabase-direct');
+      return getSearchIndex();
+    },
     enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
@@ -118,7 +127,8 @@ export default function SearchManagementPage() {
   // Reindex search mutation
   const reindexSearchMutation = useMutation({
     mutationFn: async () => {
-      return Promise.resolve({ success: true });
+      const { reindexSearch } = await import('@/lib/admin-supabase-direct');
+      return reindexSearch();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-search-index'] });
@@ -139,7 +149,9 @@ export default function SearchManagementPage() {
   // Clear search history mutation
   const clearSearchHistoryMutation = useMutation({
     mutationFn: async () => {
-      return Promise.resolve({ success: true });
+      const { adminSupabase } = await import('@/lib/admin-supabase-direct');
+      await adminSupabase.from('search_analytics').delete().neq('id', 0);
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-search-history'] });

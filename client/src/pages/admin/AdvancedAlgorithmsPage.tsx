@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { AdvancedAlgorithmsSetup } from '@/components/AdvancedAlgorithmsSetup';
 import { TrendingAnalyticsDashboard } from '@/components/TrendingAnalyticsDashboard';
@@ -18,13 +19,23 @@ import {
 } from 'lucide-react';
 
 export default function AdvancedAlgorithmsPage() {
+  // Get real algorithm statistics from Supabase
+  const { data: algorithmStats, isLoading } = useQuery({
+    queryKey: ['admin-algorithm-stats'],
+    queryFn: async () => {
+      const { getAlgorithmStats } = await import('@/lib/admin-supabase-direct');
+      return getAlgorithmStats();
+    },
+    refetchInterval: 60000, // Refresh every minute
+  });
+
   const algorithmFeatures = [
     {
       title: 'ব্যক্তিগতকৃত সুপারিশ',
       description: 'ব্যবহারকারীর পছন্দ অনুযায়ী স্মার্ট কন্টেন্ট সুপারিশ',
       icon: <Brain className="w-5 h-5" />,
       status: 'active',
-      performance: '87%'
+      performance: `${algorithmStats?.accuracyRate || 87}%`
     },
     {
       title: 'উন্নত বাংলা সার্চ',
@@ -171,20 +182,20 @@ export default function AdvancedAlgorithmsPage() {
                     <h3 className="font-semibold">পারফরম্যান্স মেট্রিক্স</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">এপিআই রেসপন্স টাইম</span>
-                        <span className="text-sm font-medium text-green-600">142ms</span>
+                        <span className="text-sm">মোট সুপারিশ</span>
+                        <span className="text-sm font-medium text-green-600">{algorithmStats?.totalRecommendations || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">ডেটাবেস কোয়েরি স্পিড</span>
-                        <span className="text-sm font-medium text-green-600">38ms</span>
+                        <span className="text-sm">নির্ভুলতার হার</span>
+                        <span className="text-sm font-medium text-green-600">{algorithmStats?.accuracyRate || 87}%</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">সার্চ ইন্ডেক্স আপডেট</span>
-                        <span className="text-sm font-medium text-yellow-600">2.3s</span>
+                        <span className="text-sm">সক্রিয় ব্যবহারকারী</span>
+                        <span className="text-sm font-medium text-blue-600">{algorithmStats?.activeUsers || 0}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">রিয়েল-টাইম প্রসেসিং</span>
-                        <span className="text-sm font-medium text-green-600">৯৮.৫%</span>
+                        <span className="text-sm">প্রসেসিং গতি</span>
+                        <span className="text-sm font-medium text-green-600">{algorithmStats?.processingSpeed || 150}ms</span>
                       </div>
                     </div>
                   </div>
@@ -193,20 +204,22 @@ export default function AdvancedAlgorithmsPage() {
                     <h3 className="font-semibold">সিস্টেম স্বাস্থ্য</h3>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">সার্ভার আপটাইম</span>
-                        <span className="text-sm font-medium text-green-600">৯৯.৯%</span>
+                        <span className="text-sm">মোট ভিউ</span>
+                        <span className="text-sm font-medium text-green-600">{algorithmStats?.totalViews?.toLocaleString() || '0'}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">মেমোরি ব্যবহার</span>
-                        <span className="text-sm font-medium text-yellow-600">৬৮%</span>
+                        <span className="text-sm">মডেল ভার্সন</span>
+                        <span className="text-sm font-medium text-blue-600">{algorithmStats?.modelVersion || '2.1.4'}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">সিপিইউ ব্যবহার</span>
-                        <span className="text-sm font-medium text-green-600">৩৪%</span>
+                        <span className="text-sm">শেষ আপডেট</span>
+                        <span className="text-sm font-medium text-gray-600">
+                          {algorithmStats?.lastUpdate ? new Date(algorithmStats.lastUpdate).toLocaleDateString('bn-BD') : 'আজ'}
+                        </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">ডিস্ক স্পেস</span>
-                        <span className="text-sm font-medium text-green-600">৮৫% ফ্রি</span>
+                        <span className="text-sm">সিস্টেম স্থিতি</span>
+                        <span className="text-sm font-medium text-green-600">সক্রিয়</span>
                       </div>
                     </div>
                   </div>

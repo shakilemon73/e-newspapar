@@ -50,25 +50,38 @@ export default function SecurityAccessControlPage() {
     queryFn: () => getAdminUsers(),
   });
 
-  // Mock data for other queries (can be replaced with actual Supabase functions)
+  // Real Supabase data queries
   const { data: auditLogs, isLoading: auditLoading } = useQuery({
     queryKey: ['admin-security-audit-logs'],
-    queryFn: () => Promise.resolve({ logs: [] }),
+    queryFn: async () => {
+      const { getSecurityAuditLogs } = await import('@/lib/admin-supabase-direct');
+      return getSecurityAuditLogs();
+    },
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: policies, isLoading: policiesLoading } = useQuery({
     queryKey: ['admin-access-control-policies'],
-    queryFn: () => Promise.resolve({ policies: [] }),
+    queryFn: async () => {
+      const { getAccessPolicies } = await import('@/lib/admin-supabase-direct');
+      return getAccessPolicies();
+    },
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: securitySettings, isLoading: settingsLoading } = useQuery({
     queryKey: ['admin-security-settings'],
-    queryFn: () => Promise.resolve({ settings: {} }),
+    queryFn: async () => {
+      const { getSecuritySettings } = await import('@/lib/admin-supabase-direct');
+      return getSecuritySettings();
+    },
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   const { data: availablePermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['admin-available-permissions'],
     queryFn: () => Promise.resolve({ permissions: ['read', 'write', 'delete', 'admin'] }),
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
   // Create/Update role mutation using direct Supabase
@@ -93,7 +106,13 @@ export default function SecurityAccessControlPage() {
 
   // Update security settings mutation
   const updateSecurityMutation = useMutation({
-    mutationFn: (data: any) => Promise.resolve({ success: true }),
+    mutationFn: async (data: any) => {
+      const { updateSecuritySetting } = await import('@/lib/admin-supabase-direct');
+      for (const [key, value] of Object.entries(data)) {
+        await updateSecuritySetting(key, value);
+      }
+      return { success: true };
+    },
     onSuccess: () => {
       toast({
         title: "নিরাপত্তা সেটিংস আপডেট হয়েছে",
