@@ -30,6 +30,8 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { adminSupabaseAPI } from '@/lib/admin';
+import { brandingThemes, fontOptions, type BrandingTheme, type FontOption } from '@/lib/branding-themes';
+import { loadBengaliFont, applyBrandingTheme } from '@/lib/font-loader';
 
 export default function SettingsAdminPageMigrated() {
   const { user, loading: authLoading } = useSupabaseAuth();
@@ -44,6 +46,19 @@ export default function SettingsAdminPageMigrated() {
     siteUrl: '',
     logoUrl: '',
     defaultLanguage: 'bn'
+  });
+
+  // Branding states
+  const [brandingSettings, setBrandingSettings] = useState({
+    theme: 'traditional-red',
+    headlineFont: 'noto-sans-bengali',
+    bodyFont: 'siyam-rupali',
+    displayFont: 'kalpurush',
+    customColors: {
+      primary: '#ec1f27',
+      secondary: '#509478',
+      accent: '#fbcc44'
+    }
   });
 
   // Check authentication and admin role
@@ -72,6 +87,19 @@ export default function SettingsAdminPageMigrated() {
         logoUrl: settings.logoUrl || '',
         defaultLanguage: settings.defaultLanguage || 'bn'
       });
+
+      // Load branding settings if available
+      setBrandingSettings({
+        theme: settings.theme || 'traditional-red',
+        headlineFont: settings.headlineFont || 'noto-sans-bengali',
+        bodyFont: settings.bodyFont || 'siyam-rupali',
+        displayFont: settings.displayFont || 'kalpurush',
+        customColors: {
+          primary: settings.primaryColor || '#ec1f27',
+          secondary: settings.secondaryColor || '#509478',
+          accent: settings.accentColor || '#fbcc44'
+        }
+      });
     }
   }, [settings]);
 
@@ -83,6 +111,18 @@ export default function SettingsAdminPageMigrated() {
         title: 'Settings updated',
         description: 'System settings have been successfully updated.',
       });
+      
+      // Apply branding theme to current page
+      applyBrandingTheme(brandingSettings);
+      
+      // Trigger global site settings refresh
+      window.dispatchEvent(new CustomEvent('siteSettingsUpdated', {
+        detail: { 
+          siteName: siteSettings.siteName,
+          branding: brandingSettings
+        }
+      }));
+      
       queryClient.invalidateQueries({ queryKey: ['admin-system-settings'] });
     },
     onError: (error: Error) => {
@@ -95,7 +135,17 @@ export default function SettingsAdminPageMigrated() {
   });
 
   const handleSaveSettings = () => {
-    updateSettingsMutation.mutate(siteSettings);
+    const allSettings: Record<string, string> = {
+      ...siteSettings,
+      theme: brandingSettings.theme,
+      headlineFont: brandingSettings.headlineFont,
+      bodyFont: brandingSettings.bodyFont,
+      displayFont: brandingSettings.displayFont,
+      primaryColor: brandingSettings.customColors.primary,
+      secondaryColor: brandingSettings.customColors.secondary,
+      accentColor: brandingSettings.customColors.accent
+    };
+    updateSettingsMutation.mutate(allSettings);
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -104,6 +154,41 @@ export default function SettingsAdminPageMigrated() {
       [field]: value
     }));
   };
+
+  const handleBrandingChange = (field: string, value: string) => {
+    setBrandingSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Load font immediately when selected
+    if (['headlineFont', 'bodyFont', 'displayFont'].includes(field)) {
+      loadBengaliFont(value).then(result => {
+        if (!result.success) {
+          toast({
+            title: 'Font Loading Warning',
+            description: `Font may not display correctly: ${result.error}`,
+            variant: 'destructive',
+          });
+        }
+      });
+    }
+  };
+
+  const handleColorChange = (colorType: string, value: string) => {
+    setBrandingSettings(prev => ({
+      ...prev,
+      customColors: {
+        ...prev.customColors,
+        [colorType]: value
+      }
+    }));
+  };
+
+  const selectedTheme = brandingThemes.find(theme => theme.id === brandingSettings.theme) || brandingThemes[0];
+  const headlineFonts = fontOptions.filter(font => font.category === 'headlines');
+  const bodyFonts = fontOptions.filter(font => font.category === 'body');
+  const displayFonts = fontOptions.filter(font => font.category === 'display');
 
   if (error) {
     return (
@@ -263,19 +348,314 @@ export default function SettingsAdminPageMigrated() {
           </TabsContent>
 
           <TabsContent value="appearance" className="space-y-6">
+            {/* Color Themes Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Appearance Settings</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="h-5 w-5" />
+                  Color Themes
+                  <span className="text-sm font-normal text-muted-foreground">(রঙের থিম)</span>
+                </CardTitle>
                 <CardDescription>
-                  Customize the look and feel of your website
+                  Choose from professional color schemes designed for Bengali news portals
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    Appearance settings are managed through the theme system. 
-                    Theme customization will be available in a future update.
-                  </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {brandingThemes.map((theme) => (
+                    <div
+                      key={theme.id}
+                      className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md ${
+                        brandingSettings.theme === theme.id 
+                          ? 'border-primary shadow-lg ring-2 ring-primary/20' 
+                          : 'border-border hover:border-primary/50'
+                      }`}
+                      onClick={() => handleBrandingChange('theme', theme.id)}
+                    >
+                      {/* Theme Preview */}
+                      <div className="mb-3 h-16 rounded overflow-hidden border">
+                        <div className="flex h-full">
+                          <div 
+                            className="w-1/2" 
+                            style={{ backgroundColor: theme.colors.primary }}
+                          />
+                          <div 
+                            className="w-1/4" 
+                            style={{ backgroundColor: theme.colors.secondary }}
+                          />
+                          <div 
+                            className="w-1/4" 
+                            style={{ backgroundColor: theme.colors.accent }}
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-1">
+                        <h4 className="font-medium">{theme.name}</h4>
+                        <p className="text-sm text-muted-foreground">{theme.nameBengali}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {theme.description}
+                        </p>
+                      </div>
+                      
+                      {brandingSettings.theme === theme.id && (
+                        <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-primary flex items-center justify-center">
+                          <div className="h-2 w-2 rounded-full bg-white" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Custom Colors Override */}
+                <div className="border-t pt-6">
+                  <h4 className="font-medium mb-4">Custom Color Override (কাস্টম রঙ)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="primaryColor">Primary Color (প্রধান রঙ)</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          id="primaryColor"
+                          value={brandingSettings.customColors.primary}
+                          onChange={(e) => handleColorChange('primary', e.target.value)}
+                          className="w-12 h-9 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={brandingSettings.customColors.primary}
+                          onChange={(e) => handleColorChange('primary', e.target.value)}
+                          placeholder="#ec1f27"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="secondaryColor">Secondary Color (গৌণ রঙ)</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          id="secondaryColor"
+                          value={brandingSettings.customColors.secondary}
+                          onChange={(e) => handleColorChange('secondary', e.target.value)}
+                          className="w-12 h-9 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={brandingSettings.customColors.secondary}
+                          onChange={(e) => handleColorChange('secondary', e.target.value)}
+                          placeholder="#509478"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="accentColor">Accent Color (অ্যাকসেন্ট রঙ)</Label>
+                      <div className="flex gap-2">
+                        <input
+                          type="color"
+                          id="accentColor"
+                          value={brandingSettings.customColors.accent}
+                          onChange={(e) => handleColorChange('accent', e.target.value)}
+                          className="w-12 h-9 rounded border cursor-pointer"
+                        />
+                        <Input
+                          value={brandingSettings.customColors.accent}
+                          onChange={(e) => handleColorChange('accent', e.target.value)}
+                          placeholder="#fbcc44"
+                          className="flex-1"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Typography Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Typography
+                  <span className="text-sm font-normal text-muted-foreground">(টাইপোগ্রাফি)</span>
+                </CardTitle>
+                <CardDescription>
+                  Choose professional Bengali fonts optimized for news readability
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Headlines Font */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Headlines Font (শিরোনাম ফন্ট)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {headlineFonts.map((font) => (
+                      <div
+                        key={font.id}
+                        className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-sm ${
+                          brandingSettings.headlineFont === font.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleBrandingChange('headlineFont', font.id)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{font.name}</h4>
+                          {brandingSettings.headlineFont === font.id && (
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{font.bengaliName}</p>
+                        <div className="text-lg font-bold mb-1" style={{ fontFamily: font.cssName }}>
+                          {font.preview}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{font.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Body Font */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Body Text Font (মূল টেক্সট ফন্ট)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {bodyFonts.map((font) => (
+                      <div
+                        key={font.id}
+                        className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-sm ${
+                          brandingSettings.bodyFont === font.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleBrandingChange('bodyFont', font.id)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{font.name}</h4>
+                          {brandingSettings.bodyFont === font.id && (
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{font.bengaliName}</p>
+                        <div className="text-sm mb-1" style={{ fontFamily: font.cssName }}>
+                          {font.preview}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{font.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Display Font */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">Display Font (ডিসপ্লে ফন্ট)</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {displayFonts.map((font) => (
+                      <div
+                        key={font.id}
+                        className={`cursor-pointer rounded-lg border p-4 transition-all hover:shadow-sm ${
+                          brandingSettings.displayFont === font.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                        onClick={() => handleBrandingChange('displayFont', font.id)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium">{font.name}</h4>
+                          {brandingSettings.displayFont === font.id && (
+                            <div className="h-2 w-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-2">{font.bengaliName}</p>
+                        <div className="text-lg font-semibold mb-1" style={{ fontFamily: font.cssName }}>
+                          {font.preview}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{font.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Save Branding Settings */}
+                <div className="border-t pt-6">
+                  <Button 
+                    onClick={handleSaveSettings}
+                    disabled={updateSettingsMutation.isPending}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {updateSettingsMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    Save Branding Settings (ব্র্যান্ডিং সেটিংস সংরক্ষণ করুন)
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Live Preview Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Live Preview (লাইভ প্রিভিউ)</CardTitle>
+                <CardDescription>
+                  Preview how your selected theme and fonts will look
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="border rounded-lg p-6 space-y-4"
+                  style={{
+                    backgroundColor: selectedTheme.colors.background,
+                    color: selectedTheme.colors.foreground,
+                    borderColor: selectedTheme.colors.border
+                  }}
+                >
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ 
+                      fontFamily: headlineFonts.find(f => f.id === brandingSettings.headlineFont)?.cssName,
+                      color: brandingSettings.customColors.primary
+                    }}
+                  >
+                    {siteSettings.siteName || 'Your News Site'} - Breaking News
+                  </div>
+                  <div 
+                    className="text-lg font-medium"
+                    style={{ 
+                      fontFamily: displayFonts.find(f => f.id === brandingSettings.displayFont)?.cssName,
+                      color: brandingSettings.customColors.secondary
+                    }}
+                  >
+                    আজকের প্রধান সংবাদ
+                  </div>
+                  <div 
+                    className="text-base leading-relaxed"
+                    style={{ 
+                      fontFamily: bodyFonts.find(f => f.id === brandingSettings.bodyFont)?.cssName
+                    }}
+                  >
+                    {siteSettings.siteDescription || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম। আমাদের সাথে থাকুন সর্বশেষ খবরের জন্য।'}
+                  </div>
+                  <div className="flex gap-2">
+                    <span 
+                      className="px-3 py-1 rounded text-sm font-medium"
+                      style={{ 
+                        backgroundColor: brandingSettings.customColors.accent,
+                        color: selectedTheme.colors.background
+                      }}
+                    >
+                      Category Tag
+                    </span>
+                    <span 
+                      className="px-3 py-1 rounded text-sm"
+                      style={{ 
+                        backgroundColor: selectedTheme.colors.muted,
+                        color: selectedTheme.colors.foreground
+                      }}
+                    >
+                      Secondary Tag
+                    </span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -57,6 +57,22 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
       // Update global window object for immediate access
       if (typeof window !== 'undefined') {
         (window as any).globalSiteSettings = data;
+        
+        // Apply branding theme if available
+        if (data.theme && data.headlineFont) {
+          const { applyBrandingTheme } = await import('../lib/font-loader');
+          applyBrandingTheme({
+            theme: data.theme,
+            headlineFont: data.headlineFont,
+            bodyFont: data.bodyFont || 'siyam-rupali',
+            displayFont: data.displayFont || 'kalpurush',
+            customColors: {
+              primary: data.primaryColor || '#ec1f27',
+              secondary: data.secondaryColor || '#509478',
+              accent: data.accentColor || '#fbcc44'
+            }
+          });
+        }
       }
     } catch (error) {
       console.error('Error fetching site settings:', error);
@@ -83,6 +99,13 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
       if (event.detail?.siteName) {
         setSettings(prev => ({ ...prev, siteName: event.detail.siteName }));
       }
+      
+      // Apply branding if available
+      if (event.detail?.branding) {
+        const { applyBrandingTheme } = require('../lib/font-loader');
+        applyBrandingTheme(event.detail.branding);
+      }
+      
       refreshSettings();
     };
 
