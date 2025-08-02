@@ -98,7 +98,7 @@ export default function EPapersAdminPage() {
   const { data: categories } = useQuery({
     queryKey: ['admin-categories'],
     queryFn: async () => {
-      const { default: adminSupabase } = await import('@/lib/admin-supabase-direct');
+      const { adminSupabase } = await import('@/lib/admin');
       const { data } = await adminSupabase.from('categories').select('name').order('name');
       return data?.map(cat => cat.name) || [];
     },

@@ -23,7 +23,7 @@ export default function AdvancedAlgorithmsPage() {
   const { data: algorithmStats, isLoading } = useQuery({
     queryKey: ['admin-algorithm-stats'],
     queryFn: async () => {
-      const { getAlgorithmStats } = await import('@/lib/admin-supabase-direct');
+      const { getAlgorithmStats } = await import('@/lib/admin');
       return getAlgorithmStats();
     },
     refetchInterval: 60000, // Refresh every minute

@@ -101,7 +101,7 @@ export default function UsersAdminPage() {
     queryKey: ['admin-users'],
     retry: false,
     queryFn: async () => {
-      const { getUserStats } = await import('@/lib/admin-supabase-direct');
+      const { getUserStats } = await import('@/lib/admin');
       return await getUserStats();
     },
   });

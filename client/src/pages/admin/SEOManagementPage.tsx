@@ -79,7 +79,7 @@ export default function SEOManagementPage() {
   const { data: metaTagsData, isLoading: metaLoading } = useQuery({
     queryKey: ['admin-meta-tags'],
     queryFn: async () => {
-      const { getMetaTags } = await import('@/lib/admin-supabase-direct');
+      const { getMetaTags } = await import('@/lib/admin');
       return await getMetaTags();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -88,7 +88,7 @@ export default function SEOManagementPage() {
   const { data: seoAnalytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['admin-seo-analytics'],
     queryFn: async () => {
-      const { getSEOAnalytics } = await import('@/lib/admin-supabase-direct');
+      const { getSEOAnalytics } = await import('@/lib/admin');
       return await getSEOAnalytics();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -118,7 +118,7 @@ export default function SEOManagementPage() {
   // Generate sitemap mutation
   const generateSitemapMutation = useMutation({
     mutationFn: async () => {
-      const { generateSitemap } = await import('@/lib/admin-supabase-direct');
+      const { generateSitemap } = await import('@/lib/admin');
       return await generateSitemap();
     },
     onSuccess: () => {
@@ -139,7 +139,7 @@ export default function SEOManagementPage() {
   // Update individual meta tags
   const updateMetaTagMutation = useMutation({
     mutationFn: async (data: { page: string; metaData: any }) => {
-      const { updateMetaTag } = await import('@/lib/admin-supabase-direct');
+      const { updateMetaTag } = await import('@/lib/admin');
       return await updateMetaTag(data.page, data.metaData);
     },
     onSuccess: () => {

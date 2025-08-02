@@ -57,7 +57,7 @@ import {
   Brain
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { adminSupabaseAPI } from '@/lib/admin';
 import { queryClient } from '@/lib/queryClient';
 import { FileUploadField } from './FileUploadField';
 import { contentEditorAI, type TitleSuggestion, type ArticleSummary, type SEOSuggestions } from '@/lib/content-editor-ai';

@@ -33,7 +33,7 @@ import {
   updateCommentStatus,
   deleteCommentAdmin,
   replyToComment
-} from '@/lib/admin-supabase-direct';
+} from '@/lib/admin';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,

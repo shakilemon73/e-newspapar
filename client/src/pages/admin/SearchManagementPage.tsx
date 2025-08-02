@@ -79,7 +79,7 @@ export default function SearchManagementPage() {
   const { data: searchAnalytics, isLoading: analyticsLoading } = useQuery({
     queryKey: ['admin-search-analytics'],
     queryFn: async () => {
-      const { getSearchAnalytics } = await import('@/lib/admin-supabase-direct');
+      const { getSearchAnalytics } = await import('@/lib/admin');
       return getSearchAnalytics();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -88,7 +88,7 @@ export default function SearchManagementPage() {
   const { data: searchHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['admin-search-history'],
     queryFn: async () => {
-      const { getSearchHistory } = await import('@/lib/admin-supabase-direct');
+      const { getSearchHistory } = await import('@/lib/admin');
       return getSearchHistory();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -97,7 +97,7 @@ export default function SearchManagementPage() {
   const { data: searchIndex, isLoading: indexLoading } = useQuery({
     queryKey: ['admin-search-index'],
     queryFn: async () => {
-      const { getSearchIndex } = await import('@/lib/admin-supabase-direct');
+      const { getSearchIndex } = await import('@/lib/admin');
       return getSearchIndex();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -127,7 +127,7 @@ export default function SearchManagementPage() {
   // Reindex search mutation
   const reindexSearchMutation = useMutation({
     mutationFn: async () => {
-      const { reindexSearch } = await import('@/lib/admin-supabase-direct');
+      const { reindexSearch } = await import('@/lib/admin');
       return reindexSearch();
     },
     onSuccess: () => {
@@ -149,7 +149,7 @@ export default function SearchManagementPage() {
   // Clear search history mutation
   const clearSearchHistoryMutation = useMutation({
     mutationFn: async () => {
-      const { adminSupabase } = await import('@/lib/admin-supabase-direct');
+      const { adminSupabase } = await import('@/lib/admin');
       await adminSupabase.from('search_analytics').delete().neq('id', 0);
       return { success: true };
     },

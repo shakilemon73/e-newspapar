@@ -61,7 +61,7 @@ export default function UserDashboardAdminPage() {
   const { data: userStats, isLoading: userStatsLoading } = useQuery({
     queryKey: ['admin-user-stats', selectedTimeRange],
     queryFn: async () => {
-      const { getUserStats } = await import('@/lib/admin-supabase-direct');
+      const { getUserStats } = await import('@/lib/admin');
       return await getUserStats();
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -70,7 +70,7 @@ export default function UserDashboardAdminPage() {
   const { data: userAnalytics, isLoading: activeUsersLoading } = useQuery({
     queryKey: ['admin-user-analytics', selectedTimeRange],
     queryFn: async () => {
-      const { getUserAnalytics } = await import('@/lib/admin-supabase-direct');
+      const { getUserAnalytics } = await import('@/lib/admin');
       return await getUserAnalytics(selectedTimeRange);
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -79,7 +79,7 @@ export default function UserDashboardAdminPage() {
   const { data: readingActivity, isLoading: readingActivityLoading } = useQuery({
     queryKey: ['admin-reading-activity', selectedTimeRange],
     queryFn: async () => {
-      const { getUserAnalytics } = await import('@/lib/admin-supabase-direct');
+      const { getUserAnalytics } = await import('@/lib/admin');
       const data = await getUserAnalytics(selectedTimeRange);
       return data.readingActivity;
     },
@@ -98,7 +98,7 @@ export default function UserDashboardAdminPage() {
   const { data: savedArticlesStats, isLoading: savedArticlesLoading } = useQuery({
     queryKey: ['admin-saved-articles-stats', selectedTimeRange],
     queryFn: async () => {
-      const { adminSupabase } = await import('@/lib/admin-supabase-direct');
+      const { adminSupabase } = await import('@/lib/admin');
       // Get saved articles count from Supabase
       const { data, error } = await adminSupabase
         .from('saved_articles')

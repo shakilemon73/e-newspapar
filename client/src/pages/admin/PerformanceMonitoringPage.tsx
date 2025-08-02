@@ -28,7 +28,7 @@ export default function PerformanceMonitoringPage() {
   const { data: performanceData, isLoading: performanceLoading } = useQuery({
     queryKey: ['admin-performance-metrics'],
     queryFn: async () => {
-      const { getPerformanceMetrics } = await import('@/lib/admin-supabase-direct');
+      const { getPerformanceMetrics } = await import('@/lib/admin');
       return getPerformanceMetrics();
     },
     refetchInterval: refreshInterval,
@@ -38,7 +38,7 @@ export default function PerformanceMonitoringPage() {
   const { data: errorLogs, isLoading: errorsLoading } = useQuery({
     queryKey: ['admin-error-logs'],
     queryFn: async () => {
-      const { getErrorLogs } = await import('@/lib/admin-supabase-direct');
+      const { getErrorLogs } = await import('@/lib/admin');
       return getErrorLogs();
     },
     refetchInterval: 30000,
@@ -48,7 +48,7 @@ export default function PerformanceMonitoringPage() {
   const { data: apiMetrics, isLoading: apiLoading } = useQuery({
     queryKey: ['admin-api-metrics'],
     queryFn: async () => {
-      const { getApiMetrics } = await import('@/lib/admin-supabase-direct');
+      const { getApiMetrics } = await import('@/lib/admin');
       return getApiMetrics();
     },
     refetchInterval: 10000,
@@ -58,7 +58,7 @@ export default function PerformanceMonitoringPage() {
   const { data: uxAnalytics, isLoading: uxLoading } = useQuery({
     queryKey: ['admin-ux-analytics'],
     queryFn: async () => {
-      const { getUXAnalytics } = await import('@/lib/admin-supabase-direct');
+      const { getUXAnalytics } = await import('@/lib/admin');
       return getUXAnalytics();
     },
     refetchInterval: 60000,

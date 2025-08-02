@@ -56,7 +56,7 @@ export default function SecurityAccessControlPage() {
   const { data: auditLogs, isLoading: auditLoading } = useQuery({
     queryKey: ['admin-security-audit-logs'],
     queryFn: async () => {
-      const { getSecurityAuditLogs } = await import('@/lib/admin-supabase-direct');
+      const { getSecurityAuditLogs } = await import('@/lib/admin');
       return getSecurityAuditLogs();
     },
     enabled: !!user && isAdmin,
@@ -65,7 +65,7 @@ export default function SecurityAccessControlPage() {
   const { data: policies, isLoading: policiesLoading } = useQuery({
     queryKey: ['admin-access-control-policies'],
     queryFn: async () => {
-      const { getAccessPolicies } = await import('@/lib/admin-supabase-direct');
+      const { getAccessPolicies } = await import('@/lib/admin');
       return getAccessPolicies();
     },
     enabled: !!user && isAdmin,
@@ -74,7 +74,7 @@ export default function SecurityAccessControlPage() {
   const { data: securitySettings, isLoading: settingsLoading } = useQuery({
     queryKey: ['admin-security-settings'],
     queryFn: async () => {
-      const { getSecuritySettings } = await import('@/lib/admin-supabase-direct');
+      const { getSecuritySettings } = await import('@/lib/admin');
       return getSecuritySettings();
     },
     enabled: !!user && isAdmin,
@@ -109,7 +109,7 @@ export default function SecurityAccessControlPage() {
   // Update security settings mutation
   const updateSecurityMutation = useMutation({
     mutationFn: async (data: any) => {
-      const { updateSecuritySetting } = await import('@/lib/admin-supabase-direct');
+      const { updateSecuritySetting } = await import('@/lib/admin');
       for (const [key, value] of Object.entries(data)) {
         await updateSecuritySetting(key, value);
       }

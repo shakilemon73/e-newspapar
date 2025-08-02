@@ -31,7 +31,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin-supabase-direct';
+import { getAdminArticlesDirect, getAdminCategoriesDirect } from '@/lib/admin';
 import { createArticle, updateArticle, deleteArticle } from '@/lib/admin-crud-fixed';
 import { DateFormatter } from '@/components/DateFormatter';
 import { cn } from '@/lib/utils';
@@ -141,7 +141,7 @@ export default function ArticlesAdminPage() {
   // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const { deleteArticleDirect } = await import('@/lib/admin-supabase-direct');
+      const { deleteArticleDirect } = await import('@/lib/admin');
       return deleteArticleDirect(id);
     },
     onSuccess: () => {
