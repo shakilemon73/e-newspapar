@@ -107,19 +107,6 @@ export default function CommentManagementPage() {
   // Extract comments array from the response
   const comments = commentsData?.comments || [];
 
-  // Debug logging
-  console.log('📊 Component state:', {
-    user: user?.user_metadata?.role,
-    commentsLoading,
-    commentsError,
-    commentsDataLength: commentsData?.comments?.length,
-    commentsCount: comments.length,
-    filterStatus,
-    searchTerm,
-    filteredCommentsLength: filteredComments?.length,
-    queryEnabled: !!user && user.user_metadata?.role === 'admin'
-  });
-
   const { data: commentStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-comment-stats'],
     queryFn: async () => {
@@ -250,6 +237,19 @@ export default function CommentManagementPage() {
                          comment.articles?.title?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'all' || comment.status === filterStatus;
     return matchesSearch && matchesFilter;
+  });
+
+  // Debug logging - moved after filteredComments
+  console.log('📊 Component state:', {
+    user: user?.user_metadata?.role,
+    commentsLoading,
+    commentsError,
+    commentsDataLength: commentsData?.comments?.length,
+    commentsCount: comments.length,
+    filterStatus,
+    searchTerm,
+    filteredCommentsLength: filteredComments?.length,
+    queryEnabled: !!user && user.user_metadata?.role === 'admin'
   });
 
   // Loading state
