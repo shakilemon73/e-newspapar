@@ -330,7 +330,7 @@ export default function SecurityAccessControlPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {roles?.map((role: any) => (
+                    {Array.isArray(roles?.users) ? roles.users.map((role: any) => (
                       <div key={role.id} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
@@ -361,7 +361,9 @@ export default function SecurityAccessControlPage() {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <p className="text-center text-gray-500 py-4">কোন ভূমিকা পাওয়া যায়নি</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -378,7 +380,7 @@ export default function SecurityAccessControlPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {auditLogs?.map((log: any) => (
+                  {Array.isArray(auditLogs?.logs) ? auditLogs.logs.map((log: any) => (
                     <div key={log.id} className="flex items-start gap-3 p-3 border rounded-lg">
                       <div className="flex-shrink-0 mt-1">
                         {getAuditLogIcon(log.action)}
@@ -400,7 +402,9 @@ export default function SecurityAccessControlPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-center text-gray-500 py-4">কোন অডিট লগ পাওয়া যায়নি</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -416,7 +420,7 @@ export default function SecurityAccessControlPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {policies?.map((policy: any) => (
+                  {Array.isArray(policies?.policies) ? policies.policies.map((policy: any) => (
                     <div key={policy.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -442,7 +446,9 @@ export default function SecurityAccessControlPage() {
                         </Button>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p className="text-center text-gray-500 py-4">কোন নীতি পাওয়া যায়নি</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
