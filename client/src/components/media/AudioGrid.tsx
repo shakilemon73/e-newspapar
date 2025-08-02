@@ -4,6 +4,7 @@ import { Play, Pause, Volume2, Clock, Calendar, Headphones } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AudioPlayer } from './AudioPlayer';
+import { EnhancedAudioPlayer } from './EnhancedAudioPlayer';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 
 interface AudioArticle {
@@ -302,7 +303,7 @@ export function AudioGrid({
       {/* Featured Audio Player */}
       {selectedAudio && showPlayer && (
         <div className="mb-6">
-          <AudioPlayer
+          <EnhancedAudioPlayer
             audioUrl={selectedAudio.audio_url}
             title={selectedAudio.title}
             excerpt={selectedAudio.excerpt}

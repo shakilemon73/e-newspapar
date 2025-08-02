@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { VideoContent as VideoContentType } from '@/../../shared/supabase-types';
+import { EnhancedVideoPlayer } from '@/components/media/EnhancedVideoPlayer';
 
 interface VideoItem {
   id: number;
@@ -111,14 +112,12 @@ export const VideoContent = () => {
       {/* Featured Video */}
       <div className="mb-6">
         <div className="relative pb-16:9 h-0 overflow-hidden rounded mb-3">
-          <iframe 
-            className="absolute top-0 left-0 w-full h-full"
-            src={featuredVideo.video_url}
+          <EnhancedVideoPlayer
+            videoUrl={featuredVideo.video_url}
             title={featuredVideo.title}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          ></iframe>
+            thumbnail={featuredVideo.thumbnail_url}
+            autoPlay={false}
+          />
         </div>
         <h4 className="font-bold text-lg mb-1 font-hind">
           <Link href={`/video/${featuredVideo.slug}`} className="hover:text-accent transition">

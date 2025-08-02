@@ -4,6 +4,7 @@ import { Play, Clock, Eye, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { VideoPlayer } from './VideoPlayer';
+import { EnhancedVideoPlayer } from './EnhancedVideoPlayer';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 
 interface VideoItem {
@@ -247,7 +248,7 @@ export function VideoGrid({
                 ✕ বন্ধ করুন
               </Button>
             </div>
-            <VideoPlayer
+            <EnhancedVideoPlayer
               videoUrl={selectedVideo.video_url}
               title={selectedVideo.title}
               thumbnail={selectedVideo.thumbnail_url}

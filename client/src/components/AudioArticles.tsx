@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'wouter';
 import { getRelativeTimeInBengali } from '@/lib/utils/dates';
 import { Play, Pause, SkipBack, SkipForward, Volume2 } from 'lucide-react';
+import { EnhancedAudioPlayer } from '@/components/media/EnhancedAudioPlayer';
 
 interface AudioArticle {
   id: number;
