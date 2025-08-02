@@ -593,23 +593,28 @@ export async function getVideoContent(): Promise<any[]> {
 export async function getSiteSettings(): Promise<any> {
   try {
     const { data, error } = await supabase
-      .from('system_settings')
+      .from('site_settings')
       .select('*')
-      .limit(1)
-      .maybeSingle();
+      .order('key');
     
     // If no data found (empty table) or error, return fallback
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching site settings:', error);
     }
     
-    // Always return fallback settings since the table might be empty
+    // Convert array of key-value pairs to object, same as admin API
+    const settingsObject = (data || []).reduce((acc: any, setting: any) => {
+      acc[setting.key] = setting.value;
+      return acc;
+    }, {});
+    
+    // Return settings with proper field names
     return {
-      siteName: data?.site_name || 'Bengali News',
-      siteDescription: data?.site_description || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
-      logoUrl: data?.logo_url || '',
-      defaultLanguage: data?.default_language || 'bn',
-      siteUrl: data?.site_url || ''
+      siteName: settingsObject.siteName || 'Bengali News',
+      siteDescription: settingsObject.siteDescription || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
+      logoUrl: settingsObject.logoUrl || '',
+      defaultLanguage: settingsObject.defaultLanguage || 'bn',
+      siteUrl: settingsObject.siteUrl || ''
     };
   } catch (err) {
     console.error('Error in getSiteSettings:', err);
