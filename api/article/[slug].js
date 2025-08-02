@@ -30,11 +30,11 @@ export default async function handler(request) {
         id,
         slug,
         title,
-        description,
+        excerpt,
         content,
-        featured_image,
-        author_name,
-        category,
+        image_url,
+        author_id,
+        category_id,
         created_at,
         updated_at,
         published_at,
@@ -65,11 +65,11 @@ export default async function handler(request) {
     // If it's a social media crawler, return HTML with meta tags
     if (isSocialCrawler) {
       const metaTitle = article.title || 'Bengali News Time';
-      const metaDescription = article.description || article.content?.substring(0, 160) + '...' || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম';
-      const metaImage = article.featured_image || 'https://www.dainiktni.news/og-default.svg';
+      const metaDescription = article.excerpt || article.content?.substring(0, 160) + '...' || 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম';
+      const metaImage = article.image_url || 'https://www.dainiktni.news/og-default.svg';
       const metaUrl = `https://www.dainiktni.news/article/${article.slug}`;
       const publishedTime = article.published_at || article.created_at;
-      const authorName = article.author_name || 'Bengali News Time';
+      const authorName = 'Bengali News Time'; // Will be enhanced to fetch from author_id later
 
       const html = `
 <!DOCTYPE html>
@@ -95,7 +95,7 @@ export default async function handler(request) {
   <!-- Article-specific Open Graph tags -->
   <meta property="article:author" content="${authorName}">
   <meta property="article:published_time" content="${publishedTime}">
-  <meta property="article:section" content="${article.category}">
+  <meta property="article:section" content="News">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
