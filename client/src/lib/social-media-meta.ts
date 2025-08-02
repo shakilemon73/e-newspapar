@@ -22,10 +22,10 @@ export interface SocialMetaConfig {
  * Default configuration for the website
  */
 const DEFAULT_CONFIG: Partial<SocialMetaConfig> = {
-  siteName: (typeof window !== 'undefined' && (window as any).globalSiteSettings?.siteName) || '',
-  image: '/og-default-image.svg', // Default fallback image
+  siteName: (typeof window !== 'undefined' && (window as any).globalSiteSettings?.siteName) || 'Bengali News Time',
+  image: '/og-default.svg', // Default fallback image
   type: 'website',
-  twitterHandle: '@prothomalo',
+  twitterHandle: '@bengalinewstime',
   author: 'সংবাদদাতা'
 };
 
