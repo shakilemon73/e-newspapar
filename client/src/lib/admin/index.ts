@@ -9,8 +9,7 @@ export { adminSupabaseAPI, dashboardAPI } from './admin-supabase-complete';
 // Import dashboardAPI to use in local exports
 import { dashboardAPI } from './admin-supabase-complete';
 
-// Export specific dashboard functions for convenience
-export const getDashboardStats = () => dashboardAPI.getStats();
+// Export specific dashboard functions for convenience - REMOVED: Now using direct Supabase version
 
 // All admin functions from direct Supabase implementation
 export { 
@@ -76,7 +75,10 @@ export {
   // Article management (direct functions)
   getAdminArticlesDirect,
   getAdminCategoriesDirect,
-  deleteArticleDirect
+  deleteArticleDirect,
+  
+  // Dashboard statistics
+  getDashboardStats
 } from './admin-supabase-direct';
 
 // CRUD operations and utilities

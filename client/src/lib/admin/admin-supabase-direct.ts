@@ -904,6 +904,105 @@ export async function getUXAnalytics() {
 }
 
 // ==============================================
+// COMPREHENSIVE DASHBOARD STATISTICS
+// ==============================================
+
+export async function getDashboardStats() {
+  try {
+    console.log('🔧 Fetching comprehensive dashboard statistics...');
+    
+    // Get today's published articles count
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const { count: todayPublished, error: todayError } = await adminSupabase
+      .from('articles')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published')
+      .gte('published_at', today.toISOString())
+      .lt('published_at', tomorrow.toISOString());
+
+    // Get total articles count
+    const { count: totalArticles, error: articlesError } = await adminSupabase
+      .from('articles')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'published');
+
+    // Get total views count
+    const { data: viewsData, error: viewsError } = await adminSupabase
+      .from('articles')
+      .select('view_count')
+      .eq('status', 'published');
+
+    const totalViews = viewsData?.reduce((sum, article) => sum + (article.view_count || 0), 0) || 0;
+
+    // Get total users count using service role key
+    const { data: authUsers, error: usersError } = await adminSupabase.auth.admin.listUsers();
+    const totalUsers = authUsers?.users?.length || 0;
+
+    // Get total comments count
+    const { count: totalComments, error: commentsError } = await adminSupabase
+      .from('article_comments')
+      .select('*', { count: 'exact', head: true });
+
+    // Get pending comments count
+    const { count: pendingComments, error: pendingError } = await adminSupabase
+      .from('article_comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending');
+
+    // Get approved comments count
+    const { count: approvedComments, error: approvedError } = await adminSupabase
+      .from('article_comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'approved');
+
+    // Get reported comments count
+    const { count: reportedComments, error: reportedError } = await adminSupabase
+      .from('article_comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_reported', true);
+
+    if (todayError) console.error('Today published error:', todayError);
+    if (articlesError) console.error('Total articles error:', articlesError);
+    if (viewsError) console.error('Views error:', viewsError);
+    if (usersError) console.error('Users error:', usersError);
+    if (commentsError) console.error('Comments error:', commentsError);
+
+    const stats = {
+      // Dashboard main stats
+      todayPublished: todayPublished || 0,
+      totalViews: totalViews,
+      totalUsers: totalUsers,
+      totalArticles: totalArticles || 0,
+      
+      // Comments stats
+      totalComments: totalComments || 0,
+      pendingComments: pendingComments || 0,
+      approvedComments: approvedComments || 0,
+      reportedComments: reportedComments || 0
+    };
+
+    console.log('✅ Dashboard stats fetched successfully:', stats);
+    return stats;
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    return {
+      todayPublished: 0,
+      totalViews: 0,
+      totalUsers: 0,
+      totalArticles: 0,
+      totalComments: 0,
+      pendingComments: 0,
+      approvedComments: 0,
+      reportedComments: 0
+    };
+  }
+}
+
+// ==============================================
 // ADVANCED ALGORITHMS DATA
 // ==============================================
 
