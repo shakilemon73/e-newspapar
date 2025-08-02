@@ -26,12 +26,50 @@
   "functions": {
     "api/article/[slug].js": {
       "runtime": "edge"
+    },
+    "api/og-image.js": {
+      "runtime": "edge"
+    },
+    "api/sitemap.js": {
+      "runtime": "edge"
+    },
+    "api/robots.js": {
+      "runtime": "edge"
+    },
+    "api/health.js": {
+      "runtime": "edge"
+    },
+    "api/rss.js": {
+      "runtime": "edge"
+    },
+    "api/amp/article/[slug].js": {
+      "runtime": "edge"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
       "destination": "/api/$1"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/api/robots"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/api/rss"
+    },
+    {
+      "source": "/feed",
+      "destination": "/api/rss"
+    },
+    {
+      "source": "/amp/article/:slug*",
+      "destination": "/api/amp/article/:slug*"
     },
     {
       "source": "/article/:slug*",
