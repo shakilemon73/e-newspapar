@@ -178,6 +178,164 @@ const Category = () => {
     article.excerpt?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Category navigation component
+  const CategoryNavigation = () => (
+    <Card className="mb-6">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center text-lg font-hind">
+          <Tag className="w-5 h-5 mr-2 text-primary" />
+          সকল বিভাগ
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="w-full">
+          <div className="flex space-x-2 pb-2">
+            {allCategories.map((cat) => (
+              <Link key={cat.id} href={`/category/${cat.slug}`}>
+                <Badge 
+                  variant={cat.slug === categorySlug ? "default" : "outline"} 
+                  className="category-nav-chip whitespace-nowrap cursor-pointer px-3 py-1"
+                >
+                  {cat.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+
+  // Enhanced article card for grid view
+  const ArticleCardGrid = ({ article }: { article: Article }) => {
+    const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
+    const publishDate = article.publishedAt || article.published_at || '';
+    
+    return (
+      <Card className="article-card-grid group overflow-hidden h-full flex flex-col">
+        <Link href={`/article/${article.slug}`}>
+          <div className="relative overflow-hidden">
+            <img 
+              src={imageUrl} 
+              alt={article.title} 
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== '/placeholder-800x450.svg') {
+                  target.src = '/placeholder-800x450.svg';
+                }
+              }}
+            />
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-primary/90 text-primary-foreground">
+                {category?.name}
+              </Badge>
+            </div>
+            <div className="absolute bottom-3 right-3">
+              <Button size="sm" variant="secondary" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </Link>
+      
+      <CardContent className="p-4 flex-1 flex flex-col">
+        <Link href={`/article/${article.slug}`}>
+          <h3 className="font-bold text-lg mb-2 font-hind line-clamp-2 group-hover:text-primary transition-colors">
+            {article.title}
+          </h3>
+        </Link>
+        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1">
+          {article.excerpt}
+        </p>
+        
+        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+          <div className="flex items-center space-x-2">
+            <Clock className="w-3 h-3" />
+            <span>{getRelativeTimeInBengali(publishDate)}</span>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" className="h-auto p-1">
+              <Bookmark className="w-3 h-3" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-auto p-1">
+              <Share2 className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  // Enhanced article card for list view
+  const ArticleCardList = ({ article }: { article: Article }) => {
+    const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
+    const publishDate = article.publishedAt || article.published_at || '';
+    
+    return (
+      <Card className="article-card-list group">
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <Link href={`/article/${article.slug}`} className="flex-shrink-0">
+              <div className="relative w-32 h-20 overflow-hidden rounded-md">
+                <img 
+                  src={imageUrl} 
+                  alt={article.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== '/placeholder-800x450.svg') {
+                      target.src = '/placeholder-800x450.svg';
+                    }
+                  }}
+                />
+              </div>
+            </Link>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <Link href={`/article/${article.slug}`}>
+                <h3 className="font-semibold text-lg font-hind line-clamp-2 group-hover:text-primary transition-colors">
+                  {article.title}
+                </h3>
+              </Link>
+              <Badge variant="outline" className="ml-2 flex-shrink-0">
+                {category?.name}
+              </Badge>
+            </div>
+            
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+              {article.excerpt}
+            </p>
+            
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{getRelativeTimeInBengali(publishDate)}</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button variant="ghost" size="sm" className="h-auto p-1">
+                  <Bookmark className="w-3 h-3" />
+                </Button>
+                <Button variant="ghost" size="sm" className="h-auto p-1">
+                  <Share2 className="w-3 h-3" />
+                </Button>
+                <Link href={`/article/${article.slug}`}>
+                  <Button variant="ghost" size="sm" className="h-auto p-1 text-primary">
+                    <ArrowRight className="w-3 h-3" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+    );
+  };
+
   if (!category && isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -269,30 +427,7 @@ const Category = () => {
           </div>
 
           {/* Category Navigation */}
-          <Card className="mb-6">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-lg font-hind">
-                <Tag className="w-5 h-5 mr-2 text-primary" />
-                সকল বিভাগ
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="w-full">
-                <div className="flex space-x-2 pb-2">
-                  {allCategories.map((cat) => (
-                    <Link key={cat.id} href={`/category/${cat.slug}`}>
-                      <Badge 
-                        variant={cat.slug === categorySlug ? "default" : "outline"} 
-                        className="category-nav-chip whitespace-nowrap cursor-pointer px-3 py-1"
-                      >
-                        {cat.name}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          <CategoryNavigation />
 
           {/* Controls Section */}
           <Card className="mb-6">
@@ -398,122 +533,13 @@ const Category = () => {
                   ? "article-grid-container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" 
                   : "space-y-4"
               }>
-                {filteredArticles.map((article) => {
-                  const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
-                  const publishDate = article.publishedAt || article.published_at || '';
-                  
-                  return viewMode === 'grid' ? (
-                    <Card key={article.id} className="article-card-grid group overflow-hidden h-full flex flex-col">
-                      <Link href={`/article/${article.slug}`}>
-                        <div className="relative overflow-hidden">
-                          <img 
-                            src={imageUrl} 
-                            alt={article.title} 
-                            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              if (target.src !== '/placeholder-800x450.svg') {
-                                target.src = '/placeholder-800x450.svg';
-                              }
-                            }}
-                          />
-                          <div className="absolute top-3 left-3">
-                            <Badge className="bg-primary/90 text-primary-foreground">
-                              {category?.name}
-                            </Badge>
-                          </div>
-                        </div>
-                      </Link>
-                    
-                      <CardContent className="p-4 flex-1 flex flex-col">
-                        <Link href={`/article/${article.slug}`}>
-                          <h3 className="font-bold text-lg mb-2 font-hind line-clamp-2 group-hover:text-primary transition-colors">
-                            {article.title}
-                          </h3>
-                        </Link>
-                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4 flex-1">
-                          {article.excerpt}
-                        </p>
-                        
-                        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
-                          <div className="flex items-center space-x-2">
-                            <Clock className="w-3 h-3" />
-                            <span>{getRelativeTimeInBengali(publishDate)}</span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <Button variant="ghost" size="sm" className="h-auto p-1">
-                              <Bookmark className="w-3 h-3" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-auto p-1">
-                              <Share2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                {filteredArticles.map((article) => 
+                  viewMode === 'grid' ? (
+                    <ArticleCardGrid key={article.id} article={article} />
                   ) : (
-                    <Card key={article.id} className="article-card-list group">
-                      <CardContent className="p-4">
-                        <div className="flex gap-4">
-                          <Link href={`/article/${article.slug}`} className="flex-shrink-0">
-                            <div className="relative w-32 h-20 overflow-hidden rounded-md">
-                              <img 
-                                src={imageUrl} 
-                                alt={article.title} 
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  if (target.src !== '/placeholder-800x450.svg') {
-                                    target.src = '/placeholder-800x450.svg';
-                                  }
-                                }}
-                              />
-                            </div>
-                          </Link>
-                        
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <Link href={`/article/${article.slug}`}>
-                                <h3 className="font-semibold text-lg font-hind line-clamp-2 group-hover:text-primary transition-colors">
-                                  {article.title}
-                                </h3>
-                              </Link>
-                              <Badge variant="outline" className="ml-2 flex-shrink-0">
-                                {category?.name}
-                              </Badge>
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                              {article.excerpt}
-                            </p>
-                            
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-1">
-                                  <Clock className="w-3 h-3" />
-                                  <span>{getRelativeTimeInBengali(publishDate)}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Button variant="ghost" size="sm" className="h-auto p-1">
-                                  <Bookmark className="w-3 h-3" />
-                                </Button>
-                                <Button variant="ghost" size="sm" className="h-auto p-1">
-                                  <Share2 className="w-3 h-3" />
-                                </Button>
-                                <Link href={`/article/${article.slug}`}>
-                                  <Button variant="ghost" size="sm" className="h-auto p-1 text-primary">
-                                    <ArrowRight className="w-3 h-3" />
-                                  </Button>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
+                    <ArticleCardList key={article.id} article={article} />
+                  )
+                )}
               </div>
               
               {/* Load More Button */}
