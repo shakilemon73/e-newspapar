@@ -1,6 +1,4 @@
 // AMP (Accelerated Mobile Pages) version of articles for better mobile performance
-import { createClient } from '@supabase/supabase-js';
-
 export const config = {
   runtime: 'edge',
 };
@@ -18,27 +16,26 @@ export default async function handler(request) {
   }
 
   try {
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Direct Supabase API call using fetch (Edge-compatible)
+    const supabaseQuery = `${supabaseUrl}/rest/v1/articles?slug=eq.${encodeURIComponent(slug)}&status=eq.published&select=id,slug,title,excerpt,content,image_url,published_at,created_at,categories!inner(name,slug)`;
     
-    // Fetch article from Supabase
-    const { data: article, error } = await supabase
-      .from('articles')
-      .select(`
-        id,
-        slug,
-        title,
-        excerpt,
-        content,
-        image_url,
-        published_at,
-        created_at,
-        categories!inner(name, slug)
-      `)
-      .eq('slug', slug)
-      .eq('status', 'published')
-      .single();
+    const response = await fetch(supabaseQuery, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    });
 
-    if (error || !article) {
+    if (!response.ok) {
+      return new Response('Article not found', { status: 404 });
+    }
+
+    const articles = await response.json();
+    const article = articles[0];
+
+    if (!article) {
       return new Response('Article not found', { status: 404 });
     }
 
