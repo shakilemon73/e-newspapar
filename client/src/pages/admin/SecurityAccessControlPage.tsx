@@ -190,9 +190,9 @@ export default function SecurityAccessControlPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{roles?.length || 0}</div>
+              <div className="text-2xl font-bold">{Array.isArray(roles?.users) ? roles.users.length : 0}</div>
               <p className="text-xs text-muted-foreground">
-                {roles?.filter((role: any) => role.active).length || 0} সক্রিয়
+                {Array.isArray(roles?.users) ? roles.users.filter((role: any) => role.active).length : 0} সক্রিয়
               </p>
             </CardContent>
           </Card>
@@ -203,9 +203,9 @@ export default function SecurityAccessControlPage() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{auditLogs?.length || 0}</div>
+              <div className="text-2xl font-bold">{Array.isArray(auditLogs?.logs) ? auditLogs.logs.length : 0}</div>
               <p className="text-xs text-muted-foreground">
-                {auditLogs?.filter((log: any) => log.level === 'warning').length || 0} সতর্কতা
+                {Array.isArray(auditLogs?.logs) ? auditLogs.logs.filter((log: any) => log.level === 'warning').length : 0} সতর্কতা
               </p>
             </CardContent>
           </Card>
@@ -216,9 +216,9 @@ export default function SecurityAccessControlPage() {
               <Shield className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{policies?.length || 0}</div>
+              <div className="text-2xl font-bold">{Array.isArray(policies?.policies) ? policies.policies.length : 0}</div>
               <p className="text-xs text-muted-foreground">
-                {policies?.filter((policy: any) => policy.active).length || 0} সক্রিয়
+                {Array.isArray(policies?.policies) ? policies.policies.filter((policy: any) => policy.active).length : 0} সক্রিয়
               </p>
             </CardContent>
           </Card>

@@ -254,33 +254,37 @@ export default function PerformanceMonitoringPage() {
               <CardHeader>
                 <CardTitle>সাম্প্রতিক এরর লগ</CardTitle>
                 <CardDescription>
-                  সর্বশেষ {errorLogs?.length || 0} টি এরর
+                  সর্বশেষ {Array.isArray(errorLogs?.errors) ? errorLogs.errors.length : 0} টি এরর
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {errorLogs?.map((error: any, index: number) => (
-                    <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
-                      <div className="flex-shrink-0 mt-1">
-                        <AlertTriangle className={`h-4 w-4 ${
-                          error.level === 'critical' ? 'text-red-500' :
-                          error.level === 'warning' ? 'text-yellow-500' : 'text-gray-500'
-                        }`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium">{error.type}</span>
-                          <Badge variant={error.level === 'critical' ? 'destructive' : 'outline'}>
-                            {error.level}
-                          </Badge>
+                  {Array.isArray(errorLogs?.errors) ? (
+                    errorLogs.errors.map((error: any, index: number) => (
+                      <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
+                        <div className="flex-shrink-0 mt-1">
+                          <AlertTriangle className={`h-4 w-4 ${
+                            error.level === 'critical' ? 'text-red-500' :
+                            error.level === 'warning' ? 'text-yellow-500' : 'text-gray-500'
+                          }`} />
                         </div>
-                        <p className="text-sm text-gray-600 mb-1">{error.message}</p>
-                        <p className="text-xs text-gray-500">
-                          {new Date(error.timestamp).toLocaleString('bn-BD')} • {error.url}
-                        </p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-medium">{error.type}</span>
+                            <Badge variant={error.level === 'critical' ? 'destructive' : 'outline'}>
+                              {error.level}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-1">{error.message}</p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(error.timestamp).toLocaleString('bn-BD')} • {error.url}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">কোন এরর লগ পাওয়া যায়নি</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
