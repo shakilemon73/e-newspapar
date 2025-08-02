@@ -375,12 +375,11 @@ app.use('/api/*', (req: Request, res: Response) => {
     serveStatic(app);
   }
 
-  // Serve on port 5000 (frontend only)
-  const port = 5000;
+  // Serve on dynamic port (frontend only)
+  const port = process.env.PORT || 3000;
   server.listen({
-    port,
+    port: parseInt(port as string),
     host: "0.0.0.0",
-    reusePort: true,
   }, () => {
     log(`🚀 Frontend server with direct Supabase integration running on port ${port}`);
     log(`✅ All Express APIs replaced with direct Supabase calls`);
