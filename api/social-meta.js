@@ -106,7 +106,7 @@ async function getRouteMetadata(pathname, query) {
       if (articleData) {
         // Use article's original image or generate dynamic OG image
         const articleImage = articleData.image_url || articleData.imageUrl;
-        const ogImage = articleImage || `${baseUrl}/api/og-image?title=${encodeURIComponent(articleData.title)}&type=article&slug=${slug}`;
+        const ogImage = articleImage || `${baseUrl}/og-image.png`;
         
         // Create proper meta description from article content
         let metaDescription = '';
@@ -145,7 +145,7 @@ async function getRouteMetadata(pathname, query) {
         title: `${slug.replace(/-/g, ' ')} - Bengali News`,
         description: 'বিস্তারিত সংবাদ পড়ুন Bengali News এ। বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম।',
         type: 'article',
-        image: `${baseUrl}/api/og-image?title=${encodeURIComponent(slug.replace(/-/g, ' '))}&type=article`
+        image: `${baseUrl}/og-image.png`
       };
     }
 
@@ -157,7 +157,7 @@ async function getRouteMetadata(pathname, query) {
         title: `${slug.replace(/-/g, ' ')} - ভিডিও - Bengali News`,
         description: 'সর্বশেষ ভিডিও সংবাদ দেখুন Bengali News এ।',
         type: 'video.other',
-        image: `${baseUrl}/api/og-image?title=${encodeURIComponent(slug.replace(/-/g, ' '))}&type=video`
+        image: `${baseUrl}/og-image.svg`
       };
     }
 

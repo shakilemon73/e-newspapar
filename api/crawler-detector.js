@@ -123,7 +123,7 @@ async function generateMetaTags(pathname, query) {
           if (articleImage && (articleImage.startsWith('http') || articleImage.startsWith('//'))) {
             ogImage = articleImage;
           } else {
-            ogImage = `${baseUrl}/api/og-image?title=${encodeURIComponent(articleData.title)}&type=article&slug=${slug}`;
+            ogImage = `${baseUrl}/og-image.png`;
           }
           
           // Create meta description from article content
@@ -169,7 +169,7 @@ async function generateMetaTags(pathname, query) {
         title: `${fallbackTitle} - Bengali News`,
         description: 'বিস্তারিত সংবাদ পড়ুন Bengali News এ। বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম।',
         type: 'article',
-        image: `${baseUrl}/api/og-image?title=${encodeURIComponent(fallbackTitle)}&type=article`,
+        image: `${baseUrl}/og-image.png`,
         url: `${baseUrl}/article/${slug}`
       };
     }
@@ -183,7 +183,7 @@ async function generateMetaTags(pathname, query) {
         title: `${videoTitle} - ভিডিও সংবাদ - Bengali News`,
         description: 'সর্বশেষ ভিডিও সংবাদ দেখুন Bengali News এ।',
         type: 'video.other',
-        image: `${baseUrl}/api/og-image?title=${encodeURIComponent(videoTitle)}&type=video`,
+        image: `${baseUrl}/og-image.svg`,
         url: `${baseUrl}/video/${slug}`
       };
     }
@@ -196,7 +196,7 @@ async function generateMetaTags(pathname, query) {
         ...defaultMeta,
         title: `${categoryName} - Bengali News`,
         description: `${categoryName} বিভাগের সর্বশেষ সংবাদ পড়ুন Bengali News এ।`,
-        image: `${baseUrl}/api/og-image?title=${encodeURIComponent(categoryName)}&type=category`,
+        image: `${baseUrl}/og-image.svg`,
         url: `${baseUrl}/category/${slug}`
       };
     }
@@ -206,22 +206,22 @@ async function generateMetaTags(pathname, query) {
       '/videos': {
         title: 'ভিডিও সংবাদ - Bengali News',
         description: 'সর্বশেষ ভিডিও সংবাদ এবং ভিডিও রিপোর্ট দেখুন Bengali News এ।',
-        image: `${baseUrl}/api/og-image?title=ভিডিও সংবাদ&type=videos`
+        image: `${baseUrl}/og-image.svg`
       },
       '/audio-articles': {
         title: 'অডিও সংবাদ - Bengali News',
         description: 'সংবাদ শুনুন আমাদের অডিও সংবাদ সেবায়। Bengali News এর অডিও রিপোর্ট।',
-        image: `${baseUrl}/api/og-image?title=অডিও সংবাদ&type=audio`
+        image: `${baseUrl}/og-image.svg`
       },
       '/epaper': {
         title: 'ই-পেপার - Bengali News',
         description: 'আজকের পত্রিকা অনলাইনে পড়ুন। Bengali News এর ডিজিটাল পত্রিকা।',
-        image: `${baseUrl}/api/og-image?title=ই-পেপার&type=epaper`
+        image: `${baseUrl}/og-image.svg`
       },
       '/search': {
         title: 'অনুসন্ধান - Bengali News',
         description: 'Bengali News এ সংবাদ খুঁজুন।',
-        image: `${baseUrl}/api/og-image?title=অনুসন্ধান&type=search`
+        image: `${baseUrl}/og-image.svg`
       }
     };
 
