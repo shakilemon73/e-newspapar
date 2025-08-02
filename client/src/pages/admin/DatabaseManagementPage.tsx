@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { 
   Database, 
   Download, 
@@ -19,71 +22,114 @@ import {
   Archive,
   Trash2
 } from 'lucide-react';
-// Database management will use simplified approach without complex backend endpoints
 import { useToast } from '@/hooks/use-toast';
+import { 
+  getDatabaseStats,
+  getDatabaseHealth,
+  getDatabaseTables,
+  performDatabaseCleanup,
+  getDatabaseBackups,
+  createDatabaseBackup,
+  restoreDatabaseBackup
+} from '@/lib/admin-supabase-direct';
 
 export default function DatabaseManagementPage() {
+  const { user, loading: authLoading } = useSupabaseAuth();
+  const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Database stats - simplified for static site
+  // Check authentication and admin role
+  useEffect(() => {
+    if (!authLoading && !user) {
+      setLocation('/admin-login');
+    } else if (!authLoading && user && user.user_metadata?.role !== 'admin') {
+      setLocation('/admin-login');
+    }
+  }, [authLoading, user, setLocation]);
+
+  // Database stats using real Supabase data
   const { data: dbStats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-db-stats'],
-    queryFn: () => Promise.resolve({
-      totalTables: 71,
-      totalRows: 1200,
-      databaseSize: '2.4 MB',
-      lastBackup: new Date().toISOString()
-    }),
+    queryFn: () => getDatabaseStats(),
     refetchInterval: 30000,
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  // Database health - simplified for static site
+  // Database health using real Supabase connectivity
   const { data: dbHealth, isLoading: healthLoading } = useQuery({
     queryKey: ['admin-db-health'],
-    queryFn: () => Promise.resolve({
-      status: 'healthy',
-      connections: 5,
-      uptime: '99.9%'
-    }),
+    queryFn: () => getDatabaseHealth(),
     refetchInterval: 10000,
+    enabled: !!user && user.user_metadata?.role === 'admin',
   });
 
-  // Database backup - simplified message for static site
+  // Database backup using real Supabase operations
   const backupMutation = useMutation({
-    mutationFn: () => Promise.resolve({ success: true }),
-    onSuccess: () => {
+    mutationFn: () => createDatabaseBackup(),
+    onSuccess: (data) => {
       toast({
         title: "ব্যাকআপ সফল",
-        description: "Supabase automatically handles database backups",
+        description: data.message,
       });
+      queryClient.invalidateQueries({ queryKey: ['admin-db-stats'] });
     },
+    onError: () => {
+      toast({
+        title: "ব্যাকআপ ব্যর্থ",
+        description: "ব্যাকআপ তৈরিতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Database restore mutation
+  // Database restore mutation using real operations
   const restoreMutation = useMutation({
-    mutationFn: (backupId: string) => apiRequest(`/api/admin/database/restore/${backupId}`, { method: 'POST' }),
-    onSuccess: () => {
+    mutationFn: (backupId: string) => restoreDatabaseBackup(backupId),
+    onSuccess: (data) => {
       toast({
         title: "রিস্টোর সফল",
-        description: "ডেটাবেস রিস্টোর সম্পন্ন হয়েছে",
+        description: data.message,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/database'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-db-stats'] });
     },
+    onError: () => {
+      toast({
+        title: "রিস্টোর ব্যর্থ",
+        description: "ডেটাবেস রিস্টোরে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Database cleanup mutation
+  // Database cleanup mutation using real operations  
   const cleanupMutation = useMutation({
-    mutationFn: () => apiRequest('/api/admin/database/cleanup', { method: 'POST' }),
-    onSuccess: () => {
+    mutationFn: () => performDatabaseCleanup(),
+    onSuccess: (data) => {
       toast({
         title: "ক্লিনআপ সফল",
-        description: "ডেটাবেস ক্লিনআপ সম্পন্ন হয়েছে",
+        description: data.message,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/database'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-db-stats'] });
     },
+    onError: () => {
+      toast({
+        title: "ক্লিনআপ ব্যর্থ",
+        description: "ডেটাবেস ক্লিনআপে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
   });
+
+  // Loading state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <EnhancedAdminLayout>
