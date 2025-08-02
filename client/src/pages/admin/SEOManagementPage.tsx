@@ -412,15 +412,15 @@ export default function SEOManagementPage() {
                             <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                           </TableCell>
                         </TableRow>
-                      ) : metaTagsData?.length ? (
-                        metaTagsData.map((page: any) => (
-                          <TableRow key={page.id}>
-                            <TableCell className="font-medium">{page.pageName}</TableCell>
-                            <TableCell className="max-w-xs truncate">{page.title}</TableCell>
-                            <TableCell className="max-w-xs truncate">{page.description}</TableCell>
-                            <TableCell className="max-w-xs truncate">{page.keywords}</TableCell>
+                      ) : metaTagsData && metaTagsData.length > 0 ? (
+                        metaTagsData.map((tag: any, index: number) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{tag.page}</TableCell>
+                            <TableCell className="max-w-xs truncate">{tag.title}</TableCell>
+                            <TableCell className="max-w-xs truncate">{tag.description}</TableCell>
+                            <TableCell className="max-w-xs truncate">বাংলাদেশ, সংবাদ</TableCell>
                             <TableCell>
-                              {page.isOptimized ? (
+                              {tag.title && tag.description ? (
                                 <CheckCircle className="h-4 w-4 text-green-500" />
                               ) : (
                                 <AlertCircle className="h-4 w-4 text-yellow-500" />

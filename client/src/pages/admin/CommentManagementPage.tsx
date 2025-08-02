@@ -28,6 +28,12 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { adminSupabaseAPI } from '@/lib/admin-supabase-complete';
+import { 
+  getAdminComments,
+  updateCommentStatus,
+  deleteCommentAdmin,
+  replyToComment
+} from '@/lib/admin-supabase-direct';
 import { DateFormatter } from '@/components/DateFormatter';
 import {
   Table,
@@ -103,10 +109,10 @@ export default function CommentManagementPage() {
       
       return {
         total: comments.length,
-        pending: comments.filter(c => c.status === 'pending').length,
-        approved: comments.filter(c => c.status === 'approved').length,
-        rejected: comments.filter(c => c.status === 'rejected').length,
-        reported: comments.filter(c => c.is_reported).length
+        pending: comments.filter((c: any) => c.status === 'pending').length,
+        approved: comments.filter((c: any) => c.status === 'approved').length,
+        rejected: comments.filter((c: any) => c.status === 'rejected').length,
+        reported: comments.filter((c: any) => c.is_reported).length
       };
     },
     enabled: !!user && user.user_metadata?.role === 'admin',
@@ -114,8 +120,8 @@ export default function CommentManagementPage() {
 
   const { data: reportedComments, isLoading: reportedLoading } = useQuery({
     queryKey: ['admin-reported-comments'],
-    queryFn: () => getAdminComments().then(comments => 
-      comments.comments?.filter(c => c.is_reported) || []
+    queryFn: () => getAdminComments().then((comments: any) => 
+      comments.comments?.filter((c: any) => c.is_reported) || []
     ),
     enabled: !!user && user.user_metadata?.role === 'admin',
   });

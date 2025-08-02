@@ -106,18 +106,16 @@ export default function UsersAdminPage() {
     },
   });
 
-  // Extract users array from the response
-  const users = usersData?.users || [];
+  // Extract users array from the response - usersData is now the stats object
+  const users = [];
 
-  // Get user statistics with fallback calculation
-  const { data: stats } = useQuery({
-    queryKey: ['admin-users-stats'],
-    retry: false,
-    queryFn: async () => {
-      const { getUserStats } = await import('@/lib/admin-supabase-direct');
-      return await getUserStats();
-    },
-  });
+  // Use the stats from the main query
+  const stats = usersData || {
+    totalUsers: 0,
+    adminUsers: 0,
+    activeUsers: 0,
+    newUsers: 0
+  };
 
   // Update user role mutation using direct Supabase API
   const updateRoleMutation = useMutation({

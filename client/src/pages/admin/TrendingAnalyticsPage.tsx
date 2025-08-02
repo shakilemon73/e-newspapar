@@ -63,14 +63,14 @@ export default function TrendingAnalyticsPage() {
   const analyticsMetrics = analyticsData ? [
     {
       title: 'মোট ট্রেন্ডিং আইটেম',
-      value: toBengaliNumber(analyticsData.totalItems),
+      value: toBengaliNumber(analyticsData.totalItems || 0),
       change: '+৮%',
       icon: <TrendingUp className="w-5 h-5" />,
       color: 'text-green-600'
     },
     {
       title: 'সক্রিয় ব্যবহারকারী',
-      value: toBengaliNumber(analyticsData.activeUsers),
+      value: toBengaliNumber(analyticsData.activeUsers || 0),
       change: '+১২%',
       icon: <Users className="w-5 h-5" />,
       color: 'text-blue-600'
