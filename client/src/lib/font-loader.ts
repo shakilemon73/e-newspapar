@@ -121,29 +121,62 @@ export function applyBrandingTheme(settings: {
   bodyFont: string;
   displayFont: string;
   customColors: {
-    primary: string;
+    primary: string;  
     secondary: string;
     accent: string;
   };
 }) {
+  console.log('🎨 Applying branding theme:', settings);
+  
   // Load fonts
   loadMultipleFonts([settings.headlineFont, settings.bodyFont, settings.displayFont]);
 
   // Apply CSS custom properties to root
   const root = document.documentElement;
   
-  // Apply colors
+  // Apply colors to Tailwind CSS variables
+  root.style.setProperty('--color-primary', settings.customColors.primary);
+  root.style.setProperty('--color-secondary', settings.customColors.secondary); 
+  root.style.setProperty('--color-accent', settings.customColors.accent);
+  
+  // Apply brand-specific colors
   root.style.setProperty('--color-primary-brand', settings.customColors.primary);
   root.style.setProperty('--color-secondary-brand', settings.customColors.secondary);
   root.style.setProperty('--color-accent-brand', settings.customColors.accent);
 
-  // Apply fonts (will be used by components)
-  root.style.setProperty('--font-headlines-brand', `"${settings.headlineFont}"`);
-  root.style.setProperty('--font-body-brand', `"${settings.bodyFont}"`);
-  root.style.setProperty('--font-display-brand', `"${settings.displayFont}"`);
+  // Get font CSS names
+  const fontCSSNames: Record<string, string> = {
+    'noto-sans-bengali': '"Noto Sans Bengali", sans-serif',
+    'nikosh': '"Nikosh", serif',
+    'kalpurush': '"Kalpurush", sans-serif',
+    'siyam-rupali': '"SiyamRupali", serif',
+    'solaiman-lipi': '"SolaimanLipi", serif',
+    'mitra': '"Mitra", serif',
+    'akaash': '"Akaash", sans-serif',
+    'likhan': '"Likhan", sans-serif',
+    'apona-lohit': '"AponaLohit", sans-serif'
+  };
+
+  // Apply fonts
+  root.style.setProperty('--font-headlines-brand', fontCSSNames[settings.headlineFont] || '"Noto Sans Bengali", sans-serif');
+  root.style.setProperty('--font-body-brand', fontCSSNames[settings.bodyFont] || '"SiyamRupali", serif');
+  root.style.setProperty('--font-display-brand', fontCSSNames[settings.displayFont] || '"Kalpurush", sans-serif');
+
+  // Apply to common elements
+  const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6, .headline, .news-title');
+  headings.forEach(el => {
+    (el as HTMLElement).style.fontFamily = fontCSSNames[settings.headlineFont] || '"Noto Sans Bengali", sans-serif';
+  });
+
+  const body = document.querySelectorAll('p, .body-text, .article-content, .news-content');
+  body.forEach(el => {
+    (el as HTMLElement).style.fontFamily = fontCSSNames[settings.bodyFont] || '"SiyamRupali", serif';
+  });
 
   // Store settings in localStorage for persistence
   localStorage.setItem('brandingSettings', JSON.stringify(settings));
+  
+  console.log('✅ Branding theme applied successfully');
 }
 
 export function getBrandingSettings() {

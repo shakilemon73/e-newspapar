@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bengali News Branding System Test</title>
+    <style>
+        :root {
+            /* Default branding variables */
+            --color-primary-brand: #ec1f27;
+            --color-secondary-brand: #509478;
+            --color-accent-brand: #fbcc44;
+            --font-headlines-brand: "Noto Sans Bengali", sans-serif;
+            --font-body-brand: "SiyamRupali", serif;
+            --font-display-brand: "Kalpurush", sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body-brand);
+            margin: 0;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: var(--color-primary-brand);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .site-title {
+            font-family: var(--font-headlines-brand);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .tagline {
+            font-family: var(--font-display-brand);
+            font-size: 1.1rem;
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .news-section {
+            margin: 30px 0;
+        }
+
+        .news-headline {
+            font-family: var(--font-headlines-brand);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--color-primary-brand);
+            line-height: 1.2;
+            margin: 0 0 15px 0;
+        }
+
+        .news-category {
+            font-family: var(--font-display-brand);
+            font-weight: 600;
+            color: var(--color-accent-brand);
+            background: var(--color-accent-brand);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .news-content {
+            font-family: var(--font-body-brand);
+            line-height: 1.6;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .theme-selector {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .theme-button {
+            background: var(--color-secondary-brand);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: var(--font-display-brand);
+            transition: all 0.3s ease;
+        }
+
+        .theme-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .font-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .font-card {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .font-sample-headlines {
+            font-family: var(--font-headlines-brand);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-primary-brand);
+        }
+
+        .font-sample-body {
+            font-family: var(--font-body-brand);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .font-sample-display {
+            font-family: var(--font-display-brand);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--color-accent-brand);
+        }
+
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--color-secondary-brand);
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.maateen.me/kalpurush/font.css');
+        @import url('https://fonts.cdnfonts.com/css/solaimanlipi');
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="site-title">Bengali News Time</h1>
+            <p class="tagline">বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম</p>
+        </div>
+
+        <div class="theme-selector">
+            <h3>🎨 Color Theme Selector</h3>
+            <button class="theme-button" onclick="applyTheme('traditional-red')">Traditional Bengali</button>
+            <button class="theme-button" onclick="applyTheme('modern-blue')">Modern Professional</button>
+            <button class="theme-button" onclick="applyTheme('vibrant-modern')">Vibrant 2025</button>
+            <button class="theme-button" onclick="applyTheme('nature-inspired')">Nature Inspired</button>
+            <button class="theme-button" onclick="applyTheme('bangladesh-pride')">Bangladesh Pride</button>
+            <button class="theme-button" onclick="applyTheme('minimal-clean')">Minimal Clean</button>
+        </div>
+
+        <div class="font-demo">
+            <div class="font-card">
+                <h4>Headlines Font</h4>
+                <div class="font-sample-headlines">সংবাদ শিরোনাম</div>
+                <select onchange="changeFont('headlines', this.value)">
+                    <option value="noto-sans-bengali">Noto Sans Bengali</option>
+                    <option value="nikosh">Nikosh</option>
+                    <option value="kalpurush">Kalpurush</option>
+                </select>
+            </div>
+            
+            <div class="font-card">
+                <h4>Body Font</h4>
+                <div class="font-sample-body">সংবাদের মূল অংশ এখানে লেখা হবে।</div>
+                <select onchange="changeFont('body', this.value)">
+                    <option value="siyam-rupali" selected>Siyam Rupali</option>
+                    <option value="solaiman-lipi">SolaimanLipi</option>
+                    <option value="mitra">Mitra</option>
+                </select>
+            </div>
+            
+            <div class="font-card">
+                <h4>Display Font</h4>
+                <div class="font-sample-display">বিশেষ প্রদর্শন</div>
+                <select onchange="changeFont('display', this.value)">
+                    <option value="kalpurush" selected>Kalpurush</option>
+                    <option value="akaash">Akaash</option>
+                    <option value="likhan">Likhan</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="news-section">
+            <div class="news-category">অর্থনীতি</div>
+            <h2 class="news-headline">শুল্ক কমেছে, বাংলাদেশে স্বস্তি</h2>
+            <div class="news-content">
+                সরকার আমদানি শুল্ক কমানোর ফলে দ্রব্যমূল্য নিয়ন্ত্রণে আনা যাবে বলে আশা করা হচ্ছে। এই সিদ্ধান্তের ফলে ভোক্তাদের উপর চাপ কমবে এবং বাজারে স্থিতিশীলতা ফিরে আসবে।
+            </div>
+        </div>
+
+        <div class="news-section">
+            <div class="news-category">স্বাস্থ্য</div>
+            <h2 class="news-headline">জামায়াত আমির শফিকুর রহমানের ওপেন হার্ট সার্জারি</h2>
+            <div class="news-content">
+                জামায়াতের আমির শফিকুর রহমানের সফল ওপেন হার্ট সার্জারি সম্পন্ন হয়েছে। চিকিৎসকরা জানিয়েছেন যে অপারেশন সফল হয়েছে এবং তিনি সুস্থ হয়ে উঠছেন।
+            </div>
+        </div>
+
+        <div class="loading-indicator" id="loadingIndicator">
+            <p>থিম প্রয়োগ করা হচ্ছে...</p>
+        </div>
+    </div>
+
+    <script>
+        const themes = {
+            'traditional-red': {
+                primary: '#ec1f27',
+                secondary: '#509478', 
+                accent: '#fbcc44'
+            },
+            'modern-blue': {
+                primary: '#1c7090',
+                secondary: '#3e3b38',
+                accent: '#ad9450'
+            },
+            'vibrant-modern': {
+                primary: '#d4006a',
+                secondary: '#00a8cc',
+                accent: '#ff6b35'
+            },
+            'nature-inspired': {
+                primary: '#2d5a27',
+                secondary: '#8fbc8f',
+                accent: '#daa520'
+            },
+            'bangladesh-pride': {
+                primary: '#006a4e',
+                secondary: '#f42a41',
+                accent: '#ffcc00'
+            },
+            'minimal-clean': {
+                primary: '#2c3e50',
+                secondary: '#95a5a6',
+                accent: '#3498db'
+            }
+        };
+
+        const fontMapping = {
+            'noto-sans-bengali': '"Noto Sans Bengali", sans-serif',
+            'nikosh': '"Nikosh", serif', 
+            'kalpurush': '"Kalpurush", sans-serif',
+            'siyam-rupali': '"SiyamRupali", serif',
+            'solaiman-lipi': '"SolaimanLipi", serif',
+            'mitra': '"Mitra", serif',
+            'akaash': '"Akaash", sans-serif',
+            'likhan': '"Likhan", sans-serif',
+            'apona-lohit': '"AponaLohit", sans-serif'
+        };
+
+        function applyTheme(themeId) {
+            const theme = themes[themeId];
+            if (!theme) return;
+
+            const root = document.documentElement;
+            
+            // Show loading indicator
+            document.getElementById('loadingIndicator').style.display = 'block';
+            
+            setTimeout(() => {
+                // Apply colors
+                root.style.setProperty('--color-primary-brand', theme.primary);
+                root.style.setProperty('--color-secondary-brand', theme.secondary);
+                root.style.setProperty('--color-accent-brand', theme.accent);
+                
+                // Hide loading indicator
+                document.getElementById('loadingIndicator').style.display = 'none';
+                
+                console.log(`✅ Applied theme: ${themeId}`, theme);
+            }, 500);
+        }
+
+        function changeFont(category, fontId) {
+            const fontFamily = fontMapping[fontId];
+            if (!fontFamily) return;
+
+            const root = document.documentElement;
+            root.style.setProperty(`--font-${category}-brand`, fontFamily);
+            
+            console.log(`✅ Changed ${category} font to: ${fontId} (${fontFamily})`);
+        }
+
+        // Test theme switching on load
+        console.log('🎨 Bengali News Branding System Test Page Loaded');
+        console.log('✅ Available themes:', Object.keys(themes));
+        console.log('✅ Available fonts:', Object.keys(fontMapping));
+        console.log('🧪 Test different themes and fonts using the controls above');
+    </script>
+</body>
+</html>

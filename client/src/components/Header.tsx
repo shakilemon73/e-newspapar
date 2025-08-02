@@ -224,7 +224,7 @@ export const Header = () => {
                   </div>
                 )}
                 <div className="flex flex-col justify-center">
-                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary/90 to-primary/80 bg-clip-text text-transparent leading-tight whitespace-nowrap">
+                  <span className="text-xl sm:text-2xl font-headlines-brand brand-primary font-bold leading-tight whitespace-nowrap">
                     {siteSettings.siteName}
                   </span>
                   <span className="text-xs text-muted-foreground hidden sm:block font-medium whitespace-nowrap">

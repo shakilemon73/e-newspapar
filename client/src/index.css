@@ -92,6 +92,70 @@
     --timing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
     --timing-ease-out: cubic-bezier(0, 0, 0.2, 1);
     --timing-ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+    /* Branding Theme Variables */
+    --color-primary-brand: #ec1f27;
+    --color-secondary-brand: #509478;
+    --color-accent-brand: #fbcc44;
+    --font-headlines-brand: "Noto Sans Bengali", sans-serif;
+    --font-body-brand: "SiyamRupali", serif;
+    --font-display-brand: "Kalpurush", sans-serif;
+  }
+
+  /* Branding Utility Classes */
+  .brand-primary {
+    color: var(--color-primary-brand);
+  }
+  
+  .brand-secondary {
+    color: var(--color-secondary-brand);
+  }
+  
+  .brand-accent {
+    color: var(--color-accent-brand);
+  }
+  
+  .bg-brand-primary {
+    background-color: var(--color-primary-brand);
+  }
+  
+  .bg-brand-secondary {
+    background-color: var(--color-secondary-brand);
+  }
+  
+  .bg-brand-accent {
+    background-color: var(--color-accent-brand);
+  }
+  
+  .font-headlines-brand {
+    font-family: var(--font-headlines-brand);
+  }
+  
+  .font-body-brand {
+    font-family: var(--font-body-brand);
+  }
+  
+  .font-display-brand {
+    font-family: var(--font-display-brand);
+  }
+  
+  /* News-specific typography */
+  .news-headline {
+    font-family: var(--font-headlines-brand);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-primary-brand);
+  }
+  
+  .news-content {
+    font-family: var(--font-body-brand);
+    line-height: 1.6;
+  }
+  
+  .news-category {
+    font-family: var(--font-display-brand);
+    font-weight: 600;
+    color: var(--color-accent-brand);
   }
 
   /* Touch-friendly target size for mobile */

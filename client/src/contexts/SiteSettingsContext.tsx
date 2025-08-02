@@ -60,18 +60,23 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
         
         // Apply branding theme if available
         if (data.theme && data.headlineFont) {
-          const { applyBrandingTheme } = await import('../lib/font-loader');
-          applyBrandingTheme({
-            theme: data.theme,
-            headlineFont: data.headlineFont,
-            bodyFont: data.bodyFont || 'siyam-rupali',
-            displayFont: data.displayFont || 'kalpurush',
-            customColors: {
-              primary: data.primaryColor || '#ec1f27',
-              secondary: data.secondaryColor || '#509478',
-              accent: data.accentColor || '#fbcc44'
-            }
-          });
+          try {
+            const { applyBrandingTheme } = await import('../lib/font-loader');
+            applyBrandingTheme({
+              theme: data.theme,
+              headlineFont: data.headlineFont,
+              bodyFont: data.bodyFont || 'siyam-rupali',
+              displayFont: data.displayFont || 'kalpurush',
+              customColors: {
+                primary: data.primaryColor || '#ec1f27',
+                secondary: data.secondaryColor || '#509478',
+                accent: data.accentColor || '#fbcc44'
+              }
+            });
+            console.log('✅ Branding theme applied successfully');
+          } catch (error) {
+            console.error('❌ Error applying branding theme:', error);
+          }
         }
       }
     } catch (error) {
@@ -102,8 +107,9 @@ export const SiteSettingsProvider: React.FC<SiteSettingsProviderProps> = ({ chil
       
       // Apply branding if available
       if (event.detail?.branding) {
-        const { applyBrandingTheme } = require('../lib/font-loader');
-        applyBrandingTheme(event.detail.branding);
+        import('../lib/font-loader').then(({ applyBrandingTheme }) => {
+          applyBrandingTheme(event.detail.branding);
+        });
       }
       
       refreshSettings();
