@@ -1,8 +1,8 @@
 {
-  "version": 2,
-  "installCommand": "npm install",
   "buildCommand": "npm run build",
-
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "vite",
   "headers": [
     {
       "source": "/(.*\\.(?:js|css|png|jpg|jpeg|gif|ico|svg))",
@@ -14,29 +14,6 @@
       ]
     }
   ],
-  "functions": {
-    "api/article/[slug].js": {
-      "runtime": "edge"
-    },
-    "api/og-image.js": {
-      "runtime": "edge"
-    },
-    "api/sitemap.js": {
-      "runtime": "edge"
-    },
-    "api/robots.js": {
-      "runtime": "edge"
-    },
-    "api/health.js": {
-      "runtime": "edge"
-    },
-    "api/rss.js": {
-      "runtime": "edge"
-    },
-    "api/amp/article/[slug].js": {
-      "runtime": "edge"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
