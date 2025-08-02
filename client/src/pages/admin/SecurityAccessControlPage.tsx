@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSupabaseAdminAuth } from '@/hooks/use-supabase-admin-auth';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ export default function SecurityAccessControlPage() {
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user, isAdmin } = useSupabaseAdminAuth();
 
   // User roles query using direct Supabase
   const { data: roles, isLoading: rolesLoading } = useQuery({
@@ -57,7 +59,7 @@ export default function SecurityAccessControlPage() {
       const { getSecurityAuditLogs } = await import('@/lib/admin-supabase-direct');
       return getSecurityAuditLogs();
     },
-    enabled: !!user && user.user_metadata?.role === 'admin',
+    enabled: !!user && isAdmin,
   });
 
   const { data: policies, isLoading: policiesLoading } = useQuery({
@@ -66,7 +68,7 @@ export default function SecurityAccessControlPage() {
       const { getAccessPolicies } = await import('@/lib/admin-supabase-direct');
       return getAccessPolicies();
     },
-    enabled: !!user && user.user_metadata?.role === 'admin',
+    enabled: !!user && isAdmin,
   });
 
   const { data: securitySettings, isLoading: settingsLoading } = useQuery({
@@ -75,13 +77,13 @@ export default function SecurityAccessControlPage() {
       const { getSecuritySettings } = await import('@/lib/admin-supabase-direct');
       return getSecuritySettings();
     },
-    enabled: !!user && user.user_metadata?.role === 'admin',
+    enabled: !!user && isAdmin,
   });
 
   const { data: availablePermissions, isLoading: permissionsLoading } = useQuery({
     queryKey: ['admin-available-permissions'],
     queryFn: () => Promise.resolve({ permissions: ['read', 'write', 'delete', 'admin'] }),
-    enabled: !!user && user.user_metadata?.role === 'admin',
+    enabled: !!user && isAdmin,
   });
 
   // Create/Update role mutation using direct Supabase
