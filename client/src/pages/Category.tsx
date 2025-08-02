@@ -56,7 +56,7 @@ interface Article {
   publishedAt?: string;
   view_count?: number;
   category?: Category;
-  categories?: Category;
+  categories?: Category | Category[];
 }
 
 const Category = () => {
@@ -101,7 +101,8 @@ const Category = () => {
           articlesData = await getPopularArticles(limit);
           // Filter by category client-side for now
           articlesData = articlesData.filter((article: any) => 
-            article.categories?.slug === categorySlug
+            article.categories?.slug === categorySlug || 
+            article.category?.slug === categorySlug
           );
         } else {
           articlesData = await getArticles({ 
@@ -110,7 +111,11 @@ const Category = () => {
             offset: 0 
           });
         }
-        setArticles(articlesData as any);
+        
+        // Transform articles to ensure proper field mapping
+        const { transformArticleData } = await import('../lib/supabase-api-direct');
+        const transformedArticles = transformArticleData(articlesData);
+        setArticles(transformedArticles as Article[]);
         setHasMore(articlesData.length === limit);
         setPage(1);
         setError(null);
@@ -151,7 +156,10 @@ const Category = () => {
       }
       
       if (newArticles.length > 0) {
-        setArticles([...articles, ...newArticles as any]);
+        // Transform new articles to ensure proper field mapping
+        const { transformArticleData } = await import('../lib/supabase-api-direct');
+        const transformedNewArticles = transformArticleData(newArticles);
+        setArticles([...articles, ...transformedNewArticles as Article[]]);
         setPage(nextPage);
         setHasMore(newArticles.length === limit);
       } else {
@@ -199,27 +207,37 @@ const Category = () => {
   );
 
   // Enhanced article card for grid view
-  const ArticleCardGrid = ({ article }: { article: Article }) => (
-    <Card className="article-card-grid group overflow-hidden h-full flex flex-col">
-      <Link href={`/article/${article.slug}`}>
-        <div className="relative overflow-hidden">
-          <img 
-            src={article.imageUrl} 
-            alt={article.title} 
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute top-3 left-3">
-            <Badge className="bg-primary/90 text-primary-foreground">
-              {category?.name}
-            </Badge>
+  const ArticleCardGrid = ({ article }: { article: Article }) => {
+    const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
+    const publishDate = article.publishedAt || article.published_at || '';
+    
+    return (
+      <Card className="article-card-grid group overflow-hidden h-full flex flex-col">
+        <Link href={`/article/${article.slug}`}>
+          <div className="relative overflow-hidden">
+            <img 
+              src={imageUrl} 
+              alt={article.title} 
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== '/placeholder-800x450.svg') {
+                  target.src = '/placeholder-800x450.svg';
+                }
+              }}
+            />
+            <div className="absolute top-3 left-3">
+              <Badge className="bg-primary/90 text-primary-foreground">
+                {category?.name}
+              </Badge>
+            </div>
+            <div className="absolute bottom-3 right-3">
+              <Button size="sm" variant="secondary" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <div className="absolute bottom-3 right-3">
-            <Button size="sm" variant="secondary" className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </Link>
+        </Link>
       
       <CardContent className="p-4 flex-1 flex flex-col">
         <Link href={`/article/${article.slug}`}>
@@ -234,7 +252,7 @@ const Category = () => {
         <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
           <div className="flex items-center space-x-2">
             <Clock className="w-3 h-3" />
-            <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at || '')}</span>
+            <span>{getRelativeTimeInBengali(publishDate)}</span>
           </div>
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" className="h-auto p-1">
@@ -250,19 +268,29 @@ const Category = () => {
   );
 
   // Enhanced article card for list view
-  const ArticleCardList = ({ article }: { article: Article }) => (
-    <Card className="article-card-list group">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
-          <Link href={`/article/${article.slug}`} className="flex-shrink-0">
-            <div className="relative w-32 h-20 overflow-hidden rounded-md">
-              <img 
-                src={article.imageUrl} 
-                alt={article.title} 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </Link>
+  const ArticleCardList = ({ article }: { article: Article }) => {
+    const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
+    const publishDate = article.publishedAt || article.published_at || '';
+    
+    return (
+      <Card className="article-card-list group">
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <Link href={`/article/${article.slug}`} className="flex-shrink-0">
+              <div className="relative w-32 h-20 overflow-hidden rounded-md">
+                <img 
+                  src={imageUrl} 
+                  alt={article.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== '/placeholder-800x450.svg') {
+                      target.src = '/placeholder-800x450.svg';
+                    }
+                  }}
+                />
+              </div>
+            </Link>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between mb-2">
@@ -284,7 +312,7 @@ const Category = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Clock className="w-3 h-3" />
-                  <span>{getRelativeTimeInBengali(article.publishedAt || article.published_at || '')}</span>
+                  <span>{getRelativeTimeInBengali(publishDate)}</span>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -305,7 +333,8 @@ const Category = () => {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   if (!category && isLoading) {
     return (
@@ -374,13 +403,13 @@ const Category = () => {
   return (
     <>
       <SEO
-        title={`${category.name} - Bengali News`}
-        description={category.description || `পড়ুন ${category.name} বিভাগের সর্বশেষ সংবাদ Bengali News-এ। সব খবর এক জায়গায়।`}
+        title={`${category?.name || 'বিভাগ'} - Bengali News`}
+        description={category?.description || `পড়ুন ${category?.name || 'বিভাগ'} বিভাগের সর্বশেষ সংবাদ Bengali News-এ। সব খবর এক জায়গায়।`}
         image="/og-image.svg"
-        url={`/category/${category.slug}`}
+        url={`/category/${category?.slug || ''}`}
         type="website"
-        keywords={`${category.name}, Bengali news, Bangladesh news, সংবাদ, ${category.slug}`}
-        tags={[category.name, "news", "সংবাদ", "Bangladesh", category.slug]}
+        keywords={`${category?.name || 'news'}, Bengali news, Bangladesh news, সংবাদ, ${category?.slug || ''}`}
+        tags={[category?.name || 'news', "news", "সংবাদ", "Bangladesh", category?.slug || '']}
       />
 
       <div className="category-page">
@@ -388,11 +417,11 @@ const Category = () => {
           {/* Header Section */}
           <div className="category-header text-center py-8 mb-8">
             <h1 className="category-title-animated text-4xl md:text-5xl font-bold mb-4 font-hind bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
-              {category.name}
+              {category?.name || 'বিভাগ'}
             </h1>
-            {category.description && (
+            {category?.description && (
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                {category.description}
+                {category?.description}
               </p>
             )}
           </div>
