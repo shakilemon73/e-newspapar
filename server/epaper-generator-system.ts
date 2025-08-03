@@ -259,8 +259,7 @@ export class EPaperGenerator {
       .from('articles')
       .select(`
         *,
-        categories!inner(name),
-        users(full_name)
+        categories!inner(name)
       `)
       .eq('status', 'published')
       .order('is_featured', { ascending: false })

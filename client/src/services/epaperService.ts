@@ -60,8 +60,7 @@ export class EpaperService {
           is_featured,
           view_count,
           category_id,
-          categories!inner(name),
-          users(full_name)
+          categories!inner(name)
         `)
         .eq('status', 'published')
         .order('is_featured', { ascending: false })
@@ -93,7 +92,38 @@ export class EpaperService {
       }
 
       console.log(`✅ Successfully fetched ${data?.length || 0} articles`);
-      return data || [];
+      
+      // Fetch author names separately if articles have author_id
+      const articlesWithAuthors = await Promise.all(
+        (data || []).map(async (article) => {
+          if (article.author_id) {
+            try {
+              const { data: userData } = await adminSupabase
+                .from('users')
+                .select('full_name')
+                .eq('id', article.author_id)
+                .single();
+              
+              return {
+                ...article,
+                users: userData ? { full_name: userData.full_name } : null
+              };
+            } catch (error) {
+              console.warn(`Could not fetch author for article ${article.id}:`, error);
+              return {
+                ...article,
+                users: { full_name: 'সংবাদ ডেস্ক' }
+              };
+            }
+          }
+          return {
+            ...article,
+            users: { full_name: 'সংবাদ ডেস্ক' }
+          };
+        })
+      );
+      
+      return articlesWithAuthors;
 
     } catch (error) {
       console.error('❌ Error in fetchArticles:', error);

@@ -100,8 +100,7 @@ router.post('/preview-articles', async (req, res) => {
         author_id, 
         published_at, 
         content,
-        categories!inner(name),
-        users(full_name)
+        categories!inner(name)
       `)
       .eq('status', 'published')
       .order('is_featured', { ascending: false })
@@ -136,15 +135,39 @@ router.post('/preview-articles', async (req, res) => {
       });
     }
 
-    // Format articles for preview display
-    const formattedArticles = (articles || []).map(article => ({
-      id: article.id,
-      title: article.title,
-      category: article.categories?.name || 'সাধারণ',
-      author: article.users?.full_name || 'সংবাদ ডেস্ক',
-      publish_date: article.published_at,
-      content: article.content?.substring(0, 200) + '...' // Truncate for preview
-    }));
+    // Fetch authors separately to avoid JOIN issues
+    const articlesWithAuthors = await Promise.all(
+      (articles || []).map(async (article) => {
+        let authorName = 'সংবাদ ডেস্ক';
+        
+        if (article.author_id) {
+          try {
+            const { data: userData } = await adminSupabase
+              .from('users')
+              .select('full_name')
+              .eq('id', article.author_id)
+              .single();
+            
+            if (userData?.full_name) {
+              authorName = userData.full_name;
+            }
+          } catch (error) {
+            console.warn(`Could not fetch author for article ${article.id}:`, error);
+          }
+        }
+        
+        return {
+          id: article.id,
+          title: article.title,
+          category: article.categories?.name || 'সাধারণ',
+          author: authorName,
+          publish_date: article.published_at,
+          content: article.content?.substring(0, 200) + '...' // Truncate for preview
+        };
+      })
+    );
+
+    const formattedArticles = articlesWithAuthors;
 
     res.json({
       success: true,
