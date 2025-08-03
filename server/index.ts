@@ -63,13 +63,11 @@ import {
 
 // Import AI routes
 import { aiRoutes } from './ai-routes';
-// Import Modern E-Paper routes
-import modernEpaperRoutes from './modern-epaper-api';
+// Modern E-Paper routes removed per user request
 
 // Mount AI routes
 app.use('/api', aiRoutes);
-// Mount Modern E-Paper routes
-app.use('/api/modern-epaper', modernEpaperRoutes);
+// Modern E-Paper routes removed per user request
 
 // Admin Articles
 app.post('/api/admin/articles', async (req: Request, res: Response) => {
