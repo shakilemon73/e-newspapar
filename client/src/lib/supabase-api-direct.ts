@@ -780,52 +780,64 @@ export async function incrementViewCount(articleId: number): Promise<{ viewCount
 
 // Article Tags API (removed duplicate - using the Tag[] version below)
 
-// Search Articles API
+// Search Articles API - Enhanced for Bengali and English search
 export async function searchArticles(query: string, category?: string, limit = 20, offset = 0): Promise<Article[]> {
-  let searchQuery = supabase
-    .from('articles')
-    .select(`
-      id,
-      title,
-      slug,
-      content,
-      excerpt,
-      image_url,
-      view_count,
-      published_at,
-      is_featured,
-      category_id,
-      categories(id, name, slug)
-    `)
-    .textSearch('title', query, { type: 'websearch' })
-    .order('published_at', { ascending: false });
-
-  if (category) {
-    const { data: categoryData } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('slug', category)
-      .single();
+  console.log('🔍 Searching for:', query, 'Category:', category, 'Limit:', limit);
+  
+  try {
+    // Clean and prepare search query for both Bengali and English
+    const cleanQuery = query.trim();
     
-    if (categoryData) {
-      searchQuery = searchQuery.eq('category_id', categoryData.id);
+    let searchQuery = supabase
+      .from('articles')
+      .select(`
+        id,
+        title,
+        slug,
+        content,
+        excerpt,
+        image_url,
+        view_count,
+        published_at,
+        is_featured,
+        category_id,
+        categories(id, name, slug)
+      `)
+      // Search in multiple fields using ilike for better Bengali support
+      .or(`title.ilike.%${cleanQuery}%,content.ilike.%${cleanQuery}%,excerpt.ilike.%${cleanQuery}%`)
+      .order('published_at', { ascending: false });
+
+    if (category) {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', category)
+        .single();
+      
+      if (categoryData) {
+        searchQuery = searchQuery.eq('category_id', categoryData.id);
+      }
     }
-  }
 
-  searchQuery = searchQuery.limit(limit);
-  
-  if (offset > 0) {
-    searchQuery = searchQuery.range(offset, offset + limit - 1);
-  }
+    searchQuery = searchQuery.limit(limit);
+    
+    if (offset > 0) {
+      searchQuery = searchQuery.range(offset, offset + limit - 1);
+    }
 
-  const { data, error } = await searchQuery;
-  
-  if (error) {
-    console.error('Error searching articles:', error);
+    const { data, error } = await searchQuery;
+    
+    if (error) {
+      console.error('Error searching articles:', error);
+      return [];
+    }
+
+    console.log('🔍 Search results found:', data?.length || 0);
+    return transformArticleData(data || []);
+  } catch (err) {
+    console.error('Error in searchArticles:', err);
     return [];
   }
-
-  return transformArticleData(data || []);
 }
 
 

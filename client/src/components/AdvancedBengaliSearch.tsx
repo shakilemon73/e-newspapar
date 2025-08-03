@@ -84,15 +84,15 @@ export const AdvancedBengaliSearch = () => {
       const { searchArticles } = await import('../lib/supabase-api-direct');
       const data = await searchArticles(query, selectedCategory, 20);
       
-      // Transform articles to search results format
-      const transformedResults: SearchResult[] = data.map((article: any) => ({
+      // Transform articles to search results format with better data handling
+      const transformedResults: SearchResult[] = data.map((article: any, index: number) => ({
         id: article.id,
-        title: article.title,
-        excerpt: article.excerpt || '',
-        image_url: article.image_url || article.imageUrl || '',
-        published_at: article.published_at || article.publishedAt || '',
+        title: article.title || 'শিরোনাম নেই',
+        excerpt: article.excerpt || article.content?.substring(0, 150) + '...' || 'বিবরণ নেই',
+        image_url: article.image_url || article.imageUrl || '/placeholder-news.jpg',
+        published_at: article.published_at || article.publishedAt || new Date().toISOString(),
         category_name: article.category?.name || article.categories?.name || 'সাধারণ',
-        search_rank: 1 // Default rank for now
+        search_rank: data.length - index // Higher rank for earlier results
       }));
       
       setSearchResults(transformedResults);
@@ -137,7 +137,9 @@ export const AdvancedBengaliSearch = () => {
     if (user) {
       trackInteraction(result.id, 'view');
     }
-    window.open(`/article/${result.id}`, '_blank');
+    // Use proper slug for navigation instead of ID
+    const articleSlug = searchResults.find(r => r.id === result.id)?.title?.replace(/\s+/g, '-').toLowerCase() || result.id.toString();
+    window.location.href = `/article/${articleSlug}`;
   };
 
   const trackInteraction = async (articleId: number, interactionType: string) => {
