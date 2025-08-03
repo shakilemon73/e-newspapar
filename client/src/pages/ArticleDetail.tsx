@@ -25,6 +25,7 @@ import { initializeViewTracking, trackArticleView } from '@/lib/real-view-tracke
 import { AnalysisDetails } from '@/components/AnalysisDetails';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { downloadArticleAsPDF } from '@/lib/article-pdf-generator';
+import { downloadNewspaperPDF, type NewspaperArticleData } from '@/lib/newspaper-pdf-generator';
 import { 
   Bookmark, 
   BookmarkCheck,
@@ -614,36 +615,59 @@ const ArticleDetail = () => {
     }
   };
 
-  // PDF Download functionality
+  // Professional Newspaper PDF Download functionality
   const handleDownloadPDF = async () => {
     if (!article) return;
     
     try {
-      const success = await downloadArticleAsPDF({
+      const newspaperData: NewspaperArticleData = {
         title: article.title,
         content: article.content || '',
-        author: article.author || 'Unknown',
+        author: article.author || 'স্টাফ রিপোর্টার',
         publishedAt: article.published_at,
         category: article.category?.name,
         imageUrl: article.image_url,
-        siteName: 'বাংলা নিউজ',
+        siteName: 'বাংলা নিউজ টাইমস',
         websiteUrl: window.location.origin,
-        tags: []
-      }, `${article.title.substring(0, 30)}.pdf`);
+        tags: [],
+        excerpt: article.excerpt,
+        viewCount: article.view_count,
+        readingTime: readingTime
+      };
+
+      const success = await downloadNewspaperPDF(
+        newspaperData,
+        `${article.title.substring(0, 30)}-newspaper.pdf`,
+        {
+          format: 'a4',
+          columns: 3,
+          masthead: {
+            title: 'বাংলা নিউজ টাইমস',
+            subtitle: 'Bangladesh\'s Leading Digital Newspaper',
+            established: '২০২৪',
+            website: window.location.origin
+          },
+          edition: {
+            date: new Date().toLocaleDateString('bn-BD'),
+            issue: 'অনলাইন সংস্করণ',
+            price: 'বিনামূল্যে'
+          }
+        }
+      );
       
       if (success) {
         toast({
-          title: "PDF ডাউনলোড হয়েছে",
-          description: "নিবন্ধটি PDF ফরম্যাটে ডাউনলোড হয়েছে",
+          title: "সংবাদপত্র ডাউনলোড হয়েছে",
+          description: "নিবন্ধটি পেশাদার সংবাদপত্র ফরম্যাটে ডাউনলোড হয়েছে",
         });
       } else {
-        throw new Error('PDF generation failed');
+        throw new Error('Newspaper PDF generation failed');
       }
     } catch (error) {
-      console.error('Error downloading PDF:', error);
+      console.error('Error downloading newspaper PDF:', error);
       toast({
-        title: "PDF ডাউনলোড করতে সমস্যা হয়েছে",
-        description: "দুঃখিত, PDF ডাউনলোড করতে সমস্যা হয়েছে",
+        title: "সংবাদপত্র ডাউনলোড করতে সমস্যা হয়েছে",
+        description: "দুঃখিত, সংবাদপত্র ডাউনলোড করতে সমস্যা হয়েছে",
         variant: "destructive"
       });
     }

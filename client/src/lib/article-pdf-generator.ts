@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 
 interface ArticlePDFData {
   title: string;
@@ -10,6 +10,8 @@ interface ArticlePDFData {
   siteName?: string;
   websiteUrl?: string;
   tags?: string[];
+  excerpt?: string;
+  viewCount?: number;
 }
 
 export async function generateArticlePDF(article: ArticlePDFData): Promise<Uint8Array> {
