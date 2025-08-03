@@ -24,6 +24,7 @@ import { supabase } from '@/lib/supabase';
 import { initializeViewTracking, trackArticleView } from '@/lib/real-view-tracker';
 import { AnalysisDetails } from '@/components/AnalysisDetails';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
+import { downloadArticleAsPDF } from '@/lib/article-pdf-generator';
 import { 
   Bookmark, 
   BookmarkCheck,
@@ -108,6 +109,14 @@ interface Article {
   summary?: string;
   image_url: string;
   imageUrl?: string;
+  image_metadata?: {
+    alt?: string;
+    caption?: string;
+    photographer?: string;
+    source?: string;
+  };
+  author?: string;
+  authors?: string | string[];
   media_urls?: string[];
   video_urls?: string[];
   mixed_media?: Array<{
@@ -518,7 +527,7 @@ const ArticleDetail = () => {
         }
         
       } else {
-        throw new Error(result.message || 'Failed to save for offline reading');
+        throw new Error('Failed to save for offline reading');
       }
     } catch (error) {
       console.error('Error saving for offline:', error);
@@ -560,7 +569,7 @@ const ArticleDetail = () => {
           description: result.message || "আপনার রিপোর্ট আমাদের কাছে পৌঁছেছে।",
         });
       } else {
-        throw new Error(result.message || 'Failed to submit report');
+        throw new Error('Failed to submit report');
       }
     } catch (error) {
       console.error('Error reporting article:', error);
@@ -593,13 +602,48 @@ const ArticleDetail = () => {
           description: "আপনার মতামত আমাদের কাছে পৌঁছেছে। ধন্যবাদ।",
         });
       } else {
-        throw new Error(result.message || 'Failed to submit feedback');
+        throw new Error('Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
         title: "ফিডব্যাক জমা দিতে সমস্যা হয়েছে",
         description: "দুঃখিত, আপনার ফিডব্যাক জমা দিতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // PDF Download functionality
+  const handleDownloadPDF = async () => {
+    if (!article) return;
+    
+    try {
+      const success = await downloadArticleAsPDF({
+        title: article.title,
+        content: article.content || '',
+        author: article.author || 'Unknown',
+        publishedAt: article.published_at,
+        category: article.category?.name,
+        imageUrl: article.image_url,
+        siteName: 'বাংলা নিউজ',
+        websiteUrl: window.location.origin,
+        tags: []
+      }, `${article.title.substring(0, 30)}.pdf`);
+      
+      if (success) {
+        toast({
+          title: "PDF ডাউনলোড হয়েছে",
+          description: "নিবন্ধটি PDF ফরম্যাটে ডাউনলোড হয়েছে",
+        });
+      } else {
+        throw new Error('PDF generation failed');
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast({
+        title: "PDF ডাউনলোড করতে সমস্যা হয়েছে",
+        description: "দুঃখিত, PDF ডাউনলোড করতে সমস্যা হয়েছে",
         variant: "destructive"
       });
     }
@@ -1390,7 +1434,7 @@ const ArticleDetail = () => {
     slug: article.slug,
     published_at: article.published_at,
     category: article.category,
-    author: article.authors?.name || article.author || ' সংবাদদাতা'
+    author: article.author || ' সংবাদদাতা'
   });
 
   const { metaElements, linkElements } = getMetaTagsForHelmet(socialMetaTags);
@@ -2030,7 +2074,7 @@ const ArticleDetail = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={generatePDF}>
+                    <Button variant="outline" size="sm" className="w-full justify-start" onClick={handleDownloadPDF}>
                       <Download className="w-4 h-4 mr-2" />
                       PDF ডাউনলোড
                     </Button>
