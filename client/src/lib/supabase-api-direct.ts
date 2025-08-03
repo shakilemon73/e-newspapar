@@ -780,7 +780,7 @@ export async function incrementViewCount(articleId: number): Promise<{ viewCount
 
 // Article Tags API (removed duplicate - using the Tag[] version below)
 
-// Search Articles API - Enhanced for Bengali and English search
+// Search Articles API - Enhanced for Bengali and English search with TensorFlow.js integration
 export async function searchArticles(query: string, category?: string, limit = 20, offset = 0): Promise<Article[]> {
   console.log('🔍 Searching for:', query, 'Category:', category, 'Limit:', limit);
   
@@ -833,7 +833,19 @@ export async function searchArticles(query: string, category?: string, limit = 2
     }
 
     console.log('🔍 Search results found:', data?.length || 0);
-    return transformArticleData(data || []);
+    
+    const articles = transformArticleData(data || []);
+    
+    // Try to enhance with TensorFlow.js AI search if available
+    try {
+      const { tensorFlowSearch } = await import('./tensorflow-search');
+      const enhancedArticles = await tensorFlowSearch.enhanceSearchResults(cleanQuery, articles);
+      console.log('🧠 Search enhanced with TensorFlow.js AI');
+      return enhancedArticles;
+    } catch (aiError) {
+      console.log('AI search enhancement not available, using standard search');
+      return articles;
+    }
   } catch (err) {
     console.error('Error in searchArticles:', err);
     return [];

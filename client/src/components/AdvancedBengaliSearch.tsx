@@ -73,41 +73,7 @@ export const AdvancedBengaliSearch = () => {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!query.trim()) return;
-
-    setLoading(true);
-    setError(null);
-    setHasSearched(true);
-
-    try {
-      const { searchArticles } = await import('../lib/supabase-api-direct');
-      const data = await searchArticles(query, selectedCategory, 20);
-      
-      // Transform articles to search results format with better data handling
-      const transformedResults: SearchResult[] = data.map((article: any, index: number) => ({
-        id: article.id,
-        title: article.title || 'শিরোনাম নেই',
-        excerpt: article.excerpt || article.content?.substring(0, 150) + '...' || 'বিবরণ নেই',
-        image_url: article.image_url || article.imageUrl || '/placeholder-news.jpg',
-        published_at: article.published_at || article.publishedAt || new Date().toISOString(),
-        category_name: article.category?.name || article.categories?.name || 'সাধারণ',
-        search_rank: data.length - index // Higher rank for earlier results
-      }));
-      
-      setSearchResults(transformedResults);
-      
-      // Save search to history if user is logged in
-      if (user) {
-        await saveSearchToHistory(query, transformedResults.length);
-        fetchSearchHistory();
-      }
-    } catch (err) {
-      setError('সার্চ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
-      console.error('Search error:', err);
-    } finally {
-      setLoading(false);
-    }
+    await performSearch(query);
   };
 
   const saveSearchToHistory = async (searchQuery: string, resultCount: number) => {
@@ -123,13 +89,58 @@ export const AdvancedBengaliSearch = () => {
   const handleHistoryClick = (historyItem: SearchHistory) => {
     setQuery(historyItem.search_query);
     setSelectedCategory('');
-    // Trigger search
-    setTimeout(() => {
-      const form = document.getElementById('search-form') as HTMLFormElement;
-      if (form) {
-        form.requestSubmit();
-      }
+    setHasSearched(false); // Reset search state
+    
+    // Trigger search programmatically
+    setTimeout(async () => {
+      await performSearch(historyItem.search_query);
     }, 100);
+  };
+
+  const performSearch = async (searchQuery: string) => {
+    if (!searchQuery.trim()) return;
+
+    setLoading(true);
+    setError(null);
+    setHasSearched(true);
+
+    try {
+      const { searchArticles } = await import('../lib/supabase-api-direct');
+      let data = await searchArticles(searchQuery, selectedCategory, 20);
+      
+      // Enhance with TensorFlow.js AI search
+      try {
+        const { tensorFlowSearch } = await import('../lib/tensorflow-search');
+        data = await tensorFlowSearch.enhanceSearchResults(searchQuery, data);
+        await tensorFlowSearch.cacheSearchQuery(searchQuery);
+      } catch (aiError) {
+        console.log('AI search enhancement unavailable, using standard search');
+      }
+      
+      // Transform articles to search results format with better data handling
+      const transformedResults: SearchResult[] = data.map((article: any, index: number) => ({
+        id: article.id,
+        title: article.title || 'শিরোনাম নেই',
+        excerpt: article.excerpt || article.content?.substring(0, 150) + '...' || 'বিবরণ নেই',
+        image_url: article.image_url || article.imageUrl || '/placeholder-news.jpg',
+        published_at: article.published_at || article.publishedAt || new Date().toISOString(),
+        category_name: article.category?.name || article.categories?.name || 'সাধারণ',
+        search_rank: article.ai_relevance_score || (data.length - index) // Use AI score if available
+      }));
+      
+      setSearchResults(transformedResults);
+      
+      // Save search to history if user is logged in
+      if (user) {
+        await saveSearchToHistory(searchQuery, transformedResults.length);
+        fetchSearchHistory();
+      }
+    } catch (err) {
+      setError('সার্চ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।');
+      console.error('Search error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResultClick = (result: SearchResult) => {
@@ -166,10 +177,21 @@ export const AdvancedBengaliSearch = () => {
   };
 
   const getRelevanceColor = (rank: number) => {
-    if (rank >= 0.8) return 'bg-green-100 text-green-800';
-    if (rank >= 0.6) return 'bg-blue-100 text-blue-800';
-    if (rank >= 0.4) return 'bg-yellow-100 text-yellow-800';
+    // Handle both AI relevance scores (0-1) and traditional ranking (1-20)
+    const normalizedRank = rank > 1 ? rank / 20 : rank;
+    if (normalizedRank >= 0.8) return 'bg-green-100 text-green-800';
+    if (normalizedRank >= 0.6) return 'bg-blue-100 text-blue-800';
+    if (normalizedRank >= 0.4) return 'bg-yellow-100 text-yellow-800';
     return 'bg-gray-100 text-gray-800';
+  };
+
+  const formatRelevanceScore = (rank: number) => {
+    // Handle both AI relevance scores (0-1) and traditional ranking (1-20)
+    if (rank <= 1) {
+      return `${Math.round(rank * 100)}% AI প্রাসঙ্গিক`;
+    } else {
+      return `${Math.round((rank / 20) * 100)}% প্রাসঙ্গিক`;
+    }
   };
 
   return (
@@ -247,9 +269,10 @@ export const AdvancedBengaliSearch = () => {
                 <Badge 
                   key={item.id}
                   variant="outline"
-                  className="cursor-pointer hover:bg-gray-100"
+                  className="cursor-pointer hover:bg-blue-100 hover:border-blue-300 transition-colors"
                   onClick={() => handleHistoryClick(item)}
                 >
+                  <Search className="w-3 h-3 mr-1" />
                   {item.search_query}
                   <span className="ml-1 text-xs text-gray-500">
                     ({item.search_results_count})
@@ -331,7 +354,7 @@ export const AdvancedBengaliSearch = () => {
                         <Badge 
                           className={`${getRelevanceColor(result.search_rank)} text-xs`}
                         >
-                          {Math.round(result.search_rank * 100)}% প্রাসঙ্গিক
+                          {formatRelevanceScore(result.search_rank)}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
                           {result.category_name}
