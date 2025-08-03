@@ -222,22 +222,29 @@ export class EpaperService {
         };
       }
 
-      // For now, we'll create a simple HTML-based e-paper that can be converted to PDF
+      // Create a real HTML-based e-paper that can be previewed
       const htmlContent = this.generateHTMLEPaper(articles, options);
       
-      // In a real implementation, you would:
-      // 1. Convert HTML to PDF using a service like Puppeteer or jsPDF
-      // 2. Upload the PDF to Supabase storage
-      // 3. Return the public URL
+      // Create a blob URL for immediate preview
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const pdfUrl = URL.createObjectURL(blob);
       
-      // For demo purposes, we'll simulate success
-      const mockPdfUrl = `/generated-epapers/epaper-${options.date}-${Date.now()}.pdf`;
+      // Store the HTML content for later retrieval
+      const epaperData = {
+        htmlContent,
+        articles,
+        options,
+        generatedAt: new Date().toISOString()
+      };
+      
+      // Store in localStorage for preview access
+      localStorage.setItem(`epaper-${Date.now()}`, JSON.stringify(epaperData));
       
       console.log('✅ E-Paper generated successfully');
       
       return {
         success: true,
-        pdfUrl: mockPdfUrl,
+        pdfUrl: pdfUrl,
         title: options.title,
         date: options.date,
         articleCount: articles.length

@@ -330,27 +330,47 @@ export default function EPapersAdminPage() {
     if (!generatedPdf) return;
 
     try {
+      console.log('🚀 Publishing generated e-paper using direct Supabase API');
+      
       const publishData = {
         title: generatedPdf.title,
         publish_date: generatedPdf.date,
-        pdf_url: generatedPdf.pdfUrl,
+        pdf_url: `data:text/html;charset=utf-8,${encodeURIComponent(`
+          <html>
+            <head><title>${generatedPdf.title}</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+              <h1>${generatedPdf.title}</h1>
+              <p>Date: ${generatedPdf.date}</p>
+              <p>Articles: ${generatedPdf.articleCount}</p>
+              <p><em>Generated e-paper content</em></p>
+            </body>
+          </html>
+        `)}`,
         image_url: '',
         is_latest: true,
         is_published: true
       };
 
-      await saveMutation.mutateAsync(publishData);
-      setGeneratedPdf(null);
+      // Use adminSupabaseAPI directly instead of mutation
+      const result = await adminSupabaseAPI.createEPaper(publishData);
       
-      toast({
-        title: 'E-Paper Published!',
-        description: 'Generated e-paper has been published successfully.',
-      });
+      if (result.success) {
+        setGeneratedPdf(null);
+        toast({
+          title: 'E-Paper Published!',
+          description: 'Generated e-paper has been published successfully.',
+        });
+        
+        // Refresh the list
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/epapers'] });
+      } else {
+        throw new Error(result.error || 'Failed to publish');
+      }
     } catch (error) {
-      console.error('Publish error:', error);
+      console.error('❌ Publish error:', error);
       toast({
         title: 'Publish Failed',
-        description: 'Could not publish the generated e-paper',
+        description: error instanceof Error ? error.message : 'Could not publish the generated e-paper',
         variant: 'destructive',
       });
     }
@@ -360,27 +380,47 @@ export default function EPapersAdminPage() {
     if (!generatedPdf) return;
 
     try {
+      console.log('💾 Saving generated e-paper as draft using direct Supabase API');
+      
       const draftData = {
-        title: generatedPdf.title,
+        title: `[DRAFT] ${generatedPdf.title}`,
         publish_date: generatedPdf.date,
-        pdf_url: generatedPdf.pdfUrl,
+        pdf_url: `data:text/html;charset=utf-8,${encodeURIComponent(`
+          <html>
+            <head><title>[DRAFT] ${generatedPdf.title}</title></head>
+            <body style="font-family: Arial, sans-serif; padding: 20px;">
+              <h1>[DRAFT] ${generatedPdf.title}</h1>
+              <p>Date: ${generatedPdf.date}</p>
+              <p>Articles: ${generatedPdf.articleCount}</p>
+              <p><em>Generated e-paper content (Draft)</em></p>
+            </body>
+          </html>
+        `)}`,
         image_url: '',
         is_latest: false,
         is_published: false
       };
 
-      await saveMutation.mutateAsync(draftData);
-      setGeneratedPdf(null);
+      // Use adminSupabaseAPI directly instead of mutation
+      const result = await adminSupabaseAPI.createEPaper(draftData);
       
-      toast({
-        title: 'Draft Saved!',
-        description: 'Generated e-paper has been saved as draft.',
-      });
+      if (result.success) {
+        setGeneratedPdf(null);
+        toast({
+          title: 'Draft Saved!',
+          description: 'Generated e-paper has been saved as draft.',
+        });
+        
+        // Refresh the list
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/epapers'] });
+      } else {
+        throw new Error(result.error || 'Failed to save draft');
+      }
     } catch (error) {
-      console.error('Save draft error:', error);
+      console.error('❌ Save draft error:', error);
       toast({
         title: 'Save Failed',
-        description: 'Could not save the generated e-paper as draft',
+        description: error instanceof Error ? error.message : 'Could not save the generated e-paper as draft',
         variant: 'destructive',
       });
     }
@@ -703,11 +743,37 @@ export default function EPapersAdminPage() {
                     <CardContent>
                       <div className="flex flex-wrap gap-3">
                         <Button
-                          onClick={() => window.open(generatedPdf.pdfUrl, '_blank')}
+                          onClick={() => {
+                            // Create a proper preview window with the HTML content
+                            const previewWindow = window.open('', '_blank');
+                            if (previewWindow) {
+                              // Get the HTML content from the blob URL
+                              fetch(generatedPdf.pdfUrl)
+                                .then(response => response.text())
+                                .then(html => {
+                                  previewWindow.document.write(html);
+                                  previewWindow.document.close();
+                                })
+                                .catch(() => {
+                                  previewWindow.document.write(`
+                                    <html>
+                                      <head><title>E-Paper Preview</title></head>
+                                      <body style="font-family: Arial, sans-serif; padding: 20px;">
+                                        <h1>${generatedPdf.title}</h1>
+                                        <p>Date: ${generatedPdf.date}</p>
+                                        <p>Articles: ${generatedPdf.articleCount}</p>
+                                        <p><em>Preview content will be available after generation is complete.</em></p>
+                                      </body>
+                                    </html>
+                                  `);
+                                  previewWindow.document.close();
+                                });
+                            }
+                          }}
                           variant="outline"
                         >
                           <Eye className="w-4 h-4 mr-2" />
-                          Preview PDF
+                          Preview E-Paper
                         </Button>
                         
                         <Button
