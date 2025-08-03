@@ -203,13 +203,39 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             break-inside: avoid-column;
         }
 
-        .sidebar-info {
+        /* Masthead Info Layout - Weather & Prayer Times beside Logo */
+        .masthead-info-layout {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6pt;
-            margin-top: 8pt;
-            border-top: 2px solid #000;
-            padding-top: 6pt;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 8pt;
+            align-items: center;
+            margin-bottom: 8pt;
+        }
+
+        .info-section {
+            border: 1px solid #333;
+            padding: 4pt;
+            background: #f5f5f5;
+            border-radius: 3pt;
+        }
+
+        .info-section h3 {
+            font-size: 8pt;
+            font-weight: 700;
+            margin-bottom: 2pt;
+            text-align: center;
+            color: #000;
+        }
+
+        .info-section p {
+            font-size: 6pt;
+            line-height: 1.2;
+            margin-bottom: 1pt;
+            text-align: center;
+        }
+
+        .sidebar-info {
+            display: none; /* Hide bottom info sections since they're now at top */
         }
 
         .info-box {
@@ -273,41 +299,43 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         .article-body {
             text-align: justify;
             font-size: 8pt;
-            line-height: 1.3;
+            line-height: 1.4;
             color: #000;
+            word-spacing: normal;
+            letter-spacing: 0.02em;
         }
 
         .article-body p {
-            margin-bottom: 4pt;
+            margin-bottom: 5pt;
+            text-indent: 8pt;
         }
 
         .main-article-body {
             font-size: 8pt;
-            line-height: 1.35;
+            line-height: 1.4;
             flex: 1;
         }
 
         .secondary-article-body {
             font-size: 8pt;
-            line-height: 1.3;
+            line-height: 1.4;
         }
 
         .sidebar-article-body {
             font-size: 7pt;
-            line-height: 1.25;
+            line-height: 1.3;
         }
 
-        /* Half-Cut Image Style - Real Newspaper */
+        /* Full Horizontal Image Style */
         .main-image {
-            width: 40%;
-            max-width: 150pt;
+            width: 100%;
+            max-width: 100%;
             height: auto;
-            max-height: 60pt;
-            margin: 3pt 6pt 3pt 0;
-            border: 1px solid #000;
-            float: left;
+            max-height: 120pt;
+            margin: 6pt 0;
+            border: 2px solid #000;
             object-fit: cover;
-            shape-outside: margin-box;
+            display: block;
         }
 
         .image-caption {
@@ -362,13 +390,15 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
         /* Footer - Fixed at Bottom */
         .newspaper-footer {
-            border-top: 2px solid #000;
-            padding-top: 3pt;
+            border-top: 3px solid #000;
+            padding-top: 6pt;
             margin-top: auto;
             text-align: center;
             font-size: 6pt;
             color: #000;
             flex-shrink: 0;
+            background: #f9f9f9;
+            padding-bottom: 4pt;
         }
 
         /* Bottom Page Info - Compact */
@@ -451,8 +481,29 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
                 </div>
             </div>
 
-            <!-- Main Title -->
-            <h1 class="masthead-title bengali-text">${config.masthead.title}</h1>
+            <!-- Main Title with Weather & Prayer Times -->
+            <div class="masthead-info-layout bengali-text">
+                <!-- Weather Section - Left Side -->
+                <div class="info-section">
+                    <h3>আবহাওয়া</h3>
+                    <p><strong>ঢাকা:</strong> ২৮°/২২°</p>
+                    <p><strong>চট্টগ্রাম:</strong> ৩০°/২৪°</p>
+                    <p><strong>সিলেট:</strong> ২৬°/২০°</p>
+                </div>
+                
+                <!-- Main Title - Center -->
+                <div>
+                    <h1 class="masthead-title bengali-text">${config.masthead.title}</h1>
+                </div>
+                
+                <!-- Prayer Times Section - Right Side -->
+                <div class="info-section">
+                    <h3>নামাজের সময়</h3>
+                    <p>ফজর: ৫:১৫ | জোহর: ১২:০৫</p>
+                    <p>আসর: ৪:৩০ | মাগরিব: ৬:১৫</p>
+                    <p>এশা: ৭:৩০</p>
+                </div>
+            </div>
             
             <!-- Edition Info -->
             <div class="edition-info bengali-text">
@@ -486,25 +537,6 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             <!-- Three Column Article Layout -->
             <div class="article-layout bengali-text">
                 ${formatArticleContentInColumns(article.content)}
-            </div>
-
-            <!-- Bottom Information Section -->
-            <div class="sidebar-info">
-                <div class="info-box">
-                    <h3 class="sidebar-headline bengali-text">আবহাওয়া</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p><strong>ঢাকা:</strong> ২৮°/২২° | <strong>চট্টগ্রাম:</strong> ৩০°/২৪°</p>
-                        <p><strong>সিলেট:</strong> ২৬°/২০° | <strong>খুলনা:</strong> ২৯°/২৩°</p>
-                    </div>
-                </div>
-                
-                <div class="info-box">
-                    <h3 class="sidebar-headline bengali-text">নামাজের সময়</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p>ফজর: ৫:১৫ | জোহর: ১২:০৫ | আসর: ৪:৩০</p>
-                        <p>মাগরিব: ৬:১৫ | এশা: ৭:৩০</p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -542,8 +574,10 @@ function formatArticleContentInColumns(content: string): string {
   // Remove HTML tags and clean content
   const cleanContent = content.replace(/<[^>]*>/g, '').trim();
   
-  // Split into paragraphs
-  const paragraphs = cleanContent.split('\n\n').filter(p => p.trim());
+  // Split into paragraphs and clean up spacing
+  const paragraphs = cleanContent.split('\n\n')
+    .filter(p => p.trim())
+    .map(p => p.replace(/\s+/g, ' ').trim()); // Fix spacing issues
   
   // If content is too short, put all in first column
   if (paragraphs.length <= 3) {
