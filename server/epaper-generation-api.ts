@@ -94,20 +94,29 @@ router.post('/preview-articles', async (req, res) => {
     // Fetch actual articles from database using admin client
     let query = adminSupabase
       .from('articles')
-      .select('id, title, category_name, author, published_at, content')
-      .eq('is_published', true)
-      .order('priority', { ascending: false })
+      .select(`
+        id, 
+        title, 
+        author_id, 
+        published_at, 
+        content,
+        categories!inner(name),
+        users(full_name)
+      `)
+      .eq('status', 'published')
+      .order('is_featured', { ascending: false })
+      .order('view_count', { ascending: false })
       .order('published_at', { ascending: false })
       .limit(options.maxArticles || 10);
 
     // Filter by categories if specified
     if (options.includeCategories && options.includeCategories.length > 0) {
-      query = query.in('category_name', options.includeCategories);
+      query = query.in('categories.name', options.includeCategories);
     }
 
     if (options.excludeCategories && options.excludeCategories.length > 0) {
       for (const category of options.excludeCategories) {
-        query = query.neq('category_name', category);
+        query = query.neq('categories.name', category);
       }
     }
 
@@ -131,8 +140,8 @@ router.post('/preview-articles', async (req, res) => {
     const formattedArticles = (articles || []).map(article => ({
       id: article.id,
       title: article.title,
-      category: article.category_name,
-      author: article.author,
+      category: article.categories?.name || 'সাধারণ',
+      author: article.users?.full_name || 'সংবাদ ডেস্ক',
       publish_date: article.published_at,
       content: article.content?.substring(0, 200) + '...' // Truncate for preview
     }));

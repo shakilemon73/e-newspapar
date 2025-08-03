@@ -10,7 +10,7 @@ interface Article {
   id: number;
   title: string;
   content: string;
-  author: string;
+  author_id?: number;
   published_at: string;
   image_url?: string;
   priority?: number;
@@ -18,6 +18,7 @@ interface Article {
   is_published?: boolean;
   category_id?: number;
   categories?: { name: string };
+  users?: { full_name: string };
 }
 
 interface LayoutTemplate {
@@ -258,7 +259,8 @@ export class EPaperGenerator {
       .from('articles')
       .select(`
         *,
-        categories!inner(name)
+        categories!inner(name),
+        users(full_name)
       `)
       .eq('status', 'published')
       .order('is_featured', { ascending: false })
@@ -308,12 +310,12 @@ export class EPaperGenerator {
           id: bn.id,
           title: bn.title,
           content: bn.content || '',
-          author: 'সংবাদ ডেস্ক',
           published_at: bn.created_at,
           priority: 100, // High priority
           is_breaking: true,
           is_published: true,
-          categories: { name: 'জরুরি খবর' }
+          categories: { name: 'জরুরি খবর' },
+          users: { full_name: 'সংবাদ ডেস্ক' }
         }));
         
         articles = [...breakingArticles, ...articles];

@@ -30,13 +30,15 @@ export interface Article {
   id: number;
   title: string;
   content: string;
-  author?: string;
+  author_id?: number;
   published_at: string;
   image_url?: string;
   is_featured?: boolean;
   view_count?: number;
   category_id?: number;
   categories?: { name: string };
+  users?: { full_name: string };
+  author?: string; // Computed field for compatibility
 }
 
 export class EpaperService {
@@ -52,13 +54,14 @@ export class EpaperService {
           id,
           title,
           content,
-          author,
+          author_id,
           published_at,
           image_url,
           is_featured,
           view_count,
           category_id,
-          categories!inner(name)
+          categories!inner(name),
+          users(full_name)
         `)
         .eq('status', 'published')
         .order('is_featured', { ascending: false })
@@ -152,7 +155,8 @@ export class EpaperService {
         articles: articles.map(article => ({
           ...article,
           content: article.content?.substring(0, 200) + '...', // Truncate for preview
-          category: article.categories?.name || 'সাধারণ' // Add category field for compatibility
+          category: article.categories?.name || 'সাধারণ', // Add category field for compatibility
+          author: article.users?.full_name || 'সংবাদ ডেস্ক' // Add author field for compatibility
         })),
         totalCount: articles.length
       };
@@ -255,7 +259,7 @@ export class EpaperService {
             <div class="article-title">${article.title}</div>
             <div class="article-meta">
               <span class="category">${article.categories?.name || 'সাধারণ'}</span>
-              ${article.author ? `| লেখক: ${article.author}` : ''}
+              ${article.users?.full_name ? `| লেখক: ${article.users.full_name}` : '| লেখক: সংবাদ ডেস্ক'}
               | ${new Date(article.published_at).toLocaleDateString('bn-BD')}
             </div>
             <div class="article-content">${article.content?.substring(0, 500)}...</div>
