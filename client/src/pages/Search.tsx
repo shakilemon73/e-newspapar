@@ -153,7 +153,7 @@ const Search = () => {
                   <div className="flex-shrink-0 w-full md:w-32 h-48 md:h-24 mb-4 md:mb-0 md:mr-4">
                     <Link href={`/article/${article.slug}`}>
                       <img 
-                        src={article.imageUrl} 
+                        src={article.image_url || article.imageUrl || '/placeholder-image.jpg'} 
                         alt={article.title} 
                         className="w-full h-full object-cover rounded hover:opacity-90 transition cursor-pointer"
                       />
@@ -166,7 +166,7 @@ const Search = () => {
                           {article.category?.name || article.categories?.name || 'সাধারণ'}
                         </span>
                       </Link>
-                      <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.publishedAt)}</span>
+                      <span className="text-xs text-gray-500">{getRelativeTimeInBengali(article.published_at || article.publishedAt || new Date().toISOString())}</span>
                     </div>
                     <Link href={`/article/${article.slug}`}>
                       <h3 className="font-bold text-lg mb-2 font-hind hover:text-accent transition cursor-pointer">{article.title}</h3>

@@ -118,33 +118,32 @@ export const EnhancedSearchSystem: React.FC<EnhancedSearchSystemProps> = ({
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=5`);
-      if (response.ok) {
-        const data = await response.json();
+      // Use direct Supabase API instead of /api/search
+      const { searchArticles } = await import('../lib/supabase-api-direct');
+      const data = await searchArticles(searchQuery, undefined, 5);
         
-        // Convert articles to suggestions
-        const articleSuggestions: SearchSuggestion[] = data.map((article: any) => ({
-          id: article.id.toString(),
-          title: article.title,
-          type: 'article' as const,
-          category: article.category?.name,
-          url: `/article/${article.slug}`
-        }));
+      // Convert articles to suggestions
+      const articleSuggestions: SearchSuggestion[] = data.map((article: any) => ({
+        id: article.id.toString(),
+        title: article.title,
+        type: 'article' as const,
+        category: article.category?.name || article.categories?.name,
+        url: `/article/${article.slug}`
+      }));
 
-        // Add matching categories
-        const matchingCategories = categories.filter(cat => 
-          cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        
-        const categorySuggestions: SearchSuggestion[] = matchingCategories.map(cat => ({
-          id: `category-${cat.id}`,
-          title: cat.name,
-          type: 'category' as const,
-          url: `/category/${cat.slug}`
-        }));
+      // Add matching categories
+      const matchingCategories = categories.filter(cat => 
+        cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      
+      const categorySuggestions: SearchSuggestion[] = matchingCategories.map(cat => ({
+        id: `category-${cat.id}`,
+        title: cat.name,
+        type: 'category' as const,
+        url: `/category/${cat.slug}`
+      }));
 
-        setSuggestions([...categorySuggestions, ...articleSuggestions]);
-      }
+      setSuggestions([...categorySuggestions, ...articleSuggestions]);
     } catch (error) {
       console.error('Error fetching suggestions:', error);
     } finally {

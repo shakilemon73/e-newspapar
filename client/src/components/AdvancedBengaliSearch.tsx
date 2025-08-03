@@ -83,11 +83,23 @@ export const AdvancedBengaliSearch = () => {
     try {
       const { searchArticles } = await import('../lib/supabase-api-direct');
       const data = await searchArticles(query, selectedCategory, 20);
-      setSearchResults(data);
+      
+      // Transform articles to search results format
+      const transformedResults: SearchResult[] = data.map((article: any) => ({
+        id: article.id,
+        title: article.title,
+        excerpt: article.excerpt || '',
+        image_url: article.image_url || article.imageUrl || '',
+        published_at: article.published_at || article.publishedAt || '',
+        category_name: article.category?.name || article.categories?.name || 'সাধারণ',
+        search_rank: 1 // Default rank for now
+      }));
+      
+      setSearchResults(transformedResults);
       
       // Save search to history if user is logged in
       if (user) {
-        await saveSearchToHistory(query, data.length);
+        await saveSearchToHistory(query, transformedResults.length);
         fetchSearchHistory();
       }
     } catch (err) {
