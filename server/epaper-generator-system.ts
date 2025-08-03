@@ -10,12 +10,13 @@ interface Article {
   id: number;
   title: string;
   content: string;
-  category: string;
+  category_name: string;
   author: string;
-  publish_date: string;
+  published_at: string;
   image_url?: string;
   priority: number;
   is_breaking: boolean;
+  is_published: boolean;
 }
 
 interface LayoutTemplate {
@@ -257,7 +258,7 @@ export class EPaperGenerator {
       .select('*')
       .eq('is_published', true)
       .order('priority', { ascending: false })
-      .order('publish_date', { ascending: false })
+      .order('published_at', { ascending: false })
       .limit(options.maxArticles);
 
     // Filter by categories if specified
@@ -274,7 +275,7 @@ export class EPaperGenerator {
     // Date range filter (last 7 days if not specified)
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - 7);
-    query = query.gte('publish_date', dateThreshold.toISOString());
+    query = query.gte('published_at', dateThreshold.toISOString());
 
     const { data, error } = await query;
 
@@ -302,11 +303,12 @@ export class EPaperGenerator {
           id: bn.id,
           title: bn.title,
           content: bn.content || '',
-          category: 'breaking',
+          category_name: 'breaking',
           author: 'সংবাদ ডেস্ক',
-          publish_date: bn.created_at,
+          published_at: bn.created_at,
           priority: 100, // High priority
-          is_breaking: true
+          is_breaking: true,
+          is_published: true
         }));
         
         articles = [...breakingArticles, ...articles];

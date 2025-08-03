@@ -94,10 +94,10 @@ router.post('/preview-articles', async (req, res) => {
     // Fetch actual articles from database using admin client
     let query = adminSupabase
       .from('articles')
-      .select('id, title, category_name, author, publish_date, content')
+      .select('id, title, category_name, author, published_at, content')
       .eq('is_published', true)
       .order('priority', { ascending: false })
-      .order('publish_date', { ascending: false })
+      .order('published_at', { ascending: false })
       .limit(options.maxArticles || 10);
 
     // Filter by categories if specified
@@ -114,7 +114,7 @@ router.post('/preview-articles', async (req, res) => {
     // Date range filter (last 7 days)
     const dateThreshold = new Date();
     dateThreshold.setDate(dateThreshold.getDate() - 7);
-    query = query.gte('publish_date', dateThreshold.toISOString());
+    query = query.gte('published_at', dateThreshold.toISOString());
 
     const { data: articles, error } = await query;
 
@@ -133,7 +133,7 @@ router.post('/preview-articles', async (req, res) => {
       title: article.title,
       category: article.category_name,
       author: article.author,
-      publish_date: article.publish_date,
+      publish_date: article.published_at,
       content: article.content?.substring(0, 200) + '...' // Truncate for preview
     }));
 

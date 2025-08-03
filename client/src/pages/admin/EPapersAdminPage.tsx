@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { DateFormatter } from '@/components/DateFormatter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { adminSupabaseAPI } from '@/lib/admin';
+import { epaperService, type EPaperGenerationOptions as ServiceOptions } from '@/services/epaperService';
 
 interface EPaper {
   id: number;
@@ -112,21 +113,24 @@ export default function EPapersAdminPage() {
   useEffect(() => {
     const fetchGenerationData = async () => {
       try {
-        // Fetch templates
-        const templatesResponse = await fetch('/api/epaper-generation/templates');
-        if (templatesResponse.ok) {
-          const templatesData = await templatesResponse.json();
-          setAvailableTemplates(templatesData.templates || []);
-        }
+        console.log('🔄 Fetching generation data using direct Supabase service');
+        
+        // Fetch templates directly from service
+        const templates = epaperService.getAvailableTemplates();
+        setAvailableTemplates(templates);
 
-        // Fetch categories
-        const categoriesResponse = await fetch('/api/epaper-generation/categories');
-        if (categoriesResponse.ok) {
-          const categoriesData = await categoriesResponse.json();
-          setAvailableCategories(categoriesData.categories || []);
-        }
+        // Fetch categories directly from Supabase
+        const categories = await epaperService.fetchCategories();
+        setAvailableCategories(categories);
+        
+        console.log('✅ Generation data loaded successfully');
       } catch (error) {
-        console.error('Error fetching generation data:', error);
+        console.error('❌ Error fetching generation data:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load generation data. Please refresh the page.',
+          variant: 'destructive',
+        });
       }
     };
 
@@ -265,34 +269,30 @@ export default function EPapersAdminPage() {
     setGenerationProgress(10);
 
     try {
-      const response = await fetch('/api/epaper-generation/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(generationOptions),
-      });
+      console.log('🚀 Generating e-paper using direct Supabase service');
+      setGenerationProgress(30);
 
-      const result = await response.json();
+      const result = await epaperService.generateEPaper(generationOptions);
+      setGenerationProgress(80);
 
       if (result.success) {
         setGeneratedPdf({
-          pdfUrl: result.data.pdfUrl,
-          title: result.data.title,
-          date: result.data.date,
-          articleCount: result.data.articleCount
+          pdfUrl: result.pdfUrl!,
+          title: result.title,
+          date: result.date,
+          articleCount: result.articleCount
         });
         setGenerationProgress(100);
         
         toast({
           title: 'E-paper Generated Successfully!',
-          description: `Generated with ${result.data.articleCount} articles. You can now publish or save as draft.`,
+          description: `Generated with ${result.articleCount} articles using direct database access.`,
         });
       } else {
-        throw new Error(result.message || 'Generation failed');
+        throw new Error(result.error || 'Generation failed');
       }
     } catch (error) {
-      console.error('Generation error:', error);
+      console.error('❌ Generation error:', error);
       toast({
         title: 'Generation Failed',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -306,30 +306,21 @@ export default function EPapersAdminPage() {
 
   const handlePreviewArticles = async () => {
     try {
-      const response = await fetch('/api/epaper-generation/preview-articles', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(generationOptions),
+      console.log('🔄 Fetching preview articles using direct Supabase service');
+      
+      const result = await epaperService.previewArticles(generationOptions);
+      
+      setPreviewArticles(result.articles || []);
+      toast({
+        title: 'Preview Updated',
+        description: `Found ${result.totalCount} articles matching your criteria using direct database access.`,
       });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setPreviewArticles(result.articles || []);
-        toast({
-          title: 'Preview Updated',
-          description: `Found ${result.totalCount} articles matching your criteria.`,
-        });
-      } else {
-        throw new Error(result.message || 'Failed to fetch preview');
-      }
+      
     } catch (error) {
-      console.error('Preview error:', error);
+      console.error('❌ Preview error:', error);
       toast({
         title: 'Preview Failed',
-        description: 'Could not fetch article preview',
+        description: error instanceof Error ? error.message : 'Could not fetch article preview',
         variant: 'destructive',
       });
     }
