@@ -63,11 +63,13 @@ import {
 
 // Import AI routes
 import { aiRoutes } from './ai-routes';
-// Modern E-Paper routes removed per user request
+// Import E-Paper Generation routes
+import epaperGenerationRoutes from './epaper-generation-api';
 
 // Mount AI routes
 app.use('/api', aiRoutes);
-// Modern E-Paper routes removed per user request
+// Mount E-Paper Generation routes
+app.use('/api/epaper-generation', epaperGenerationRoutes);
 
 // Admin Articles
 app.post('/api/admin/articles', async (req: Request, res: Response) => {

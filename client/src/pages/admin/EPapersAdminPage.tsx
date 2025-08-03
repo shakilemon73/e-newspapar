@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { EnhancedAdminLayout } from '@/components/admin/EnhancedAdminLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Progress } from '@/components/ui/progress';
 import { 
   Plus, 
   Loader2, 
@@ -15,7 +18,12 @@ import {
   Star,
   Edit,
   Trash2,
-  Eye
+  Eye,
+  Newspaper,
+  Settings,
+  Play,
+  Save,
+  Upload
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { DateFormatter } from '@/components/DateFormatter';
@@ -34,6 +42,24 @@ interface EPaper {
   updated_at: string;
 }
 
+interface EPaperGenerationOptions {
+  title: string;
+  date: string;
+  layout: string;
+  includeCategories: string[];
+  excludeCategories: string[];
+  maxArticles: number;
+  includeBreakingNews: boolean;
+  includeWeather: boolean;
+  includedSections: string[];
+}
+
+interface LayoutTemplate {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export default function EPapersAdminPage() {
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -49,6 +75,30 @@ export default function EPapersAdminPage() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
+  // E-Paper Generation States
+  const [generationOptions, setGenerationOptions] = useState<EPaperGenerationOptions>({
+    title: 'বাংলা সংবাদপত্র',
+    date: new Date().toISOString().split('T')[0],
+    layout: 'traditional',
+    includeCategories: [],
+    excludeCategories: [],
+    maxArticles: 12,
+    includeBreakingNews: true,
+    includeWeather: true,
+    includedSections: ['জাতীয়', 'আন্তর্জাতিক', 'রাজনীতি']
+  });
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generatedPdf, setGeneratedPdf] = useState<{
+    pdfUrl: string;
+    title: string;
+    date: string;
+    articleCount: number;
+  } | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableTemplates, setAvailableTemplates] = useState<LayoutTemplate[]>([]);
+  const [previewArticles, setPreviewArticles] = useState<any[]>([]);
+
   // Fetch e-papers using direct admin API
   const { data: epapersData, isLoading, error } = useQuery({
     queryKey: ['admin-epapers'],
@@ -57,6 +107,31 @@ export default function EPapersAdminPage() {
 
   // Extract e-papers array from the response
   const epapers = epapersData || [];
+
+  // Fetch templates and categories for generation
+  useEffect(() => {
+    const fetchGenerationData = async () => {
+      try {
+        // Fetch templates
+        const templatesResponse = await fetch('/api/epaper-generation/templates');
+        if (templatesResponse.ok) {
+          const templatesData = await templatesResponse.json();
+          setAvailableTemplates(templatesData.templates || []);
+        }
+
+        // Fetch categories
+        const categoriesResponse = await fetch('/api/epaper-generation/categories');
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          setAvailableCategories(categoriesData.categories || []);
+        }
+      } catch (error) {
+        console.error('Error fetching generation data:', error);
+      }
+    };
+
+    fetchGenerationData();
+  }, []);
 
   // Create/Update mutation using direct admin API
   const saveMutation = useMutation({
@@ -175,6 +250,151 @@ export default function EPapersAdminPage() {
     saveMutation.mutate(formData);
   };
 
+  // E-Paper Generation Functions
+  const handleGenerateEPaper = async () => {
+    if (!generationOptions.title.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a title for the e-paper',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationProgress(10);
+
+    try {
+      const response = await fetch('/api/epaper-generation/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(generationOptions),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setGeneratedPdf({
+          pdfUrl: result.data.pdfUrl,
+          title: result.data.title,
+          date: result.data.date,
+          articleCount: result.data.articleCount
+        });
+        setGenerationProgress(100);
+        
+        toast({
+          title: 'E-paper Generated Successfully!',
+          description: `Generated with ${result.data.articleCount} articles. You can now publish or save as draft.`,
+        });
+      } else {
+        throw new Error(result.message || 'Generation failed');
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      toast({
+        title: 'Generation Failed',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+      setTimeout(() => setGenerationProgress(0), 2000);
+    }
+  };
+
+  const handlePreviewArticles = async () => {
+    try {
+      const response = await fetch('/api/epaper-generation/preview-articles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(generationOptions),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setPreviewArticles(result.articles || []);
+        toast({
+          title: 'Preview Updated',
+          description: `Found ${result.totalCount} articles matching your criteria.`,
+        });
+      } else {
+        throw new Error(result.message || 'Failed to fetch preview');
+      }
+    } catch (error) {
+      console.error('Preview error:', error);
+      toast({
+        title: 'Preview Failed',
+        description: 'Could not fetch article preview',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handlePublishGenerated = async () => {
+    if (!generatedPdf) return;
+
+    try {
+      const publishData = {
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: true,
+        is_published: true
+      };
+
+      await saveMutation.mutateAsync(publishData);
+      setGeneratedPdf(null);
+      
+      toast({
+        title: 'E-Paper Published!',
+        description: 'Generated e-paper has been published successfully.',
+      });
+    } catch (error) {
+      console.error('Publish error:', error);
+      toast({
+        title: 'Publish Failed',
+        description: 'Could not publish the generated e-paper',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!generatedPdf) return;
+
+    try {
+      const draftData = {
+        title: generatedPdf.title,
+        publish_date: generatedPdf.date,
+        pdf_url: generatedPdf.pdfUrl,
+        image_url: '',
+        is_latest: false,
+        is_published: false
+      };
+
+      await saveMutation.mutateAsync(draftData);
+      setGeneratedPdf(null);
+      
+      toast({
+        title: 'Draft Saved!',
+        description: 'Generated e-paper has been saved as draft.',
+      });
+    } catch (error) {
+      console.error('Save draft error:', error);
+      toast({
+        title: 'Save Failed',
+        description: 'Could not save the generated e-paper as draft',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <EnhancedAdminLayout>
@@ -200,7 +420,8 @@ export default function EPapersAdminPage() {
         <Tabs defaultValue="manage" className="space-y-6">
           <TabsList>
             <TabsTrigger value="manage">Manage E-Papers ({epapers.length})</TabsTrigger>
-            <TabsTrigger value="create">Create New E-Paper</TabsTrigger>
+            <TabsTrigger value="generate">Generate From Articles</TabsTrigger>
+            <TabsTrigger value="create">Create Manual E-Paper</TabsTrigger>
           </TabsList>
 
           <TabsContent value="manage" className="space-y-6">
@@ -308,6 +529,249 @@ export default function EPapersAdminPage() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="generate" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Newspaper className="w-5 h-5" />
+                  Auto-Generate E-Paper from Articles
+                </CardTitle>
+                <CardDescription>
+                  Create professional newspaper-style e-papers automatically from your published articles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Generation Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="gen-title">E-Paper Title</Label>
+                      <Input
+                        id="gen-title"
+                        value={generationOptions.title}
+                        onChange={(e) => setGenerationOptions(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Enter newspaper title"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="gen-date">Publication Date</Label>
+                      <Input
+                        id="gen-date"
+                        type="date"
+                        value={generationOptions.date}
+                        onChange={(e) => setGenerationOptions(prev => ({ ...prev, date: e.target.value }))}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gen-layout">Layout Template</Label>
+                      <Select 
+                        value={generationOptions.layout} 
+                        onValueChange={(value) => setGenerationOptions(prev => ({ ...prev, layout: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select layout" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name} - {template.description}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gen-max-articles">Maximum Articles</Label>
+                      <Input
+                        id="gen-max-articles"
+                        type="number"
+                        min="5"
+                        max="50"
+                        value={generationOptions.maxArticles}
+                        onChange={(e) => setGenerationOptions(prev => ({ ...prev, maxArticles: parseInt(e.target.value) || 12 }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <Label>Include Categories</Label>
+                      <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                        {availableCategories.map((category) => (
+                          <div key={category} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`include-${category}`}
+                              checked={generationOptions.includeCategories.includes(category)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setGenerationOptions(prev => ({
+                                    ...prev,
+                                    includeCategories: [...prev.includeCategories, category]
+                                  }));
+                                } else {
+                                  setGenerationOptions(prev => ({
+                                    ...prev,
+                                    includeCategories: prev.includeCategories.filter(c => c !== category)
+                                  }));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`include-${category}`} className="text-sm">
+                              {category}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label>Additional Options</Label>
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="include-breaking"
+                            checked={generationOptions.includeBreakingNews}
+                            onCheckedChange={(checked) => 
+                              setGenerationOptions(prev => ({ ...prev, includeBreakingNews: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="include-breaking">Include Breaking News</Label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="include-weather"
+                            checked={generationOptions.includeWeather}
+                            onCheckedChange={(checked) => 
+                              setGenerationOptions(prev => ({ ...prev, includeWeather: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="include-weather">Include Weather Information</Label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generation Progress */}
+                {isGenerating && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Generation Progress</Label>
+                      <span className="text-sm text-muted-foreground">{generationProgress}%</span>
+                    </div>
+                    <Progress value={generationProgress} className="w-full" />
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    onClick={handlePreviewArticles}
+                    variant="outline"
+                    disabled={isGenerating}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview Articles ({previewArticles.length})
+                  </Button>
+                  
+                  <Button
+                    onClick={handleGenerateEPaper}
+                    disabled={isGenerating || !generationOptions.title.trim()}
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-4 h-4 mr-2" />
+                        Generate E-Paper
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Generated PDF Preview */}
+                {generatedPdf && (
+                  <Card className="border-green-200 bg-green-50 dark:bg-green-950 dark:border-green-800">
+                    <CardHeader>
+                      <CardTitle className="text-green-800 dark:text-green-200">
+                        E-Paper Generated Successfully!
+                      </CardTitle>
+                      <CardDescription>
+                        {generatedPdf.title} - {generatedPdf.articleCount} articles included
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          onClick={() => window.open(generatedPdf.pdfUrl, '_blank')}
+                          variant="outline"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Preview PDF
+                        </Button>
+                        
+                        <Button
+                          onClick={handlePublishGenerated}
+                          disabled={saveMutation.isPending}
+                        >
+                          {saveMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4 mr-2" />
+                          )}
+                          Publish Now
+                        </Button>
+                        
+                        <Button
+                          onClick={handleSaveDraft}
+                          variant="outline"
+                          disabled={saveMutation.isPending}
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save as Draft
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Preview Articles */}
+                {previewArticles.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Article Preview ({previewArticles.length} articles)</CardTitle>
+                      <CardDescription>
+                        These articles will be included in the generated e-paper
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                        {previewArticles.map((article, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                            <div>
+                              <h4 className="font-medium">{article.title}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                {article.category} • {article.author}
+                              </p>
+                            </div>
+                            <Badge variant="outline">{article.category}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="create" className="space-y-6">
