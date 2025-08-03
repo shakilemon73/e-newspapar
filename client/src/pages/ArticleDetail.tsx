@@ -25,7 +25,6 @@ import { initializeViewTracking, trackArticleView } from '@/lib/real-view-tracke
 import { AnalysisDetails } from '@/components/AnalysisDetails';
 import { generateArticleMetaTags, getMetaTagsForHelmet } from '@/lib/social-media-meta';
 import { downloadArticleAsPDF } from '@/lib/article-pdf-generator';
-import { downloadNewspaperPDF, type NewspaperArticleData } from '@/lib/newspaper-pdf-generator';
 import { 
   Bookmark, 
   BookmarkCheck,
@@ -616,44 +615,26 @@ const ArticleDetail = () => {
     }
   };
 
-  // Professional Newspaper PDF Download functionality
+  // Simple Article PDF Download functionality  
   const handleDownloadPDF = async () => {
     if (!article) return;
     
     try {
-      const newspaperData: NewspaperArticleData = {
+      const articleData = {
         title: article.title,
-        content: article.content || '',
+        content: article.content || article.excerpt || '',
         author: article.author || 'স্টাফ রিপোর্টার',
-        publishedAt: article.published_at,
-        category: article.category?.name,
-        imageUrl: article.image_url,
-        siteName: 'বাংলা নিউজ টাইমস',
-        websiteUrl: window.location.origin,
-        tags: [],
-        excerpt: article.excerpt,
-        viewCount: article.view_count,
-        readingTime: readingTime
+        publishedAt: article.published_at || article.publishedAt || '',
+        category: article.category?.name || 'সাধারণ',
+        imageUrl: article.image_url || article.imageUrl,
+        siteName: 'Bengali News Time',
+        websiteUrl: 'www.dainiktni.news',
+        excerpt: article.excerpt
       };
 
-      const success = await downloadNewspaperPDF(
-        newspaperData,
-        `${article.title.substring(0, 30)}-newspaper.pdf`,
-        {
-          format: 'a4',
-          columns: 3,
-          masthead: {
-            title: 'বাংলা নিউজ টাইমস',
-            subtitle: 'Bangladesh\'s Leading Digital Newspaper',
-            established: '২০২৪',
-            website: window.location.origin
-          },
-          edition: {
-            date: new Date().toLocaleDateString('bn-BD'),
-            issue: 'অনলাইন সংস্করণ',
-            price: 'বিনামূল্যে'
-          }
-        }
+      const success = await downloadArticleAsPDF(
+        articleData,
+        `${article.title.substring(0, 30)}.pdf`
       );
       
       if (success) {
@@ -755,22 +736,21 @@ const ArticleDetail = () => {
     if (!article) return;
     
     try {
-      // Create newspaper article data
-      const newspaperArticleData: NewspaperArticleData = {
+      // Create simple article data for PDF
+      const articleData = {
         title: article.title,
-        content: article.content || '',
-        author: article.author_name || 'নিজস্ব প্রতিবেদক',
-        publishedAt: article.published_at,
-        category: article.category_name || 'সাধারণ',
-        imageUrl: article.image_url || '',
-        excerpt: article.excerpt || '',
-        tags: article.tags || [],
-        viewCount: article.view_count || 0,
-        readingTime: article.reading_time || 5
+        content: article.content || article.excerpt || '',
+        author: article.author || 'স্টাফ রিপোর্টার',
+        publishedAt: article.published_at || article.publishedAt || '',
+        category: article.category?.name || 'সাধারণ',
+        imageUrl: article.image_url || article.imageUrl,
+        siteName: 'Bengali News Time',
+        websiteUrl: 'www.dainiktni.news',
+        excerpt: article.excerpt
       };
 
-      // Call the newspaper PDF generator
-      const success = await downloadNewspaperPDF(newspaperArticleData, `${article.slug}.pdf`);
+      // Call the simple article PDF generator
+      const success = await downloadArticleAsPDF(articleData, `${article.title.substring(0, 30)}.pdf`);
       
       if (!success) {
         throw new Error('PDF generation failed');

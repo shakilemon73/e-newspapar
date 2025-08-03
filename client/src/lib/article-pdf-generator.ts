@@ -157,30 +157,24 @@ export async function generateArticlePDF(article: ArticlePDFData): Promise<Uint8
   }
   if (currentContentLine) contentLines.push(currentContentLine);
   
-  // Draw content with proper spacing
-  const lineHeight = 18;
-  for (const line of contentLines) {
-    if (currentY < margin + 50) {
-      // Add new page if needed
-      const newPage = pdfDoc.addPage([595, 842]);
-      currentY = height - margin;
-      
-      newPage.drawText(line, {
-        x: margin,
-        y: currentY,
-        size: 12,
-        font: bodyFont,
-        color: textColor,
-      });
-    } else {
-      page.drawText(line, {
-        x: margin,
-        y: currentY,
-        size: 12,
-        font: bodyFont,
-        color: textColor,
-      });
+  // Draw content with proper spacing - SINGLE PAGE ONLY
+  const lineHeight = 16;
+  const maxLines = Math.floor((currentY - margin - 100) / lineHeight); // Calculate max lines that fit
+  const displayLines = contentLines.slice(0, maxLines); // Only show lines that fit on single page
+  
+  for (const line of displayLines) {
+    if (currentY < margin + 80) {
+      // Stop drawing if we run out of space - NO NEW PAGES
+      break;
     }
+    
+    page.drawText(line, {
+      x: margin,
+      y: currentY,
+      size: 12,
+      font: bodyFont,
+      color: textColor,
+    });
     currentY -= lineHeight;
   }
   
