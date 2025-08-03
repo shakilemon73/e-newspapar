@@ -59,7 +59,6 @@ export function ShareButton({
     setIsLoading(true);
     
     try {
-      const encodedTitle = encodeURIComponent(title);
       const encodedUrl = encodeURIComponent(shareUrl);
       
       let platformShareUrl = '';
@@ -69,13 +68,13 @@ export function ShareButton({
           platformShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
           break;
         case 'twitter':
-          platformShareUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
+          platformShareUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}`;
           break;
         case 'whatsapp':
-          platformShareUrl = `https://api.whatsapp.com/send?text=${encodedTitle} ${encodedUrl}`;
+          platformShareUrl = `https://api.whatsapp.com/send?text=${encodedUrl}`;
           break;
         case 'telegram':
-          platformShareUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
+          platformShareUrl = `https://t.me/share/url?url=${encodedUrl}`;
           break;
         case 'copy':
           await navigator.clipboard.writeText(shareUrl);
