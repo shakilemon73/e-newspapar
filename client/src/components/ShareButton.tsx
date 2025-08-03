@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useSupabaseAuth } from '@/hooks/use-supabase-auth';
 import { supabase } from '@/lib/supabase';
+import { createBengaliSlug } from '@/lib/utils/url-utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,10 +29,16 @@ export function ShareButton({
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
   
-  // Create a stable URL to prevent infinite re-renders
+  // Create a stable, clean URL for sharing
   const shareUrl = useMemo(() => {
-    return url || window.location.href;
-  }, [url]);
+    if (url) {
+      return url;
+    }
+    
+    // If no URL provided, create a clean Bengali URL from the title
+    const cleanSlug = createBengaliSlug(title);
+    return `${window.location.origin}/article/${cleanSlug}`;
+  }, [url, title]);
 
   const trackShare = async (platform: string) => {
     if (!user) return;

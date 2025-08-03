@@ -155,7 +155,9 @@ const ArticleDetail = () => {
   // Create a stable share URL to prevent infinite re-renders
   const shareUrl = useMemo(() => {
     if (!article) return undefined;
-    return `${window.location.origin}/article/${createBengaliSlug(article.title)}`;
+    // Ensure consistent URL generation for sharing
+    const cleanSlug = createBengaliSlug(article.title);
+    return `${window.location.origin}/article/${cleanSlug}`;
   }, [article?.title]);
   
   // Fetch related articles using the new direct API
