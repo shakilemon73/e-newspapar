@@ -579,7 +579,8 @@ async function processImagesForPDF(html: string): Promise<string> {
   const doc = parser.parseFromString(html, 'text/html');
   const images = doc.querySelectorAll('img');
   
-  for (const img of images) {
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
     try {
       const src = img.getAttribute('src');
       if (src && (src.startsWith('http') || src.startsWith('/'))) {

@@ -749,188 +749,35 @@ const ArticleDetail = () => {
     return doc.body.textContent || doc.body.innerText || '';
   };
 
-  // PDF Generation Function
-  const generatePDF = () => {
+  // PDF Generation Function - Using Newspaper PDF Generator
+  const generatePDF = async () => {
     if (!article) return;
     
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    
-    const cleanContent = stripHtmlTags(article.content || '');
-    
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="bn">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>${article.title} - </title>
-        <style>
-          @page {
-            size: A4;
-            margin: 2cm;
-          }
-          
-          body {
-            font-family: 'Kalpurush', 'SolaimanLipi', 'Vrinda', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-            background: white;
-          }
-          
-          .header {
-            text-align: center;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-          }
-          
-          .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 5px;
-          }
-          
-          .website-info {
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 10px;
-          }
-          
-          .article-meta {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-          }
-          
-          .article-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 15px;
-            line-height: 1.3;
-          }
-          
-          .article-excerpt {
-            font-size: 16px;
-            color: #4b5563;
-            margin-bottom: 15px;
-            font-style: italic;
-          }
-          
-          .article-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: #6b7280;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 15px;
-          }
-          
-          .article-content {
-            font-size: 16px;
-            line-height: 1.8;
-            color: #374151;
-            text-align: justify;
-            hyphens: auto;
-          }
-          
-          .article-content p {
-            margin-bottom: 15px;
-          }
-          
-          .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-          }
-          
-          .category-badge {
-            background: #3b82f6;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            display: inline-block;
-            margin-bottom: 10px;
-          }
-          
-          .print-info {
-            font-size: 10px;
-            color: #9ca3af;
-            margin-top: 20px;
-          }
-          
-          @media print {
-            body {
-              -webkit-print-color-adjust: exact;
-              color-adjust: exact;
-            }
-            
-            .header {
-              page-break-inside: avoid;
-            }
-            
-            .article-title {
-              page-break-after: avoid;
-            }
-            
-            .article-content {
-              orphans: 3;
-              widows: 3;
-            }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="logo"></div>
-          <div class="website-info">বাংলাদেশের অগ্রণী অনলাইন সংবাদপত্র</div>
-          <div class="website-info">www.prothomalo.com</div>
-        </div>
-        
-        <div class="article-meta">
-          <div class="category-badge">${article.category?.name || 'সাধারণ'}</div>
-          <h1 class="article-title">${article.title}</h1>
-          <div class="article-excerpt">${article.excerpt}</div>
-          <div class="article-info">
-            <span>প্রকাশকাল: ${formatBengaliDate(article.published_at)}</span>
-            <span>দেখা হয়েছে: ${article.view_count || 0} বার</span>
-          </div>
-        </div>
-        
-        <div class="article-content">
-          ${cleanContent.split('\n').map(paragraph => 
-            paragraph.trim() ? `<p>${paragraph}</p>` : ''
-          ).join('')}
-        </div>
-        
-        <div class="footer">
-          <p><strong></strong> - সত্যের পথে, শান্তির পথে</p>
-          <p>© ${new Date().getFullYear()} । সমস্ত অধিকার সংরক্ষিত।</p>
-          <div class="print-info">
-            <p>প্রিন্ট করা হয়েছে: ${new Date().toLocaleString('bn-BD')}</p>
-            <p>URL: ${window.location.href}</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `);
-    
-    printWindow.document.close();
-    
-    // Wait for content to load, then print
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    try {
+      // Create newspaper article data
+      const newspaperArticleData: NewspaperArticleData = {
+        title: article.title,
+        content: article.content || '',
+        author: article.author_name || 'নিজস্ব প্রতিবেদক',
+        publishedAt: article.published_at,
+        category: article.category_name || 'সাধারণ',
+        imageUrl: article.image_url || '',
+        excerpt: article.excerpt || '',
+        tags: article.tags || [],
+        viewCount: article.view_count || 0,
+        readingTime: article.reading_time || 5
+      };
+
+      // Call the newspaper PDF generator
+      const success = await downloadNewspaperPDF(newspaperArticleData, `${article.slug}.pdf`);
+      
+      if (!success) {
+        throw new Error('PDF generation failed');
+      }
+    } catch (error) {
+      console.error('Error generating newspaper PDF:', error);
+      alert('পিডিএফ তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+    }
   };
 
   // Share functionality
