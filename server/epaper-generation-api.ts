@@ -1,6 +1,7 @@
 // E-Paper Generation API Routes
 import { Router } from 'express';
 import { epaperGenerator } from './epaper-generator-system';
+import { adminSupabase } from './supabase.js';
 
 const router = Router();
 
@@ -88,31 +89,58 @@ router.post('/generate', async (req, res) => {
 router.post('/preview-articles', async (req, res) => {
   try {
     const options: EPaperGenerationOptions = req.body;
+    console.log('🔐 Fetching preview articles using admin Supabase client');
 
-    // This is a simplified preview - in production you'd fetch actual articles
-    const mockArticles = [
-      {
-        id: 1,
-        title: 'আজকের প্রধান সংবাদ',
-        category: 'জাতীয়',
-        author: 'সংবাদদাতা',
-        publish_date: new Date().toISOString(),
-        content: 'এটি একটি নমুনা সংবাদ যা ই-পেপারে প্রদর্শিত হবে...'
-      },
-      {
-        id: 2,
-        title: 'আন্তর্জাতিক সংবাদ',
-        category: 'আন্তর্জাতিক',
-        author: 'বিশেষ প্রতিনিধি',
-        publish_date: new Date().toISOString(),
-        content: 'বিশ্বের গুরুত্বপূর্ণ ঘটনার আপডেট...'
+    // Fetch actual articles from database using admin client
+    let query = adminSupabase
+      .from('articles')
+      .select('id, title, category_name, author, publish_date, content')
+      .eq('is_published', true)
+      .order('priority', { ascending: false })
+      .order('publish_date', { ascending: false })
+      .limit(options.maxArticles || 10);
+
+    // Filter by categories if specified
+    if (options.includeCategories && options.includeCategories.length > 0) {
+      query = query.in('category_name', options.includeCategories);
+    }
+
+    if (options.excludeCategories && options.excludeCategories.length > 0) {
+      for (const category of options.excludeCategories) {
+        query = query.neq('category_name', category);
       }
-    ];
+    }
+
+    // Date range filter (last 7 days)
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - 7);
+    query = query.gte('publish_date', dateThreshold.toISOString());
+
+    const { data: articles, error } = await query;
+
+    if (error) {
+      console.error('Error fetching preview articles:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch preview articles from database',
+        error: error.message
+      });
+    }
+
+    // Format articles for preview display
+    const formattedArticles = (articles || []).map(article => ({
+      id: article.id,
+      title: article.title,
+      category: article.category_name,
+      author: article.author,
+      publish_date: article.publish_date,
+      content: article.content?.substring(0, 200) + '...' // Truncate for preview
+    }));
 
     res.json({
       success: true,
-      articles: mockArticles,
-      totalCount: mockArticles.length
+      articles: formattedArticles,
+      totalCount: formattedArticles.length
     });
 
   } catch (error) {
@@ -128,22 +156,41 @@ router.post('/preview-articles', async (req, res) => {
 // Get available categories
 router.get('/categories', async (req, res) => {
   try {
-    // This would fetch from your actual categories table
-    const categories = [
-      'জাতীয়',
-      'আন্তর্জাতিক',
-      'রাজনীতি',
-      'অর্থনীতি',
-      'খেলাধুলা',
-      'বিনোদন',
-      'প্রযুক্তি',
-      'শিক্ষা',
-      'স্বাস্থ্য'
-    ];
+    console.log('🔐 Fetching categories using admin Supabase client');
+    
+    // Fetch actual categories from database using admin client
+    const { data: categories, error } = await adminSupabase
+      .from('categories')
+      .select('name')
+      .eq('is_active', true)
+      .order('name');
+
+    if (error) {
+      console.error('Error fetching categories from database:', error);
+      // Fallback to hardcoded categories if database fails
+      const fallbackCategories = [
+        'জাতীয়',
+        'আন্তর্জাতিক',
+        'রাজনীতি',
+        'অর্থনীতি',
+        'খেলাধুলা',
+        'বিনোদন',
+        'প্রযুক্তি',
+        'শিক্ষা',
+        'স্বাস্থ্য'
+      ];
+      
+      return res.json({
+        success: true,
+        categories: fallbackCategories
+      });
+    }
+
+    const categoryNames = categories?.map(cat => cat.name) || [];
 
     res.json({
       success: true,
-      categories
+      categories: categoryNames
     });
 
   } catch (error) {

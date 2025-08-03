@@ -1,16 +1,10 @@
 // Professional E-Paper Generation System
 // Article-based layout generation like real newspapers
 
-import { createClient } from '@supabase/supabase-js';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
-
-// Create server-side Supabase client
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL!,
-  process.env.VITE_SUPABASE_ANON_KEY!
-);
+import { adminSupabase } from './supabase.js';
 
 interface Article {
   id: number;
@@ -257,7 +251,8 @@ export class EPaperGenerator {
   }
 
   private async fetchArticles(options: EPaperGenerationOptions): Promise<Article[]> {
-    let query = supabase
+    console.log('🔐 Using admin Supabase client to fetch articles (bypassing RLS)');
+    let query = adminSupabase
       .from('articles')
       .select('*')
       .eq('is_published', true)
@@ -292,7 +287,7 @@ export class EPaperGenerator {
 
     // Separate breaking news if requested
     if (options.includeBreakingNews) {
-      const breakingQuery = supabase
+      const breakingQuery = adminSupabase
         .from('breaking_news')
         .select('*')
         .eq('is_active', true)
@@ -624,7 +619,7 @@ export class EPaperGenerator {
   }
 
   private getSectionTitle(sectionType: string): string {
-    const titles = {
+    const titles: Record<string, string> = {
       'breaking': 'জরুরি খবর',
       'main': 'প্রধান সংবাদ',
       'secondary': 'অন্যান্য সংবাদ',
