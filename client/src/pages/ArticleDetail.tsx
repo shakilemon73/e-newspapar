@@ -152,13 +152,12 @@ const ArticleDetail = () => {
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   
-  // Create a stable share URL to prevent infinite re-renders
+  // Create a stable share URL using the actual article slug
   const shareUrl = useMemo(() => {
     if (!article) return undefined;
-    // Ensure consistent URL generation for sharing
-    const cleanSlug = createBengaliSlug(article.title);
-    return `${window.location.origin}/article/${cleanSlug}`;
-  }, [article?.title]);
+    // Use the actual article slug from the URL, not a generated one
+    return `${window.location.origin}/article/${rawSlug}`;
+  }, [article?.id, rawSlug]);
   
   // Fetch related articles using the new direct API
   const { data: fetchedRelatedArticles = [] } = useQuery({
@@ -1553,6 +1552,7 @@ const ArticleDetail = () => {
                         articleId={article.id}
                         title={article.title}
                         url={shareUrl}
+                        actualSlug={rawSlug}
                         className="transition-all duration-300 hover:scale-105"
                       />
 

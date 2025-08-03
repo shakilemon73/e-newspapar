@@ -17,28 +17,30 @@ interface ShareButtonProps {
   title: string;
   url?: string;
   className?: string;
+  actualSlug?: string;
 }
 
 export function ShareButton({ 
   articleId, 
   title, 
   url,
-  className = ''
+  className = '',
+  actualSlug
 }: ShareButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
   
-  // Create a stable, clean URL for sharing
+  // Create a stable, accurate URL for sharing
   const shareUrl = useMemo(() => {
     if (url) {
       return url;
     }
     
-    // If no URL provided, create a clean Bengali URL from the title
-    const cleanSlug = createBengaliSlug(title);
-    return `${window.location.origin}/article/${cleanSlug}`;
-  }, [url, title]);
+    // Use the actual article slug if provided, otherwise fallback to creating one from title
+    const slug = actualSlug || createBengaliSlug(title);
+    return `${window.location.origin}/article/${slug}`;
+  }, [url, actualSlug, title]);
 
   const trackShare = async (platform: string) => {
     if (!user) return;
