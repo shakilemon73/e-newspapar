@@ -87,10 +87,10 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         @import url('https://fonts.googleapis.com/css2?family=Kalpurush&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=SolaimanLipi&display=swap');
 
-        /* Page Setup for Print - Single Page Layout */
+        /* Page Setup for Print - Full Page Layout */
         @page {
             size: ${config.format === 'broadsheet' ? '11in 17in' : config.format === 'tabloid' ? '11in 17in' : 'A4'};
-            margin: 0.4in 0.3in;
+            margin: 0.3in 0.2in;
         }
 
         * {
@@ -101,21 +101,26 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
         body {
             font-family: 'Kalpurush', 'Noto Sans Bengali', 'SolaimanLipi', Arial, sans-serif;
-            line-height: 1.25;
+            line-height: 1.2;
             color: #000;
             background: white;
             font-size: 8pt;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
             margin: 0;
-            padding: 6pt;
+            padding: 4pt;
             overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Authentic Newspaper Layout - Single Page */
+        /* Full Page Newspaper Layout */
         .newspaper {
             max-width: 100%;
-            height: auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
             page-break-after: avoid;
             overflow: hidden;
         }
@@ -174,24 +179,32 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Main Content Layout - Responsive Single Page */
+        /* Main Content Layout - Full Height Utilization */
         .main-content {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 4pt;
-            margin-top: 6pt;
+            margin-top: 4pt;
+            flex: 1;
             height: auto;
-            max-height: calc(100vh - 200pt);
+            min-height: calc(100vh - 120pt);
         }
 
         .main-story-column {
             padding-right: 4pt;
             border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .sidebar-column {
             padding-left: 4pt;
             font-size: 6pt;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
         }
 
         /* Breaking News Banner */
@@ -207,14 +220,14 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             text-align: center;
         }
 
-        /* Compact Typography for Single Page */
+        /* Optimized Typography for Full Page */
         .main-headline {
             font-family: 'Kalpurush', 'Noto Sans Bengali', serif;
-            font-size: 14pt;
+            font-size: 16pt;
             font-weight: 800;
-            line-height: 1.0;
+            line-height: 1.1;
             color: #000;
-            margin-bottom: 4pt;
+            margin-bottom: 5pt;
             text-align: justify;
             hyphens: auto;
         }
@@ -245,21 +258,22 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 500;
         }
 
-        /* Compact Article Body Styles */
+        /* Full Page Article Body Styles */
         .article-body {
             text-align: justify;
-            font-size: 7pt;
-            line-height: 1.2;
+            font-size: 8pt;
+            line-height: 1.3;
             color: #000;
         }
 
         .article-body p {
-            margin-bottom: 3pt;
+            margin-bottom: 4pt;
         }
 
         .main-article-body {
-            font-size: 7pt;
-            line-height: 1.25;
+            font-size: 8pt;
+            line-height: 1.35;
+            flex: 1;
         }
 
         .secondary-article-body {
@@ -300,19 +314,19 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         }
 
         .sidebar-headline {
-            font-size: 7pt;
+            font-size: 8pt;
             font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1pt;
+            line-height: 1.2;
+            margin-bottom: 2pt;
         }
 
         .sidebar-article-body {
-            font-size: 5pt;
-            line-height: 1.1;
+            font-size: 6pt;
+            line-height: 1.2;
         }
 
         .sidebar-article-body p {
-            margin-bottom: 1pt;
+            margin-bottom: 2pt;
         }
 
         .news-item:last-child {
@@ -333,24 +347,25 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-size: 8pt;
         }
 
-        /* Footer */
+        /* Footer - Fixed at Bottom */
         .newspaper-footer {
-            border-top: 3px solid #000;
-            padding-top: 4pt;
-            margin-top: 12pt;
+            border-top: 2px solid #000;
+            padding-top: 3pt;
+            margin-top: auto;
             text-align: center;
             font-size: 6pt;
             color: #000;
+            flex-shrink: 0;
         }
 
-        /* Bottom Page Info */
+        /* Bottom Page Info - Compact */
         .page-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 6pt;
+            font-size: 5pt;
             color: #000;
-            margin-top: 8pt;
+            margin-top: 3pt;
             font-weight: 600;
         }
 
