@@ -87,13 +87,10 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         @import url('https://fonts.googleapis.com/css2?family=Kalpurush&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=SolaimanLipi&display=swap');
 
-        /* Page Setup for Print */
+        /* Page Setup for Print - Single Page Layout */
         @page {
             size: ${config.format === 'broadsheet' ? '11in 17in' : config.format === 'tabloid' ? '11in 17in' : 'A4'};
-            margin: 0.5in 0.3in;
-            @top-center {
-                content: "${config.masthead.title}";
-            }
+            margin: 0.4in 0.3in;
         }
 
         * {
@@ -104,20 +101,23 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
         body {
             font-family: 'Kalpurush', 'Noto Sans Bengali', 'SolaimanLipi', Arial, sans-serif;
-            line-height: 1.3;
+            line-height: 1.25;
             color: #000;
             background: white;
-            font-size: 9pt;
+            font-size: 8pt;
             -webkit-print-color-adjust: exact;
             color-adjust: exact;
             margin: 0;
-            padding: 8pt;
+            padding: 6pt;
+            overflow-x: hidden;
         }
 
-        /* Authentic Newspaper Layout - Based on Daily Amar Desh */
+        /* Authentic Newspaper Layout - Single Page */
         .newspaper {
             max-width: 100%;
-            min-height: 100vh;
+            height: auto;
+            page-break-after: avoid;
+            overflow: hidden;
         }
 
         /* Authentic Masthead - Daily Amar Desh Style */
@@ -174,26 +174,27 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Main Content Layout - Multi-column authentic style */
+        /* Main Content Layout - Compact for single page */
         .main-content {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
-            gap: 8pt;
-            margin-top: 12pt;
+            gap: 6pt;
+            margin-top: 8pt;
+            height: auto;
         }
 
         .main-story-column {
             border-right: 1px solid #ccc;
-            padding-right: 8pt;
+            padding-right: 6pt;
         }
 
         .secondary-column {
             border-right: 1px solid #ccc;
-            padding: 0 8pt;
+            padding: 0 6pt;
         }
 
         .sidebar-column {
-            padding-left: 8pt;
+            padding-left: 6pt;
         }
 
         /* Breaking News Banner */
@@ -274,12 +275,17 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             line-height: 1.25;
         }
 
-        /* Image Styles */
+        /* Image Styles - PDF Optimized */
         .main-image {
             width: 100%;
+            max-width: 100%;
             height: auto;
             margin: 6pt 0;
             border: 1px solid #000;
+            display: block;
+            page-break-inside: avoid;
+            -webkit-print-color-adjust: exact;
+            color-adjust: exact;
         }
 
         .image-caption {
@@ -290,10 +296,10 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-style: italic;
         }
 
-        /* News Items */
+        /* News Items - Compact spacing */
         .news-item {
-            margin-bottom: 8pt;
-            padding-bottom: 6pt;
+            margin-bottom: 4pt;
+            padding-bottom: 3pt;
             border-bottom: 1px dotted #999;
         }
 
@@ -336,15 +342,37 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Print Optimizations */
+        /* Print Optimizations - Single Page */
         @media print {
             body {
                 -webkit-print-color-adjust: exact;
                 color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .newspaper {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                height: auto;
+                min-height: auto;
             }
             
             .main-content {
                 page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            .news-item {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            
+            img {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                max-width: 100%;
+                height: auto;
             }
         }
 
@@ -540,13 +568,66 @@ function formatArticleContent(content: string): string {
 }
 
 async function convertHTMLToPDF(html: string, format: string): Promise<string> {
-  // Return the HTML for now - in a real implementation, you would use:
-  // - Puppeteer for server-side generation
-  // - Browser print API for client-side generation
-  // - Or a PDF generation service
+  // Convert any external images to base64 to ensure they appear in PDF
+  const processedHTML = await processImagesForPDF(html);
+  return processedHTML;
+}
 
-  // For client-side implementation, we'll use the browser's print functionality
-  return html;
+async function processImagesForPDF(html: string): Promise<string> {
+  // Convert all img src URLs to base64 data URLs
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const images = doc.querySelectorAll('img');
+  
+  for (const img of images) {
+    try {
+      const src = img.getAttribute('src');
+      if (src && (src.startsWith('http') || src.startsWith('/'))) {
+        const base64 = await convertImageToBase64(src);
+        if (base64) {
+          img.setAttribute('src', base64);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to convert image to base64:', error);
+      // Keep original src if conversion fails
+    }
+  }
+  
+  return doc.documentElement.outerHTML;
+}
+
+async function convertImageToBase64(imageUrl: string): Promise<string | null> {
+  try {
+    // Create a canvas to convert image to base64
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    return new Promise((resolve, reject) => {
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        ctx?.drawImage(img, 0, 0);
+        
+        try {
+          const base64 = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(base64);
+        } catch (e) {
+          reject(e);
+        }
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = imageUrl;
+    });
+  } catch (error) {
+    console.error('Error converting image to base64:', error);
+    return null;
+  }
 }
 
 export async function downloadNewspaperPDF(
@@ -557,8 +638,8 @@ export async function downloadNewspaperPDF(
   try {
     const newspaperHTML = await generateNewspaperPDF(article, config);
     
-    // Create a new window for printing
-    const printWindow = window.open('', '_blank');
+    // Create a new window for printing with proper sizing
+    const printWindow = window.open('', '_blank', 'width=800,height=1200');
     if (!printWindow) {
       throw new Error('Could not open print window');
     }
@@ -567,21 +648,63 @@ export async function downloadNewspaperPDF(
     printWindow.document.write(newspaperHTML);
     printWindow.document.close();
 
-    // Wait for content to load
-    await new Promise(resolve => {
-      printWindow.onload = resolve;
+    // Wait for all content including images to load
+    await new Promise((resolve) => {
+      const checkImagesLoaded = () => {
+        const images = printWindow.document.querySelectorAll('img');
+        let loadedCount = 0;
+        
+        if (images.length === 0) {
+          resolve(undefined);
+          return;
+        }
+        
+        images.forEach((img) => {
+          if (img.complete) {
+            loadedCount++;
+          } else {
+            img.onload = () => {
+              loadedCount++;
+              if (loadedCount === images.length) {
+                resolve(undefined);
+              }
+            };
+            img.onerror = () => {
+              loadedCount++;
+              if (loadedCount === images.length) {
+                resolve(undefined);
+              }
+            };
+          }
+        });
+        
+        if (loadedCount === images.length) {
+          resolve(undefined);
+        }
+      };
+      
+      if (printWindow.document.readyState === 'complete') {
+        checkImagesLoaded();
+      } else {
+        printWindow.onload = checkImagesLoaded;
+      }
+      
       // Fallback timeout
-      setTimeout(resolve, 1000);
+      setTimeout(resolve, 3000);
     });
 
-    // Focus and print
+    // Focus and print with single page settings
     printWindow.focus();
-    printWindow.print();
+    
+    // Print with specific settings to ensure single page
+    setTimeout(() => {
+      printWindow.print();
+    }, 500);
 
-    // Close after a delay to allow printing
+    // Close after printing
     setTimeout(() => {
       printWindow.close();
-    }, 2000);
+    }, 3000);
 
     return true;
   } catch (error) {
