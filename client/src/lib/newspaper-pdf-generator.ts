@@ -174,16 +174,24 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Main Content Layout - Single Column for Article Only */
+        /* Main Content Layout - Responsive Single Page */
         .main-content {
-            display: block;
-            margin-top: 8pt;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 4pt;
+            margin-top: 6pt;
             height: auto;
+            max-height: calc(100vh - 200pt);
         }
 
         .main-story-column {
-            padding: 0;
-            width: 100%;
+            padding-right: 4pt;
+            border-right: 1px solid #ccc;
+        }
+
+        .sidebar-column {
+            padding-left: 4pt;
+            font-size: 6pt;
         }
 
         /* Breaking News Banner */
@@ -199,14 +207,14 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             text-align: center;
         }
 
-        /* Authentic Typography - Daily Amar Desh Style */
+        /* Compact Typography for Single Page */
         .main-headline {
             font-family: 'Kalpurush', 'Noto Sans Bengali', serif;
-            font-size: 20pt;
+            font-size: 14pt;
             font-weight: 800;
-            line-height: 1.1;
+            line-height: 1.0;
             color: #000;
-            margin-bottom: 6pt;
+            margin-bottom: 4pt;
             text-align: justify;
             hyphens: auto;
         }
@@ -231,27 +239,27 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         }
 
         .byline {
-            font-size: 7pt;
+            font-size: 6pt;
             color: #333;
-            margin-bottom: 6pt;
+            margin-bottom: 3pt;
             font-weight: 500;
         }
 
-        /* Article Body Styles */
+        /* Compact Article Body Styles */
         .article-body {
             text-align: justify;
-            font-size: 8pt;
-            line-height: 1.3;
+            font-size: 7pt;
+            line-height: 1.2;
             color: #000;
         }
 
         .article-body p {
-            margin-bottom: 6pt;
+            margin-bottom: 3pt;
         }
 
         .main-article-body {
-            font-size: 9pt;
-            line-height: 1.35;
+            font-size: 7pt;
+            line-height: 1.25;
         }
 
         .secondary-article-body {
@@ -264,17 +272,16 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             line-height: 1.25;
         }
 
-        /* Image Styles - PDF Optimized */
+        /* Compact Image Styles */
         .main-image {
             width: 100%;
             max-width: 100%;
             height: auto;
-            margin: 6pt 0;
+            max-height: 80pt;
+            margin: 3pt 0;
             border: 1px solid #000;
             display: block;
-            page-break-inside: avoid;
-            -webkit-print-color-adjust: exact;
-            color-adjust: exact;
+            object-fit: cover;
         }
 
         .image-caption {
@@ -285,11 +292,27 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-style: italic;
         }
 
-        /* News Items - Compact spacing */
+        /* Ultra Compact News Items */
         .news-item {
-            margin-bottom: 4pt;
-            padding-bottom: 3pt;
+            margin-bottom: 2pt;
+            padding-bottom: 2pt;
             border-bottom: 1px dotted #999;
+        }
+
+        .sidebar-headline {
+            font-size: 7pt;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1pt;
+        }
+
+        .sidebar-article-body {
+            font-size: 5pt;
+            line-height: 1.1;
+        }
+
+        .sidebar-article-body p {
+            margin-bottom: 1pt;
         }
 
         .news-item:last-child {
@@ -416,9 +439,9 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             ${config.masthead.title} বিশেষ: ${article.category || 'সর্বশেষ সংবাদ'}
         </div>
 
-        <!-- Main Content Layout - Article Only -->
+        <!-- Main Content Layout - Responsive Single Page -->
         <div class="main-content">
-            <!-- Article Content Only -->
+            <!-- Main Article Column -->
             <div class="main-story-column">
                 <h1 class="main-headline bengali-text">${article.title}</h1>
                 
@@ -438,14 +461,43 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
                 <div class="thin-divider"></div>
 
-                <!-- Article Information Only -->
+                <!-- Compact Article Information -->
                 <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">নিবন্ধ তথ্য</h3>
-                    <div class="secondary-article-body bengali-text">
-                        <p><strong>বিভাগ:</strong> ${article.category || 'সাধারণ'}</p>
-                        <p><strong>প্রকাশকাল:</strong> ${new Date(article.publishedAt).toLocaleDateString('bn-BD')}</p>
-                        <p><strong>পাঠ সময়:</strong> ${article.readingTime || 5} মিনিট</p>
+                    <h3 class="sidebar-headline bengali-text">নিবন্ধ তথ্য</h3>
+                    <div class="sidebar-article-body bengali-text">
+                        <p><strong>বিভাগ:</strong> ${article.category || 'সাধারণ'} | <strong>পাঠ সময়:</strong> ${article.readingTime || 5} মিনিট</p>
                         ${article.tags && article.tags.length > 0 ? `<p><strong>ট্যাগ:</strong> ${article.tags.join(', ')}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar with Weather & Prayer Times -->
+            <div class="sidebar-column">
+                <div class="news-item">
+                    <h3 class="sidebar-headline bengali-text">আবহাওয়া</h3>
+                    <div class="sidebar-article-body bengali-text">
+                        <p><strong>ঢাকা:</strong> সর্বোচ্চ ২৮°, সর্বনিম্ন ২২°</p>
+                        <p><strong>চট্টগ্রাম:</strong> সর্বোচ্চ ৩০°, সর্বনিম্ন ২৪°</p>
+                        <p><strong>সিলেট:</strong> সর্বোচ্চ ২৬°, সর্বনিম্ন ২০°</p>
+                        <p><strong>খুলনা:</strong> সর্বোচ্চ ২৯°, সর্বনিম্ন ২৩°</p>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <h3 class="sidebar-headline bengali-text">নামাজের সময়</h3>
+                    <div class="sidebar-article-body bengali-text">
+                        <p>ফজর: ৫:১৫ | জোহর: ১২:০৫</p>
+                        <p>আসর: ৪:৩০ | মাগরিব: ৬:১৫</p>
+                        <p>এশা: ৭:৩০</p>
+                    </div>
+                </div>
+
+                <div class="news-item">
+                    <h3 class="sidebar-headline bengali-text">${config.masthead.title} সম্পর্কে</h3>
+                    <div class="sidebar-article-body bengali-text">
+                        <p>${config.masthead.subtitle}</p>
+                        <p><strong>প্রতিষ্ঠিত:</strong> ${config.masthead.established}</p>
+                        <p><strong>ওয়েবসাইট:</strong> ${config.masthead.website}</p>
                     </div>
                 </div>
             </div>
