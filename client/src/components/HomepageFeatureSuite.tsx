@@ -144,28 +144,7 @@ export const DiscoveryWidget = () => {
             </div>
           </div>
 
-          {/* AI-Powered Trending Topics */}
-          <div>
-            <h4 className="font-medium text-sm text-muted-foreground mb-2 flex items-center gap-1">
-              জনপ্রিয়
-              <Badge variant="outline" className="text-xs">লাইভ</Badge>
-            </h4>
-            <div className="space-y-2">
-              {trendingTopics?.slice(0, 4).map((topic: any, index: number) => (
-                <div key={topic.id || index} className="flex items-center justify-between p-1 rounded hover:bg-muted/50">
-                  <Badge 
-                    variant={topic.sentiment === 'ইতিবাচক' ? 'default' : topic.sentiment === 'নেতিবাচক' ? 'destructive' : 'secondary'} 
-                    className="text-xs"
-                  >
-                    #{topic.topic_name || topic.topic}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {topic.mention_count || topic.score} স্কোর
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+
 
           {/* AI Personal Insights - World-Class UX/UI Design */}
           {aiInsights && (
@@ -174,11 +153,11 @@ export const DiscoveryWidget = () => {
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold text-base text-foreground flex items-center gap-2">
                   <User className="w-4 h-4 text-primary" />
-                  {user ? 'আপনার জন্য বিশেষ সুবিধা' : 'জনপ্রিয় সুপারিশ'}
+                  জনপ্রিয় সুপারিশ
                 </h4>
                 <Badge variant="secondary" className="text-xs px-2 py-1 bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 border-blue-200 dark:from-blue-900/20 dark:to-purple-900/20 dark:text-blue-300 dark:border-blue-700">
                   <Sparkles className="w-3 h-3 mr-1" />
-                  AI
+                  TensorFlow.js + আপনার অ্যালগরিদম
                 </Badge>
               </div>
 
