@@ -31,16 +31,15 @@ export function ShareButton({
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
   
-  // Create a stable, accurate URL for sharing
+  // Use the exact current URL for sharing
   const shareUrl = useMemo(() => {
     if (url) {
       return url;
     }
     
-    // Use the actual article slug if provided, otherwise fallback to creating one from title
-    const slug = actualSlug || createBengaliSlug(title);
-    return `${window.location.origin}/article/${slug}`;
-  }, [url, actualSlug, title]);
+    // Always use the current page URL exactly as it is
+    return window.location.href;
+  }, [url]);
 
   const trackShare = async (platform: string) => {
     if (!user) return;

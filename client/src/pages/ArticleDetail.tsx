@@ -152,12 +152,12 @@ const ArticleDetail = () => {
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [viewTracked, setViewTracked] = useState<boolean>(false);
   
-  // Create a stable share URL using the actual article slug
+  // Use the exact current URL for sharing
   const shareUrl = useMemo(() => {
     if (!article) return undefined;
-    // Use the actual article slug from the URL, not a generated one
-    return `${window.location.origin}/article/${rawSlug}`;
-  }, [article?.id, rawSlug]);
+    // Always use the current page URL exactly as it is
+    return window.location.href;
+  }, [article?.id]);
   
   // Fetch related articles using the new direct API
   const { data: fetchedRelatedArticles = [] } = useQuery({
