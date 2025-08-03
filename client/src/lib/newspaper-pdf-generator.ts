@@ -174,27 +174,16 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Main Content Layout - Compact for single page */
+        /* Main Content Layout - Single Column for Article Only */
         .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 6pt;
+            display: block;
             margin-top: 8pt;
             height: auto;
         }
 
         .main-story-column {
-            border-right: 1px solid #ccc;
-            padding-right: 6pt;
-        }
-
-        .secondary-column {
-            border-right: 1px solid #ccc;
-            padding: 0 6pt;
-        }
-
-        .sidebar-column {
-            padding-left: 6pt;
+            padding: 0;
+            width: 100%;
         }
 
         /* Breaking News Banner */
@@ -427,15 +416,15 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             ${config.masthead.title} বিশেষ: ${article.category || 'সর্বশেষ সংবাদ'}
         </div>
 
-        <!-- Main Content Layout -->
+        <!-- Main Content Layout - Article Only -->
         <div class="main-content">
-            <!-- Main Story Column -->
+            <!-- Article Content Only -->
             <div class="main-story-column">
                 <h1 class="main-headline bengali-text">${article.title}</h1>
                 
                 <div class="byline bengali-text">
                     ${article.author ? `প্রতিবেদক: ${article.author}` : 'নিজস্ব প্রতিবেদক'} | 
-                    ${todayDateBengali}
+                    ${new Date(article.publishedAt).toLocaleDateString('bn-BD')}
                 </div>
 
                 ${article.imageUrl ? `
@@ -449,87 +438,15 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
                 <div class="thin-divider"></div>
 
-                <!-- Article Information -->
+                <!-- Article Information Only -->
                 <div class="news-item">
                     <h3 class="secondary-headline bengali-text">নিবন্ধ তথ্য</h3>
                     <div class="secondary-article-body bengali-text">
                         <p><strong>বিভাগ:</strong> ${article.category || 'সাধারণ'}</p>
-                        <p><strong>প্রকাশকাল:</strong> ${todayDateBengali}</p>
+                        <p><strong>প্রকাশকাল:</strong> ${new Date(article.publishedAt).toLocaleDateString('bn-BD')}</p>
                         <p><strong>পাঠ সময়:</strong> ${article.readingTime || 5} মিনিট</p>
                         ${article.tags && article.tags.length > 0 ? `<p><strong>ট্যাগ:</strong> ${article.tags.join(', ')}</p>` : ''}
                     </div>
-                </div>
-            </div>
-
-            <!-- Secondary Column -->
-            <div class="secondary-column">
-                <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">${config.masthead.title} সম্পর্কে</h3>
-                    <div class="secondary-article-body bengali-text">
-                        <p>${config.masthead.subtitle}</p>
-                        <p><strong>প্রতিষ্ঠিত:</strong> ${config.masthead.established}</p>
-                        <p><strong>ওয়েবসাইট:</strong> ${config.masthead.website}</p>
-                    </div>
-                </div>
-
-                <div class="section-divider"></div>
-
-                <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">খেলাধুলা</h3>
-                    <div class="secondary-article-body bengali-text">
-                        <p><strong>ক্রিকেট:</strong> বাংলাদেশ জাতীয় দল আগামী সিরিজের জন্য প্রস্তুতি নিচ্ছে।</p>
-                        <p><strong>ফুটবল:</strong> জাতীয় ফুটবল লিগে নতুন নিয়ম চালু হবে।</p>
-                    </div>
-                </div>
-
-                <div class="ad-box">
-                    <div class="ad-text bengali-text">বিজ্ঞাপনের স্থান</div>
-                    <div style="font-size: 6pt; margin-top: 2pt;">বিজ্ঞাপনের জন্য: ০১৭XXXXXXXX</div>
-                </div>
-            </div>
-
-            <!-- Sidebar Column -->
-            <div class="sidebar-column">
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">সম্পাদকীয়</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p>আজকের এই সংস্করণে আমরা দেশের গুরুত্বপূর্ণ বিষয়গুলো তুলে ধরেছি। পাঠকদের মতামত আমাদের কাছে গুরুত্বপূর্ণ।</p>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">আবহাওয়া</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p><strong>ঢাকা:</strong> সর্বোচ্চ ২৮°, সর্বনিম্ন ২২°</p>
-                        <p><strong>চট্টগ্রাম:</strong> সর্বোচ্চ ৩০°, সর্বনিম্ন ২৪°</p>
-                        <p><strong>সিলেট:</strong> সর্বোচ্চ ২৬°, সর্বনিম্ন ২০°</p>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">শেয়ার বাজার</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p>ডিএসই সূচক: ৬,২৪৫ (+১২)</p>
-                        <p>লেনদেন: ৮৫০ কোটি টাকা</p>
-                        <p>বৃদ্ধি: ২০টি</p>
-                        <p>হ্রাস: ১৫টি</p>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">নামাজের সময়</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p>ফজর: ৫:১৫</p>
-                        <p>জোহর: ১২:০৫</p>
-                        <p>আসর: ৪:৩০</p>
-                        <p>মাগরিব: ৬:১৫</p>
-                        <p>এশা: ৭:৩০</p>
-                    </div>
-                </div>
-
-                <div class="ad-box">
-                    <div class="ad-text bengali-text">স্পন্সর্ড</div>
-                    <div style="font-size: 6pt;">আপনার পণ্য বিজ্ঞাপন</div>
                 </div>
             </div>
         </div>
