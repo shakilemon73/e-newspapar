@@ -63,16 +63,13 @@ import {
 
 // Import AI routes
 import { aiRoutes } from './ai-routes';
-// Import E-Paper routes
-import epaperRoutes from './epaper-api';
-import latexEpaperRoutes from './latex-epaper-api';
+// Import Modern E-Paper routes
+import modernEpaperRoutes from './modern-epaper-api';
 
 // Mount AI routes
 app.use('/api', aiRoutes);
-// Mount E-Paper routes
-app.use('/api/epaper', epaperRoutes);
-// Mount LaTeX E-Paper routes (Enhanced)
-app.use('/api/epaper', latexEpaperRoutes);
+// Mount Modern E-Paper routes
+app.use('/api/modern-epaper', modernEpaperRoutes);
 
 // Admin Articles
 app.post('/api/admin/articles', async (req: Request, res: Response) => {

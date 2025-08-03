@@ -15,7 +15,7 @@ import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import ArticlesAdminPage from "@/pages/admin/ArticlesAdminPage";
 import CategoriesAdminPage from "@/pages/admin/CategoriesAdminPage";
-import EPapersAdminPage from "@/pages/admin/EPapersAdminPage";
+import ModernEPapersAdminPage from "@/pages/admin/ModernEPapersAdminPage";
 import BreakingNewsAdminPage from "@/pages/admin/BreakingNewsAdminPage";
 import UsersAdminPage from "@/pages/admin/UsersAdminPage";
 import VideosAdminPage from "@/pages/admin/VideosAdminPage";
@@ -117,7 +117,7 @@ function AdminRouter() {
       
       <Route path="/admin/epapers">
         <AdminRouteGuard>
-          <EPapersAdminPage />
+          <ModernEPapersAdminPage />
         </AdminRouteGuard>
       </Route>
       
