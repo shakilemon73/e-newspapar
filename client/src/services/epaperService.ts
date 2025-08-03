@@ -30,12 +30,13 @@ export interface Article {
   id: number;
   title: string;
   content: string;
-  category_name?: string;
   author?: string;
   published_at: string;
   image_url?: string;
   is_featured?: boolean;
   view_count?: number;
+  category_id?: number;
+  categories?: { name: string };
 }
 
 export class EpaperService {
@@ -51,12 +52,13 @@ export class EpaperService {
           id,
           title,
           content,
-          category_name,
           author,
           published_at,
           image_url,
           is_featured,
-          view_count
+          view_count,
+          category_id,
+          categories!inner(name)
         `)
         .eq('status', 'published')
         .order('is_featured', { ascending: false })
@@ -66,12 +68,12 @@ export class EpaperService {
 
       // Filter by categories if specified
       if (options.includeCategories && options.includeCategories.length > 0) {
-        query = query.in('category_name', options.includeCategories);
+        query = query.in('categories.name', options.includeCategories);
       }
 
       if (options.excludeCategories && options.excludeCategories.length > 0) {
         for (const category of options.excludeCategories) {
-          query = query.neq('category_name', category);
+          query = query.neq('categories.name', category);
         }
       }
 
@@ -149,7 +151,8 @@ export class EpaperService {
       return {
         articles: articles.map(article => ({
           ...article,
-          content: article.content?.substring(0, 200) + '...' // Truncate for preview
+          content: article.content?.substring(0, 200) + '...', // Truncate for preview
+          category: article.categories?.name || 'সাধারণ' // Add category field for compatibility
         })),
         totalCount: articles.length
       };
@@ -251,7 +254,7 @@ export class EpaperService {
           <div class="article">
             <div class="article-title">${article.title}</div>
             <div class="article-meta">
-              <span class="category">${article.category_name || 'সাধারণ'}</span>
+              <span class="category">${article.categories?.name || 'সাধারণ'}</span>
               ${article.author ? `| লেখক: ${article.author}` : ''}
               | ${new Date(article.published_at).toLocaleDateString('bn-BD')}
             </div>

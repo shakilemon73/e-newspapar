@@ -751,10 +751,10 @@ export default function EPapersAdminPage() {
                             <div>
                               <h4 className="font-medium">{article.title}</h4>
                               <p className="text-sm text-muted-foreground">
-                                {article.category} • {article.author}
+                                {article.categories?.name || article.category || 'সাধারণ'} • {article.author}
                               </p>
-                            </div>
-                            <Badge variant="outline">{article.category}</Badge>
+                            </div>  
+                            <Badge variant="outline">{article.categories?.name || article.category || 'সাধারণ'}</Badge>
                           </div>
                         ))}
                       </div>

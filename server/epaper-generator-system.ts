@@ -10,13 +10,14 @@ interface Article {
   id: number;
   title: string;
   content: string;
-  category_name: string;
   author: string;
   published_at: string;
   image_url?: string;
-  priority: number;
-  is_breaking: boolean;
-  is_published: boolean;
+  priority?: number;
+  is_breaking?: boolean;
+  is_published?: boolean;
+  category_id?: number;
+  categories?: { name: string };
 }
 
 interface LayoutTemplate {
@@ -255,20 +256,24 @@ export class EPaperGenerator {
     console.log('🔐 Using admin Supabase client to fetch articles (bypassing RLS)');
     let query = adminSupabase
       .from('articles')
-      .select('*')
-      .eq('is_published', true)
-      .order('priority', { ascending: false })
+      .select(`
+        *,
+        categories!inner(name)
+      `)
+      .eq('status', 'published')
+      .order('is_featured', { ascending: false })
+      .order('view_count', { ascending: false })
       .order('published_at', { ascending: false })
       .limit(options.maxArticles);
 
     // Filter by categories if specified
     if (options.includeCategories.length > 0) {
-      query = query.in('category_name', options.includeCategories);
+      query = query.in('categories.name', options.includeCategories);
     }
 
     if (options.excludeCategories.length > 0) {
       for (const category of options.excludeCategories) {
-        query = query.neq('category_name', category);
+        query = query.neq('categories.name', category);
       }
     }
 
@@ -303,12 +308,12 @@ export class EPaperGenerator {
           id: bn.id,
           title: bn.title,
           content: bn.content || '',
-          category_name: 'breaking',
           author: 'সংবাদ ডেস্ক',
           published_at: bn.created_at,
           priority: 100, // High priority
           is_breaking: true,
-          is_published: true
+          is_published: true,
+          categories: { name: 'জরুরি খবর' }
         }));
         
         articles = [...breakingArticles, ...articles];
