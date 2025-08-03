@@ -17,9 +17,10 @@ import {
   Calendar,
   Tag,
   TrendingUp,
-  Loader2
+  Loader2,
+  BookmarkCheck
 } from 'lucide-react';
-import { getRelativeTimeInBengali } from '@/lib/utils/dates';
+import { getRelativeTimeInBengali, normalizeSupabaseTimestamp } from '@/lib/utils/dates';
 import SEO from '@/components/SEO';
 import { generateCategorySEO } from '@/lib/seo-utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,6 +37,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { VideoGrid } from '@/components/media/VideoGrid';
 import { AudioGrid } from '@/components/media/AudioGrid';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 interface Category {
   id: number;
@@ -62,6 +65,7 @@ interface Article {
 const Category = () => {
   const [, params] = useRoute('/category/:slug');
   const categorySlug = params?.slug || '';
+  const { toast } = useToast();
 
   const [category, setCategory] = useState<Category | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -73,8 +77,48 @@ const Category = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'trending'>('latest');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [user, setUser] = useState<any>(null);
+  const [bookmarkedArticles, setBookmarkedArticles] = useState<Set<number>>(new Set());
 
   const limit = 12;
+
+  // Check user authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        
+        // Load bookmarked articles for this user
+        try {
+          const { data } = await supabase
+            .from('user_bookmarks')
+            .select('article_id')
+            .eq('user_id', session.user.id);
+          
+          if (data) {
+            setBookmarkedArticles(new Set(data.map(bookmark => bookmark.article_id)));
+          }
+        } catch (error) {
+          console.error('Error loading bookmarks:', error);
+        }
+      }
+    };
+    
+    checkAuth();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+      } else {
+        setUser(null);
+        setBookmarkedArticles(new Set());
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchCategoryData = async () => {
@@ -95,15 +139,18 @@ const Category = () => {
         }
         setCategory(categoryData);
         
-        // Fetch articles based on sort preference
+        // Fetch articles based on sort preference with better filtering
         let articlesData;
         if (sortBy === 'popular') {
           articlesData = await getPopularArticles(limit);
           // Filter by category client-side for now
-          articlesData = articlesData.filter((article: any) => 
-            article.categories?.slug === categorySlug || 
-            article.category?.slug === categorySlug
-          );
+          articlesData = articlesData.filter((article: any) => {
+            const articleCategory = article.categories || article.category;
+            if (Array.isArray(articleCategory)) {
+              return articleCategory.some((cat: any) => cat.slug === categorySlug);
+            }
+            return articleCategory?.slug === categorySlug;
+          });
         } else {
           articlesData = await getArticles({ 
             category: categorySlug, 
@@ -115,6 +162,8 @@ const Category = () => {
         // Transform articles to ensure proper field mapping
         const { transformArticleData } = await import('../lib/supabase-api-direct');
         const transformedArticles = transformArticleData(articlesData);
+        
+        console.log(`[Category ${categorySlug}] Fetched ${transformedArticles.length} articles`);
         setArticles(transformedArticles as Article[]);
         setHasMore(articlesData.length === limit);
         setPage(1);
@@ -169,6 +218,93 @@ const Category = () => {
       console.error('Error loading more articles:', err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle bookmark functionality
+  const handleBookmark = async (article: Article) => {
+    if (!user) {
+      toast({
+        title: "লগইন প্রয়োজন",
+        description: "আর্টিকেল সংরক্ষণ করতে অনুগ্রহ করে লগইন করুন।",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { toggleBookmark } = await import('../lib/supabase-api-direct');
+      const isBookmarked = bookmarkedArticles.has(article.id);
+      
+      const result = await toggleBookmark(article.id, user.id, !isBookmarked);
+      
+      if (result.success) {
+        const newBookmarks = new Set(bookmarkedArticles);
+        if (isBookmarked) {
+          newBookmarks.delete(article.id);
+          toast({
+            title: "বুকমার্ক সরানো হয়েছে",
+            description: "আর্টিকেলটি আপনার সংরক্ষিত তালিকা থেকে সরানো হয়েছে।"
+          });
+        } else {
+          newBookmarks.add(article.id);
+          toast({
+            title: "বুকমার্ক করা হয়েছে",
+            description: "আর্টিকেলটি আপনার সংরক্ষিত তালিকায় যোগ করা হয়েছে।"
+          });
+        }
+        setBookmarkedArticles(newBookmarks);
+      }
+    } catch (error) {
+      toast({
+        title: "সমস্যা হয়েছে",
+        description: "বুকমার্ক করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        variant: "destructive"
+      });
+      console.error('Error bookmarking article:', error);
+    }
+  };
+
+  // Handle share functionality
+  const handleShare = async (article: Article) => {
+    const articleUrl = `${window.location.origin}/article/${article.slug}`;
+    const shareData = {
+      title: article.title,
+      text: article.excerpt || '',
+      url: articleUrl
+    };
+
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        toast({
+          title: "শেয়ার করা হয়েছে",
+          description: "আর্টিকেলটি সফলভাবে শেয়ার করা হয়েছে।"
+        });
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(articleUrl);
+        toast({
+          title: "লিংক কপি করা হয়েছে",
+          description: "আর্টিকেলের লিংক ক্লিপবোর্ডে কপি করা হয়েছে।"
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing article:', error);
+      // Try clipboard as last resort
+      try {
+        await navigator.clipboard.writeText(articleUrl);
+        toast({
+          title: "লিংক কপি করা হয়েছে",
+          description: "আর্টিকেলের লিংক ক্লিপবোর্ডে কপি করা হয়েছে।"
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "শেয়ার করতে সমস্যা",
+          description: "আর্টিকেল শেয়ার করতে সমস্যা হয়েছে।",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -401,6 +537,11 @@ const Category = () => {
                 {filteredArticles.map((article) => {
                   const imageUrl = article.imageUrl || article.image_url || '/placeholder-800x450.svg';
                   const publishDate = article.publishedAt || article.published_at || '';
+                  const isBookmarked = bookmarkedArticles.has(article.id);
+                  
+                  // Normalize the date to handle timezone issues
+                  const normalizedDate = publishDate ? normalizeSupabaseTimestamp(publishDate) : new Date();
+                  const relativeTime = getRelativeTimeInBengali(normalizedDate);
                   
                   return viewMode === 'grid' ? (
                     <Card key={article.id} className="article-card-grid group overflow-hidden h-full flex flex-col">
@@ -438,13 +579,37 @@ const Category = () => {
                         <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
                           <div className="flex items-center space-x-2">
                             <Clock className="w-3 h-3" />
-                            <span>{getRelativeTimeInBengali(publishDate)}</span>
+                            <span>{relativeTime}</span>
                           </div>
                           <div className="flex items-center space-x-3">
-                            <Button variant="ghost" size="sm" className="h-auto p-1">
-                              <Bookmark className="w-3 h-3" />
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-auto p-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleBookmark(article);
+                              }}
+                              title={isBookmarked ? "বুকমার্ক সরান" : "বুকমার্ক করুন"}
+                            >
+                              {isBookmarked ? (
+                                <BookmarkCheck className="w-3 h-3 text-primary" />
+                              ) : (
+                                <Bookmark className="w-3 h-3" />
+                              )}
                             </Button>
-                            <Button variant="ghost" size="sm" className="h-auto p-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-auto p-1"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleShare(article);
+                              }}
+                              title="শেয়ার করুন"
+                            >
                               <Share2 className="w-3 h-3" />
                             </Button>
                           </div>
@@ -491,14 +656,38 @@ const Category = () => {
                               <div className="flex items-center space-x-4">
                                 <div className="flex items-center space-x-1">
                                   <Clock className="w-3 h-3" />
-                                  <span>{getRelativeTimeInBengali(publishDate)}</span>
+                                  <span>{relativeTime}</span>
                                 </div>
                               </div>
                               <div className="flex items-center space-x-2">
-                                <Button variant="ghost" size="sm" className="h-auto p-1">
-                                  <Bookmark className="w-3 h-3" />
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-auto p-1"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleBookmark(article);
+                                  }}
+                                  title={isBookmarked ? "বুকমার্ক সরান" : "বুকমার্ক করুন"}
+                                >
+                                  {isBookmarked ? (
+                                    <BookmarkCheck className="w-3 h-3 text-primary" />
+                                  ) : (
+                                    <Bookmark className="w-3 h-3" />
+                                  )}
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-auto p-1">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-auto p-1"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleShare(article);
+                                  }}
+                                  title="শেয়ার করুন"
+                                >
                                   <Share2 className="w-3 h-3" />
                                 </Button>
                                 <Link href={`/article/${article.slug}`}>
