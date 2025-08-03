@@ -179,32 +179,43 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             font-weight: 600;
         }
 
-        /* Main Content Layout - Full Height Utilization */
+        /* Main Content Layout - Real Newspaper Style */
         .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 4pt;
+            display: block;
             margin-top: 4pt;
             flex: 1;
             height: auto;
             min-height: calc(100vh - 120pt);
         }
 
-        .main-story-column {
-            padding-right: 4pt;
-            border-right: 1px solid #ccc;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
+        /* Three Column Newspaper Layout */
+        .article-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8pt;
+            margin-top: 6pt;
+            column-rule: 1px solid #ccc;
         }
 
-        .sidebar-column {
-            padding-left: 4pt;
-            font-size: 6pt;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            height: 100%;
+        .article-column {
+            padding: 0 4pt;
+            text-align: justify;
+            break-inside: avoid-column;
+        }
+
+        .sidebar-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6pt;
+            margin-top: 8pt;
+            border-top: 2px solid #000;
+            padding-top: 6pt;
+        }
+
+        .info-box {
+            border: 1px solid #ccc;
+            padding: 4pt;
+            background: #f9f9f9;
         }
 
         /* Breaking News Banner */
@@ -286,24 +297,26 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             line-height: 1.25;
         }
 
-        /* Compact Image Styles */
+        /* Half-Cut Image Style - Real Newspaper */
         .main-image {
-            width: 100%;
-            max-width: 100%;
+            width: 40%;
+            max-width: 150pt;
             height: auto;
-            max-height: 80pt;
-            margin: 3pt 0;
+            max-height: 60pt;
+            margin: 3pt 6pt 3pt 0;
             border: 1px solid #000;
-            display: block;
+            float: left;
             object-fit: cover;
+            shape-outside: margin-box;
         }
 
         .image-caption {
-            font-size: 6pt;
+            font-size: 5pt;
             color: #333;
-            margin-top: 2pt;
-            text-align: center;
+            margin-top: 1pt;
+            text-align: left;
             font-style: italic;
+            clear: left;
         }
 
         /* Ultra Compact News Items */
@@ -454,80 +467,57 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             ${config.masthead.title} বিশেষ: ${article.category || 'সর্বশেষ সংবাদ'}
         </div>
 
-        <!-- Main Content Layout - Responsive Single Page -->
+        <!-- Main Content Layout - Authentic Newspaper Style -->
         <div class="main-content">
-            <!-- Main Article Column -->
-            <div class="main-story-column">
-                <h1 class="main-headline bengali-text">${article.title}</h1>
-                
-                <div class="byline bengali-text">
-                    ${article.author ? `প্রতিবেদক: ${article.author}` : 'নিজস্ব প্রতিবেদক'} | 
-                    ${new Date(article.publishedAt).toLocaleDateString('bn-BD')}
-                </div>
-
-                ${article.imageUrl ? `
-                    <img src="${article.imageUrl}" alt="${article.title}" class="main-image" />
-                    <p class="image-caption bengali-text">ছবি: ${article.title}</p>
-                ` : ''}
-
-                <div class="main-article-body bengali-text">
-                    ${formatArticleContent(article.content)}
-                </div>
-
-                <div class="thin-divider"></div>
-
-                <!-- Compact Article Information -->
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">নিবন্ধ তথ্য</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p><strong>বিভাগ:</strong> ${article.category || 'সাধারণ'} | <strong>পাঠ সময়:</strong> ${article.readingTime || 5} মিনিট</p>
-                        ${article.tags && article.tags.length > 0 ? `<p><strong>ট্যাগ:</strong> ${article.tags.join(', ')}</p>` : ''}
-                    </div>
-                </div>
+            <!-- Article Header -->
+            <h1 class="main-headline bengali-text">${article.title}</h1>
+            
+            <div class="byline bengali-text">
+                ${article.author ? `প্রতিবেদক: ${article.author}` : 'নিজস্ব প্রতিবেদক'} | 
+                ${new Date(article.publishedAt).toLocaleDateString('bn-BD')} | 
+                বিভাগ: ${article.category || 'সাধারণ'}
             </div>
 
-            <!-- Sidebar with Weather & Prayer Times -->
-            <div class="sidebar-column">
-                <div class="news-item">
+            ${article.imageUrl ? `
+                <img src="${article.imageUrl}" alt="${article.title}" class="main-image" />
+                <p class="image-caption bengali-text">ছবি: ${article.title}</p>
+            ` : ''}
+
+            <!-- Three Column Article Layout -->
+            <div class="article-layout bengali-text">
+                ${formatArticleContentInColumns(article.content)}
+            </div>
+
+            <!-- Bottom Information Section -->
+            <div class="sidebar-info">
+                <div class="info-box">
                     <h3 class="sidebar-headline bengali-text">আবহাওয়া</h3>
                     <div class="sidebar-article-body bengali-text">
-                        <p><strong>ঢাকা:</strong> সর্বোচ্চ ২৮°, সর্বনিম্ন ২২°</p>
-                        <p><strong>চট্টগ্রাম:</strong> সর্বোচ্চ ৩০°, সর্বনিম্ন ২৪°</p>
-                        <p><strong>সিলেট:</strong> সর্বোচ্চ ২৬°, সর্বনিম্ন ২০°</p>
-                        <p><strong>খুলনা:</strong> সর্বোচ্চ ২৯°, সর্বনিম্ন ২৩°</p>
+                        <p><strong>ঢাকা:</strong> ২৮°/২২° | <strong>চট্টগ্রাম:</strong> ৩০°/২৪°</p>
+                        <p><strong>সিলেট:</strong> ২৬°/২০° | <strong>খুলনা:</strong> ২৯°/২৩°</p>
                     </div>
                 </div>
-
-                <div class="news-item">
+                
+                <div class="info-box">
                     <h3 class="sidebar-headline bengali-text">নামাজের সময়</h3>
                     <div class="sidebar-article-body bengali-text">
-                        <p>ফজর: ৫:১৫ | জোহর: ১২:০৫</p>
-                        <p>আসর: ৪:৩০ | মাগরিব: ৬:১৫</p>
-                        <p>এশা: ৭:৩০</p>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <h3 class="sidebar-headline bengali-text">${config.masthead.title} সম্পর্কে</h3>
-                    <div class="sidebar-article-body bengali-text">
-                        <p>${config.masthead.subtitle}</p>
-                        <p><strong>প্রতিষ্ঠিত:</strong> ${config.masthead.established}</p>
-                        <p><strong>ওয়েবসাইট:</strong> ${config.masthead.website}</p>
+                        <p>ফজর: ৫:১৫ | জোহর: ১২:০৫ | আসর: ৪:৩০</p>
+                        <p>মাগরিব: ৬:১৫ | এশা: ৭:৩০</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
+        <!-- Footer with Website Credit -->
         <footer class="newspaper-footer">
             <div class="page-info bengali-text">
                 <div>সম্পাদক ও প্রকাশক: ${config.masthead.title} টিম</div>
-                <div>ঢাকা অফিস: ${config.masthead.website}</div>
-                <div>যোগাযোগ: ${config.masthead.website}</div>
+                <div>ওয়েবসাইট: ${config.masthead.website}</div>
+                <div>প্রকাশিত: ${todayDateBengali}</div>
             </div>
             <div class="thin-divider"></div>
             <p class="bengali-text" style="font-size: 5pt; text-align: center; margin-top: 3pt;">
-                প্রকাশিত: ${todayDateBengali} | সর্বস্বত্ব সংরক্ষিত - ${config.masthead.title} | ${config.masthead.website}
+                <strong>© ${new Date().getFullYear()} ${config.masthead.title}</strong> | সর্বস্বত্ব সংরক্ষিত | ওয়েবসাইট: <strong>${config.masthead.website}</strong>
             </p>
         </footer>
     </div>
@@ -546,6 +536,46 @@ function formatArticleContent(content: string): string {
   return paragraphs
     .map(paragraph => `<p>${paragraph.trim()}</p>`)
     .join('\n            ');
+}
+
+function formatArticleContentInColumns(content: string): string {
+  // Remove HTML tags and clean content
+  const cleanContent = content.replace(/<[^>]*>/g, '').trim();
+  
+  // Split into paragraphs
+  const paragraphs = cleanContent.split('\n\n').filter(p => p.trim());
+  
+  // If content is too short, put all in first column
+  if (paragraphs.length <= 3) {
+    return `
+      <div class="article-column">
+        ${paragraphs.map(p => `<p>${p.trim()}</p>`).join('\n        ')}
+      </div>
+      <div class="article-column"></div>
+      <div class="article-column"></div>
+    `;
+  }
+  
+  // Distribute paragraphs across 3 columns (newspaper style)
+  const totalParagraphs = paragraphs.length;
+  const col1Count = Math.ceil(totalParagraphs / 3);
+  const col2Count = Math.ceil((totalParagraphs - col1Count) / 2);
+  
+  const column1 = paragraphs.slice(0, col1Count);
+  const column2 = paragraphs.slice(col1Count, col1Count + col2Count);
+  const column3 = paragraphs.slice(col1Count + col2Count);
+  
+  return `
+    <div class="article-column">
+      ${column1.map(p => `<p>${p.trim()}</p>`).join('\n      ')}
+    </div>
+    <div class="article-column">
+      ${column2.map(p => `<p>${p.trim()}</p>`).join('\n      ')}
+    </div>
+    <div class="article-column">
+      ${column3.map(p => `<p>${p.trim()}</p>`).join('\n      ')}
+    </div>
+  `;
 }
 
 async function convertHTMLToPDF(html: string, format: string): Promise<string> {
