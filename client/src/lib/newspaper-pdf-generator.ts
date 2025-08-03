@@ -39,10 +39,10 @@ export async function generateNewspaperPDF(
     format: 'a4',
     columns: 3,
     masthead: {
-      title: 'বাংলা নিউজ টাইমস',
-      subtitle: 'Bangladesh\'s Leading News Source',
+      title: 'Bengali News Time',
+      subtitle: 'বাংলাদেশের নির্ভরযোগ্য সংবাদ মাধ্যম',
       established: '২০২৪',
-      website: 'www.banglanews.com'
+      website: 'www.dainiktni.news'
     },
     edition: {
       date: new Date().toLocaleDateString('bn-BD'),
@@ -412,19 +412,19 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             </div>
 
             <!-- Main Title -->
-            <h1 class="masthead-title bengali-text">দৈনিক আমার দেশ</h1>
+            <h1 class="masthead-title bengali-text">${config.masthead.title}</h1>
             
             <!-- Edition Info -->
             <div class="edition-info bengali-text">
-                <div>বর্ষ: ১৮ | সংখ্যা: ২৮৫</div>
+                <div>প্রতিষ্ঠিত: ${config.masthead.established} | অনলাইন সংস্করণ</div>
                 <div>শনিবার, ${todayDateBengali}</div>
-                <div>www.dailyamardesh.com</div>
+                <div>${config.masthead.website}</div>
             </div>
         </header>
 
         <!-- Breaking News Banner -->
         <div class="breaking-banner bengali-text">
-            ব্রেকিং নিউজ: ${article.category || 'সর্বশেষ সংবাদ'}
+            ${config.masthead.title} বিশেষ: ${article.category || 'সর্বশেষ সংবাদ'}
         </div>
 
         <!-- Main Content Layout -->
@@ -449,18 +449,14 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
 
                 <div class="thin-divider"></div>
 
-                <!-- Secondary News Items -->
+                <!-- Article Information -->
                 <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">বাজেট বাস্তবায়নে নতুন কৌশল</h3>
+                    <h3 class="secondary-headline bengali-text">নিবন্ধ তথ্য</h3>
                     <div class="secondary-article-body bengali-text">
-                        <p>সরকার নতুন বাজেট বাস্তবায়নে আরও কার্যকর কৌশল গ্রহণ করেছে। এতে দেশের অর্থনীতিতে ইতিবাচক প্রভাব পড়বে।</p>
-                    </div>
-                </div>
-
-                <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">শিক্ষা ক্ষেত্রে ডিজিটাল রূপান্তর</h3>
-                    <div class="secondary-article-body bengali-text">
-                        <p>দেশের শিক্ষা ক্ষেত্রে ডিজিটাল প্রযুক্তির ব্যবহার বৃদ্ধি পাচ্ছে। নতুন শিক্ষা পদ্ধতি চালু হওয়ার পর শিক্ষার্থীদের মধ্যে আগ্রহ বৃদ্ধি পেয়েছে।</p>
+                        <p><strong>বিভাগ:</strong> ${article.category || 'সাধারণ'}</p>
+                        <p><strong>প্রকাশকাল:</strong> ${todayDateBengali}</p>
+                        <p><strong>পাঠ সময়:</strong> ${article.readingTime || 5} মিনিট</p>
+                        ${article.tags && article.tags.length > 0 ? `<p><strong>ট্যাগ:</strong> ${article.tags.join(', ')}</p>` : ''}
                     </div>
                 </div>
             </div>
@@ -468,10 +464,11 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
             <!-- Secondary Column -->
             <div class="secondary-column">
                 <div class="news-item">
-                    <h3 class="secondary-headline bengali-text">আন্তর্জাতিক খবর</h3>
+                    <h3 class="secondary-headline bengali-text">${config.masthead.title} সম্পর্কে</h3>
                     <div class="secondary-article-body bengali-text">
-                        <p><strong>নয়াদিল্লি:</strong> ভারতে নতুন প্রযুক্তি উদ্ভাবনে এগিয়ে চলেছে দেশটি। বিশেষ করে কৃত্রিম বুদ্ধিমত্তা ক্ষেত্রে অগ্রগতি দেখা যাচ্ছে।</p>
-                        <p><strong>লন্ডন:</strong> যুক্তরাজ্যে নতুন পরিবেশ নীতি ঘোষণা করা হয়েছে যা জলবায়ু পরিবর্তনের বিরুদ্ধে লড়াইয়ে সহায়ক হবে।</p>
+                        <p>${config.masthead.subtitle}</p>
+                        <p><strong>প্রতিষ্ঠিত:</strong> ${config.masthead.established}</p>
+                        <p><strong>ওয়েবসাইট:</strong> ${config.masthead.website}</p>
                     </div>
                 </div>
 
@@ -540,13 +537,13 @@ function generateNewspaperHTML(article: NewspaperArticleData, config: NewspaperC
         <!-- Footer -->
         <footer class="newspaper-footer">
             <div class="page-info bengali-text">
-                <div>সম্পাদক ও প্রকাশক: মোহাম্মদ রফিকুল ইসলাম</div>
-                <div>ঢাকা অফিস: ৩৪/৫ ইনার সার্কুলার রোড, নিউমার্কেট</div>
-                <div>ফোন: ০২-৮৬১২৪৫৬</div>
+                <div>সম্পাদক ও প্রকাশক: ${config.masthead.title} টিম</div>
+                <div>ঢাকা অফিস: ${config.masthead.website}</div>
+                <div>যোগাযোগ: ${config.masthead.website}</div>
             </div>
             <div class="thin-divider"></div>
             <p class="bengali-text" style="font-size: 5pt; text-align: center; margin-top: 3pt;">
-                মুদ্রিত: ঢাকা, বাংলাদেশ | প্রকাশকাল: ${todayDateBengali} | সর্বস্বত্ব সংরক্ষিত - দৈনিক আমার দেশ
+                প্রকাশিত: ${todayDateBengali} | সর্বস্বত্ব সংরক্ষিত - ${config.masthead.title} | ${config.masthead.website}
             </p>
         </footer>
     </div>
