@@ -79,41 +79,48 @@ export const EnhancedPersonalizedRecommendations = () => {
       setLoading(true);
       setError(null);
       
-      // Check if user is authenticated first
-      if (!user?.access_token) {
-        // Fallback to popular articles for non-authenticated users
-        await fetchPopularArticles();
-        return;
-      }
+      // Enhanced AI-powered recommendations using TensorFlow.js
+      const { enhancedRecommendationEngine } = await import('../lib/enhanced-recommendation-engine');
+      const { getPopularArticles, getUserInteractions } = await import('../lib/supabase-api-direct');
       
-      const response = await fetch('/api/personalized-recommendations?limit=12', {
-        headers: {
-          'Authorization': `Bearer ${user.access_token}`,
-          'Content-Type': 'application/json'
+      // Get base articles
+      const baseArticles = await getPopularArticles(20);
+      
+      // Get user interactions if authenticated
+      let userInteractions: any[] = [];
+      if (user?.id) {
+        try {
+          userInteractions = await getUserInteractions(user.id, 50);
+        } catch (err) {
+          console.log('Could not fetch user interactions, using default preferences');
         }
-      });
-      
-      if (response.status === 401) {
-        setError('লগইন সেশন মেয়াদ শেষ। পুনরায় লগইন করুন।');
-        return;
       }
       
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: Failed to fetch recommendations`);
-      }
-
-      const data = await response.json();
-      setRecommendations(Array.isArray(data) ? data : []);
+      // Enhance with AI recommendations
+      const enhancedArticles = await enhancedRecommendationEngine.enhanceRecommendations(
+        baseArticles,
+        user?.id,
+        userInteractions
+      );
+      
+      // Transform for display with AI scores
+      const transformedData = enhancedArticles.slice(0, 12).map((article: any) => ({
+        ...article,
+        recommendation_score: article.ai_recommendation_score || 0.5,
+        reason: article.recommendation_reasons?.[0] || 'AI সুপারিশকৃত',
+        category_name: article.category?.name || article.categories?.name || 'সাধারণ',
+        image_url: article.imageUrl || article.image_url,
+        enhanced_by_ai: true
+      }));
+      
+      setRecommendations(transformedData);
+      console.log('🎯 Enhanced recommendations loaded with AI scoring');
+      
     } catch (err: any) {
-      const errorMessage = err.message || 'ব্যক্তিগতকৃত সুপারিশ লোড করতে সমস্যা হয়েছে';
-      setError(errorMessage);
-      console.error('Error fetching personalized recommendations:', {
-        message: err.message,
-        stack: err.stack,
-        name: err.name,
-        user: user ? 'authenticated' : 'not authenticated'
-      });
+      setError('সুপারিশ লোড করতে সমস্যা হয়েছে');
+      console.error('Error fetching enhanced recommendations:', err);
+      // Fallback to popular articles
+      await fetchPopularArticles();
     } finally {
       setLoading(false);
     }

@@ -2208,6 +2208,36 @@ export async function recordUserInteraction(userId: string, articleId: number, i
   }
 }
 
+export async function getUserInteractions(userId: string, limit = 50) {
+  try {
+    const { data, error } = await supabase
+      .from('user_interactions')
+      .select(`
+        *,
+        article:articles!content_id(
+          id,
+          title,
+          category_id,
+          published_at
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('content_type', 'article')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('Error fetching user interactions:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Failed to fetch user interactions:', err);
+    return [];
+  }
+}
+
 // Related Articles API
 export async function getRelatedArticles(articleId: number, limit = 3) {
   try {
