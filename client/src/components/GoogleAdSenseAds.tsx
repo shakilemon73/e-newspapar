@@ -24,15 +24,25 @@ export function GoogleAdSenseAd({
   const adRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check if AdSense script is loaded
-    if (typeof window !== 'undefined' && (window as any).adsbygoogle) {
-      try {
-        // Push ad to AdSense queue
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
-      } catch (error) {
-        console.error('AdSense error:', error);
+    // Delay AdSense initialization to ensure proper DOM setup
+    const timer = setTimeout(() => {
+      if (typeof window !== 'undefined' && (window as any).adsbygoogle && adRef.current) {
+        const element = adRef.current;
+        const adElement = element.querySelector('.adsbygoogle');
+        
+        // Check if this ad slot is already processed
+        if (adElement && !adElement.hasAttribute('data-adsbygoogle-status')) {
+          try {
+            // Push ad to AdSense queue
+            ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({});
+          } catch (error) {
+            console.error('AdSense error:', error);
+          }
+        }
       }
-    }
+    }, 300); // Wait for DOM to be ready
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Get consent status
@@ -57,20 +67,27 @@ export function GoogleAdSenseAd({
   }
 
   return (
-    <div className={className} ref={adRef}>
+    <div className={`${className} w-full`} ref={adRef}>
       <div className="text-center mb-2">
         <Badge variant="outline" className="text-xs">
           বিজ্ঞাপন
         </Badge>
       </div>
-      <ins
-        className="adsbygoogle"
-        style={adStyle}
-        data-ad-client="ca-pub-3287015775404935"
-        data-ad-slot={adSlot}
-        data-ad-format={adFormat}
-        data-full-width-responsive={responsive.toString()}
-      />
+      <div className="w-full flex justify-center">
+        <ins
+          className="adsbygoogle"
+          style={{
+            display: 'inline-block',
+            width: adStyle?.width || '728px',
+            height: adStyle?.height || '90px',
+            ...adStyle
+          }}
+          data-ad-client="ca-pub-3287015775404935"
+          data-ad-slot={adSlot}
+          data-ad-format={adFormat}
+          data-full-width-responsive={responsive.toString()}
+        />
+      </div>
     </div>
   );
 }
@@ -82,8 +99,8 @@ export function HeaderBannerAdSense() {
       adSlot="5678901234" // Header banner slot ID
       adFormat="horizontal"
       adStyle={{
-        display: 'block',
-        width: '100%',
+        display: 'inline-block',
+        width: '728px',
         height: '90px'
       }}
       className="mb-4"
@@ -97,7 +114,7 @@ export function SidebarAdSense() {
       adSlot="6789012345" // Sidebar ad slot ID
       adFormat="rectangle"
       adStyle={{
-        display: 'block',
+        display: 'inline-block',
         width: '300px',
         height: '250px'
       }}
@@ -113,9 +130,9 @@ export function InContentAdSense() {
         adSlot="7890123456" // In-content ad slot ID
         adFormat="rectangle"
         adStyle={{
-          display: 'block',
-          width: '100%',
-          height: '280px'
+          display: 'inline-block',
+          width: '728px',
+          height: '90px'
         }}
         className="max-w-2xl mx-auto"
       />
@@ -129,7 +146,7 @@ export function MobileAdSense() {
       adSlot="8901234567" // Mobile ad slot ID
       adFormat="rectangle"
       adStyle={{
-        display: 'block',
+        display: 'inline-block',
         width: '320px',
         height: '50px'
       }}

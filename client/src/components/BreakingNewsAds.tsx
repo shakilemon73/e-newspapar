@@ -60,8 +60,8 @@ export default function BreakingNewsAds({
             adSlot="1234567890" // Breaking news top banner slot
             adFormat="horizontal"
             adStyle={{
-              display: 'block',
-              width: '100%',
+              display: 'inline-block',
+              width: '728px',
               height: '90px'
             }}
             className="breaking-news-top-banner border border-red-100 rounded-lg overflow-hidden"
@@ -81,7 +81,7 @@ export default function BreakingNewsAds({
             adSlot="2345678901" // Breaking news side banner slot
             adFormat="rectangle"
             adStyle={{
-              display: 'block',
+              display: 'inline-block',
               width: '300px',
               height: '250px'
             }}
@@ -133,9 +133,9 @@ export function BreakingNewsInlineAd() {
           adSlot="3456789012" // Breaking news inline ad slot
           adFormat="rectangle"
           adStyle={{
-            display: 'block',
-            width: '100%',
-            height: '200px'
+            display: 'inline-block',
+            width: '320px',
+            height: '250px'
           }}
         />
       </Card>
@@ -165,8 +165,8 @@ export function BreakingNewsMobileStrip() {
         adSlot="4567890123" // Breaking news mobile strip slot
         adFormat="horizontal"
         adStyle={{
-          display: 'block',
-          width: '100%',
+          display: 'inline-block',
+          width: '320px',
           height: '50px'
         }}
         className="border border-red-100 rounded-md overflow-hidden"
