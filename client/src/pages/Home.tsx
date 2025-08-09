@@ -20,7 +20,6 @@ import { VideoGrid } from '@/components/media/VideoGrid';
 import { HomepageWrapper } from '@/components/AdSensePageWrapper';
 import { HeaderBannerAdSense, SidebarAdSense } from '@/components/GoogleAdSenseAds';
 import { BreakingNewsTopBanner, BreakingNewsMobileStrip } from '@/components/BreakingNewsAds';
-import { EnhancedBreakingNewsSection } from '@/components/BreakingNewsWithAds';
 
 
 interface Category {
@@ -81,8 +80,23 @@ const Home = () => {
       {/* World-Class Mobile-First Design Architecture */}
       <main className="min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white dark:from-gray-950 dark:via-gray-900/50 dark:to-gray-950">
         
-        {/* 1. Breaking News with Ads - Constrained Placement */}
-        <EnhancedBreakingNewsSection />
+        {/* 1. Breaking News Banner - Urgent Information Architecture */}
+        <section className="sticky top-0 z-50 mb-2">
+          <BreakingNewsTicker />
+        </section>
+
+        {/* Breaking News Ads - Positioned directly below breaking news ticker */}
+        <section className="w-full mb-4">
+          {/* Desktop Breaking News Ad */}
+          <div className="hidden md:block">
+            <BreakingNewsTopBanner />
+          </div>
+          
+          {/* Mobile Breaking News Ad */}
+          <div className="md:hidden">
+            <BreakingNewsMobileStrip />
+          </div>
+        </section>
 
         {/* 2. Hero Featured Slideshow - Primary Content Discovery */}
         <section className="px-4 py-6 max-w-7xl mx-auto">
