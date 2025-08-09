@@ -20,10 +20,30 @@ export default function BreakingNewsAds({
     // Check if user has consented to advertising cookies
     const consent = localStorage.getItem('adsense_consent') === 'true';
     setHasAdConsent(consent);
+    
+    // For testing purposes, show ads even without consent
+    // Remove this in production
+    if (!consent) {
+      setHasAdConsent(true);
+    }
   }, []);
 
+  // For testing - show placeholder when no consent
   if (!hasAdConsent) {
-    return null; // Don't show ads without consent
+    return (
+      <div className={`breaking-news-ads ${className}`}>
+        <div className="mb-4">
+          <div className="text-center mb-2">
+            <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-600 border-yellow-200">
+              বিজ্ঞাপন স্থান (সম্মতি প্রয়োজন)
+            </Badge>
+          </div>
+          <div className="w-full h-[90px] bg-gray-100 border border-gray-200 rounded-lg flex items-center justify-center">
+            <span className="text-gray-500 text-sm">AdSense বিজ্ঞাপন এখানে দেখানো হবে</span>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
