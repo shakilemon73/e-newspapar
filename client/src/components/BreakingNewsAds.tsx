@@ -1,0 +1,156 @@
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { GoogleAdSenseAd } from './GoogleAdSenseAds';
+
+interface BreakingNewsAdsProps {
+  className?: string;
+  showTopBanner?: boolean;
+  showSideBanner?: boolean;
+}
+
+export default function BreakingNewsAds({
+  className = '',
+  showTopBanner = true,
+  showSideBanner = false
+}: BreakingNewsAdsProps) {
+  const [hasAdConsent, setHasAdConsent] = useState(false);
+
+  useEffect(() => {
+    // Check if user has consented to advertising cookies
+    const consent = localStorage.getItem('adsense_consent') === 'true';
+    setHasAdConsent(consent);
+  }, []);
+
+  if (!hasAdConsent) {
+    return null; // Don't show ads without consent
+  }
+
+  return (
+    <div className={`breaking-news-ads ${className}`}>
+      {/* Top Banner Ad - High Priority Placement */}
+      {showTopBanner && (
+        <div className="mb-4">
+          <div className="text-center mb-2">
+            <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">
+              জরুরি বিজ্ঞাপন
+            </Badge>
+          </div>
+          <GoogleAdSenseAd
+            adSlot="1111111111" // Breaking news top banner slot
+            adFormat="horizontal"
+            adStyle={{
+              display: 'block',
+              width: '100%',
+              height: '90px'
+            }}
+            className="breaking-news-top-banner border border-red-100 rounded-lg overflow-hidden"
+          />
+        </div>
+      )}
+
+      {/* Side Banner Ad for Desktop */}
+      {showSideBanner && (
+        <div className="hidden lg:block">
+          <div className="text-center mb-2">
+            <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">
+              তাৎক্ষণিক বিজ্ঞাপন
+            </Badge>
+          </div>
+          <GoogleAdSenseAd
+            adSlot="2222222222" // Breaking news side banner slot
+            adFormat="rectangle"
+            adStyle={{
+              display: 'block',
+              width: '300px',
+              height: '250px'
+            }}
+            className="breaking-news-side-banner border border-red-100 rounded-lg overflow-hidden"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Specialized breaking news ad components
+export function BreakingNewsTopBanner() {
+  return (
+    <div className="w-full max-w-7xl mx-auto px-4 py-2">
+      <BreakingNewsAds showTopBanner={true} showSideBanner={false} />
+    </div>
+  );
+}
+
+export function BreakingNewsSideBanner() {
+  return (
+    <div className="sticky top-4">
+      <BreakingNewsAds showTopBanner={false} showSideBanner={true} />
+    </div>
+  );
+}
+
+// Inline breaking news ad for content areas
+export function BreakingNewsInlineAd() {
+  const [hasAdConsent, setHasAdConsent] = useState(false);
+
+  useEffect(() => {
+    const consent = localStorage.getItem('adsense_consent') === 'true';
+    setHasAdConsent(consent);
+  }, []);
+
+  if (!hasAdConsent) return null;
+
+  return (
+    <div className="my-6 flex justify-center">
+      <Card className="border-2 border-red-200 bg-red-50/30 p-4 max-w-md w-full">
+        <div className="text-center mb-3">
+          <Badge className="bg-red-100 text-red-700 border-red-300">
+            জরুরি বিজ্ঞাপন
+          </Badge>
+        </div>
+        <GoogleAdSenseAd
+          adSlot="3333333333" // Breaking news inline ad slot
+          adFormat="rectangle"
+          adStyle={{
+            display: 'block',
+            width: '100%',
+            height: '200px'
+          }}
+        />
+      </Card>
+    </div>
+  );
+}
+
+// Breaking news ad strip for mobile
+export function BreakingNewsMobileStrip() {
+  const [hasAdConsent, setHasAdConsent] = useState(false);
+
+  useEffect(() => {
+    const consent = localStorage.getItem('adsense_consent') === 'true';
+    setHasAdConsent(consent);
+  }, []);
+
+  if (!hasAdConsent) return null;
+
+  return (
+    <div className="lg:hidden w-full px-4 py-2">
+      <div className="text-center mb-2">
+        <Badge variant="outline" className="text-xs bg-red-50 text-red-600 border-red-200">
+          মোবাইল বিজ্ঞাপন
+        </Badge>
+      </div>
+      <GoogleAdSenseAd
+        adSlot="4444444444" // Breaking news mobile strip slot
+        adFormat="horizontal"
+        adStyle={{
+          display: 'block',
+          width: '100%',
+          height: '50px'
+        }}
+        className="border border-red-100 rounded-md overflow-hidden"
+      />
+    </div>
+  );
+}
