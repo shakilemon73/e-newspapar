@@ -36,9 +36,8 @@ export default function AdvertisementWidget({ placement, limit = 3, className = 
           }
         }
       } catch (error) {
-        // Silently handle missing advertisements table - this is normal for new projects
-        // console.error('Error fetching advertisements:', error);
-        setAds([]); // Set empty array instead of showing error
+        console.error('Error fetching advertisements:', error);
+        setAds([]); // Set empty array if error occurs
       } finally {
         setLoading(false);
       }
