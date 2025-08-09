@@ -57,7 +57,7 @@ export default function BreakingNewsAds({
             </Badge>
           </div>
           <GoogleAdSenseAd
-            adSlot="1111111111" // Breaking news top banner slot
+            adSlot="1234567890" // Breaking news top banner slot
             adFormat="horizontal"
             adStyle={{
               display: 'block',
@@ -78,7 +78,7 @@ export default function BreakingNewsAds({
             </Badge>
           </div>
           <GoogleAdSenseAd
-            adSlot="2222222222" // Breaking news side banner slot
+            adSlot="2345678901" // Breaking news side banner slot
             adFormat="rectangle"
             adStyle={{
               display: 'block',
@@ -130,7 +130,7 @@ export function BreakingNewsInlineAd() {
           </Badge>
         </div>
         <GoogleAdSenseAd
-          adSlot="3333333333" // Breaking news inline ad slot
+          adSlot="3456789012" // Breaking news inline ad slot
           adFormat="rectangle"
           adStyle={{
             display: 'block',
@@ -162,7 +162,7 @@ export function BreakingNewsMobileStrip() {
         </Badge>
       </div>
       <GoogleAdSenseAd
-        adSlot="4444444444" // Breaking news mobile strip slot
+        adSlot="4567890123" // Breaking news mobile strip slot
         adFormat="horizontal"
         adStyle={{
           display: 'block',

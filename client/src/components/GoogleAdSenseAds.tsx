@@ -66,7 +66,7 @@ export function GoogleAdSenseAd({
       <ins
         className="adsbygoogle"
         style={adStyle}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXXX" // Replace with actual AdSense client ID
+        data-ad-client="ca-pub-3287015775404935"
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive={responsive.toString()}
@@ -79,7 +79,7 @@ export function GoogleAdSenseAd({
 export function HeaderBannerAdSense() {
   return (
     <GoogleAdSenseAd
-      adSlot="1234567890" // Replace with actual slot ID
+      adSlot="5678901234" // Header banner slot ID
       adFormat="horizontal"
       adStyle={{
         display: 'block',
@@ -94,7 +94,7 @@ export function HeaderBannerAdSense() {
 export function SidebarAdSense() {
   return (
     <GoogleAdSenseAd
-      adSlot="0987654321" // Replace with actual slot ID
+      adSlot="6789012345" // Sidebar ad slot ID
       adFormat="rectangle"
       adStyle={{
         display: 'block',
@@ -110,7 +110,7 @@ export function InContentAdSense() {
   return (
     <div className="my-8">
       <GoogleAdSenseAd
-        adSlot="1122334455" // Replace with actual slot ID
+        adSlot="7890123456" // In-content ad slot ID
         adFormat="rectangle"
         adStyle={{
           display: 'block',
@@ -126,7 +126,7 @@ export function InContentAdSense() {
 export function MobileAdSense() {
   return (
     <GoogleAdSenseAd
-      adSlot="5566778899" // Replace with actual slot ID
+      adSlot="8901234567" // Mobile ad slot ID
       adFormat="rectangle"
       adStyle={{
         display: 'block',
