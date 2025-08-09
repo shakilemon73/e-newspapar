@@ -2664,16 +2664,18 @@ export interface SocialMediaPost {
 export interface Advertisement {
   id: number;
   title: string;
-  description: string;
-  image_url: string;
-  target_url: string;
-  ad_type: string;
+  description?: string;
+  content?: string;
+  image_url?: string;
+  link_url?: string;
+  target_url?: string;
+  ad_type?: string;
   placement: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-  click_count: number;
-  impression_count: number;
+  start_date?: string;
+  end_date?: string;
+  active: boolean;
+  click_count?: number;
+  impression_count?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -2778,9 +2780,7 @@ export async function getActiveAdvertisements(placement?: string): Promise<Adver
     let query = supabase
       .from('advertisements')
       .select('*')
-      .eq('is_active', true)
-      .lte('start_date', new Date().toISOString())
-      .gte('end_date', new Date().toISOString());
+      .eq('active', true);
 
     if (placement) {
       query = query.eq('placement', placement);
