@@ -17,6 +17,8 @@ import { HomepageFeatureSuite } from '@/components/HomepageFeatureSuite';
 import { AIEnhancedHomepage } from '@/components/AI/AIEnhancedHomepage';
 import { AudioGrid } from '@/components/media/AudioGrid';
 import { VideoGrid } from '@/components/media/VideoGrid';
+import { HomepageWrapper } from '@/components/AdSensePageWrapper';
+import { HeaderBannerAdSense, SidebarAdSense } from '@/components/GoogleAdSenseAds';
 
 
 interface Category {
@@ -60,7 +62,7 @@ const Home = () => {
   const lifestyleCategories = availableCategories.slice(3, 5);
 
   return (
-    <>
+    <HomepageWrapper>
       <SEO
         title="বাংলা নিউজ - বাংলাদেশের নম্বর ১ সংবাদ পোর্টাল"
         description="সর্বশেষ খবর, রাজনীতি, খেলা, বিনোদন, অর্থনীতি এবং আরো অনেক কিছুর জন্য বাংলাদেশের সবচেয়ে বিশ্বস্ত সংবাদ মাধ্যম। ২৪/৭ আপডেট পান আমাদের সাথে।"
@@ -70,6 +72,9 @@ const Home = () => {
         keywords="বাংলা সংবাদ, Bangladesh news, তাজা খবর, breaking news, রাজনীতি, খেলা, বিনোদন, অর্থনীতি"
         tags={["news", "bangladesh", "bengali", "সংবাদ", "homepage"]}
       />
+
+      {/* AdSense Header Banner */}
+      <HeaderBannerAdSense />
 
       {/* World-Class Mobile-First Design Architecture */}
       <main className="min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white dark:from-gray-950 dark:via-gray-900/50 dark:to-gray-950">
@@ -263,7 +268,7 @@ const Home = () => {
         {/* Bottom Spacing for Mobile Navigation */}
         <div className="h-20 lg:h-8"></div>
       </main>
-    </>
+    </HomepageWrapper>
   );
 };
 

@@ -60,7 +60,7 @@ export default function AdvertisementWidget({ placement, limit = 3, className = 
   };
 
   const dismissAd = (adId: number) => {
-    const newDismissed = new Set([...dismissedAds, adId]);
+    const newDismissed = new Set(Array.from(dismissedAds).concat([adId]));
     setDismissedAds(newDismissed);
     
     // Save to localStorage

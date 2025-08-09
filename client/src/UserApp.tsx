@@ -8,6 +8,8 @@ import "@/lib/app-initialization"; // Initialize enhanced storage system
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
+import { AdSenseScriptLoader } from "@/components/GoogleAdSenseAds";
 
 // Public Pages
 import Home from "@/pages/Home";
@@ -45,6 +47,7 @@ import Advertisement from "@/pages/Advertisement";
 import Archive from "@/pages/Archive";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
+import AdSenseCompliancePage from "@/pages/AdSenseCompliance";
 
 // User Router - Only for regular users and public content
 function UserRouter() {
@@ -87,6 +90,7 @@ function UserRouter() {
       <Route path="/archive" component={Archive} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/adsense-compliance" component={AdSenseCompliancePage} />
       
       <Route component={NotFound} />
     </Switch>
@@ -99,6 +103,7 @@ export default function UserApp() {
     <ThemeProvider>
       <AuthProvider>
         <SiteSettingsProvider>
+          <AdSenseScriptLoader />
           <AutoStorageCleanup />
           <div className="flex flex-col min-h-screen bg-background">
             <Header />
@@ -106,6 +111,7 @@ export default function UserApp() {
               <UserRouter />
             </main>
             <Footer />
+            <CookieConsentBanner />
             <Toaster />
           </div>
         </SiteSettingsProvider>
