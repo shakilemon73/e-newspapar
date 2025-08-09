@@ -74,9 +74,6 @@ const Home = () => {
         tags={["news", "bangladesh", "bengali", "সংবাদ", "homepage"]}
       />
 
-      {/* AdSense Header Banner */}
-      <HeaderBannerAdSense />
-
       {/* World-Class Mobile-First Design Architecture */}
       <main className="min-h-screen bg-gradient-to-br from-white via-gray-50/30 to-white dark:from-gray-950 dark:via-gray-900/50 dark:to-gray-950">
         
@@ -85,7 +82,12 @@ const Home = () => {
           <BreakingNewsTicker />
         </section>
 
-        {/* Breaking News Ads - Positioned directly below breaking news ticker */}
+        {/* AdSense Header Banner - Moved below breaking news */}
+        <section className="w-full mb-4">
+          <HeaderBannerAdSense />
+        </section>
+
+        {/* Breaking News Ads - Additional ad space after header banner */}
         <section className="w-full mb-4">
           {/* Desktop Breaking News Ad */}
           <div className="hidden md:block">
