@@ -1,5 +1,27 @@
 # Bengali News Website - Compressed Guide
 
+## ⚠️ CRITICAL SECURITY NOTICE
+**This project currently has a severe security vulnerability that must be addressed before production deployment:**
+
+The admin system uses Supabase service role keys directly in client-side code (files in `client/src/lib/admin/`). This means sensitive database credentials are bundled into JavaScript sent to browsers, potentially exposing full admin database access to malicious users.
+
+**Immediate Actions Required:**
+1. **DO NOT deploy this application to production** until the security issue is resolved
+2. The service role key must be moved to server-side only
+3. Admin operations need to be refactored to use server-side API endpoints
+4. Client code should only use the anon key with proper Row Level Security (RLS)
+
+**Temporary Mitigation:**
+- Only use this application in development/testing environments
+- Do not expose the Replit URL publicly
+- Change all Supabase credentials if they have been exposed
+
+**Long-term Fix Needed:**
+- Refactor all admin operations to use server-side endpoints (server/admin-api.ts)
+- Remove all client-side usage of VITE_SUPABASE_SERVICE_KEY
+- Implement proper RLS policies for admin operations
+- Use Replit Secrets for sensitive environment variables
+
 ## Overview
 This project is a comprehensive Bengali news website designed to offer a rich news reading experience with advanced features for a global audience, focusing on Bangladesh. It aims to be a trusted news source by integrating AI for content analysis, providing personalized recommendations, user analytics, and multilingual support. The platform prioritizes high performance, world-class UX/UI, and aims for significant market potential.
 

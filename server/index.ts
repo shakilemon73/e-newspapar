@@ -372,8 +372,8 @@ app.use('/api/*', (req: Request, res: Response) => {
     serveStatic(app);
   }
 
-  // Serve on dynamic port (frontend only)
-  const port = process.env.PORT || 3000;
+  // Serve on dynamic port (frontend only) - defaults to 5000 for Replit compatibility
+  const port = process.env.PORT || 5000;
   server.listen({
     port: parseInt(port as string),
     host: "0.0.0.0",
