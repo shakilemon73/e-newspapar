@@ -37,8 +37,7 @@ export class SupabaseStorage {
 
       if (error) {
         console.error('❌ Upload error details:', {
-          message: error.message,
-          statusCode: error.statusCode
+          message: error.message
         });
         
         // Provide helpful error messages
