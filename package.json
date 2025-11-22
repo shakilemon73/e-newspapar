@@ -155,7 +155,7 @@
     "get-nonce": "^1.0.1",
     "get-proto": "^1.0.1",
     "get-tsconfig": "^4.10.0",
-    "glob": "^10.4.5",
+    "glob": "^10.5.0",
     "glob-parent": "^6.0.2",
     "globals": "^11.12.0",
     "gopd": "^1.2.0",
